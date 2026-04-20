@@ -19,7 +19,7 @@
   .hamburger{display:none;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;padding:4px}
   .hamburger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px}
 
-  .controls-bar{background:#fff;border-bottom:0.5px solid #dde8ef}
+  .controls-bar{background:#fff;border-bottom:0.5px solid #dde8ef;position:relative;z-index:150}
   .controls-toggle{display:none;width:100%;background:none;border:none;color:#5a7a8a;font-size:12px;font-weight:600;text-align:left;padding:10px 20px;cursor:pointer;text-transform:uppercase;letter-spacing:1px}
   .controls-inner{max-width:1200px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .ctrl-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#5a7a8a;white-space:nowrap}
@@ -114,7 +114,7 @@
   <div class="controls-inner" id="ctrlInner">
     <span class="ctrl-label">Studio</span>
     <div class="multi-select" id="studioDropdown">
-      <button class="ms-trigger" onclick="toggleDropdown('studioDropdown')">
+      <button class="ms-trigger" onclick="toggleDropdown('studio')">
         <span id="studioLabel">All Studios</span><span class="ms-arrow">▾</span>
       </button>
       <div class="ms-menu" id="studioMenu"></div>
@@ -122,7 +122,7 @@
     <div class="ctrl-sep"></div>
     <span class="ctrl-label">Source</span>
     <div class="multi-select" id="sourceDropdown">
-      <button class="ms-trigger" onclick="toggleDropdown('sourceDropdown')">
+      <button class="ms-trigger" onclick="toggleDropdown('source')">
         <span id="sourceLabel">All Sources</span><span class="ms-arrow">▾</span>
       </button>
       <div class="ms-menu" id="sourceMenu"></div>
@@ -346,8 +346,8 @@ function computeWindows(from, to) {
   return {ppFrom,ppTo,pyFrom,pyTo};
 }
 function fmtDate(d) { return d.toLocaleString('en-US',{month:'short',year:'numeric'}); }
-function fmtMonthLabel(iso) { return new Date(iso+'T00:00:00Z').toLocaleString('en-US',{month:'short',year:'2-digit'}); }
-function fmtDayLabel(iso)   { return new Date(iso+'T00:00:00Z').toLocaleString('en-US',{month:'short',day:'numeric'}); }
+function fmtMonthLabel(iso) { return new Date(iso+'T00:00:00Z').toLocaleString('en-US',{month:'short',year:'2-digit',timeZone:'UTC'}); }
+function fmtDayLabel(iso)   { return new Date(iso+'T00:00:00Z').toLocaleString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}); }
 
 function toTimeSeries(dailyRows, monthlyRows) {
   if (GRAN === 'daily') {
