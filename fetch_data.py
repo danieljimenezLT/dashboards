@@ -2,141 +2,85 @@ import snowflake.connector
 import json
 import os
 from datetime import datetime, date
+from cryptography.hazmat.primitives import serialization
 
-# ── Credentials (from GitHub Secrets / env vars) ──────────────────────────────
-ACCOUNT   = os.getenv("SF_ACCOUNT",   "mindbodyorg-playlist_data_mart_sweat440")
-USER      = os.getenv("SF_USER",      "SWEAT440")
-TOKEN     = os.getenv("SF_TOKEN")     # Programmatic Access Token from GitHub Secret
-ROLE      = os.getenv("SF_ROLE",      "SYSADMIN")
-WAREHOUSE = os.getenv("SF_WAREHOUSE", "COMPUTE_WH")
-DATABASE  = os.getenv("SF_DATABASE",  "MARKETING_REPORTS")
-SCHEMA    = os.getenv("SF_SCHEMA",    "PUBLIC")
+# ── Credentials ───────────────────────────────────────────────────────────────
+ACCOUNT     = os.getenv("SF_ACCOUNT",   "MINDBODYORG-PLAYLIST_DATA_MART_SWEAT440")
+USER        = os.getenv("SF_USER",      "SWEAT440")
+ROLE        = os.getenv("SF_ROLE",      "SYSADMIN")
+WAREHOUSE   = os.getenv("SF_WAREHOUSE", "COMPUTE_WH")
+DATABASE    = os.getenv("SF_DATABASE",  "MARKETING_REPORTS")
+SCHEMA      = os.getenv("SF_SCHEMA",    "PUBLIC")
+TOKEN       = os.getenv("SF_TOKEN")
 
 def json_serial(obj):
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
     raise TypeError(f"Type {type(obj)} not serializable")
 
-# ── Connect using PAT ─────────────────────────────────────────────────────────
 conn = snowflake.connector.connect(
-    account=ACCOUNT,
-    user=USER,
-    token=TOKEN,
+    account=ACCOUNT, user=USER, token=TOKEN,
     authenticator="programmatic_access_token",
-    role=ROLE,
-    warehouse=WAREHOUSE,
-    database=DATABASE,
-    schema=SCHEMA
+    role=ROLE, warehouse=WAREHOUSE, database=DATABASE, schema=SCHEMA
 )
 cur = conn.cursor()
 
-# ── 1. KPI Totals ──────────────────────────────────────────────────────────────
-cur.execute("""
-    SELECT
-        SUM(SIGNUPS)            AS total_signups,
-        SUM(FIRST_VISITS)       AS total_first_visits,
-        SUM(FIRST_ACTIVATIONS)  AS total_first_activations,
-        SUM(FIRST_SALES)        AS total_first_sales
-    FROM MARKETING_REPORTS.PUBLIC.LEADS
-""")
-row = cur.fetchone()
-kpis = {
-    "total_signups":           row[0],
-    "total_first_visits":      row[1],
-    "total_first_activations": row[2],
-    "total_first_sales":       row[3],
-}
-
-# ── 2. Monthly trend (last 12 months) ─────────────────────────────────────────
+# ── 1. Monthly detail: every studio+source+month combo ────────────────────────
+# This is the main dataset — all filters are applied client-side from this
 cur.execute("""
     SELECT
         DATE_TRUNC('month', EVENT_DATE)  AS month,
+        STUDIO_NAME,
+        SOURCE,
         SUM(SIGNUPS)                     AS signups,
         SUM(FIRST_VISITS)                AS first_visits,
         SUM(FIRST_ACTIVATIONS)           AS first_activations,
         SUM(FIRST_SALES)                 AS first_sales
     FROM MARKETING_REPORTS.PUBLIC.LEADS
-    WHERE EVENT_DATE >= DATEADD('month', -12, CURRENT_DATE())
-    GROUP BY 1
-    ORDER BY 1
+    GROUP BY 1, 2, 3
+    ORDER BY 1, 2, 3
 """)
-monthly = [
+monthly_detail = [
     {
         "month":             json_serial(r[0]),
-        "signups":           r[1],
-        "first_visits":      r[2],
-        "first_activations": r[3],
-        "first_sales":       r[4],
+        "studio":            r[1],
+        "source":            r[2],
+        "signups":           int(r[3] or 0),
+        "first_visits":      int(r[4] or 0),
+        "first_activations": int(r[5] or 0),
+        "first_sales":       int(r[6] or 0),
     }
     for r in cur.fetchall()
 ]
 
-# ── 3. By Studio ──────────────────────────────────────────────────────────────
+# ── 2. Studio list ─────────────────────────────────────────────────────────────
 cur.execute("""
-    SELECT
-        STUDIO_NAME,
-        SUM(SIGNUPS)            AS signups,
-        SUM(FIRST_VISITS)       AS first_visits,
-        SUM(FIRST_ACTIVATIONS)  AS first_activations,
-        SUM(FIRST_SALES)        AS first_sales
+    SELECT DISTINCT STUDIO_NAME
     FROM MARKETING_REPORTS.PUBLIC.LEADS
-    GROUP BY STUDIO_NAME
-    ORDER BY signups DESC
+    WHERE STUDIO_NAME IS NOT NULL
+    ORDER BY 1
 """)
-by_studio = [
-    {
-        "studio":            r[0],
-        "signups":           r[1],
-        "first_visits":      r[2],
-        "first_activations": r[3],
-        "first_sales":       r[4],
-    }
-    for r in cur.fetchall()
-]
+studios = [r[0] for r in cur.fetchall()]
 
-# ── 4. By Source ──────────────────────────────────────────────────────────────
+# ── 3. Source list ─────────────────────────────────────────────────────────────
 cur.execute("""
-    SELECT
-        SOURCE,
-        SUM(SIGNUPS)            AS signups,
-        SUM(FIRST_VISITS)       AS first_visits,
-        SUM(FIRST_ACTIVATIONS)  AS first_activations,
-        SUM(FIRST_SALES)        AS first_sales
+    SELECT DISTINCT SOURCE
     FROM MARKETING_REPORTS.PUBLIC.LEADS
-    GROUP BY SOURCE
-    ORDER BY signups DESC
+    WHERE SOURCE IS NOT NULL
+    ORDER BY 1
 """)
-by_source = [
-    {
-        "source":            r[0],
-        "signups":           r[1],
-        "first_visits":      r[2],
-        "first_activations": r[3],
-        "first_sales":       r[4],
-    }
-    for r in cur.fetchall()
-]
+sources = [r[0] for r in cur.fetchall()]
 
-# ── 5. Conversion funnel (overall) ────────────────────────────────────────────
-funnel = [
-    {"stage": "Signups",           "value": kpis["total_signups"]},
-    {"stage": "First Visits",      "value": kpis["total_first_visits"]},
-    {"stage": "First Activations", "value": kpis["total_first_activations"]},
-    {"stage": "First Sales",       "value": kpis["total_first_sales"]},
-]
-
-# ── Write output ──────────────────────────────────────────────────────────────
+# ── Write output ───────────────────────────────────────────────────────────────
 output = {
-    "generated_at": datetime.utcnow().isoformat() + "Z",
-    "kpis":         kpis,
-    "monthly":      monthly,
-    "by_studio":    by_studio,
-    "by_source":    by_source,
-    "funnel":       funnel,
+    "generated_at":   datetime.utcnow().isoformat() + "Z",
+    "studios":        studios,
+    "sources":        sources,
+    "monthly_detail": monthly_detail,
 }
 
 with open("data.json", "w") as f:
     json.dump(output, f, indent=2, default=json_serial)
 
 conn.close()
-print(f"✅  data.json written — {len(monthly)} months, {len(by_studio)} studios, {len(by_source)} sources")
+print(f"✅  data.json written — {len(monthly_detail)} rows, {len(studios)} studios, {len(sources)} sources")
