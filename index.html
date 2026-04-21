@@ -29,8 +29,8 @@
   .ctrl-date input{font-size:12px;padding:5px 8px;border-radius:6px;border:0.5px solid #c0d4df;background:#fff;color:#1a1a2e;width:126px}
 
   .main{max-width:1200px;margin:0 auto;padding:24px}
-  .tab-content{display:none}
-  .tab-content.active{display:block}
+  .tab-content{display:block;max-height:0;overflow:hidden;pointer-events:none}
+  .tab-content.active{max-height:none;overflow:visible;pointer-events:auto}
 
   .chart-card{background:#fff;border:0.5px solid #dde8ef;border-radius:12px;padding:22px;margin-bottom:20px}
   .chart-card-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#1a1a2e;margin-bottom:18px}
@@ -227,13 +227,13 @@
         </div>
       </div>
       <div class="toggle-group" id="leads-src-toggles"></div>
-      <div style="position:relative;width:100%;height:260px"><canvas id="leadsAreaChart" role="img" aria-label="Area chart of leads by source over time"></canvas></div>
+      <div style="position:relative;width:100%;height:260px"><canvas id="leadsAreaChart" height="260" role="img" aria-label="Area chart of leads by source over time"></canvas></div>
     </div>
     <div class="two-col">
       <div class="chart-card">
         <div class="chart-card-title">Source participation</div>
         <div class="ring-wrap">
-          <div class="ring-canvas-wrap"><canvas id="leadsRingChart" role="img" aria-label="Ring chart of leads by source"></canvas></div>
+          <div class="ring-canvas-wrap"><canvas id="leadsRingChart" height="180" width="180" role="img" aria-label="Ring chart of leads by source"></canvas></div>
           <div class="ring-legend" id="leadsRingLegend"></div>
         </div>
       </div>
@@ -262,13 +262,13 @@
         </div>
       </div>
       <div class="toggle-group" id="ft-src-toggles"></div>
-      <div style="position:relative;width:100%;height:260px"><canvas id="ftAreaChart" role="img" aria-label="Area chart of first timers by source over time"></canvas></div>
+      <div style="position:relative;width:100%;height:260px"><canvas id="ftAreaChart" height="260" role="img" aria-label="Area chart of first timers by source over time"></canvas></div>
     </div>
     <div class="two-col">
       <div class="chart-card">
         <div class="chart-card-title">Source participation</div>
         <div class="ring-wrap">
-          <div class="ring-canvas-wrap"><canvas id="ftRingChart" role="img" aria-label="Ring chart of first timers by source"></canvas></div>
+          <div class="ring-canvas-wrap"><canvas id="ftRingChart" height="180" width="180" role="img" aria-label="Ring chart of first timers by source"></canvas></div>
           <div class="ring-legend" id="ftRingLegend"></div>
         </div>
       </div>
@@ -336,13 +336,13 @@
         </div>
       </div>
       <div class="toggle-group" id="mem-src-toggles"></div>
-      <div style="position:relative;width:100%;height:260px"><canvas id="memAreaChart" role="img" aria-label="Area chart of new members by source over time"></canvas></div>
+      <div style="position:relative;width:100%;height:260px"><canvas id="memAreaChart" height="260" role="img" aria-label="Area chart of new members by source over time"></canvas></div>
     </div>
     <div class="two-col">
       <div class="chart-card">
         <div class="chart-card-title">Source participation</div>
         <div class="ring-wrap">
-          <div class="ring-canvas-wrap"><canvas id="memRingChart" role="img" aria-label="Ring chart of new members by source"></canvas></div>
+          <div class="ring-canvas-wrap"><canvas id="memRingChart" height="180" width="180" role="img" aria-label="Ring chart of new members by source"></canvas></div>
           <div class="ring-legend" id="memRingLegend"></div>
         </div>
       </div>
@@ -390,6 +390,7 @@ let RAW = null;
 let trendChart = null;
 let GRAN = 'daily';
 const COLORS = ['#00A3E0','#00C9A7','#9aab00'];
+const AREA_GRAN = {leadsAreaChart:'daily', ftAreaChart:'daily', memAreaChart:'daily'};
 
 const DEFAULT_EXCL_SOURCES = ['ClassPass / Platforms','Grassroots'];
 const DEFAULT_EXCL_STUDIOS = [
@@ -404,18 +405,7 @@ function switchTab(id, btn) {
   btn.classList.add('active');
   document.getElementById('navTabs').classList.remove('open');
   // Rebuild charts after tab is visible (Chart.js needs visible canvas to measure dimensions)
-  if (['leads','stage','members'].includes(id)) {
-    if (window._lastCurrFiltered) {
-      buildStageTabs(
-        window._lastCurrFiltered,
-        window._lastPpFiltered,
-        window._lastPyFiltered,
-        window._lastPpLabel,
-        window._lastPyLabel
-      );
-      STAGE_BUILT[id] = true;
-    }
-  }
+  // Stage tabs always built on applyFilters — nothing extra needed here
   if (id === 'cpr')    buildCPRTab();
   if (id === 'meta')   buildMetaTab();
   if (id === 'google') buildGoogleTab();
@@ -632,17 +622,8 @@ function applyFilters() {
   buildFunnel(sumRows(curr.all), sumRows(pp.all), sumRows(py.all),
     `${fmtDate(ppFrom)} – ${fmtDate(ppTo)}`, `${fmtDate(pyFrom)} – ${fmtDate(pyTo)}`);
   buildTrend(toTimeSeries(curr.daily, curr.monthly));
-  // Always store latest data for when stage tabs are opened
-  window._lastCurrFiltered = curr;
-  window._lastPpFiltered   = pp;
-  window._lastPyFiltered   = py;
-  window._lastPpLabel      = fmtDate(ppFrom)+' – '+fmtDate(ppTo);
-  window._lastPyLabel      = fmtDate(pyFrom)+' – '+fmtDate(pyTo);
-  // Only rebuild stage tabs if one is currently active (visible)
-  const activeTab = document.querySelector('.tab-content.active');
-  if (activeTab && ['tab-leads','tab-stage','tab-members'].includes(activeTab.id)) {
-    buildStageTabs(curr, pp, py, fmtDate(ppFrom)+' – '+fmtDate(ppTo), fmtDate(pyFrom)+' – '+fmtDate(pyTo));
-  }
+  // Always build all tabs — all are rendered (just hidden via opacity/height)
+  buildStageTabs(curr, pp, py, fmtDate(ppFrom)+' – '+fmtDate(ppTo), fmtDate(pyFrom)+' – '+fmtDate(pyTo));
 }
 
 function calcDelta(curr,prev) { if(!prev||prev===0) return null; return (curr-prev)/prev*100; }
@@ -876,24 +857,16 @@ function toSourceTimeSeries(dailyRows,monthlyRows,gran){
 function buildStageTabs(currFiltered, ppFiltered, pyFiltered, ppLabel, pyLabel){
   const pp  = ppFiltered  || {daily:[],monthly:[],all:[]};
   const py  = pyFiltered  || {daily:[],monthly:[],all:[]};
-
-  // Use selected sources (already filtered) but exclude ClassPass/Grassroots from area chart
   const srcList = RAW.sources.filter(s => !['ClassPass / Platforms','Grassroots'].includes(s));
-
-  // Totals from real filtered data
   const leadsTotal = currFiltered.all.reduce((s,r)=>s+r.signups,0);
   const ftTotal    = currFiltered.all.reduce((s,r)=>s+r.first_visits,0);
   const memTotal   = currFiltered.all.reduce((s,r)=>s+r.first_activations,0);
-
-  // Prev period & prev year totals
   const ppLeads = pp.all.reduce((s,r)=>s+r.signups,0);
   const ppFT    = pp.all.reduce((s,r)=>s+r.first_visits,0);
   const ppMem   = pp.all.reduce((s,r)=>s+r.first_activations,0);
   const pyLeads = py.all.reduce((s,r)=>s+r.signups,0);
   const pyFT    = py.all.reduce((s,r)=>s+r.first_visits,0);
   const pyMem   = py.all.reduce((s,r)=>s+r.first_activations,0);
-
-  // This-period (daily rows only — current granularity window)
   const thisLeads = currFiltered.daily.length ? currFiltered.daily.reduce((s,r)=>s+r.signups,0)
                   : currFiltered.all.reduce((s,r)=>s+r.signups,0);
   const thisFT    = currFiltered.daily.length ? currFiltered.daily.reduce((s,r)=>s+r.first_visits,0)
@@ -905,7 +878,6 @@ function buildStageTabs(currFiltered, ppFiltered, pyFiltered, ppLabel, pyLabel){
   const convMem = ftTotal    ? ((memTotal/ftTotal)*100).toFixed(1)+'%'   : '--';
   const convMemFromLead = leadsTotal ? ((memTotal/leadsTotal)*100).toFixed(1)+'%' : '--';
 
-  // Conversion rates for prev periods (for comparison)
   const ppConvFT  = ppLeads  ? (ppFT /ppLeads *100) : null;
   const ppConvMem = ppFT     ? (ppMem/ppFT   *100) : null;
   const pyConvFT  = pyLeads  ? (pyFT /pyLeads*100)  : null;
@@ -914,8 +886,6 @@ function buildStageTabs(currFiltered, ppFiltered, pyFiltered, ppLabel, pyLabel){
   const currConvFT  = leadsTotal ? ftTotal /leadsTotal*100 : null;
   const currConvMem = ftTotal    ? memTotal/ftTotal  *100  : null;
   const currConvMemLead = leadsTotal ? memTotal/leadsTotal*100 : null;
-
-  // Conv KPI: show rate + % improvement vs prev (relative change)
   function convCard(label, curr, ppRate, pyRate) {
     if (curr === null) return kpiCard(label, '--', null, null, v=>v);
     const fmt = v => typeof v==='number' ? v.toFixed(1)+'%' : v;
