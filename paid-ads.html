@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SWEAT440 — Paid Ads Dashboard</title>
+
+<!-- Brand fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- Shared brand styles (repo-wide) -->
+<link rel="stylesheet" href="shared/style.css">
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<style>
+  /* Dashboard-specific styles (fallback if shared/style.css doesn't cover these) */
+  :root {
+    --brand-blue: #00A3E0;
+    --brand-blue-deep: #0084B5;
+    --ink: #0F172A;
+    --ink-soft: #475569;
+    --border: #E2E8F0;
+    --bg: #F8FAFC;
+    --card: #FFFFFF;
+    --good: #16A34A;
+    --bad: #DC2626;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+  }
+  h1, h2, h3 { font-family: 'Oswald', sans-serif; font-weight: 600; letter-spacing: .5px; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+  header.topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  header.topbar h1 {
+    margin: 0; font-size: 28px; text-transform: uppercase;
+    color: var(--brand-blue-deep);
+  }
+  header.topbar .meta { color: var(--ink-soft); font-size: 12px; }
+  .campaign-picker {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .campaign-picker select {
+    font-family: inherit; font-size: 14px; padding: 8px 12px;
+    border: 1px solid var(--border); border-radius: 6px; background: #fff;
+    min-width: 280px;
+  }
+  .period { color: var(--ink-soft); font-size: 12px; }
+
+  /* KPI grid */
+  .kpi-grid {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    margin-bottom: 24px;
+  }
+  .kpi {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .kpi .label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
+    color: var(--ink-soft); font-weight: 600;
+  }
+  .kpi .value {
+    font-family: 'Oswald', sans-serif; font-size: 28px; font-weight: 600;
+    color: var(--ink); margin-top: 2px;
+  }
+  .kpi .sub { font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+  .kpi.accent { border-left: 4px solid var(--brand-blue); }
+
+  /* Section cards */
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px 20px; margin-bottom: 18px;
+  }
+  .card h2 { margin: 0 0 14px 0; font-size: 16px; color: var(--brand-blue-deep); }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  th {
+    background: #F1F5F9; font-weight: 600; color: var(--ink-soft);
+    text-transform: uppercase; font-size: 11px; letter-spacing: .4px;
+    cursor: pointer; user-select: none;
+  }
+  th.sort-asc::after  { content: " ▲"; color: var(--brand-blue); }
+  th.sort-desc::after { content: " ▼"; color: var(--brand-blue); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tbody tr:hover { background: #F8FAFC; }
+
+  /* Layout helpers */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  canvas { max-width: 100%; }
+
+  /* Chart.js requires a constrained parent when maintainAspectRatio:false —
+     sin esto los canvases crecen en loop infinito. */
+  .chart-wrap { position: relative; width: 100%; }
+  .chart-wrap.h-daily  { height: 280px; }
+  .chart-wrap.h-small  { height: 240px; }
+
+  .empty { color: var(--ink-soft); font-style: italic; padding: 20px 0; }
+
+  .chip {
+    display: inline-block; padding: 2px 8px; border-radius: 12px;
+    background: #EFF6FF; color: var(--brand-blue-deep); font-size: 11px;
+    font-weight: 600; margin-right: 4px;
+  }
+</style>
+</head>
+
+<body>
+<div class="container">
+  <header class="topbar">
+    <div>
+      <h1>Paid Ads Dashboard</h1>
+      <div class="meta">
+        <span id="generatedAt">Loading…</span>
+      </div>
+    </div>
+    <div class="campaign-picker">
+      <label for="campaignSelect" style="font-weight:600;color:var(--ink-soft);">Campaign:</label>
+      <select id="campaignSelect"></select>
+      <span class="period" id="periodLabel"></span>
+    </div>
+  </header>
+
+  <!-- KPI cards -->
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <!-- Daily trend -->
+  <div class="card">
+    <h2>Daily Trend</h2>
+    <div class="chart-wrap h-daily"><canvas id="dailyChart"></canvas></div>
+  </div>
+
+  <!-- Studios + Pillars side by side -->
+  <div class="grid-2">
+    <div class="card">
+      <h2>Studios — Performance</h2>
+      <div style="max-height: 500px; overflow:auto;">
+        <table id="studiosTable">
+          <thead>
+            <tr>
+              <th data-k="name">Studio</th>
+              <th data-k="state">State</th>
+              <th class="num" data-k="spend">Spend</th>
+              <th class="num" data-k="leads">Leads</th>
+              <th class="num" data-k="cpl">CPL</th>
+              <th class="num" data-k="trials">Trials</th>
+              <th class="num" data-k="cpt">CPT</th>
+              <th class="num" data-k="purchases">Purch.</th>
+              <th class="num" data-k="cpp">CPP</th>
+              <th class="num" data-k="impressions">Impr.</th>
+              <th class="num" data-k="ctr">CTR%</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Pillars — Campaign-wide</h2>
+      <div class="chart-wrap h-small"><canvas id="pillarsChart"></canvas></div>
+      <div id="pillarsTableWrap" style="margin-top: 12px; max-height:240px; overflow:auto;"></div>
+    </div>
+  </div>
+
+  <!-- Audiences + Concepts -->
+  <div class="grid-2">
+    <div class="card">
+      <h2>Audiences</h2>
+      <div class="chart-wrap h-small"><canvas id="audiencesChart"></canvas></div>
+      <div id="audiencesTableWrap" style="margin-top: 12px; max-height:240px; overflow:auto;"></div>
+    </div>
+    <div class="card">
+      <h2>Top Concepts</h2>
+      <div class="chart-wrap h-small"><canvas id="conceptsChart"></canvas></div>
+      <div id="conceptsTableWrap" style="margin-top: 12px; max-height:240px; overflow:auto;"></div>
+    </div>
+  </div>
+
+  <!-- Studio Detail: deep dive en un studio específico -->
+  <div class="card">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+      <h2 style="margin:0;">Studio Detail</h2>
+      <div>
+        <label for="studioSelect" style="font-weight:600;color:var(--ink-soft);margin-right:6px;">Studio:</label>
+        <select id="studioSelect" style="font-family:inherit;font-size:14px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;min-width:220px;"></select>
+      </div>
+    </div>
+
+    <div id="studioSummary" style="margin-top:14px;"></div>
+
+    <div class="grid-2" style="margin-top:14px;">
+      <div>
+        <h3 style="margin:0 0 8px 0;font-size:13px;color:var(--ink-soft);text-transform:uppercase;">Audiences</h3>
+        <div id="studioAudiencesWrap"></div>
+      </div>
+      <div>
+        <h3 style="margin:0 0 8px 0;font-size:13px;color:var(--ink-soft);text-transform:uppercase;">Pillars</h3>
+        <div id="studioPillarsWrap"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;">
+      <h3 style="margin:0 0 8px 0;font-size:13px;color:var(--ink-soft);text-transform:uppercase;">Top Concepts</h3>
+      <div id="studioConceptsWrap"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+//  State & fetch
+// ─────────────────────────────────────────────────────────────
+let DATA = null;                // full paid-ads-data.json
+let currentKey = null;          // selected campaign key
+let studiosSort = { col: "spend", dir: "desc" };
+let charts = {};                // chart refs so we can destroy+rebuild
+
+const BRAND = {
+  blue: "#00A3E0",
+  blueDeep: "#0084B5",
+  palette: [
+    "#00A3E0", "#0084B5", "#F59E0B", "#10B981", "#6366F1",
+    "#EC4899", "#EF4444", "#14B8A6", "#A855F7", "#84CC16",
+  ],
+};
+
+const fmtMoney = n => "$" + (Number(n) || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtInt   = n => (Number(n) || 0).toLocaleString("en-US");
+const fmtPct   = n => (Number(n) || 0).toFixed(2) + "%";
+
+async function bootstrap() {
+  try {
+    const res = await fetch("paid-ads-data.json?t=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    DATA = await res.json();
+  } catch (e) {
+    document.body.innerHTML = `<div class="container"><div class="card" style="color:var(--bad)">
+      <h2>Could not load paid-ads-data.json</h2>
+      <p>Check that the GitHub Action has run at least once, and that the file exists at the repo root.</p>
+      <pre style="color:var(--ink-soft);font-size:12px">${String(e)}</pre>
+    </div></div>`;
+    return;
+  }
+
+  // Header
+  document.getElementById("generatedAt").textContent =
+    "Updated " + new Date(DATA.generated_at).toLocaleString();
+
+  // Campaign picker
+  const sel = document.getElementById("campaignSelect");
+  DATA.campaigns_index.forEach(ci => {
+    const opt = document.createElement("option");
+    opt.value = ci.key;
+    opt.textContent = ci.display_name;
+    if (ci.is_default) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener("change", () => { currentKey = sel.value; render(); });
+  currentKey = sel.value || DATA.active_campaign;
+
+  render();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Render
+// ─────────────────────────────────────────────────────────────
+function render() {
+  const c = DATA.campaigns[currentKey];
+  if (!c) return;
+
+  document.getElementById("periodLabel").textContent =
+    c.period_label + "  ·  " + c.date_start + " → " + c.date_end;
+
+  renderKpis(c.totals);
+  renderDaily(c.daily);
+  renderStudios(c.studios);
+  renderPillars(c.pillars);
+  renderAudiences(c.audiences, c.studios);
+  renderConcepts(c.concepts);
+  renderStudioDetail(c);
+}
+
+function renderKpis(t) {
+  const cpt = t.trials    ? (t.spend / t.trials)    : 0;
+  const cpp = t.purchases ? (t.spend / t.purchases) : 0;
+  const cards = [
+    { label: "Spend",       value: fmtMoney(t.spend),      accent: true },
+    { label: "Leads",       value: fmtInt(t.leads),        sub: "CPL " + fmtMoney(t.cpl) },
+    { label: "Trials",      value: fmtInt(t.trials),       sub: t.trials    ? "CPT " + fmtMoney(cpt) : "—" },
+    { label: "Purchases",   value: fmtInt(t.purchases),    sub: t.purchases ? "CPP " + fmtMoney(cpp) : "—" },
+    { label: "Impressions", value: fmtInt(t.impressions),  sub: "CPM " + fmtMoney(t.cpm) },
+    { label: "Clicks",      value: fmtInt(t.clicks),       sub: "CTR " + fmtPct(t.ctr) },
+    { label: "Reach",       value: fmtInt(t.reach) },
+  ];
+  const grid = document.getElementById("kpiGrid");
+  grid.innerHTML = cards.map(c => `
+    <div class="kpi ${c.accent ? "accent" : ""}">
+      <div class="label">${c.label}</div>
+      <div class="value">${c.value}</div>
+      ${c.sub ? `<div class="sub">${c.sub}</div>` : ""}
+    </div>
+  `).join("");
+}
+
+function renderDaily(daily) {
+  const labels = daily.map(d => d.date);
+  const spend = daily.map(d => d.spend);
+  const leads = daily.map(d => d.leads);
+
+  if (charts.daily) charts.daily.destroy();
+  const ctx = document.getElementById("dailyChart").getContext("2d");
+  charts.daily = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Spend", data: spend, yAxisID: "y",
+          borderColor: BRAND.blue, backgroundColor: "rgba(0,163,224,.15)",
+          tension: .3, fill: true, pointRadius: 2,
+        },
+        {
+          label: "Leads", data: leads, yAxisID: "y1",
+          borderColor: "#F59E0B", backgroundColor: "rgba(245,158,11,.15)",
+          tension: .3, pointRadius: 2,
+        },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        y:  { position: "left",  title: { display: true, text: "Spend ($)" }, beginAtZero: true },
+        y1: { position: "right", title: { display: true, text: "Leads" },
+              beginAtZero: true, grid: { drawOnChartArea: false } },
+      },
+      plugins: {
+        legend: { position: "bottom" },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.parsed.y;
+              return ctx.dataset.label + ": " +
+                (ctx.dataset.label === "Spend" ? fmtMoney(v) : fmtInt(v));
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+function renderStudios(studios) {
+  const tbody = document.querySelector("#studiosTable tbody");
+  // enrich with computed cpt / cpp
+  const enriched = studios.map(s => ({
+    ...s,
+    cpt: s.trials    ? s.spend / s.trials    : 0,
+    cpp: s.purchases ? s.spend / s.purchases : 0,
+  }));
+
+  const rows = [...enriched].sort((a, b) => {
+    const { col, dir } = studiosSort;
+    const av = a[col], bv = b[col];
+    const cmp = (typeof av === "string")
+      ? String(av).localeCompare(String(bv))
+      : (Number(av) - Number(bv));
+    return dir === "asc" ? cmp : -cmp;
+  });
+
+  tbody.innerHTML = rows.map(s => `
+    <tr>
+      <td>${s.name}</td>
+      <td>${s.state}</td>
+      <td class="num">${fmtMoney(s.spend)}</td>
+      <td class="num">${fmtInt(s.leads)}</td>
+      <td class="num">${s.leads ? fmtMoney(s.cpl) : "—"}</td>
+      <td class="num">${fmtInt(s.trials)}</td>
+      <td class="num">${s.trials ? fmtMoney(s.cpt) : "—"}</td>
+      <td class="num">${fmtInt(s.purchases)}</td>
+      <td class="num">${s.purchases ? fmtMoney(s.cpp) : "—"}</td>
+      <td class="num">${fmtInt(s.impressions)}</td>
+      <td class="num">${fmtPct(s.ctr)}</td>
+    </tr>
+  `).join("");
+
+  // Sort indicators
+  document.querySelectorAll("#studiosTable th").forEach(th => {
+    th.classList.remove("sort-asc", "sort-desc");
+    if (th.dataset.k === studiosSort.col) {
+      th.classList.add(studiosSort.dir === "asc" ? "sort-asc" : "sort-desc");
+    }
+    th.onclick = () => {
+      const k = th.dataset.k;
+      if (studiosSort.col === k) {
+        studiosSort.dir = studiosSort.dir === "asc" ? "desc" : "asc";
+      } else {
+        studiosSort.col = k;
+        studiosSort.dir = (typeof studios[0][k] === "string") ? "asc" : "desc";
+      }
+      renderStudios(studios);
+    };
+  });
+}
+
+function renderPillars(pillars) {
+  pillars = [...pillars].sort((a, b) => b.spend - a.spend);
+
+  if (charts.pillars) charts.pillars.destroy();
+  const ctx = document.getElementById("pillarsChart").getContext("2d");
+  if (pillars.length === 0) {
+    document.getElementById("pillarsTableWrap").innerHTML = "<div class='empty'>No pillar classification available.</div>";
+    return;
+  }
+  charts.pillars = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: pillars.map(p => p.pillar),
+      datasets: [
+        {
+          label: "Spend",
+          data: pillars.map(p => p.spend),
+          backgroundColor: BRAND.blue,
+        },
+        {
+          label: "Leads",
+          data: pillars.map(p => p.leads),
+          backgroundColor: "#F59E0B",
+          yAxisID: "y1",
+        },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y:  { beginAtZero: true, title: { display: true, text: "$" } },
+        y1: { beginAtZero: true, position: "right", grid: { drawOnChartArea: false },
+              title: { display: true, text: "Leads" } },
+      },
+      plugins: { legend: { position: "bottom" } },
+    },
+  });
+
+  document.getElementById("pillarsTableWrap").innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Pillar</th><th class="num">Spend</th><th class="num">Leads</th><th class="num">CPL</th>
+      </tr></thead>
+      <tbody>
+        ${pillars.map(p => `
+          <tr>
+            <td>${p.pillar}</td>
+            <td class="num">${fmtMoney(p.spend)}</td>
+            <td class="num">${fmtInt(p.leads)}</td>
+            <td class="num">${p.leads ? fmtMoney(p.cpl) : "—"}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderAudiences(audiences, studios) {
+  // Roll up by audience (sum spend + leads across all studios)
+  const roll = {};
+  audiences.forEach(a => {
+    if (!roll[a.audience]) roll[a.audience] = { audience: a.audience, spend: 0, impressions: 0, leads: 0, studios: new Set() };
+    roll[a.audience].spend += a.spend;
+    roll[a.audience].impressions += a.impressions;
+    roll[a.audience].leads += a.leads;
+    roll[a.audience].studios.add(a.studio_code);
+  });
+  const rows = Object.values(roll).map(r => ({
+    ...r,
+    cpl: r.leads ? r.spend / r.leads : 0,
+    studios: r.studios.size,
+  })).sort((a, b) => b.spend - a.spend);
+
+  if (charts.audiences) charts.audiences.destroy();
+  const ctx = document.getElementById("audiencesChart").getContext("2d");
+  if (rows.length === 0) {
+    document.getElementById("audiencesTableWrap").innerHTML = "<div class='empty'>No audience tokens matched.</div>";
+    return;
+  }
+  charts.audiences = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: rows.map(r => r.audience),
+      datasets: [{
+        data: rows.map(r => r.spend),
+        backgroundColor: rows.map((_, i) => BRAND.palette[i % BRAND.palette.length]),
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "right" },
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.label}: ${fmtMoney(ctx.parsed)}`,
+          },
+        },
+      },
+    },
+  });
+
+  document.getElementById("audiencesTableWrap").innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Audience</th><th class="num">Spend</th><th class="num">Leads</th>
+        <th class="num">CPL</th><th class="num">Studios</th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(r => `
+          <tr>
+            <td>${r.audience}</td>
+            <td class="num">${fmtMoney(r.spend)}</td>
+            <td class="num">${fmtInt(r.leads)}</td>
+            <td class="num">${r.leads ? fmtMoney(r.cpl) : "—"}</td>
+            <td class="num">${r.studios}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderConcepts(concepts) {
+  const top = [...concepts].sort((a, b) => b.spend - a.spend).slice(0, 10);
+
+  if (charts.concepts) charts.concepts.destroy();
+  const ctx = document.getElementById("conceptsChart").getContext("2d");
+  if (top.length === 0) {
+    document.getElementById("conceptsTableWrap").innerHTML = "<div class='empty'>No concepts detected.</div>";
+    return;
+  }
+  charts.concepts = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: top.map(c => c.concept),
+      datasets: [{
+        label: "Spend",
+        data: top.map(c => c.spend),
+        backgroundColor: BRAND.blueDeep,
+      }],
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true, maintainAspectRatio: false,
+      scales: { x: { beginAtZero: true } },
+      plugins: { legend: { display: false } },
+    },
+  });
+
+  document.getElementById("conceptsTableWrap").innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Concept</th><th class="num">Spend</th><th class="num">Leads</th><th class="num">CPL</th>
+      </tr></thead>
+      <tbody>
+        ${top.map(c => `
+          <tr>
+            <td>${c.concept}</td>
+            <td class="num">${fmtMoney(c.spend)}</td>
+            <td class="num">${fmtInt(c.leads)}</td>
+            <td class="num">${c.leads ? fmtMoney(c.cpl) : "—"}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Studio Detail — dropdown + audiences/pillars/concepts
+// ─────────────────────────────────────────────────────────────
+let studioSelected = null;   // código del studio seleccionado
+
+function renderStudioDetail(c) {
+  const sel = document.getElementById("studioSelect");
+  // Solo studios con algún spend > 0 (para no poblar con 25 studios vacíos)
+  const active = c.studios.filter(s => s.spend > 0)
+                          .sort((a, b) => b.spend - a.spend);
+
+  if (active.length === 0) {
+    document.getElementById("studioSummary").innerHTML =
+      "<div class='empty'>No studio activity in this period.</div>";
+    document.getElementById("studioAudiencesWrap").innerHTML = "";
+    document.getElementById("studioPillarsWrap").innerHTML = "";
+    document.getElementById("studioConceptsWrap").innerHTML = "";
+    return;
+  }
+
+  // Poblar dropdown (re-poblamos siempre porque cambia con la campaña)
+  sel.innerHTML = active.map(s =>
+    `<option value="${s.code}">${s.name} (${s.state})</option>`
+  ).join("");
+
+  // Restaurar selección previa si sigue existiendo en esta campaña
+  if (studioSelected && active.some(s => s.code === studioSelected)) {
+    sel.value = studioSelected;
+  } else {
+    studioSelected = active[0].code;
+    sel.value = studioSelected;
+  }
+
+  sel.onchange = () => {
+    studioSelected = sel.value;
+    renderStudioInner(c);
+  };
+
+  renderStudioInner(c);
+}
+
+function renderStudioInner(c) {
+  const studio = c.studios.find(s => s.code === studioSelected);
+  if (!studio) return;
+
+  const cpt = studio.trials    ? studio.spend / studio.trials    : 0;
+  const cpp = studio.purchases ? studio.spend / studio.purchases : 0;
+
+  // Summary chips
+  document.getElementById("studioSummary").innerHTML = `
+    <span class="chip">Spend ${fmtMoney(studio.spend)}</span>
+    <span class="chip">Leads ${fmtInt(studio.leads)}</span>
+    <span class="chip">CPL ${studio.leads ? fmtMoney(studio.cpl) : "—"}</span>
+    <span class="chip">Trials ${fmtInt(studio.trials)}</span>
+    <span class="chip">CPT ${studio.trials ? fmtMoney(cpt) : "—"}</span>
+    <span class="chip">Purchases ${fmtInt(studio.purchases)}</span>
+    <span class="chip">CPP ${studio.purchases ? fmtMoney(cpp) : "—"}</span>
+    <span class="chip">Impr ${fmtInt(studio.impressions)}</span>
+    <span class="chip">CTR ${fmtPct(studio.ctr)}</span>
+  `;
+
+  // Audiences for this studio
+  const auds = (c.audiences || [])
+    .filter(a => a.studio_code === studioSelected)
+    .sort((a, b) => b.spend - a.spend);
+  document.getElementById("studioAudiencesWrap").innerHTML = auds.length ? `
+    <table>
+      <thead><tr>
+        <th>Audience</th><th class="num">Spend</th><th class="num">Leads</th><th class="num">CPL</th>
+      </tr></thead>
+      <tbody>
+        ${auds.map(a => {
+          const cpl = a.leads ? a.spend / a.leads : 0;
+          return `<tr>
+            <td>${a.audience}</td>
+            <td class="num">${fmtMoney(a.spend)}</td>
+            <td class="num">${fmtInt(a.leads)}</td>
+            <td class="num">${a.leads ? fmtMoney(cpl) : "—"}</td>
+          </tr>`;
+        }).join("")}
+      </tbody>
+    </table>
+  ` : "<div class='empty'>No audience classification for this studio.</div>";
+
+  // Pillars for this studio
+  const pils = (c.studio_pillars || [])
+    .filter(p => p.studio_code === studioSelected)
+    .sort((a, b) => b.spend - a.spend);
+  document.getElementById("studioPillarsWrap").innerHTML = pils.length ? `
+    <table>
+      <thead><tr>
+        <th>Pillar</th><th class="num">Spend</th><th class="num">Leads</th><th class="num">CPL</th>
+      </tr></thead>
+      <tbody>
+        ${pils.map(p => `<tr>
+          <td>${p.pillar}</td>
+          <td class="num">${fmtMoney(p.spend)}</td>
+          <td class="num">${fmtInt(p.leads)}</td>
+          <td class="num">${p.leads ? fmtMoney(p.cpl) : "—"}</td>
+        </tr>`).join("")}
+      </tbody>
+    </table>
+  ` : "<div class='empty'>No pillar classification for this studio.</div>";
+
+  // Concepts for this studio (top 10 por spend)
+  const cons = (c.studio_concepts || [])
+    .filter(c2 => c2.studio_code === studioSelected)
+    .sort((a, b) => b.spend - a.spend)
+    .slice(0, 10);
+  document.getElementById("studioConceptsWrap").innerHTML = cons.length ? `
+    <table>
+      <thead><tr>
+        <th>Concept</th><th class="num">Spend</th><th class="num">Leads</th><th class="num">CPL</th>
+      </tr></thead>
+      <tbody>
+        ${cons.map(c2 => `<tr>
+          <td>${c2.concept}</td>
+          <td class="num">${fmtMoney(c2.spend)}</td>
+          <td class="num">${fmtInt(c2.leads)}</td>
+          <td class="num">${c2.leads ? fmtMoney(c2.cpl) : "—"}</td>
+        </tr>`).join("")}
+      </tbody>
+    </table>
+  ` : "<div class='empty'>No concepts detected for this studio.</div>";
+}
+
+bootstrap();
+</script>
+</body>
+</html>

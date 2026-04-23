@@ -1,0 +1,145 @@
+# ---------------------------------------------------------------------
+# SWEAT440 Paid Ads Dashboard -- Campaign config
+# ---------------------------------------------------------------------
+# Como funciona:
+#   - 'active_campaign' apunta a UN bloque dentro de 'campaigns:'.
+#   - Puedes tener tantos bloques como campanas quieras trackear.
+#   - Para cambiar de campana: edita 'active_campaign' y relanza
+#     el ETL (python backend/meta_to_sheets.py). No se toca codigo.
+# ---------------------------------------------------------------------
+
+active_campaign: win_a_free_month_apr2026
+
+# 'campaigns_to_track' son TODAS las campanas que el ETL va a extraer en
+# cada run, para que aparezcan en el dropdown del dashboard.
+# Anade o quita nombres aqui segun necesites.
+campaigns_to_track:
+  - win_a_free_month_apr2026
+  - free_class_open_studios_2026
+
+
+campaigns:
+
+  # =================================================================
+  # Win a Free Month - Abril 2026  (completada)
+  # =================================================================
+  win_a_free_month_apr2026:
+    display_name: "Win a Free Month"
+    period_label: "Apr 1-14, 2026"
+    date_start:   "2026-04-01"
+    date_end:     "2026-04-14"
+    ad_account_id: "act_1553887681409034"   # SWEAT440 - Corporate Studios
+    campaign_id:   "120243785513570249"     # 2026 - Open Studios - Win a Free Month
+
+    audience_tokens:
+      DINKS: ["DINKS"]
+      POC:   ["POC"]
+      PYC:   ["PYC"]
+      SI:    ["SI"]
+      SAHP:  ["SAHP"]
+
+    # Pilares de producto (los buscamos como tokens en el nombre del ad)
+    pillar_tokens:
+      DR:    ["DR"]
+      DF:    ["DF"]
+      "P&R": ["P&R", "P+R"]
+      PS:    ["PS"]
+      SSB:   ["SSB"]
+      HYROX: ["HYROX"]
+
+    studios:
+      - { code: "FL-001", name: "Miami Beach",                  state: "FL", match: "Miami Beach" }
+      - { code: "FL-002", name: "Miami Brickell",               state: "FL", match: "Brickell" }
+      - { code: "FL-003", name: "Coral Gables",                 state: "FL", match: "Coral Gables" }
+      - { code: "FL-004", name: "Doral",                        state: "FL", match: "Doral" }
+      - { code: "FL-005", name: "Miami Lakes",                  state: "FL", match: "Miami Lakes" }
+      - { code: "FL-006", name: "Deerfield Beach",              state: "FL", match: "Deerfield" }
+      - { code: "FL-007", name: "Miami Upper East Side",        state: "FL", match: "Upper East" }
+      - { code: "FL-008", name: "Coral Springs",                state: "FL", match: "Coral Springs" }
+      - { code: "FL-009", name: "South Miami",                  state: "FL", match: "South Miami" }
+      - { code: "FL-010", name: "Midtown Miami",                state: "FL", match: "Midtown" }
+      - { code: "FL-011", name: "Coconut Grove",                state: "FL", match: "Coconut Grove" }
+      - { code: "FL-012", name: "Miramar",                      state: "FL", match: "Miramar" }
+      - { code: "FL-013", name: "Fort Lauderdale - Las Olas",   state: "FL", match: "Las Olas" }
+      - { code: "FL-014", name: "Pembroke Pines",               state: "FL", match: "Pembroke" }
+      - { code: "FL-015", name: "West Palm Beach",              state: "FL", match: "West Palm" }
+      - { code: "FL-016", name: "Boca Raton",                   state: "FL", match: "Boca" }
+      - { code: "NC-001", name: "Charlotte - NoDa",             state: "NC", match: "Charlotte" }
+      - { code: "NJ-001", name: "Toms River",                   state: "NJ", match: "Toms River" }
+      - { code: "NJ-002", name: "Ocean Township",               state: "NJ", match: "Ocean Township" }
+      - { code: "NJ-003", name: "Wall Township",                state: "NJ", match: "Wall" }
+      - { code: "NY-002", name: "NYC Chelsea",                  state: "NY", match: "Chelsea" }
+      - { code: "NY-003", name: "NYC Park Slope",               state: "NY", match: "Park Slope" }
+      - { code: "NY-004", name: "Eastchester",                  state: "NY", match: "Eastchester" }
+      - { code: "TX-001", name: "Austin - Zilker",              state: "TX", match: "Zilker" }
+      - { code: "TX-002", name: "Austin - Highland",            state: "TX", match: "Highland" }
+
+
+  # =================================================================
+  # Free Class - Open Studios  (en curso, ejemplo para copiar)
+  # =================================================================
+  # Para activarla, cambia arriba 'active_campaign' a este nombre
+  # y relanza el ETL. La hoja de Google se reescribe con los nuevos
+  # datos, y el dashboard se ajusta automaticamente.
+  free_class_open_studios_2026:
+    display_name: "Free Class - Open Studios"
+    period_label: "Apr 15, 2026 onwards"
+    date_start:   "2026-04-15"
+    date_end:     "2026-12-31"
+    ad_account_id: "act_1553887681409034"   # misma cuenta corporate
+    campaign_id:   "120243103413640249"     # 2026 - Open Studios - Free Class
+
+    audience_tokens:
+      DINKS: ["DINKS"]
+      POC:   ["POC"]
+      PYC:   ["PYC"]
+      SI:    ["SI"]
+      SAHP:  ["SAHP"]
+
+    pillar_tokens:
+      DR:    ["DR"]
+      DF:    ["DF"]
+      "P&R": ["P&R", "P+R"]
+      PS:    ["PS"]
+      SSB:   ["SSB"]
+      HYROX: ["HYROX"]
+
+    # Reutilizamos el mismo mapeo de studios. Si tu proxima campana es
+    # solo para algunos studios, elimina los que no apliquen y el
+    # dashboard mostrara solo los relevantes.
+    studios:
+      - { code: "FL-001", name: "Miami Beach",                  state: "FL", match: "Miami Beach" }
+      - { code: "FL-002", name: "Miami Brickell",               state: "FL", match: "Brickell" }
+      - { code: "FL-003", name: "Coral Gables",                 state: "FL", match: "Coral Gables" }
+      - { code: "FL-004", name: "Doral",                        state: "FL", match: "Doral" }
+      - { code: "FL-005", name: "Miami Lakes",                  state: "FL", match: "Miami Lakes" }
+      - { code: "FL-006", name: "Deerfield Beach",              state: "FL", match: "Deerfield" }
+      - { code: "FL-007", name: "Miami Upper East Side",        state: "FL", match: "Upper East" }
+      - { code: "FL-008", name: "Coral Springs",                state: "FL", match: "Coral Springs" }
+      - { code: "FL-009", name: "South Miami",                  state: "FL", match: "South Miami" }
+      - { code: "FL-010", name: "Midtown Miami",                state: "FL", match: "Midtown" }
+      - { code: "FL-011", name: "Coconut Grove",                state: "FL", match: "Coconut Grove" }
+      - { code: "FL-012", name: "Miramar",                      state: "FL", match: "Miramar" }
+      - { code: "FL-013", name: "Fort Lauderdale - Las Olas",   state: "FL", match: "Las Olas" }
+      - { code: "FL-014", name: "Pembroke Pines",               state: "FL", match: "Pembroke" }
+      - { code: "FL-015", name: "West Palm Beach",              state: "FL", match: "West Palm" }
+      - { code: "FL-016", name: "Boca Raton",                   state: "FL", match: "Boca" }
+      - { code: "NC-001", name: "Charlotte - NoDa",             state: "NC", match: "Charlotte" }
+      - { code: "NJ-001", name: "Toms River",                   state: "NJ", match: "Toms River" }
+      - { code: "NJ-002", name: "Ocean Township",               state: "NJ", match: "Ocean Township" }
+      - { code: "NJ-003", name: "Wall Township",                state: "NJ", match: "Wall" }
+      - { code: "NY-002", name: "NYC Chelsea",                  state: "NY", match: "Chelsea" }
+      - { code: "NY-003", name: "NYC Park Slope",               state: "NY", match: "Park Slope" }
+      - { code: "NY-004", name: "Eastchester",                  state: "NY", match: "Eastchester" }
+      - { code: "TX-001", name: "Austin - Zilker",              state: "TX", match: "Zilker" }
+      - { code: "TX-002", name: "Austin - Highland",            state: "TX", match: "Highland" }
+
+
+# ---------------------------------------------------------------------
+# Para anadir una campana nueva en el futuro:
+#   1. Copia uno de los bloques de arriba y renombralo (ej. black_friday_2026:).
+#   2. Ajusta display_name, period_label, date_start, date_end.
+#   3. Ajusta ad_account_id y campaign_id con los IDs de Meta.
+#   4. (Opcional) Ajusta la lista de studios si aplica.
+#   5. Arriba pon 'active_campaign: black_friday_2026' y corre el ETL.
+# ---------------------------------------------------------------------

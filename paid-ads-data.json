@@ -1,0 +1,6104 @@
+{
+  "generated_at": "2026-04-22T19:51:00.457657+00:00",
+  "active_campaign": "win_a_free_month_apr2026",
+  "campaigns_index": [
+    {
+      "key": "win_a_free_month_apr2026",
+      "display_name": "Win a Free Month",
+      "period_label": "Apr 1-14, 2026",
+      "date_start": "2026-04-01",
+      "date_end": "2026-04-14",
+      "leads": 258,
+      "spend": 11187.62,
+      "is_default": true
+    },
+    {
+      "key": "free_class_open_studios_2026",
+      "display_name": "Free Class - Open Studios",
+      "period_label": "Apr 15, 2026 onwards",
+      "date_start": "2026-04-15",
+      "date_end": "2026-12-31",
+      "leads": 94,
+      "spend": 8748.67,
+      "is_default": false
+    }
+  ],
+  "campaigns": {
+    "win_a_free_month_apr2026": {
+      "display_name": "Win a Free Month",
+      "period_label": "Apr 1-14, 2026",
+      "date_start": "2026-04-01",
+      "date_end": "2026-04-14",
+      "totals": {
+        "impressions": 351512,
+        "clicks": 3989,
+        "reach": 165617,
+        "leads": 258,
+        "purchases": 14,
+        "trials": 74,
+        "spend": 11187.62,
+        "ctr": 1.13,
+        "cpm": 31.83,
+        "cpl": 43.36
+      },
+      "studios": [
+        {
+          "code": "FL-001",
+          "name": "Miami Beach",
+          "state": "FL",
+          "impressions": 12764,
+          "clicks": 146,
+          "spend": 467.32,
+          "reach": 5791,
+          "ctr": 1.14,
+          "cpm": 36.61,
+          "leads": 14,
+          "cpl": 33.38,
+          "purchases": 0,
+          "trials": 3
+        },
+        {
+          "code": "FL-002",
+          "name": "Miami Brickell",
+          "state": "FL",
+          "impressions": 14743,
+          "clicks": 166,
+          "spend": 515.8,
+          "reach": 7358,
+          "ctr": 1.13,
+          "cpm": 34.99,
+          "leads": 7,
+          "cpl": 73.69,
+          "purchases": 0,
+          "trials": 6
+        },
+        {
+          "code": "FL-003",
+          "name": "Coral Gables",
+          "state": "FL",
+          "impressions": 8838,
+          "clicks": 111,
+          "spend": 375.18,
+          "reach": 4581,
+          "ctr": 1.26,
+          "cpm": 42.45,
+          "leads": 8,
+          "cpl": 46.9,
+          "purchases": 0,
+          "trials": 2
+        },
+        {
+          "code": "FL-004",
+          "name": "Doral",
+          "state": "FL",
+          "impressions": 12586,
+          "clicks": 174,
+          "spend": 382.71,
+          "reach": 6472,
+          "ctr": 1.38,
+          "cpm": 30.41,
+          "leads": 15,
+          "cpl": 25.51,
+          "purchases": 1,
+          "trials": 4
+        },
+        {
+          "code": "FL-005",
+          "name": "Miami Lakes",
+          "state": "FL",
+          "impressions": 14938,
+          "clicks": 185,
+          "spend": 379.13,
+          "reach": 6506,
+          "ctr": 1.24,
+          "cpm": 25.38,
+          "leads": 14,
+          "cpl": 27.08,
+          "purchases": 0,
+          "trials": 3
+        },
+        {
+          "code": "FL-006",
+          "name": "Deerfield Beach",
+          "state": "FL",
+          "impressions": 7295,
+          "clicks": 100,
+          "spend": 240.96,
+          "reach": 3540,
+          "ctr": 1.37,
+          "cpm": 33.03,
+          "leads": 7,
+          "cpl": 34.42,
+          "purchases": 0,
+          "trials": 1
+        },
+        {
+          "code": "FL-007",
+          "name": "Miami Upper East Side",
+          "state": "FL",
+          "impressions": 7988,
+          "clicks": 95,
+          "spend": 333.44,
+          "reach": 4149,
+          "ctr": 1.19,
+          "cpm": 41.74,
+          "leads": 1,
+          "cpl": 333.44,
+          "purchases": 0,
+          "trials": 1
+        },
+        {
+          "code": "FL-008",
+          "name": "Coral Springs",
+          "state": "FL",
+          "impressions": 8629,
+          "clicks": 139,
+          "spend": 244.15,
+          "reach": 4968,
+          "ctr": 1.61,
+          "cpm": 28.29,
+          "leads": 14,
+          "cpl": 17.44,
+          "purchases": 0,
+          "trials": 1
+        },
+        {
+          "code": "FL-009",
+          "name": "South Miami",
+          "state": "FL",
+          "impressions": 15319,
+          "clicks": 195,
+          "spend": 543.56,
+          "reach": 7043,
+          "ctr": 1.27,
+          "cpm": 35.48,
+          "leads": 12,
+          "cpl": 45.3,
+          "purchases": 0,
+          "trials": 2
+        },
+        {
+          "code": "FL-010",
+          "name": "Midtown Miami",
+          "state": "FL",
+          "impressions": 12119,
+          "clicks": 132,
+          "spend": 378.99,
+          "reach": 5507,
+          "ctr": 1.09,
+          "cpm": 31.27,
+          "leads": 6,
+          "cpl": 63.16,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "code": "FL-011",
+          "name": "Coconut Grove",
+          "state": "FL",
+          "impressions": 7658,
+          "clicks": 117,
+          "spend": 320.31,
+          "reach": 3202,
+          "ctr": 1.53,
+          "cpm": 41.83,
+          "leads": 7,
+          "cpl": 45.76,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "code": "FL-012",
+          "name": "Miramar",
+          "state": "FL",
+          "impressions": 15631,
+          "clicks": 185,
+          "spend": 448.04,
+          "reach": 6883,
+          "ctr": 1.18,
+          "cpm": 28.66,
+          "leads": 17,
+          "cpl": 26.36,
+          "purchases": 2,
+          "trials": 5
+        },
+        {
+          "code": "FL-013",
+          "name": "Fort Lauderdale - Las Olas",
+          "state": "FL",
+          "impressions": 9513,
+          "clicks": 127,
+          "spend": 347.32,
+          "reach": 4667,
+          "ctr": 1.34,
+          "cpm": 36.51,
+          "leads": 10,
+          "cpl": 34.73,
+          "purchases": 3,
+          "trials": 4
+        },
+        {
+          "code": "FL-014",
+          "name": "Pembroke Pines",
+          "state": "FL",
+          "impressions": 12773,
+          "clicks": 186,
+          "spend": 452.09,
+          "reach": 7258,
+          "ctr": 1.46,
+          "cpm": 35.39,
+          "leads": 13,
+          "cpl": 34.78,
+          "purchases": 1,
+          "trials": 1
+        },
+        {
+          "code": "FL-015",
+          "name": "West Palm Beach",
+          "state": "FL",
+          "impressions": 16392,
+          "clicks": 233,
+          "spend": 493.71,
+          "reach": 7182,
+          "ctr": 1.42,
+          "cpm": 30.12,
+          "leads": 18,
+          "cpl": 27.43,
+          "purchases": 1,
+          "trials": 2
+        },
+        {
+          "code": "FL-016",
+          "name": "Boca Raton",
+          "state": "FL",
+          "impressions": 13980,
+          "clicks": 189,
+          "spend": 506.74,
+          "reach": 6538,
+          "ctr": 1.35,
+          "cpm": 36.25,
+          "leads": 17,
+          "cpl": 29.81,
+          "purchases": 0,
+          "trials": 2
+        },
+        {
+          "code": "NC-001",
+          "name": "Charlotte - NoDa",
+          "state": "NC",
+          "impressions": 16652,
+          "clicks": 106,
+          "spend": 474.34,
+          "reach": 8556,
+          "ctr": 0.64,
+          "cpm": 28.49,
+          "leads": 3,
+          "cpl": 158.11,
+          "purchases": 0,
+          "trials": 1
+        },
+        {
+          "code": "NJ-001",
+          "name": "Toms River",
+          "state": "NJ",
+          "impressions": 21647,
+          "clicks": 221,
+          "spend": 469.49,
+          "reach": 8196,
+          "ctr": 1.02,
+          "cpm": 21.69,
+          "leads": 8,
+          "cpl": 58.69,
+          "purchases": 0,
+          "trials": 3
+        },
+        {
+          "code": "NJ-002",
+          "name": "Ocean Township",
+          "state": "NJ",
+          "impressions": 21119,
+          "clicks": 183,
+          "spend": 583.87,
+          "reach": 9425,
+          "ctr": 0.87,
+          "cpm": 27.65,
+          "leads": 11,
+          "cpl": 53.08,
+          "purchases": 3,
+          "trials": 2
+        },
+        {
+          "code": "NJ-003",
+          "name": "Wall Township",
+          "state": "NJ",
+          "impressions": 16873,
+          "clicks": 117,
+          "spend": 491.83,
+          "reach": 7466,
+          "ctr": 0.69,
+          "cpm": 29.15,
+          "leads": 6,
+          "cpl": 81.97,
+          "purchases": 0,
+          "trials": 6
+        },
+        {
+          "code": "NY-002",
+          "name": "NYC Chelsea",
+          "state": "NY",
+          "impressions": 16574,
+          "clicks": 219,
+          "spend": 563.91,
+          "reach": 7806,
+          "ctr": 1.32,
+          "cpm": 34.02,
+          "leads": 14,
+          "cpl": 40.28,
+          "purchases": 0,
+          "trials": 3
+        },
+        {
+          "code": "NY-003",
+          "name": "NYC Park Slope",
+          "state": "NY",
+          "impressions": 15106,
+          "clicks": 179,
+          "spend": 550.37,
+          "reach": 7811,
+          "ctr": 1.18,
+          "cpm": 36.43,
+          "leads": 11,
+          "cpl": 50.03,
+          "purchases": 0,
+          "trials": 3
+        },
+        {
+          "code": "NY-004",
+          "name": "Eastchester",
+          "state": "NY",
+          "impressions": 17020,
+          "clicks": 219,
+          "spend": 658.99,
+          "reach": 7881,
+          "ctr": 1.29,
+          "cpm": 38.72,
+          "leads": 8,
+          "cpl": 82.37,
+          "purchases": 2,
+          "trials": 6
+        },
+        {
+          "code": "TX-001",
+          "name": "Austin - Zilker",
+          "state": "TX",
+          "impressions": 17553,
+          "clicks": 135,
+          "spend": 481.4,
+          "reach": 9104,
+          "ctr": 0.77,
+          "cpm": 27.43,
+          "leads": 11,
+          "cpl": 43.76,
+          "purchases": 1,
+          "trials": 6
+        },
+        {
+          "code": "TX-002",
+          "name": "Austin - Highland",
+          "state": "TX",
+          "impressions": 17802,
+          "clicks": 130,
+          "spend": 483.97,
+          "reach": 7727,
+          "ctr": 0.73,
+          "cpm": 27.19,
+          "leads": 6,
+          "cpl": 80.66,
+          "purchases": 0,
+          "trials": 7
+        }
+      ],
+      "audiences": [
+        {
+          "studio_code": "FL-001",
+          "audience": "POC",
+          "spend": 39.1,
+          "impressions": 1225,
+          "leads": 0,
+          "ads": [
+            "26-FL-001-02 - POC_WinMonth_Consistency",
+            "26-FL-001-02 - POC_WinMonth_Forever",
+            "26-FL-001-02 - POC_WinMonth_Burning",
+            "26-FL-001-02 - POC_WinMonth_Efficient",
+            "26-FL-001-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "FL-001",
+          "audience": "PYC",
+          "spend": 55.47,
+          "impressions": 1682,
+          "leads": 5,
+          "ads": [
+            "26-FL-001-02 - PYC_WinMonth_Efficient",
+            "26-FL-001-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "FL-001",
+          "audience": "DINKS",
+          "spend": 372.75,
+          "impressions": 9857,
+          "leads": 9,
+          "ads": [
+            "26-FL-001-02 - DINKS_WinMonth_Smarter",
+            "26-FL-001-02 - DINKS_WinMonth_VideoVoice",
+            "26-FL-001-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "FL-002",
+          "audience": "POC",
+          "spend": 81.97,
+          "impressions": 2160,
+          "leads": 0,
+          "ads": [
+            "26-FL-002-02 - POC_WinMonth_Forever",
+            "26-FL-002-02 - POC_WinMonth_Burning",
+            "26-FL-002-02 - POC_WinMonth_Efficient",
+            "26-FL-002-02 - POC_WinMonth_BurningM",
+            "26-FL-002-02 - POC_WinMonth_Consistency"
+          ]
+        },
+        {
+          "studio_code": "FL-002",
+          "audience": "PYC",
+          "spend": 247.31,
+          "impressions": 7665,
+          "leads": 4,
+          "ads": [
+            "26-FL-002-02 - PYC_WinMonth_Efficient",
+            "26-FL-002-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "FL-002",
+          "audience": "DINKS",
+          "spend": 186.52,
+          "impressions": 4918,
+          "leads": 3,
+          "ads": [
+            "26-FL-002-02 - DINKS_WinMonth_Smarter",
+            "26-FL-002-02 - DINKS_WinMonth_VideoVoice",
+            "26-FL-002-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "FL-003",
+          "audience": "POC",
+          "spend": 50.62,
+          "impressions": 1287,
+          "leads": 2,
+          "ads": [
+            "26-FL-003-02 - POC_WinMonth_Consistency",
+            "26-FL-003-02 - POC_WinMonth_Forever",
+            "26-FL-003-02 - POC_WinMonth_Burning",
+            "26-FL-003-02 - POC_WinMonth_Efficient",
+            "26-FL-003-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "FL-003",
+          "audience": "PYC",
+          "spend": 21.22,
+          "impressions": 622,
+          "leads": 0,
+          "ads": [
+            "26-FL-003-02 - PYC_WinMonth_Efficient",
+            "26-FL-003-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "FL-003",
+          "audience": "DINKS",
+          "spend": 303.34,
+          "impressions": 6929,
+          "leads": 6,
+          "ads": [
+            "26-FL-003-02 - DINKS_WinMonth_Smarter",
+            "26-FL-003-02 - DINKS_WinMonth_VideoVoice",
+            "26-FL-003-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "FL-004",
+          "audience": "POC",
+          "spend": 26.78,
+          "impressions": 785,
+          "leads": 1,
+          "ads": [
+            "26-FL-004-02 - POC_WinMonth_Consistency",
+            "26-FL-004-02 - POC_WinMonth_Forever",
+            "26-FL-004-02 - POC_WinMonth_Burning",
+            "26-FL-004-02 - POC_WinMonth_Efficient",
+            "26-FL-004-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "FL-004",
+          "audience": "PYC",
+          "spend": 39.97,
+          "impressions": 1468,
+          "leads": 1,
+          "ads": [
+            "26-FL-004-02 - PYC_WinMonth_Efficient",
+            "26-FL-004-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "FL-004",
+          "audience": "DINKS",
+          "spend": 315.96,
+          "impressions": 10333,
+          "leads": 13,
+          "ads": [
+            "26-FL-004-02 - DINKS_WinMonth_Smarter",
+            "26-FL-004-02 - DINKS_WinMonth_VideoVoice",
+            "26-FL-004-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "FL-005",
+          "audience": "POC",
+          "spend": 46.43,
+          "impressions": 1623,
+          "leads": 0,
+          "ads": [
+            "26-FL-005-02 - POC_WinMonth_Consistency",
+            "26-FL-005-02 - POC_WinMonth_Forever",
+            "26-FL-005-02 - POC_WinMonth_Burning",
+            "26-FL-005-02 - POC_WinMonth_Efficient",
+            "26-FL-005-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "FL-005",
+          "audience": "PYC",
+          "spend": 9.64,
+          "impressions": 425,
+          "leads": 0,
+          "ads": [
+            "26-FL-005-02 - PYC_WinMonth_Efficient",
+            "26-FL-005-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "FL-005",
+          "audience": "DINKS",
+          "spend": 323.06,
+          "impressions": 12890,
+          "leads": 14,
+          "ads": [
+            "26-FL-005-02 - DINKS_WinMonth_Smarter",
+            "26-FL-005-02 - DINKS_WinMonth_VideoVoice",
+            "26-FL-005-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "FL-006",
+          "audience": "POC",
+          "spend": 55.2,
+          "impressions": 1568,
+          "leads": 0,
+          "ads": [
+            "26-FL-006-02 - POC_WinMonth_Consistency",
+            "26-FL-006-02 - POC_WinMonth_Forever",
+            "26-FL-006-02 - POC_WinMonth_Burning",
+            "26-FL-006-02 - POC_WinMonth_Efficient",
+            "26-FL-006-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "FL-006",
+          "audience": "PYC",
+          "spend": 8.06,
+          "impressions": 253,
+          "leads": 0,
+          "ads": [
+            "26-FL-006-02 - PYC_WinMonth_Efficient",
+            "26-FL-006-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "FL-006",
+          "audience": "DINKS",
+          "spend": 177.7,
+          "impressions": 5474,
+          "leads": 7,
+          "ads": [
+            "26-FL-006-02 - DINKS_WinMonth_Smarter",
+            "26-FL-006-02 - DINKS_WinMonth_VideoVoice",
+            "26-FL-006-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "FL-007",
+          "audience": "POC",
+          "spend": 116.87,
+          "impressions": 3454,
+          "leads": 1,
+          "ads": [
+            "26-FL-007-02 - POC_WinMonth_Consistency",
+            "26-FL-007-02 - POC_WinMonth_Forever",
+            "26-FL-007-02 - POC_WinMonth_Burning",
+            "26-FL-007-02 - POC_WinMonth_Efficient",
+            "26-FL-007-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "FL-007",
+          "audience": "PYC",
+          "spend": 4.77,
+          "impressions": 170,
+          "leads": 0,
+          "ads": [
+            "26-FL-007-02 - PYC_WinMonth_Efficient",
+            "26-FL-007-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "FL-007",
+          "audience": "DINKS",
+          "spend": 211.8,
+          "impressions": 4364,
+          "leads": 0,
+          "ads": [
+            "26-FL-007-02 - DINKS_WinMonth_Smarter",
+            "26-FL-007-02 - DINKS_WinMonth_VideoVoice",
+            "26-FL-007-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "FL-008",
+          "audience": "POC",
+          "spend": 21.91,
+          "impressions": 737,
+          "leads": 1,
+          "ads": [
+            "26-FL-008-02 - POC_WinMonth_Consistency",
+            "26-FL-008-02 - POC_WinMonth_Forever",
+            "26-FL-008-02 - POC_WinMonth_Burning",
+            "26-FL-008-02 - POC_WinMonth_Efficient",
+            "26-FL-008-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "FL-008",
+          "audience": "PYC",
+          "spend": 4.19,
+          "impressions": 180,
+          "leads": 1,
+          "ads": [
+            "26-FL-008-02 - PYC_WinMonth_Efficient",
+            "26-FL-008-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "FL-008",
+          "audience": "DINKS",
+          "spend": 218.05,
+          "impressions": 7712,
+          "leads": 12,
+          "ads": [
+            "26-FL-008-02 - DINKS_WinMonth_Smarter",
+            "26-FL-008-02 - DINKS_WinMonth_VideoVoice",
+            "26-FL-008-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "FL-009",
+          "audience": "POC",
+          "spend": 62.25,
+          "impressions": 2089,
+          "leads": 0,
+          "ads": [
+            "26-FL-009-02 - POC_WinMonth_Consistency",
+            "26-FL-009-02 - POC_WinMonth_Forever",
+            "26-FL-009-02 - POC_WinMonth_Burning",
+            "26-FL-009-02 - POC_WinMonth_Efficient",
+            "26-FL-009-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "FL-009",
+          "audience": "PYC",
+          "spend": 36.22,
+          "impressions": 1494,
+          "leads": 0,
+          "ads": [
+            "26-FL-009-02 - PYC_WinMonth_Efficient",
+            "26-FL-009-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "FL-009",
+          "audience": "DINKS",
+          "spend": 445.09,
+          "impressions": 11736,
+          "leads": 12,
+          "ads": [
+            "26-FL-009-02 - DINKS_WinMonth_Smarter",
+            "26-FL-009-02 - DINKS_WinMonth_VideoVoice",
+            "26-FL-009-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "FL-010",
+          "audience": "POC",
+          "spend": 71.37,
+          "impressions": 3140,
+          "leads": 2,
+          "ads": [
+            "26-FL-010-02 - POC_WinMonth_Consistency",
+            "26-FL-010-02 - POC_WinMonth_Forever",
+            "26-FL-010-02 - POC_WinMonth_Burning",
+            "26-FL-010-02 - POC_WinMonth_Efficient",
+            "26-FL-010-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "FL-010",
+          "audience": "PYC",
+          "spend": 29.51,
+          "impressions": 1097,
+          "leads": 0,
+          "ads": [
+            "26-FL-010-02 - PYC_WinMonth_Efficient",
+            "26-FL-010-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "FL-010",
+          "audience": "DINKS",
+          "spend": 278.11,
+          "impressions": 7882,
+          "leads": 4,
+          "ads": [
+            "26-FL-010-02 - DINKS_WinMonth_Smarter",
+            "26-FL-010-02 - DINKS_WinMonth_VideoVoice",
+            "26-FL-010-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "FL-011",
+          "audience": "POC",
+          "spend": 39.66,
+          "impressions": 1023,
+          "leads": 0,
+          "ads": [
+            "26-FL-011-02 - POC_WinMonth_Consistency",
+            "26-FL-011-02 - POC_WinMonth_Forever",
+            "26-FL-011-02 - POC_WinMonth_Burning",
+            "26-FL-011-02 - POC_WinMonth_Efficient",
+            "26-FL-011-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "FL-011",
+          "audience": "PYC",
+          "spend": 4.39,
+          "impressions": 154,
+          "leads": 0,
+          "ads": [
+            "26-FL-011-02 - PYC_WinMonth_Efficient",
+            "26-FL-011-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "FL-011",
+          "audience": "DINKS",
+          "spend": 276.26,
+          "impressions": 6481,
+          "leads": 7,
+          "ads": [
+            "26-FL-011-02 - DINKS_WinMonth_Smarter",
+            "26-FL-011-02 - DINKS_WinMonth_VideoVoice",
+            "26-FL-011-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "FL-012",
+          "audience": "POC",
+          "spend": 40.36,
+          "impressions": 1180,
+          "leads": 3,
+          "ads": [
+            "26-FL-012-02 - POC_WinMonth_Consistency",
+            "26-FL-012-02 - POC_WinMonth_Forever",
+            "26-FL-012-02 - POC_WinMonth_Burning",
+            "26-FL-012-02 - POC_WinMonth_Efficient",
+            "26-FL-012-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "FL-012",
+          "audience": "PYC",
+          "spend": 8.69,
+          "impressions": 285,
+          "leads": 1,
+          "ads": [
+            "26-FL-012-02 - PYC_WinMonth_Efficient",
+            "26-FL-012-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "FL-012",
+          "audience": "DINKS",
+          "spend": 398.99,
+          "impressions": 14166,
+          "leads": 13,
+          "ads": [
+            "26-FL-012-02 - DINKS_WinMonth_Smarter",
+            "26-FL-012-02 - DINKS_WinMonth_VideoVoice",
+            "26-FL-012-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "FL-013",
+          "audience": "POC",
+          "spend": 22.97,
+          "impressions": 660,
+          "leads": 0,
+          "ads": [
+            "26-FL-013-02 - POC_WinMonth_Consistency",
+            "26-FL-013-02 - POC_WinMonth_Forever",
+            "26-FL-013-02 - POC_WinMonth_Burning",
+            "26-FL-013-02 - POC_WinMonth_Efficient",
+            "26-FL-013-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "FL-013",
+          "audience": "PYC",
+          "spend": 21.48,
+          "impressions": 495,
+          "leads": 1,
+          "ads": [
+            "26-FL-013-02 - PYC_WinMonth_Efficient",
+            "26-FL-013-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "FL-013",
+          "audience": "DINKS",
+          "spend": 302.87,
+          "impressions": 8358,
+          "leads": 9,
+          "ads": [
+            "26-FL-013-02 - DINKS_WinMonth_Smarter",
+            "26-FL-013-02 - DINKS_WinMonth_VideoVoice",
+            "26-FL-013-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "FL-014",
+          "audience": "POC",
+          "spend": 58.8,
+          "impressions": 1893,
+          "leads": 0,
+          "ads": [
+            "26-FL-014-02 - POC_WinMonth_Consistency",
+            "26-FL-014-02 - POC_WinMonth_Forever",
+            "26-FL-014-02 - POC_WinMonth_Burning",
+            "26-FL-014-02 - POC_WinMonth_Efficient",
+            "26-FL-014-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "FL-014",
+          "audience": "PYC",
+          "spend": 16.76,
+          "impressions": 591,
+          "leads": 1,
+          "ads": [
+            "26-FL-014-02 - PYC_WinMonth_Efficient",
+            "26-FL-014-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "FL-014",
+          "audience": "DINKS",
+          "spend": 376.53,
+          "impressions": 10289,
+          "leads": 12,
+          "ads": [
+            "26-FL-014-02 - DINKS_WinMonth_Smarter",
+            "26-FL-014-02 - DINKS_WinMonth_VideoVoice",
+            "26-FL-014-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "FL-015",
+          "audience": "POC",
+          "spend": 40.52,
+          "impressions": 1313,
+          "leads": 1,
+          "ads": [
+            "26-FL-015-02 - POC_WinMonth_Consistency",
+            "26-FL-015-02 - POC_WinMonth_Forever",
+            "26-FL-015-02 - POC_WinMonth_Burning",
+            "26-FL-015-02 - POC_WinMonth_Efficient",
+            "26-FL-015-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "FL-015",
+          "audience": "PYC",
+          "spend": 31.25,
+          "impressions": 1028,
+          "leads": 1,
+          "ads": [
+            "26-FL-015-02 - PYC_WinMonth_Efficient",
+            "26-FL-015-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "FL-015",
+          "audience": "DINKS",
+          "spend": 421.94,
+          "impressions": 14051,
+          "leads": 16,
+          "ads": [
+            "26-FL-015-02 - DINKS_WinMonth_Smarter",
+            "26-FL-015-02 - DINKS_WinMonth_VideoVoice",
+            "26-FL-015-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "FL-016",
+          "audience": "POC",
+          "spend": 53.22,
+          "impressions": 1393,
+          "leads": 0,
+          "ads": [
+            "26-FL-016-02 - POC_WinMonth_Consistency",
+            "26-FL-016-02 - POC_WinMonth_Forever",
+            "26-FL-016-02 - POC_WinMonth_Burning",
+            "26-FL-016-02 - POC_WinMonth_Efficient",
+            "26-FL-016-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "FL-016",
+          "audience": "PYC",
+          "spend": 13.35,
+          "impressions": 312,
+          "leads": 0,
+          "ads": [
+            "26-FL-016-02 - PYC_WinMonth_Efficient",
+            "26-FL-016-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "FL-016",
+          "audience": "DINKS",
+          "spend": 440.17,
+          "impressions": 12275,
+          "leads": 17,
+          "ads": [
+            "26-FL-016-02 - DINKS_WinMonth_Smarter",
+            "26-FL-016-02 - DINKS_WinMonth_VideoVoice",
+            "26-FL-016-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "NC-001",
+          "audience": "POC",
+          "spend": 191.59,
+          "impressions": 7408,
+          "leads": 1,
+          "ads": [
+            "26-NC-001-02 - POC_WinMonth_Consistency",
+            "26-NC-001-02 - POC_WinMonth_Forever",
+            "26-NC-001-02 - POC_WinMonth_Burning",
+            "26-NC-001-02 - POC_WinMonth_Efficient",
+            "26-NC-001-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "NC-001",
+          "audience": "PYC",
+          "spend": 43.92,
+          "impressions": 1762,
+          "leads": 0,
+          "ads": [
+            "26-NC-001-02 - PYC_WinMonth_Efficient",
+            "26-NC-001-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "NC-001",
+          "audience": "DINKS",
+          "spend": 238.83,
+          "impressions": 7482,
+          "leads": 2,
+          "ads": [
+            "26-NC-001-02 - DINKS_WinMonth_Smarter",
+            "26-NC-001-02 - DINKS_WinMonth_VideoVoice",
+            "26-NC-001-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "NJ-001",
+          "audience": "POC",
+          "spend": 67.24,
+          "impressions": 3224,
+          "leads": 2,
+          "ads": [
+            "26-NJ-001-02 - POC_WinMonth_Consistency",
+            "26-NJ-001-02 - POC_WinMonth_Forever",
+            "26-NJ-001-02 - POC_WinMonth_Burning",
+            "26-NJ-001-02 - POC_WinMonth_Efficient",
+            "26-NJ-001-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "NJ-001",
+          "audience": "PYC",
+          "spend": 12.56,
+          "impressions": 536,
+          "leads": 0,
+          "ads": [
+            "26-NJ-001-02 - PYC_WinMonth_Efficient",
+            "26-NJ-001-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "NJ-001",
+          "audience": "DINKS",
+          "spend": 389.69,
+          "impressions": 17887,
+          "leads": 6,
+          "ads": [
+            "26-NJ-001-02 - DINKS_WinMonth_Smarter",
+            "26-NJ-001-02 - DINKS_WinMonth_VideoVoice",
+            "26-NJ-001-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "NJ-002",
+          "audience": "POC",
+          "spend": 125.99,
+          "impressions": 5485,
+          "leads": 2,
+          "ads": [
+            "26-NJ-002-02 - POC_WinMonth_Consistency",
+            "26-NJ-002-02 - POC_WinMonth_Forever",
+            "26-NJ-002-02 - POC_WinMonth_Burning",
+            "26-NJ-002-02 - POC_WinMonth_Efficient",
+            "26-NJ-002-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "NJ-002",
+          "audience": "PYC",
+          "spend": 45.97,
+          "impressions": 1722,
+          "leads": 0,
+          "ads": [
+            "26-NJ-002-02 - PYC_WinMonth_Efficient",
+            "26-NJ-002-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "NJ-002",
+          "audience": "DINKS",
+          "spend": 411.91,
+          "impressions": 13912,
+          "leads": 9,
+          "ads": [
+            "26-NJ-002-02 - DINKS_WinMonth_Smarter",
+            "26-NJ-002-02 - DINKS_WinMonth_VideoVoice",
+            "26-NJ-002-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "NJ-003",
+          "audience": "POC",
+          "spend": 92.13,
+          "impressions": 3047,
+          "leads": 0,
+          "ads": [
+            "26-NJ-003-02 - POC_WinMonth_Consistency",
+            "26-NJ-003-02 - POC_WinMonth_Forever",
+            "26-NJ-003-02 - POC_WinMonth_Burning",
+            "26-NJ-003-02 - POC_WinMonth_Efficient",
+            "26-NJ-003-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "NJ-003",
+          "audience": "PYC",
+          "spend": 79.94,
+          "impressions": 3414,
+          "leads": 2,
+          "ads": [
+            "26-NJ-003-02 - PYC_WinMonth_Efficient",
+            "26-NJ-003-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "NJ-003",
+          "audience": "DINKS",
+          "spend": 319.76,
+          "impressions": 10412,
+          "leads": 4,
+          "ads": [
+            "26-NJ-003-02 - DINKS_WinMonth_Smarter",
+            "26-NJ-003-02 - DINKS_WinMonth_VideoVoice",
+            "26-NJ-003-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "NY-002",
+          "audience": "POC",
+          "spend": 63.31,
+          "impressions": 1923,
+          "leads": 3,
+          "ads": [
+            "26-NY-002-02 - POC_WinMonth_Consistency",
+            "26-NY-002-02 - POC_WinMonth_Forever",
+            "26-NY-002-02 - POC_WinMonth_Burning",
+            "26-NY-002-02 - POC_WinMonth_Efficient",
+            "26-NY-002-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "NY-002",
+          "audience": "PYC",
+          "spend": 47.67,
+          "impressions": 1410,
+          "leads": 1,
+          "ads": [
+            "26-NY-002-02 - PYC_WinMonth_Efficient",
+            "26-NY-002-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "NY-002",
+          "audience": "DINKS",
+          "spend": 452.93,
+          "impressions": 13241,
+          "leads": 10,
+          "ads": [
+            "26-NY-002-02 - DINKS_WinMonth_Smarter",
+            "26-NY-002-02 - DINKS_WinMonth_VideoVoice",
+            "26-NY-002-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "NY-003",
+          "audience": "POC",
+          "spend": 109.53,
+          "impressions": 3651,
+          "leads": 3,
+          "ads": [
+            "26-NY-003-02 - POC_WinMonth_Consistency",
+            "26-NY-003-02 - POC_WinMonth_Forever",
+            "26-NY-003-02 - POC_WinMonth_Burning",
+            "26-NY-003-02 - POC_WinMonth_Efficient",
+            "26-NY-003-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "NY-003",
+          "audience": "PYC",
+          "spend": 171.14,
+          "impressions": 5938,
+          "leads": 2,
+          "ads": [
+            "26-NY-003-02 - PYC_WinMonth_Efficient",
+            "26-NY-003-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "NY-003",
+          "audience": "DINKS",
+          "spend": 269.7,
+          "impressions": 5517,
+          "leads": 6,
+          "ads": [
+            "26-NY-003-02 - DINKS_WinMonth_Smarter",
+            "26-NY-003-02 - DINKS_WinMonth_VideoVoice",
+            "26-NY-003-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "NY-004",
+          "audience": "POC",
+          "spend": 102.21,
+          "impressions": 3005,
+          "leads": 0,
+          "ads": [
+            "26-NY-004-02 - POC_WinMonth_Consistency",
+            "26-NY-004-02 - POC_WinMonth_Forever",
+            "26-NY-004-02 - POC_WinMonth_Burning",
+            "26-NY-004-02 - POC_WinMonth_Efficient",
+            "26-NY-004-02 - POC_WinMonth_BurningM"
+          ]
+        },
+        {
+          "studio_code": "NY-004",
+          "audience": "PYC",
+          "spend": 61.15,
+          "impressions": 1915,
+          "leads": 1,
+          "ads": [
+            "26-NY-004-02 - PYC_WinMonth_Efficient",
+            "26-NY-004-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "NY-004",
+          "audience": "DINKS",
+          "spend": 495.63,
+          "impressions": 12100,
+          "leads": 7,
+          "ads": [
+            "26-NY-004-02 - DINKS_WinMonth_Smarter",
+            "26-NY-004-02 - DINKS_WinMonth_VideoVoice",
+            "26-NY-004-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "TX-001",
+          "audience": "PYC",
+          "spend": 169.05,
+          "impressions": 6794,
+          "leads": 5,
+          "ads": [
+            "26-TX-001-02 - PYC_WinMonth_Efficient",
+            "26-TX-001-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "TX-001",
+          "audience": "POC",
+          "spend": 61.5,
+          "impressions": 2319,
+          "leads": 0,
+          "ads": [
+            "26-TX-001-02 - POC_WinMonth_Forever",
+            "26-TX-001-02 - POC_WinMonth_Burning",
+            "26-TX-001-02 - POC_WinMonth_Efficient",
+            "26-TX-001-02 - POC_WinMonth_BurningM",
+            "26-TX-001-02 - POC_WinMonth_Consistency"
+          ]
+        },
+        {
+          "studio_code": "TX-001",
+          "audience": "DINKS",
+          "spend": 250.85,
+          "impressions": 8440,
+          "leads": 6,
+          "ads": [
+            "26-TX-001-02 - DINKS_WinMonth_Smarter",
+            "26-TX-001-02 - DINKS_WinMonth_VideoVoice",
+            "26-TX-001-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        },
+        {
+          "studio_code": "TX-002",
+          "audience": "PYC",
+          "spend": 102.15,
+          "impressions": 4181,
+          "leads": 3,
+          "ads": [
+            "26-TX-002-02 - PYC_WinMonth_Efficient",
+            "26-TX-002-02 - PYC_WinMonth_Fits"
+          ]
+        },
+        {
+          "studio_code": "TX-002",
+          "audience": "POC",
+          "spend": 88.5,
+          "impressions": 3461,
+          "leads": 1,
+          "ads": [
+            "26-TX-002-02 - POC_WinMonth_Forever",
+            "26-TX-002-02 - POC_WinMonth_Burning",
+            "26-TX-002-02 - POC_WinMonth_Efficient",
+            "26-TX-002-02 - POC_WinMonth_BurningM",
+            "26-TX-002-02 - POC_WinMonth_Consistency"
+          ]
+        },
+        {
+          "studio_code": "TX-002",
+          "audience": "DINKS",
+          "spend": 293.32,
+          "impressions": 10160,
+          "leads": 2,
+          "ads": [
+            "26-TX-002-02 - DINKS_WinMonth_Smarter",
+            "26-TX-002-02 - DINKS_WinMonth_VideoVoice",
+            "26-TX-002-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        }
+      ],
+      "pillars": [],
+      "concepts": [
+        {
+          "concept": "WinMonth",
+          "spend": 11187.62,
+          "impressions": 351512,
+          "leads": 258,
+          "cpl": 43.36,
+          "ads": [
+            "26-NJ-003-02 - POC_WinMonth_Consistency",
+            "26-NJ-003-02 - PYC_WinMonth_Efficient",
+            "26-NJ-003-02 - POC_WinMonth_Forever",
+            "26-NJ-003-02 - PYC_WinMonth_Fits",
+            "26-NJ-003-02 - DINKS_WinMonth_Smarter",
+            "26-NJ-003-02 - POC_WinMonth_Burning",
+            "26-NJ-003-02 - POC_WinMonth_Efficient",
+            "26-NJ-003-02 - POC_WinMonth_BurningM",
+            "26-NJ-003-02 - DINKS_WinMonth_VideoVoice",
+            "26-NJ-003-02 - DINKS_WinMonth_VideoMusic",
+            "26-NY-002-02 - POC_WinMonth_Consistency",
+            "26-NY-002-02 - PYC_WinMonth_Efficient",
+            "26-NY-002-02 - POC_WinMonth_Forever",
+            "26-NY-002-02 - PYC_WinMonth_Fits",
+            "26-NY-002-02 - DINKS_WinMonth_Smarter",
+            "26-NY-002-02 - POC_WinMonth_Burning",
+            "26-NY-002-02 - POC_WinMonth_Efficient",
+            "26-NY-002-02 - POC_WinMonth_BurningM",
+            "26-NY-002-02 - DINKS_WinMonth_VideoVoice",
+            "26-NY-002-02 - DINKS_WinMonth_VideoMusic"
+          ]
+        }
+      ],
+      "studio_pillars": [],
+      "studio_concepts": [
+        {
+          "studio_code": "FL-001",
+          "concept": "WinMonth",
+          "spend": 467.32,
+          "impressions": 12764,
+          "leads": 14,
+          "cpl": 33.38
+        },
+        {
+          "studio_code": "FL-002",
+          "concept": "WinMonth",
+          "spend": 515.8,
+          "impressions": 14743,
+          "leads": 7,
+          "cpl": 73.69
+        },
+        {
+          "studio_code": "FL-003",
+          "concept": "WinMonth",
+          "spend": 375.18,
+          "impressions": 8838,
+          "leads": 8,
+          "cpl": 46.9
+        },
+        {
+          "studio_code": "FL-004",
+          "concept": "WinMonth",
+          "spend": 382.71,
+          "impressions": 12586,
+          "leads": 15,
+          "cpl": 25.51
+        },
+        {
+          "studio_code": "FL-005",
+          "concept": "WinMonth",
+          "spend": 379.13,
+          "impressions": 14938,
+          "leads": 14,
+          "cpl": 27.08
+        },
+        {
+          "studio_code": "FL-006",
+          "concept": "WinMonth",
+          "spend": 240.96,
+          "impressions": 7295,
+          "leads": 7,
+          "cpl": 34.42
+        },
+        {
+          "studio_code": "FL-007",
+          "concept": "WinMonth",
+          "spend": 333.44,
+          "impressions": 7988,
+          "leads": 1,
+          "cpl": 333.44
+        },
+        {
+          "studio_code": "FL-008",
+          "concept": "WinMonth",
+          "spend": 244.15,
+          "impressions": 8629,
+          "leads": 14,
+          "cpl": 17.44
+        },
+        {
+          "studio_code": "FL-009",
+          "concept": "WinMonth",
+          "spend": 543.56,
+          "impressions": 15319,
+          "leads": 12,
+          "cpl": 45.3
+        },
+        {
+          "studio_code": "FL-010",
+          "concept": "WinMonth",
+          "spend": 378.99,
+          "impressions": 12119,
+          "leads": 6,
+          "cpl": 63.16
+        },
+        {
+          "studio_code": "FL-011",
+          "concept": "WinMonth",
+          "spend": 320.31,
+          "impressions": 7658,
+          "leads": 7,
+          "cpl": 45.76
+        },
+        {
+          "studio_code": "FL-012",
+          "concept": "WinMonth",
+          "spend": 448.04,
+          "impressions": 15631,
+          "leads": 17,
+          "cpl": 26.36
+        },
+        {
+          "studio_code": "FL-013",
+          "concept": "WinMonth",
+          "spend": 347.32,
+          "impressions": 9513,
+          "leads": 10,
+          "cpl": 34.73
+        },
+        {
+          "studio_code": "FL-014",
+          "concept": "WinMonth",
+          "spend": 452.09,
+          "impressions": 12773,
+          "leads": 13,
+          "cpl": 34.78
+        },
+        {
+          "studio_code": "FL-015",
+          "concept": "WinMonth",
+          "spend": 493.71,
+          "impressions": 16392,
+          "leads": 18,
+          "cpl": 27.43
+        },
+        {
+          "studio_code": "FL-016",
+          "concept": "WinMonth",
+          "spend": 506.74,
+          "impressions": 13980,
+          "leads": 17,
+          "cpl": 29.81
+        },
+        {
+          "studio_code": "NC-001",
+          "concept": "WinMonth",
+          "spend": 474.34,
+          "impressions": 16652,
+          "leads": 3,
+          "cpl": 158.11
+        },
+        {
+          "studio_code": "NJ-001",
+          "concept": "WinMonth",
+          "spend": 469.49,
+          "impressions": 21647,
+          "leads": 8,
+          "cpl": 58.69
+        },
+        {
+          "studio_code": "NJ-002",
+          "concept": "WinMonth",
+          "spend": 583.87,
+          "impressions": 21119,
+          "leads": 11,
+          "cpl": 53.08
+        },
+        {
+          "studio_code": "NJ-003",
+          "concept": "WinMonth",
+          "spend": 491.83,
+          "impressions": 16873,
+          "leads": 6,
+          "cpl": 81.97
+        },
+        {
+          "studio_code": "NY-002",
+          "concept": "WinMonth",
+          "spend": 563.91,
+          "impressions": 16574,
+          "leads": 14,
+          "cpl": 40.28
+        },
+        {
+          "studio_code": "NY-003",
+          "concept": "WinMonth",
+          "spend": 550.37,
+          "impressions": 15106,
+          "leads": 11,
+          "cpl": 50.03
+        },
+        {
+          "studio_code": "NY-004",
+          "concept": "WinMonth",
+          "spend": 658.99,
+          "impressions": 17020,
+          "leads": 8,
+          "cpl": 82.37
+        },
+        {
+          "studio_code": "TX-001",
+          "concept": "WinMonth",
+          "spend": 481.4,
+          "impressions": 17553,
+          "leads": 11,
+          "cpl": 43.76
+        },
+        {
+          "studio_code": "TX-002",
+          "concept": "WinMonth",
+          "spend": 483.97,
+          "impressions": 17802,
+          "leads": 6,
+          "cpl": 80.66
+        }
+      ],
+      "daily": [
+        {
+          "date": "2026-04-01",
+          "impressions": 35485,
+          "clicks": 327,
+          "spend": 1019.93,
+          "reach": 20269,
+          "leads": 16,
+          "purchases": 0,
+          "trials": 6
+        },
+        {
+          "date": "2026-04-02",
+          "impressions": 21526,
+          "clicks": 281,
+          "spend": 814.7,
+          "reach": 13530,
+          "leads": 23,
+          "purchases": 0,
+          "trials": 5
+        },
+        {
+          "date": "2026-04-03",
+          "impressions": 18909,
+          "clicks": 225,
+          "spend": 666.61,
+          "reach": 12089,
+          "leads": 17,
+          "purchases": 1,
+          "trials": 5
+        },
+        {
+          "date": "2026-04-04",
+          "impressions": 22427,
+          "clicks": 301,
+          "spend": 703.97,
+          "reach": 14748,
+          "leads": 25,
+          "purchases": 1,
+          "trials": 4
+        },
+        {
+          "date": "2026-04-05",
+          "impressions": 28372,
+          "clicks": 334,
+          "spend": 989.76,
+          "reach": 18514,
+          "leads": 31,
+          "purchases": 1,
+          "trials": 5
+        },
+        {
+          "date": "2026-04-06",
+          "impressions": 28277,
+          "clicks": 316,
+          "spend": 816.85,
+          "reach": 17885,
+          "leads": 17,
+          "purchases": 2,
+          "trials": 9
+        },
+        {
+          "date": "2026-04-07",
+          "impressions": 24027,
+          "clicks": 242,
+          "spend": 709.65,
+          "reach": 16469,
+          "leads": 12,
+          "purchases": 3,
+          "trials": 4
+        },
+        {
+          "date": "2026-04-08",
+          "impressions": 19667,
+          "clicks": 209,
+          "spend": 643.64,
+          "reach": 13821,
+          "leads": 17,
+          "purchases": 2,
+          "trials": 3
+        },
+        {
+          "date": "2026-04-09",
+          "impressions": 28815,
+          "clicks": 307,
+          "spend": 906.21,
+          "reach": 18915,
+          "leads": 25,
+          "purchases": 1,
+          "trials": 6
+        },
+        {
+          "date": "2026-04-10",
+          "impressions": 24496,
+          "clicks": 272,
+          "spend": 773.09,
+          "reach": 16047,
+          "leads": 16,
+          "purchases": 0,
+          "trials": 5
+        },
+        {
+          "date": "2026-04-11",
+          "impressions": 26912,
+          "clicks": 315,
+          "spend": 836.57,
+          "reach": 19650,
+          "leads": 15,
+          "purchases": 0,
+          "trials": 4
+        },
+        {
+          "date": "2026-04-12",
+          "impressions": 28932,
+          "clicks": 374,
+          "spend": 959.37,
+          "reach": 20625,
+          "leads": 18,
+          "purchases": 1,
+          "trials": 8
+        },
+        {
+          "date": "2026-04-13",
+          "impressions": 29749,
+          "clicks": 323,
+          "spend": 858.02,
+          "reach": 20521,
+          "leads": 16,
+          "purchases": 1,
+          "trials": 8
+        },
+        {
+          "date": "2026-04-14",
+          "impressions": 13918,
+          "clicks": 163,
+          "spend": 489.25,
+          "reach": 10195,
+          "leads": 10,
+          "purchases": 1,
+          "trials": 2
+        }
+      ]
+    },
+    "free_class_open_studios_2026": {
+      "display_name": "Free Class - Open Studios",
+      "period_label": "Apr 15, 2026 onwards",
+      "date_start": "2026-04-15",
+      "date_end": "2026-12-31",
+      "totals": {
+        "impressions": 274380,
+        "clicks": 2616,
+        "reach": 157843,
+        "leads": 94,
+        "purchases": 3,
+        "trials": 15,
+        "spend": 8748.67,
+        "ctr": 0.95,
+        "cpm": 31.89,
+        "cpl": 93.07
+      },
+      "studios": [
+        {
+          "code": "FL-001",
+          "name": "Miami Beach",
+          "state": "FL",
+          "impressions": 14369,
+          "clicks": 118,
+          "spend": 353.29,
+          "reach": 7254,
+          "ctr": 0.82,
+          "cpm": 24.59,
+          "leads": 6,
+          "cpl": 58.88,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "code": "FL-002",
+          "name": "Miami Brickell",
+          "state": "FL",
+          "impressions": 14729,
+          "clicks": 114,
+          "spend": 501.52,
+          "reach": 8974,
+          "ctr": 0.77,
+          "cpm": 34.05,
+          "leads": 2,
+          "cpl": 250.76,
+          "purchases": 0,
+          "trials": 1
+        },
+        {
+          "code": "FL-003",
+          "name": "Coral Gables",
+          "state": "FL",
+          "impressions": 9368,
+          "clicks": 99,
+          "spend": 288.94,
+          "reach": 5329,
+          "ctr": 1.06,
+          "cpm": 30.84,
+          "leads": 6,
+          "cpl": 48.16,
+          "purchases": 0,
+          "trials": 1
+        },
+        {
+          "code": "FL-004",
+          "name": "Doral",
+          "state": "FL",
+          "impressions": 8245,
+          "clicks": 84,
+          "spend": 289.83,
+          "reach": 5507,
+          "ctr": 1.02,
+          "cpm": 35.15,
+          "leads": 3,
+          "cpl": 96.61,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "code": "FL-005",
+          "name": "Miami Lakes",
+          "state": "FL",
+          "impressions": 11696,
+          "clicks": 122,
+          "spend": 278.77,
+          "reach": 6670,
+          "ctr": 1.04,
+          "cpm": 23.83,
+          "leads": 9,
+          "cpl": 30.97,
+          "purchases": 0,
+          "trials": 1
+        },
+        {
+          "code": "FL-006",
+          "name": "Deerfield Beach",
+          "state": "FL",
+          "impressions": 5736,
+          "clicks": 65,
+          "spend": 190.23,
+          "reach": 3085,
+          "ctr": 1.13,
+          "cpm": 33.16,
+          "leads": 3,
+          "cpl": 63.41,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "code": "FL-007",
+          "name": "Miami Upper East Side",
+          "state": "FL",
+          "impressions": 6598,
+          "clicks": 62,
+          "spend": 263.15,
+          "reach": 3767,
+          "ctr": 0.94,
+          "cpm": 39.88,
+          "leads": 2,
+          "cpl": 131.57,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "code": "FL-008",
+          "name": "Coral Springs",
+          "state": "FL",
+          "impressions": 5070,
+          "clicks": 54,
+          "spend": 184.54,
+          "reach": 3493,
+          "ctr": 1.07,
+          "cpm": 36.4,
+          "leads": 2,
+          "cpl": 92.27,
+          "purchases": 0,
+          "trials": 1
+        },
+        {
+          "code": "FL-009",
+          "name": "South Miami",
+          "state": "FL",
+          "impressions": 14079,
+          "clicks": 131,
+          "spend": 407.84,
+          "reach": 8471,
+          "ctr": 0.93,
+          "cpm": 28.97,
+          "leads": 5,
+          "cpl": 81.57,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "code": "FL-010",
+          "name": "Midtown Miami",
+          "state": "FL",
+          "impressions": 8727,
+          "clicks": 82,
+          "spend": 301.36,
+          "reach": 4441,
+          "ctr": 0.94,
+          "cpm": 34.53,
+          "leads": 3,
+          "cpl": 100.45,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "code": "FL-011",
+          "name": "Coconut Grove",
+          "state": "FL",
+          "impressions": 6178,
+          "clicks": 80,
+          "spend": 233.33,
+          "reach": 3673,
+          "ctr": 1.29,
+          "cpm": 37.77,
+          "leads": 2,
+          "cpl": 116.67,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "code": "FL-012",
+          "name": "Miramar",
+          "state": "FL",
+          "impressions": 12548,
+          "clicks": 136,
+          "spend": 475.22,
+          "reach": 7082,
+          "ctr": 1.08,
+          "cpm": 37.87,
+          "leads": 5,
+          "cpl": 95.04,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "code": "FL-013",
+          "name": "Fort Lauderdale - Las Olas",
+          "state": "FL",
+          "impressions": 7327,
+          "clicks": 65,
+          "spend": 260.37,
+          "reach": 4667,
+          "ctr": 0.89,
+          "cpm": 35.54,
+          "leads": 3,
+          "cpl": 86.79,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "code": "FL-014",
+          "name": "Pembroke Pines",
+          "state": "FL",
+          "impressions": 13039,
+          "clicks": 154,
+          "spend": 338.32,
+          "reach": 7718,
+          "ctr": 1.18,
+          "cpm": 25.95,
+          "leads": 10,
+          "cpl": 33.83,
+          "purchases": 0,
+          "trials": 1
+        },
+        {
+          "code": "FL-015",
+          "name": "West Palm Beach",
+          "state": "FL",
+          "impressions": 9579,
+          "clicks": 119,
+          "spend": 367.92,
+          "reach": 5168,
+          "ctr": 1.24,
+          "cpm": 38.41,
+          "leads": 4,
+          "cpl": 91.98,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "code": "FL-016",
+          "name": "Boca Raton",
+          "state": "FL",
+          "impressions": 7655,
+          "clicks": 81,
+          "spend": 368.84,
+          "reach": 4843,
+          "ctr": 1.06,
+          "cpm": 48.18,
+          "leads": 3,
+          "cpl": 122.95,
+          "purchases": 0,
+          "trials": 2
+        },
+        {
+          "code": "NC-001",
+          "name": "Charlotte - NoDa",
+          "state": "NC",
+          "impressions": 14109,
+          "clicks": 130,
+          "spend": 339.46,
+          "reach": 8884,
+          "ctr": 0.92,
+          "cpm": 24.06,
+          "leads": 3,
+          "cpl": 113.15,
+          "purchases": 0,
+          "trials": 2
+        },
+        {
+          "code": "NJ-001",
+          "name": "Toms River",
+          "state": "NJ",
+          "impressions": 15453,
+          "clicks": 118,
+          "spend": 372.67,
+          "reach": 7937,
+          "ctr": 0.76,
+          "cpm": 24.12,
+          "leads": 0,
+          "cpl": 0,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "code": "NJ-002",
+          "name": "Ocean Township",
+          "state": "NJ",
+          "impressions": 16192,
+          "clicks": 125,
+          "spend": 456.06,
+          "reach": 8618,
+          "ctr": 0.77,
+          "cpm": 28.17,
+          "leads": 1,
+          "cpl": 456.06,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "code": "NJ-003",
+          "name": "Wall Township",
+          "state": "NJ",
+          "impressions": 13047,
+          "clicks": 97,
+          "spend": 395.12,
+          "reach": 7382,
+          "ctr": 0.74,
+          "cpm": 30.28,
+          "leads": 1,
+          "cpl": 395.12,
+          "purchases": 0,
+          "trials": 2
+        },
+        {
+          "code": "NY-002",
+          "name": "NYC Chelsea",
+          "state": "NY",
+          "impressions": 10430,
+          "clicks": 111,
+          "spend": 427.66,
+          "reach": 6386,
+          "ctr": 1.06,
+          "cpm": 41.0,
+          "leads": 4,
+          "cpl": 106.92,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "code": "NY-003",
+          "name": "NYC Park Slope",
+          "state": "NY",
+          "impressions": 10400,
+          "clicks": 120,
+          "spend": 427.21,
+          "reach": 6278,
+          "ctr": 1.15,
+          "cpm": 41.08,
+          "leads": 7,
+          "cpl": 61.03,
+          "purchases": 1,
+          "trials": 1
+        },
+        {
+          "code": "NY-004",
+          "name": "Eastchester",
+          "state": "NY",
+          "impressions": 10632,
+          "clicks": 114,
+          "spend": 500.25,
+          "reach": 5763,
+          "ctr": 1.07,
+          "cpm": 47.05,
+          "leads": 2,
+          "cpl": 250.12,
+          "purchases": 2,
+          "trials": 2
+        },
+        {
+          "code": "TX-001",
+          "name": "Austin - Zilker",
+          "state": "TX",
+          "impressions": 16778,
+          "clicks": 133,
+          "spend": 369.31,
+          "reach": 10090,
+          "ctr": 0.79,
+          "cpm": 22.01,
+          "leads": 6,
+          "cpl": 61.55,
+          "purchases": 0,
+          "trials": 1
+        },
+        {
+          "code": "TX-002",
+          "name": "Austin - Highland",
+          "state": "TX",
+          "impressions": 12396,
+          "clicks": 102,
+          "spend": 357.46,
+          "reach": 6363,
+          "ctr": 0.82,
+          "cpm": 28.84,
+          "leads": 2,
+          "cpl": 178.73,
+          "purchases": 0,
+          "trials": 0
+        }
+      ],
+      "audiences": [
+        {
+          "studio_code": "FL-001",
+          "audience": "PYC",
+          "spend": 2.15,
+          "impressions": 61,
+          "leads": 0,
+          "ads": [
+            "26-FL-001-02 - DF - PYC - Plan",
+            "26-FL-001-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "FL-001",
+          "audience": "SI",
+          "spend": 35.21,
+          "impressions": 743,
+          "leads": 1,
+          "ads": [
+            "26-FL-001-02 - PS - SI - ShowUp",
+            "26-FL-001-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "FL-001",
+          "audience": "POC",
+          "spend": 55.97,
+          "impressions": 1742,
+          "leads": 0,
+          "ads": [
+            "26-FL-001-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "FL-001",
+          "audience": "DINKS",
+          "spend": 12.16,
+          "impressions": 224,
+          "leads": 0,
+          "ads": [
+            "26-FL-001-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "FL-001",
+          "audience": "SAHP",
+          "spend": 1.63,
+          "impressions": 31,
+          "leads": 0,
+          "ads": [
+            "26-FL-001-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "FL-002",
+          "audience": "PYC",
+          "spend": 81.79,
+          "impressions": 2514,
+          "leads": 0,
+          "ads": [
+            "26-FL-002-02 - DF - PYC - Plan",
+            "26-FL-002-02 - DF - PYC - RealResults",
+            "26-FL-001-02 - DF - PYC - Plan",
+            "26-FL-001-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "FL-002",
+          "audience": "SI",
+          "spend": 315.5,
+          "impressions": 8436,
+          "leads": 2,
+          "ads": [
+            "26-FL-002-02 - PS - SI - ShowUp",
+            "26-FL-002-02 - PS - SI - Video - Voice",
+            "26-FL-001-02 - PS - SI - ShowUp"
+          ]
+        },
+        {
+          "studio_code": "FL-002",
+          "audience": "POC",
+          "spend": 9.82,
+          "impressions": 285,
+          "leads": 0,
+          "ads": [
+            "26-FL-002-02 - P&R - POC - Yourself",
+            "26-FL-001-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "FL-002",
+          "audience": "DINKS",
+          "spend": 1.69,
+          "impressions": 46,
+          "leads": 0,
+          "ads": [
+            "26-FL-002-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "FL-002",
+          "audience": "SAHP",
+          "spend": 24.79,
+          "impressions": 510,
+          "leads": 0,
+          "ads": [
+            "26-FL-002-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "FL-003",
+          "audience": "PYC",
+          "spend": 75.94,
+          "impressions": 2602,
+          "leads": 5,
+          "ads": [
+            "26-FL-003-02 - DF - PYC - Plan",
+            "26-FL-003-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "FL-003",
+          "audience": "SI",
+          "spend": 11.73,
+          "impressions": 238,
+          "leads": 0,
+          "ads": [
+            "26-FL-003-02 - PS - SI - ShowUp",
+            "26-FL-003-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "FL-003",
+          "audience": "POC",
+          "spend": 4.5,
+          "impressions": 167,
+          "leads": 0,
+          "ads": [
+            "26-FL-003-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "FL-003",
+          "audience": "DINKS",
+          "spend": 12.5,
+          "impressions": 210,
+          "leads": 0,
+          "ads": [
+            "26-FL-003-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "FL-003",
+          "audience": "SAHP",
+          "spend": 5.26,
+          "impressions": 51,
+          "leads": 0,
+          "ads": [
+            "26-FL-003-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "FL-004",
+          "audience": "PYC",
+          "spend": 23.91,
+          "impressions": 789,
+          "leads": 0,
+          "ads": [
+            "26-FL-004-02 - DF - PYC - Plan",
+            "26-FL-004-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "FL-004",
+          "audience": "SI",
+          "spend": 170.64,
+          "impressions": 4159,
+          "leads": 3,
+          "ads": [
+            "26-FL-004-02 - PS - SI - ShowUp",
+            "26-FL-004-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "FL-004",
+          "audience": "POC",
+          "spend": 78.79,
+          "impressions": 2930,
+          "leads": 0,
+          "ads": [
+            "26-FL-004-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "FL-004",
+          "audience": "DINKS",
+          "spend": 14.73,
+          "impressions": 320,
+          "leads": 0,
+          "ads": [
+            "26-FL-004-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "FL-004",
+          "audience": "SAHP",
+          "spend": 1.76,
+          "impressions": 47,
+          "leads": 0,
+          "ads": [
+            "26-FL-004-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "FL-005",
+          "audience": "PYC",
+          "spend": 12.5,
+          "impressions": 445,
+          "leads": 0,
+          "ads": [
+            "26-FL-005-02 - DF - PYC - Plan",
+            "26-FL-005-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "FL-005",
+          "audience": "SI",
+          "spend": 79.26,
+          "impressions": 2399,
+          "leads": 2,
+          "ads": [
+            "26-FL-005-02 - PS - SI - ShowUp",
+            "26-FL-005-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "FL-005",
+          "audience": "POC",
+          "spend": 0.22,
+          "impressions": 11,
+          "leads": 0,
+          "ads": [
+            "26-FL-005-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "FL-005",
+          "audience": "DINKS",
+          "spend": 25.99,
+          "impressions": 765,
+          "leads": 0,
+          "ads": [
+            "26-FL-005-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "FL-005",
+          "audience": "SAHP",
+          "spend": 6.38,
+          "impressions": 150,
+          "leads": 0,
+          "ads": [
+            "26-FL-005-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "FL-006",
+          "audience": "PYC",
+          "spend": 129.53,
+          "impressions": 4330,
+          "leads": 2,
+          "ads": [
+            "26-FL-006-02 - DF - PYC - Plan",
+            "26-FL-006-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "FL-006",
+          "audience": "SI",
+          "spend": 28.13,
+          "impressions": 776,
+          "leads": 1,
+          "ads": [
+            "26-FL-006-02 - PS - SI - ShowUp",
+            "26-FL-006-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "FL-006",
+          "audience": "POC",
+          "spend": 0.27,
+          "impressions": 20,
+          "leads": 0,
+          "ads": [
+            "26-FL-006-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "FL-006",
+          "audience": "DINKS",
+          "spend": 28.51,
+          "impressions": 564,
+          "leads": 0,
+          "ads": [
+            "26-FL-006-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "FL-006",
+          "audience": "SAHP",
+          "spend": 3.79,
+          "impressions": 46,
+          "leads": 0,
+          "ads": [
+            "26-FL-006-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "FL-007",
+          "audience": "PYC",
+          "spend": 81.53,
+          "impressions": 2670,
+          "leads": 1,
+          "ads": [
+            "26-FL-007-02 - DF - PYC - Plan",
+            "26-FL-007-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "FL-007",
+          "audience": "SI",
+          "spend": 128.68,
+          "impressions": 2957,
+          "leads": 1,
+          "ads": [
+            "26-FL-007-02 - PS - SI - ShowUp",
+            "26-FL-007-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "FL-007",
+          "audience": "POC",
+          "spend": 1.82,
+          "impressions": 120,
+          "leads": 0,
+          "ads": [
+            "26-FL-007-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "FL-007",
+          "audience": "DINKS",
+          "spend": 43.17,
+          "impressions": 766,
+          "leads": 0,
+          "ads": [
+            "26-FL-007-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "FL-007",
+          "audience": "SAHP",
+          "spend": 7.95,
+          "impressions": 85,
+          "leads": 0,
+          "ads": [
+            "26-FL-007-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "FL-008",
+          "audience": "PYC",
+          "spend": 44.06,
+          "impressions": 1652,
+          "leads": 0,
+          "ads": [
+            "26-FL-008-02 - DF - PYC - Plan",
+            "26-FL-008-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "FL-008",
+          "audience": "SI",
+          "spend": 49.54,
+          "impressions": 1407,
+          "leads": 0,
+          "ads": [
+            "26-FL-008-02 - PS - SI - ShowUp",
+            "26-FL-008-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "FL-008",
+          "audience": "POC",
+          "spend": 1.78,
+          "impressions": 64,
+          "leads": 0,
+          "ads": [
+            "26-FL-008-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "FL-008",
+          "audience": "DINKS",
+          "spend": 19.13,
+          "impressions": 428,
+          "leads": 1,
+          "ads": [
+            "26-FL-008-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "FL-008",
+          "audience": "SAHP",
+          "spend": 70.03,
+          "impressions": 1519,
+          "leads": 1,
+          "ads": [
+            "26-FL-008-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "FL-009",
+          "audience": "PYC",
+          "spend": 30.87,
+          "impressions": 742,
+          "leads": 0,
+          "ads": [
+            "26-FL-009-02 - DF - PYC - Plan",
+            "26-FL-009-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "FL-009",
+          "audience": "SI",
+          "spend": 109.44,
+          "impressions": 3138,
+          "leads": 0,
+          "ads": [
+            "26-FL-009-02 - PS - SI - ShowUp",
+            "26-FL-009-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "FL-009",
+          "audience": "POC",
+          "spend": 0.97,
+          "impressions": 31,
+          "leads": 0,
+          "ads": [
+            "26-FL-009-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "FL-009",
+          "audience": "DINKS",
+          "spend": 20.24,
+          "impressions": 412,
+          "leads": 1,
+          "ads": [
+            "26-FL-009-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "FL-009",
+          "audience": "SAHP",
+          "spend": 7.08,
+          "impressions": 113,
+          "leads": 0,
+          "ads": [
+            "26-FL-009-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "FL-010",
+          "audience": "PYC",
+          "spend": 67.54,
+          "impressions": 2737,
+          "leads": 1,
+          "ads": [
+            "26-FL-010-02 - DF - PYC - Plan",
+            "26-FL-010-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "FL-010",
+          "audience": "SI",
+          "spend": 196.43,
+          "impressions": 5180,
+          "leads": 2,
+          "ads": [
+            "26-FL-010-02 - PS - SI - ShowUp",
+            "26-FL-010-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "FL-010",
+          "audience": "POC",
+          "spend": 8.72,
+          "impressions": 228,
+          "leads": 0,
+          "ads": [
+            "26-FL-010-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "FL-010",
+          "audience": "DINKS",
+          "spend": 25.97,
+          "impressions": 517,
+          "leads": 0,
+          "ads": [
+            "26-FL-010-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "FL-010",
+          "audience": "SAHP",
+          "spend": 2.7,
+          "impressions": 65,
+          "leads": 0,
+          "ads": [
+            "26-FL-010-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "FL-011",
+          "audience": "PYC",
+          "spend": 23.99,
+          "impressions": 639,
+          "leads": 0,
+          "ads": [
+            "26-FL-011-02 - DF - PYC - Plan",
+            "26-FL-011-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "FL-011",
+          "audience": "SI",
+          "spend": 141.04,
+          "impressions": 3635,
+          "leads": 2,
+          "ads": [
+            "26-FL-011-02 - PS - SI - ShowUp",
+            "26-FL-011-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "FL-011",
+          "audience": "POC",
+          "spend": 45.11,
+          "impressions": 1435,
+          "leads": 0,
+          "ads": [
+            "26-FL-011-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "FL-011",
+          "audience": "DINKS",
+          "spend": 16.82,
+          "impressions": 343,
+          "leads": 0,
+          "ads": [
+            "26-FL-011-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "FL-011",
+          "audience": "SAHP",
+          "spend": 6.37,
+          "impressions": 126,
+          "leads": 0,
+          "ads": [
+            "26-FL-011-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "FL-012",
+          "audience": "PYC",
+          "spend": 73.23,
+          "impressions": 2512,
+          "leads": 0,
+          "ads": [
+            "26-FL-012-02 - DF - PYC - Plan",
+            "26-FL-012-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "FL-012",
+          "audience": "SI",
+          "spend": 358.16,
+          "impressions": 9230,
+          "leads": 5,
+          "ads": [
+            "26-FL-012-02 - PS - SI - ShowUp",
+            "26-FL-012-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "FL-012",
+          "audience": "POC",
+          "spend": 0.29,
+          "impressions": 19,
+          "leads": 0,
+          "ads": [
+            "26-FL-012-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "FL-012",
+          "audience": "DINKS",
+          "spend": 37.38,
+          "impressions": 696,
+          "leads": 0,
+          "ads": [
+            "26-FL-012-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "FL-012",
+          "audience": "SAHP",
+          "spend": 6.16,
+          "impressions": 91,
+          "leads": 0,
+          "ads": [
+            "26-FL-012-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "FL-013",
+          "audience": "PYC",
+          "spend": 106.13,
+          "impressions": 3705,
+          "leads": 0,
+          "ads": [
+            "26-FL-013-02 - DF - PYC - Plan",
+            "26-FL-013-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "FL-013",
+          "audience": "SI",
+          "spend": 116.77,
+          "impressions": 2933,
+          "leads": 2,
+          "ads": [
+            "26-FL-013-02 - PS - SI - ShowUp",
+            "26-FL-013-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "FL-013",
+          "audience": "POC",
+          "spend": 9.76,
+          "impressions": 270,
+          "leads": 1,
+          "ads": [
+            "26-FL-013-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "FL-013",
+          "audience": "DINKS",
+          "spend": 24.71,
+          "impressions": 349,
+          "leads": 0,
+          "ads": [
+            "26-FL-013-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "FL-013",
+          "audience": "SAHP",
+          "spend": 3.0,
+          "impressions": 70,
+          "leads": 0,
+          "ads": [
+            "26-FL-013-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "FL-014",
+          "audience": "PYC",
+          "spend": 22.34,
+          "impressions": 792,
+          "leads": 1,
+          "ads": [
+            "26-FL-014-02 - DF - PYC - Plan",
+            "26-FL-014-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "FL-014",
+          "audience": "SI",
+          "spend": 43.64,
+          "impressions": 1096,
+          "leads": 0,
+          "ads": [
+            "26-FL-014-02 - PS - SI - ShowUp",
+            "26-FL-014-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "FL-014",
+          "audience": "POC",
+          "spend": 3.02,
+          "impressions": 85,
+          "leads": 1,
+          "ads": [
+            "26-FL-014-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "FL-014",
+          "audience": "DINKS",
+          "spend": 11.0,
+          "impressions": 251,
+          "leads": 0,
+          "ads": [
+            "26-FL-014-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "FL-014",
+          "audience": "SAHP",
+          "spend": 14.22,
+          "impressions": 321,
+          "leads": 0,
+          "ads": [
+            "26-FL-014-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "FL-015",
+          "audience": "PYC",
+          "spend": 20.01,
+          "impressions": 691,
+          "leads": 0,
+          "ads": [
+            "26-FL-015-02 - DF - PYC - Plan",
+            "26-FL-015-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "FL-015",
+          "audience": "SI",
+          "spend": 298.78,
+          "impressions": 8010,
+          "leads": 3,
+          "ads": [
+            "26-FL-015-02 - PS - SI - ShowUp",
+            "26-FL-015-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "FL-015",
+          "audience": "POC",
+          "spend": 1.89,
+          "impressions": 66,
+          "leads": 0,
+          "ads": [
+            "26-FL-015-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "FL-015",
+          "audience": "DINKS",
+          "spend": 41.8,
+          "impressions": 752,
+          "leads": 1,
+          "ads": [
+            "26-FL-015-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "FL-015",
+          "audience": "SAHP",
+          "spend": 5.44,
+          "impressions": 60,
+          "leads": 0,
+          "ads": [
+            "26-FL-015-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "FL-016",
+          "audience": "PYC",
+          "spend": 141.86,
+          "impressions": 3889,
+          "leads": 1,
+          "ads": [
+            "26-FL-016-02 - DF - PYC - Plan",
+            "26-FL-016-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "FL-016",
+          "audience": "SI",
+          "spend": 75.7,
+          "impressions": 1531,
+          "leads": 0,
+          "ads": [
+            "26-FL-016-02 - PS - SI - ShowUp",
+            "26-FL-016-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "FL-016",
+          "audience": "POC",
+          "spend": 4.42,
+          "impressions": 78,
+          "leads": 0,
+          "ads": [
+            "26-FL-016-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "FL-016",
+          "audience": "DINKS",
+          "spend": 135.98,
+          "impressions": 2034,
+          "leads": 2,
+          "ads": [
+            "26-FL-016-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "FL-016",
+          "audience": "SAHP",
+          "spend": 10.88,
+          "impressions": 123,
+          "leads": 0,
+          "ads": [
+            "26-FL-016-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "NC-001",
+          "audience": "PYC",
+          "spend": 31.13,
+          "impressions": 1446,
+          "leads": 1,
+          "ads": [
+            "26-NC-001-02 - DF - PYC - Plan",
+            "26-NC-001-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "NC-001",
+          "audience": "SI",
+          "spend": 66.93,
+          "impressions": 2362,
+          "leads": 1,
+          "ads": [
+            "26-NC-001-02 - PS - SI - ShowUp",
+            "26-NC-001-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "NC-001",
+          "audience": "POC",
+          "spend": 0.04,
+          "impressions": 7,
+          "leads": 0,
+          "ads": [
+            "26-NC-001-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "NC-001",
+          "audience": "DINKS",
+          "spend": 18.71,
+          "impressions": 384,
+          "leads": 0,
+          "ads": [
+            "26-NC-001-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "NC-001",
+          "audience": "SAHP",
+          "spend": 3.83,
+          "impressions": 62,
+          "leads": 0,
+          "ads": [
+            "26-NC-001-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "NJ-001",
+          "audience": "PYC",
+          "spend": 64.98,
+          "impressions": 3022,
+          "leads": 0,
+          "ads": [
+            "26-NJ-001-02 - DF - PYC - Plan",
+            "26-NJ-001-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "NJ-001",
+          "audience": "SI",
+          "spend": 48.31,
+          "impressions": 1652,
+          "leads": 0,
+          "ads": [
+            "26-NJ-001-02 - PS - SI - ShowUp",
+            "26-NJ-001-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "NJ-001",
+          "audience": "POC",
+          "spend": 14.2,
+          "impressions": 517,
+          "leads": 0,
+          "ads": [
+            "26-NJ-001-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "NJ-001",
+          "audience": "DINKS",
+          "spend": 29.74,
+          "impressions": 803,
+          "leads": 0,
+          "ads": [
+            "26-NJ-001-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "NJ-001",
+          "audience": "SAHP",
+          "spend": 4.92,
+          "impressions": 84,
+          "leads": 0,
+          "ads": [
+            "26-NJ-001-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "NJ-002",
+          "audience": "PYC",
+          "spend": 59.2,
+          "impressions": 2181,
+          "leads": 0,
+          "ads": [
+            "26-NJ-002-02 - DF - PYC - Plan",
+            "26-NJ-002-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "NJ-002",
+          "audience": "SI",
+          "spend": 122.12,
+          "impressions": 4049,
+          "leads": 0,
+          "ads": [
+            "26-NJ-002-02 - PS - SI - ShowUp",
+            "26-NJ-002-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "NJ-002",
+          "audience": "POC",
+          "spend": 7.85,
+          "impressions": 303,
+          "leads": 0,
+          "ads": [
+            "26-NJ-002-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "NJ-002",
+          "audience": "DINKS",
+          "spend": 41.07,
+          "impressions": 1002,
+          "leads": 1,
+          "ads": [
+            "26-NJ-002-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "NJ-002",
+          "audience": "SAHP",
+          "spend": 13.35,
+          "impressions": 177,
+          "leads": 0,
+          "ads": [
+            "26-NJ-002-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "NJ-003",
+          "audience": "PYC",
+          "spend": 31.6,
+          "impressions": 1156,
+          "leads": 0,
+          "ads": [
+            "26-NJ-003-02 - DF - PYC - Plan",
+            "26-NJ-003-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "NJ-003",
+          "audience": "SI",
+          "spend": 36.22,
+          "impressions": 904,
+          "leads": 1,
+          "ads": [
+            "26-NJ-003-02 - PS - SI - ShowUp",
+            "26-NJ-003-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "NJ-003",
+          "audience": "POC",
+          "spend": 69.01,
+          "impressions": 2199,
+          "leads": 0,
+          "ads": [
+            "26-NJ-003-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "NJ-003",
+          "audience": "DINKS",
+          "spend": 18.27,
+          "impressions": 271,
+          "leads": 0,
+          "ads": [
+            "26-NJ-003-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "NJ-003",
+          "audience": "SAHP",
+          "spend": 11.96,
+          "impressions": 192,
+          "leads": 0,
+          "ads": [
+            "26-NJ-003-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "NY-002",
+          "audience": "PYC",
+          "spend": 179.49,
+          "impressions": 5561,
+          "leads": 1,
+          "ads": [
+            "26-NY-002-02 - DF - PYC - Plan",
+            "26-NY-002-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "NY-002",
+          "audience": "SI",
+          "spend": 209.59,
+          "impressions": 4253,
+          "leads": 3,
+          "ads": [
+            "26-NY-002-02 - PS - SI - ShowUp",
+            "26-NY-002-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "NY-002",
+          "audience": "POC",
+          "spend": 6.62,
+          "impressions": 124,
+          "leads": 0,
+          "ads": [
+            "26-NY-002-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "NY-002",
+          "audience": "DINKS",
+          "spend": 23.88,
+          "impressions": 377,
+          "leads": 0,
+          "ads": [
+            "26-NY-002-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "NY-002",
+          "audience": "SAHP",
+          "spend": 8.08,
+          "impressions": 115,
+          "leads": 0,
+          "ads": [
+            "26-NY-002-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "NY-003",
+          "audience": "PYC",
+          "spend": 15.63,
+          "impressions": 526,
+          "leads": 1,
+          "ads": [
+            "26-NY-003-02 - DF - PYC - Plan",
+            "26-NY-003-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "NY-003",
+          "audience": "SI",
+          "spend": 248.8,
+          "impressions": 5563,
+          "leads": 5,
+          "ads": [
+            "26-NY-003-02 - PS - SI - ShowUp",
+            "26-NY-003-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "NY-003",
+          "audience": "POC",
+          "spend": 109.15,
+          "impressions": 3327,
+          "leads": 1,
+          "ads": [
+            "26-NY-003-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "NY-003",
+          "audience": "DINKS",
+          "spend": 49.13,
+          "impressions": 929,
+          "leads": 0,
+          "ads": [
+            "26-NY-003-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "NY-003",
+          "audience": "SAHP",
+          "spend": 4.5,
+          "impressions": 55,
+          "leads": 0,
+          "ads": [
+            "26-NY-003-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "NY-004",
+          "audience": "PYC",
+          "spend": 171.34,
+          "impressions": 4263,
+          "leads": 1,
+          "ads": [
+            "26-NY-004-02 - DF - PYC - Plan",
+            "26-NY-004-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "NY-004",
+          "audience": "SI",
+          "spend": 240.78,
+          "impressions": 4777,
+          "leads": 1,
+          "ads": [
+            "26-NY-004-02 - PS - SI - ShowUp",
+            "26-NY-004-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "NY-004",
+          "audience": "POC",
+          "spend": 19.12,
+          "impressions": 495,
+          "leads": 0,
+          "ads": [
+            "26-NY-004-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "NY-004",
+          "audience": "DINKS",
+          "spend": 48.56,
+          "impressions": 791,
+          "leads": 0,
+          "ads": [
+            "26-NY-004-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "NY-004",
+          "audience": "SAHP",
+          "spend": 20.45,
+          "impressions": 306,
+          "leads": 0,
+          "ads": [
+            "26-NY-004-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "TX-001",
+          "audience": "PYC",
+          "spend": 12.05,
+          "impressions": 438,
+          "leads": 1,
+          "ads": [
+            "26-TX-001-02 - DF - PYC - Plan",
+            "26-TX-001-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "TX-001",
+          "audience": "SI",
+          "spend": 19.86,
+          "impressions": 502,
+          "leads": 0,
+          "ads": [
+            "26-TX-001-02 - PS - SI - ShowUp",
+            "26-TX-001-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "TX-001",
+          "audience": "POC",
+          "spend": 68.73,
+          "impressions": 2689,
+          "leads": 1,
+          "ads": [
+            "26-TX-001-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "TX-001",
+          "audience": "DINKS",
+          "spend": 6.26,
+          "impressions": 45,
+          "leads": 0,
+          "ads": [
+            "26-TX-001-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "TX-001",
+          "audience": "SAHP",
+          "spend": 1.88,
+          "impressions": 37,
+          "leads": 0,
+          "ads": [
+            "26-TX-001-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "studio_code": "TX-002",
+          "audience": "PYC",
+          "spend": 10.48,
+          "impressions": 411,
+          "leads": 0,
+          "ads": [
+            "26-TX-002-02 - DF - PYC - Plan",
+            "26-TX-002-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "studio_code": "TX-002",
+          "audience": "SI",
+          "spend": 108.69,
+          "impressions": 3754,
+          "leads": 1,
+          "ads": [
+            "26-TX-002-02 - PS - SI - ShowUp",
+            "26-TX-002-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "studio_code": "TX-002",
+          "audience": "POC",
+          "spend": 0.98,
+          "impressions": 31,
+          "leads": 0,
+          "ads": [
+            "26-TX-002-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "studio_code": "TX-002",
+          "audience": "DINKS",
+          "spend": 32.79,
+          "impressions": 714,
+          "leads": 0,
+          "ads": [
+            "26-TX-002-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "studio_code": "TX-002",
+          "audience": "SAHP",
+          "spend": 4.0,
+          "impressions": 69,
+          "leads": 0,
+          "ads": [
+            "26-TX-002-02 - SSB - SAHP - Video - ForYou"
+          ]
+        }
+      ],
+      "pillars": [
+        {
+          "pillar": "DF",
+          "spend": 1513.28,
+          "impressions": 49774,
+          "leads": 16,
+          "cpl": 94.58,
+          "ads": [
+            "26-FL-013-02 - DF - PYC - Plan",
+            "26-FL-013-02 - DF - PYC - RealResults",
+            "26-NJ-002-02 - DF - PYC - Plan",
+            "26-NJ-002-02 - DF - PYC - RealResults",
+            "26-FL-016-02 - DF - PYC - Plan",
+            "26-FL-016-02 - DF - PYC - RealResults",
+            "26-FL-011-02 - DF - PYC - Plan",
+            "26-FL-011-02 - DF - PYC - RealResults",
+            "26-FL-010-02 - DF - PYC - Plan",
+            "26-FL-010-02 - DF - PYC - RealResults",
+            "26-FL-014-02 - DF - PYC - Plan",
+            "26-FL-014-02 - DF - PYC - RealResults",
+            "26-TX-001-02 - DF - PYC - Plan",
+            "26-TX-001-02 - DF - PYC - RealResults",
+            "26-TX-002-02 - DF - PYC - Plan",
+            "26-TX-002-02 - DF - PYC - RealResults",
+            "26-FL-003-02 - DF - PYC - Plan",
+            "26-FL-003-02 - DF - PYC - RealResults",
+            "26-FL-008-02 - DF - PYC - Plan",
+            "26-FL-008-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "pillar": "PS",
+          "spend": 3259.95,
+          "impressions": 83684,
+          "leads": 36,
+          "cpl": 90.55,
+          "ads": [
+            "26-FL-013-02 - PS - SI - ShowUp",
+            "26-FL-013-02 - PS - SI - Video - Voice",
+            "26-NJ-002-02 - PS - SI - ShowUp",
+            "26-NJ-002-02 - PS - SI - Video - Voice",
+            "26-FL-016-02 - PS - SI - ShowUp",
+            "26-FL-016-02 - PS - SI - Video - Voice",
+            "26-FL-011-02 - PS - SI - ShowUp",
+            "26-FL-011-02 - PS - SI - Video - Voice",
+            "26-FL-010-02 - PS - SI - ShowUp",
+            "26-FL-010-02 - PS - SI - Video - Voice",
+            "26-FL-014-02 - PS - SI - ShowUp",
+            "26-FL-014-02 - PS - SI - Video - Voice",
+            "26-TX-001-02 - PS - SI - ShowUp",
+            "26-TX-001-02 - PS - SI - Video - Voice",
+            "26-TX-002-02 - PS - SI - ShowUp",
+            "26-TX-002-02 - PS - SI - Video - Voice",
+            "26-FL-003-02 - PS - SI - ShowUp",
+            "26-FL-003-02 - PS - SI - Video - Voice",
+            "26-FL-008-02 - PS - SI - ShowUp",
+            "26-FL-008-02 - PS - SI - Video - Voice"
+          ]
+        },
+        {
+          "pillar": "P&R",
+          "spend": 523.05,
+          "impressions": 17243,
+          "leads": 4,
+          "cpl": 130.76,
+          "ads": [
+            "26-FL-013-02 - P&R - POC - Yourself",
+            "26-NJ-002-02 - P&R - POC - Yourself",
+            "26-FL-016-02 - P&R - POC - Yourself",
+            "26-FL-011-02 - P&R - POC - Yourself",
+            "26-FL-010-02 - P&R - POC - Yourself",
+            "26-FL-014-02 - P&R - POC - Yourself",
+            "26-TX-001-02 - P&R - POC - Yourself",
+            "26-TX-002-02 - P&R - POC - Yourself",
+            "26-FL-003-02 - P&R - POC - Yourself",
+            "26-FL-008-02 - P&R - POC - Yourself",
+            "26-NY-004-02 - P&R - POC - Yourself",
+            "26-NJ-003-02 - P&R - POC - Yourself",
+            "26-FL-004-02 - P&R - POC - Yourself",
+            "26-FL-002-02 - P&R - POC - Yourself",
+            "26-NY-002-02 - P&R - POC - Yourself",
+            "26-NJ-001-02 - P&R - POC - Yourself",
+            "26-FL-012-02 - P&R - POC - Yourself",
+            "26-FL-015-02 - P&R - POC - Yourself",
+            "26-NY-003-02 - P&R - POC - Yourself",
+            "26-NC-001-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "pillar": "DR",
+          "spend": 740.19,
+          "impressions": 13993,
+          "leads": 6,
+          "cpl": 123.37,
+          "ads": [
+            "26-FL-013-02 - DR - DINKS - Video - Review",
+            "26-NJ-002-02 - DR - DINKS - Video - Review",
+            "26-FL-016-02 - DR - DINKS - Video - Review",
+            "26-FL-011-02 - DR - DINKS - Video - Review",
+            "26-FL-010-02 - DR - DINKS - Video - Review",
+            "26-FL-014-02 - DR - DINKS - Video - Review",
+            "26-TX-001-02 - DR - DINKS - Video - Review",
+            "26-TX-002-02 - DR - DINKS - Video - Review",
+            "26-FL-003-02 - DR - DINKS - Video - Review",
+            "26-FL-008-02 - DR - DINKS - Video - Review",
+            "26-NY-004-02 - DR - DINKS - Video - Review",
+            "26-NJ-003-02 - DR - DINKS - Video - Review",
+            "26-FL-004-02 - DR - DINKS - Video - Review",
+            "26-NY-002-02 - DR - DINKS - Video - Review",
+            "26-NJ-001-02 - DR - DINKS - Video - Review",
+            "26-FL-012-02 - DR - DINKS - Video - Review",
+            "26-FL-015-02 - DR - DINKS - Video - Review",
+            "26-NY-003-02 - DR - DINKS - Video - Review",
+            "26-NC-001-02 - DR - DINKS - Video - Review",
+            "26-FL-007-02 - DR - DINKS - Video - Review"
+          ]
+        },
+        {
+          "pillar": "SSB",
+          "spend": 250.41,
+          "impressions": 4505,
+          "leads": 1,
+          "cpl": 250.41,
+          "ads": [
+            "26-FL-013-02 - SSB - SAHP - Video - ForYou",
+            "26-NJ-002-02 - SSB - SAHP - Video - ForYou",
+            "26-FL-016-02 - SSB - SAHP - Video - ForYou",
+            "26-FL-011-02 - SSB - SAHP - Video - ForYou",
+            "26-FL-010-02 - SSB - SAHP - Video - ForYou",
+            "26-FL-014-02 - SSB - SAHP - Video - ForYou",
+            "26-TX-001-02 - SSB - SAHP - Video - ForYou",
+            "26-TX-002-02 - SSB - SAHP - Video - ForYou",
+            "26-FL-003-02 - SSB - SAHP - Video - ForYou",
+            "26-FL-008-02 - SSB - SAHP - Video - ForYou",
+            "26-NY-004-02 - SSB - SAHP - Video - ForYou",
+            "26-NJ-003-02 - SSB - SAHP - Video - ForYou",
+            "26-FL-004-02 - SSB - SAHP - Video - ForYou",
+            "26-NY-002-02 - SSB - SAHP - Video - ForYou",
+            "26-NJ-001-02 - SSB - SAHP - Video - ForYou",
+            "26-FL-012-02 - SSB - SAHP - Video - ForYou",
+            "26-FL-015-02 - SSB - SAHP - Video - ForYou",
+            "26-NY-003-02 - SSB - SAHP - Video - ForYou",
+            "26-NC-001-02 - SSB - SAHP - Video - ForYou",
+            "26-FL-007-02 - SSB - SAHP - Video - ForYou"
+          ]
+        },
+        {
+          "pillar": "HYROX",
+          "spend": 2461.28,
+          "impressions": 105165,
+          "leads": 31,
+          "cpl": 79.4,
+          "ads": [
+            "26-NJ-002-02 - Hyrox - Video - Part",
+            "26-NJ-002-02 - Hyrox - Blue",
+            "26-FL-014-02 - Hyrox - Video - Part",
+            "26-FL-014-02 - Hyrox - Blue",
+            "26-TX-001-02 - Hyrox - Video - Part",
+            "26-TX-001-02 - Hyrox - Blue",
+            "26-TX-002-02 - Hyrox - Video - Part",
+            "26-TX-002-02 - Hyrox - Blue",
+            "26-FL-003-02 - Hyrox - Video - Part",
+            "26-FL-003-02 - Hyrox - Blue",
+            "26-NJ-003-02 - Hyrox - Video - Part",
+            "26-NJ-003-02 - Hyrox - Blue",
+            "26-NJ-001-02 - Hyrox - Video - Part",
+            "26-NJ-001-02 - Hyrox - Blue",
+            "26-NC-001-02 - Hyrox - Video - Part",
+            "26-NC-001-02 - Hyrox - Blue",
+            "26-FL-009-02 - Hyrox - Video - Part",
+            "26-FL-009-02 - Hyrox - Blue",
+            "26-FL-005-02 - Hyrox - Video - Part",
+            "26-FL-005-02 - Hyrox - Blue"
+          ]
+        }
+      ],
+      "concepts": [
+        {
+          "concept": "Plan",
+          "spend": 1112.24,
+          "impressions": 35586,
+          "leads": 13,
+          "cpl": 85.56,
+          "ads": [
+            "26-FL-013-02 - DF - PYC - Plan",
+            "26-NJ-002-02 - DF - PYC - Plan",
+            "26-FL-016-02 - DF - PYC - Plan",
+            "26-FL-011-02 - DF - PYC - Plan",
+            "26-FL-010-02 - DF - PYC - Plan",
+            "26-FL-014-02 - DF - PYC - Plan",
+            "26-TX-001-02 - DF - PYC - Plan",
+            "26-TX-002-02 - DF - PYC - Plan",
+            "26-FL-003-02 - DF - PYC - Plan",
+            "26-FL-008-02 - DF - PYC - Plan",
+            "26-NY-004-02 - DF - PYC - Plan",
+            "26-NJ-003-02 - DF - PYC - Plan",
+            "26-FL-004-02 - DF - PYC - Plan",
+            "26-FL-002-02 - DF - PYC - Plan",
+            "26-NY-002-02 - DF - PYC - Plan",
+            "26-NJ-001-02 - DF - PYC - Plan",
+            "26-FL-012-02 - DF - PYC - Plan",
+            "26-FL-015-02 - DF - PYC - Plan",
+            "26-NY-003-02 - DF - PYC - Plan",
+            "26-NC-001-02 - DF - PYC - Plan"
+          ]
+        },
+        {
+          "concept": "RealResults",
+          "spend": 401.04,
+          "impressions": 14188,
+          "leads": 3,
+          "cpl": 133.68,
+          "ads": [
+            "26-FL-013-02 - DF - PYC - RealResults",
+            "26-NJ-002-02 - DF - PYC - RealResults",
+            "26-FL-016-02 - DF - PYC - RealResults",
+            "26-FL-011-02 - DF - PYC - RealResults",
+            "26-FL-010-02 - DF - PYC - RealResults",
+            "26-FL-014-02 - DF - PYC - RealResults",
+            "26-TX-001-02 - DF - PYC - RealResults",
+            "26-TX-002-02 - DF - PYC - RealResults",
+            "26-FL-003-02 - DF - PYC - RealResults",
+            "26-FL-008-02 - DF - PYC - RealResults",
+            "26-NY-004-02 - DF - PYC - RealResults",
+            "26-NJ-003-02 - DF - PYC - RealResults",
+            "26-FL-004-02 - DF - PYC - RealResults",
+            "26-FL-002-02 - DF - PYC - RealResults",
+            "26-NY-002-02 - DF - PYC - RealResults",
+            "26-NJ-001-02 - DF - PYC - RealResults",
+            "26-FL-012-02 - DF - PYC - RealResults",
+            "26-FL-015-02 - DF - PYC - RealResults",
+            "26-NY-003-02 - DF - PYC - RealResults",
+            "26-NC-001-02 - DF - PYC - RealResults"
+          ]
+        },
+        {
+          "concept": "ShowUp",
+          "spend": 1139.63,
+          "impressions": 33163,
+          "leads": 15,
+          "cpl": 75.98,
+          "ads": [
+            "26-FL-013-02 - PS - SI - ShowUp",
+            "26-NJ-002-02 - PS - SI - ShowUp",
+            "26-FL-016-02 - PS - SI - ShowUp",
+            "26-FL-011-02 - PS - SI - ShowUp",
+            "26-FL-010-02 - PS - SI - ShowUp",
+            "26-FL-014-02 - PS - SI - ShowUp",
+            "26-TX-001-02 - PS - SI - ShowUp",
+            "26-TX-002-02 - PS - SI - ShowUp",
+            "26-FL-003-02 - PS - SI - ShowUp",
+            "26-FL-008-02 - PS - SI - ShowUp",
+            "26-NY-004-02 - PS - SI - ShowUp",
+            "26-NJ-003-02 - PS - SI - ShowUp",
+            "26-FL-004-02 - PS - SI - ShowUp",
+            "26-FL-002-02 - PS - SI - ShowUp",
+            "26-NY-002-02 - PS - SI - ShowUp",
+            "26-NJ-001-02 - PS - SI - ShowUp",
+            "26-FL-012-02 - PS - SI - ShowUp",
+            "26-FL-015-02 - PS - SI - ShowUp",
+            "26-NY-003-02 - PS - SI - ShowUp",
+            "26-NC-001-02 - PS - SI - ShowUp"
+          ]
+        },
+        {
+          "concept": "Yourself",
+          "spend": 523.05,
+          "impressions": 17243,
+          "leads": 4,
+          "cpl": 130.76,
+          "ads": [
+            "26-FL-013-02 - P&R - POC - Yourself",
+            "26-NJ-002-02 - P&R - POC - Yourself",
+            "26-FL-016-02 - P&R - POC - Yourself",
+            "26-FL-011-02 - P&R - POC - Yourself",
+            "26-FL-010-02 - P&R - POC - Yourself",
+            "26-FL-014-02 - P&R - POC - Yourself",
+            "26-TX-001-02 - P&R - POC - Yourself",
+            "26-TX-002-02 - P&R - POC - Yourself",
+            "26-FL-003-02 - P&R - POC - Yourself",
+            "26-FL-008-02 - P&R - POC - Yourself",
+            "26-NY-004-02 - P&R - POC - Yourself",
+            "26-NJ-003-02 - P&R - POC - Yourself",
+            "26-FL-004-02 - P&R - POC - Yourself",
+            "26-FL-002-02 - P&R - POC - Yourself",
+            "26-NY-002-02 - P&R - POC - Yourself",
+            "26-NJ-001-02 - P&R - POC - Yourself",
+            "26-FL-012-02 - P&R - POC - Yourself",
+            "26-FL-015-02 - P&R - POC - Yourself",
+            "26-NY-003-02 - P&R - POC - Yourself",
+            "26-NC-001-02 - P&R - POC - Yourself"
+          ]
+        },
+        {
+          "concept": "Video",
+          "spend": 5193.02,
+          "impressions": 156258,
+          "leads": 55,
+          "cpl": 94.42,
+          "ads": [
+            "26-FL-013-02 - DR - DINKS - Video - Review",
+            "26-FL-013-02 - SSB - SAHP - Video - ForYou",
+            "26-FL-013-02 - PS - SI - Video - Voice",
+            "26-NJ-002-02 - DR - DINKS - Video - Review",
+            "26-NJ-002-02 - SSB - SAHP - Video - ForYou",
+            "26-NJ-002-02 - PS - SI - Video - Voice",
+            "26-NJ-002-02 - Hyrox - Video - Part",
+            "26-FL-016-02 - DR - DINKS - Video - Review",
+            "26-FL-016-02 - SSB - SAHP - Video - ForYou",
+            "26-FL-016-02 - PS - SI - Video - Voice",
+            "26-FL-011-02 - DR - DINKS - Video - Review",
+            "26-FL-011-02 - SSB - SAHP - Video - ForYou",
+            "26-FL-011-02 - PS - SI - Video - Voice",
+            "26-FL-010-02 - DR - DINKS - Video - Review",
+            "26-FL-010-02 - SSB - SAHP - Video - ForYou",
+            "26-FL-010-02 - PS - SI - Video - Voice",
+            "26-FL-014-02 - DR - DINKS - Video - Review",
+            "26-FL-014-02 - SSB - SAHP - Video - ForYou",
+            "26-FL-014-02 - PS - SI - Video - Voice",
+            "26-FL-014-02 - Hyrox - Video - Part"
+          ]
+        },
+        {
+          "concept": "Blue",
+          "spend": 340.66,
+          "impressions": 16291,
+          "leads": 4,
+          "cpl": 85.16,
+          "ads": [
+            "26-NJ-002-02 - Hyrox - Blue",
+            "26-FL-014-02 - Hyrox - Blue",
+            "26-TX-001-02 - Hyrox - Blue",
+            "26-TX-002-02 - Hyrox - Blue",
+            "26-FL-003-02 - Hyrox - Blue",
+            "26-NJ-003-02 - Hyrox - Blue",
+            "26-NJ-001-02 - Hyrox - Blue",
+            "26-NC-001-02 - Hyrox - Blue",
+            "26-FL-009-02 - Hyrox - Blue",
+            "26-FL-005-02 - Hyrox - Blue",
+            "26-FL-002-02 - Hyrox - Blue",
+            "26-FL-001-02 - Hyrox - Blue"
+          ]
+        },
+        {
+          "concept": "Static4",
+          "spend": 0.23,
+          "impressions": 12,
+          "leads": 0,
+          "cpl": 0,
+          "ads": [
+            "26-FL-002-01 Static4"
+          ]
+        },
+        {
+          "concept": "Video5",
+          "spend": 0.28,
+          "impressions": 4,
+          "leads": 0,
+          "cpl": 0,
+          "ads": [
+            "26-FL-002-01 Video5 Testimonial"
+          ]
+        },
+        {
+          "concept": "Video6",
+          "spend": 38.52,
+          "impressions": 1635,
+          "leads": 0,
+          "cpl": 0,
+          "ads": [
+            "26-FL-002-01 Video6 Hyrox"
+          ]
+        }
+      ],
+      "studio_pillars": [
+        {
+          "studio_code": "FL-001",
+          "pillar": "DF",
+          "spend": 2.15,
+          "impressions": 61,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-001",
+          "pillar": "PS",
+          "spend": 35.21,
+          "impressions": 743,
+          "leads": 1,
+          "cpl": 35.21
+        },
+        {
+          "studio_code": "FL-001",
+          "pillar": "P&R",
+          "spend": 55.97,
+          "impressions": 1742,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-001",
+          "pillar": "DR",
+          "spend": 12.16,
+          "impressions": 224,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-001",
+          "pillar": "SSB",
+          "spend": 1.63,
+          "impressions": 31,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-001",
+          "pillar": "HYROX",
+          "spend": 246.17,
+          "impressions": 11568,
+          "leads": 5,
+          "cpl": 49.23
+        },
+        {
+          "studio_code": "FL-002",
+          "pillar": "DF",
+          "spend": 81.79,
+          "impressions": 2514,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-002",
+          "pillar": "PS",
+          "spend": 315.5,
+          "impressions": 8436,
+          "leads": 2,
+          "cpl": 157.75
+        },
+        {
+          "studio_code": "FL-002",
+          "pillar": "P&R",
+          "spend": 9.82,
+          "impressions": 285,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-002",
+          "pillar": "HYROX",
+          "spend": 67.42,
+          "impressions": 2922,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-002",
+          "pillar": "DR",
+          "spend": 1.69,
+          "impressions": 46,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-002",
+          "pillar": "SSB",
+          "spend": 24.79,
+          "impressions": 510,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-003",
+          "pillar": "DF",
+          "spend": 75.94,
+          "impressions": 2602,
+          "leads": 5,
+          "cpl": 15.19
+        },
+        {
+          "studio_code": "FL-003",
+          "pillar": "PS",
+          "spend": 11.73,
+          "impressions": 238,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-003",
+          "pillar": "P&R",
+          "spend": 4.5,
+          "impressions": 167,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-003",
+          "pillar": "DR",
+          "spend": 12.5,
+          "impressions": 210,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-003",
+          "pillar": "SSB",
+          "spend": 5.26,
+          "impressions": 51,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-003",
+          "pillar": "HYROX",
+          "spend": 179.01,
+          "impressions": 6100,
+          "leads": 1,
+          "cpl": 179.01
+        },
+        {
+          "studio_code": "FL-004",
+          "pillar": "DF",
+          "spend": 23.91,
+          "impressions": 789,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-004",
+          "pillar": "PS",
+          "spend": 170.64,
+          "impressions": 4159,
+          "leads": 3,
+          "cpl": 56.88
+        },
+        {
+          "studio_code": "FL-004",
+          "pillar": "P&R",
+          "spend": 78.79,
+          "impressions": 2930,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-004",
+          "pillar": "DR",
+          "spend": 14.73,
+          "impressions": 320,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-004",
+          "pillar": "SSB",
+          "spend": 1.76,
+          "impressions": 47,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-005",
+          "pillar": "DF",
+          "spend": 12.5,
+          "impressions": 445,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-005",
+          "pillar": "PS",
+          "spend": 79.26,
+          "impressions": 2399,
+          "leads": 2,
+          "cpl": 39.63
+        },
+        {
+          "studio_code": "FL-005",
+          "pillar": "P&R",
+          "spend": 0.22,
+          "impressions": 11,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-005",
+          "pillar": "DR",
+          "spend": 25.99,
+          "impressions": 765,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-005",
+          "pillar": "SSB",
+          "spend": 6.38,
+          "impressions": 150,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-005",
+          "pillar": "HYROX",
+          "spend": 154.42,
+          "impressions": 7926,
+          "leads": 7,
+          "cpl": 22.06
+        },
+        {
+          "studio_code": "FL-006",
+          "pillar": "DF",
+          "spend": 129.53,
+          "impressions": 4330,
+          "leads": 2,
+          "cpl": 64.77
+        },
+        {
+          "studio_code": "FL-006",
+          "pillar": "PS",
+          "spend": 28.13,
+          "impressions": 776,
+          "leads": 1,
+          "cpl": 28.13
+        },
+        {
+          "studio_code": "FL-006",
+          "pillar": "P&R",
+          "spend": 0.27,
+          "impressions": 20,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-006",
+          "pillar": "DR",
+          "spend": 28.51,
+          "impressions": 564,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-006",
+          "pillar": "SSB",
+          "spend": 3.79,
+          "impressions": 46,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-007",
+          "pillar": "DF",
+          "spend": 81.53,
+          "impressions": 2670,
+          "leads": 1,
+          "cpl": 81.53
+        },
+        {
+          "studio_code": "FL-007",
+          "pillar": "PS",
+          "spend": 128.68,
+          "impressions": 2957,
+          "leads": 1,
+          "cpl": 128.68
+        },
+        {
+          "studio_code": "FL-007",
+          "pillar": "P&R",
+          "spend": 1.82,
+          "impressions": 120,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-007",
+          "pillar": "DR",
+          "spend": 43.17,
+          "impressions": 766,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-007",
+          "pillar": "SSB",
+          "spend": 7.95,
+          "impressions": 85,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-008",
+          "pillar": "DF",
+          "spend": 44.06,
+          "impressions": 1652,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-008",
+          "pillar": "PS",
+          "spend": 49.54,
+          "impressions": 1407,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-008",
+          "pillar": "P&R",
+          "spend": 1.78,
+          "impressions": 64,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-008",
+          "pillar": "DR",
+          "spend": 19.13,
+          "impressions": 428,
+          "leads": 1,
+          "cpl": 19.13
+        },
+        {
+          "studio_code": "FL-008",
+          "pillar": "SSB",
+          "spend": 70.03,
+          "impressions": 1519,
+          "leads": 1,
+          "cpl": 70.03
+        },
+        {
+          "studio_code": "FL-009",
+          "pillar": "DF",
+          "spend": 30.87,
+          "impressions": 742,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-009",
+          "pillar": "PS",
+          "spend": 109.44,
+          "impressions": 3138,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-009",
+          "pillar": "P&R",
+          "spend": 0.97,
+          "impressions": 31,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-009",
+          "pillar": "DR",
+          "spend": 20.24,
+          "impressions": 412,
+          "leads": 1,
+          "cpl": 20.24
+        },
+        {
+          "studio_code": "FL-009",
+          "pillar": "SSB",
+          "spend": 7.08,
+          "impressions": 113,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-009",
+          "pillar": "HYROX",
+          "spend": 239.24,
+          "impressions": 9643,
+          "leads": 4,
+          "cpl": 59.81
+        },
+        {
+          "studio_code": "FL-010",
+          "pillar": "DF",
+          "spend": 67.54,
+          "impressions": 2737,
+          "leads": 1,
+          "cpl": 67.54
+        },
+        {
+          "studio_code": "FL-010",
+          "pillar": "PS",
+          "spend": 196.43,
+          "impressions": 5180,
+          "leads": 2,
+          "cpl": 98.21
+        },
+        {
+          "studio_code": "FL-010",
+          "pillar": "P&R",
+          "spend": 8.72,
+          "impressions": 228,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-010",
+          "pillar": "DR",
+          "spend": 25.97,
+          "impressions": 517,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-010",
+          "pillar": "SSB",
+          "spend": 2.7,
+          "impressions": 65,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-011",
+          "pillar": "DF",
+          "spend": 23.99,
+          "impressions": 639,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-011",
+          "pillar": "PS",
+          "spend": 141.04,
+          "impressions": 3635,
+          "leads": 2,
+          "cpl": 70.52
+        },
+        {
+          "studio_code": "FL-011",
+          "pillar": "P&R",
+          "spend": 45.11,
+          "impressions": 1435,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-011",
+          "pillar": "DR",
+          "spend": 16.82,
+          "impressions": 343,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-011",
+          "pillar": "SSB",
+          "spend": 6.37,
+          "impressions": 126,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-012",
+          "pillar": "DF",
+          "spend": 73.23,
+          "impressions": 2512,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-012",
+          "pillar": "PS",
+          "spend": 358.16,
+          "impressions": 9230,
+          "leads": 5,
+          "cpl": 71.63
+        },
+        {
+          "studio_code": "FL-012",
+          "pillar": "P&R",
+          "spend": 0.29,
+          "impressions": 19,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-012",
+          "pillar": "DR",
+          "spend": 37.38,
+          "impressions": 696,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-012",
+          "pillar": "SSB",
+          "spend": 6.16,
+          "impressions": 91,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-013",
+          "pillar": "DF",
+          "spend": 106.13,
+          "impressions": 3705,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-013",
+          "pillar": "PS",
+          "spend": 116.77,
+          "impressions": 2933,
+          "leads": 2,
+          "cpl": 58.39
+        },
+        {
+          "studio_code": "FL-013",
+          "pillar": "P&R",
+          "spend": 9.76,
+          "impressions": 270,
+          "leads": 1,
+          "cpl": 9.76
+        },
+        {
+          "studio_code": "FL-013",
+          "pillar": "DR",
+          "spend": 24.71,
+          "impressions": 349,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-013",
+          "pillar": "SSB",
+          "spend": 3.0,
+          "impressions": 70,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-014",
+          "pillar": "DF",
+          "spend": 22.34,
+          "impressions": 792,
+          "leads": 1,
+          "cpl": 22.34
+        },
+        {
+          "studio_code": "FL-014",
+          "pillar": "PS",
+          "spend": 43.64,
+          "impressions": 1096,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-014",
+          "pillar": "P&R",
+          "spend": 3.02,
+          "impressions": 85,
+          "leads": 1,
+          "cpl": 3.02
+        },
+        {
+          "studio_code": "FL-014",
+          "pillar": "DR",
+          "spend": 11.0,
+          "impressions": 251,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-014",
+          "pillar": "SSB",
+          "spend": 14.22,
+          "impressions": 321,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-014",
+          "pillar": "HYROX",
+          "spend": 244.1,
+          "impressions": 10494,
+          "leads": 8,
+          "cpl": 30.51
+        },
+        {
+          "studio_code": "FL-015",
+          "pillar": "DF",
+          "spend": 20.01,
+          "impressions": 691,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-015",
+          "pillar": "PS",
+          "spend": 298.78,
+          "impressions": 8010,
+          "leads": 3,
+          "cpl": 99.59
+        },
+        {
+          "studio_code": "FL-015",
+          "pillar": "P&R",
+          "spend": 1.89,
+          "impressions": 66,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-015",
+          "pillar": "DR",
+          "spend": 41.8,
+          "impressions": 752,
+          "leads": 1,
+          "cpl": 41.8
+        },
+        {
+          "studio_code": "FL-015",
+          "pillar": "SSB",
+          "spend": 5.44,
+          "impressions": 60,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-016",
+          "pillar": "DF",
+          "spend": 141.86,
+          "impressions": 3889,
+          "leads": 1,
+          "cpl": 141.86
+        },
+        {
+          "studio_code": "FL-016",
+          "pillar": "PS",
+          "spend": 75.7,
+          "impressions": 1531,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-016",
+          "pillar": "P&R",
+          "spend": 4.42,
+          "impressions": 78,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-016",
+          "pillar": "DR",
+          "spend": 135.98,
+          "impressions": 2034,
+          "leads": 2,
+          "cpl": 67.99
+        },
+        {
+          "studio_code": "FL-016",
+          "pillar": "SSB",
+          "spend": 10.88,
+          "impressions": 123,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NC-001",
+          "pillar": "DF",
+          "spend": 31.13,
+          "impressions": 1446,
+          "leads": 1,
+          "cpl": 31.13
+        },
+        {
+          "studio_code": "NC-001",
+          "pillar": "PS",
+          "spend": 66.93,
+          "impressions": 2362,
+          "leads": 1,
+          "cpl": 66.93
+        },
+        {
+          "studio_code": "NC-001",
+          "pillar": "P&R",
+          "spend": 0.04,
+          "impressions": 7,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NC-001",
+          "pillar": "DR",
+          "spend": 18.71,
+          "impressions": 384,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NC-001",
+          "pillar": "SSB",
+          "spend": 3.83,
+          "impressions": 62,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NC-001",
+          "pillar": "HYROX",
+          "spend": 218.82,
+          "impressions": 9848,
+          "leads": 1,
+          "cpl": 218.82
+        },
+        {
+          "studio_code": "NJ-001",
+          "pillar": "DF",
+          "spend": 64.98,
+          "impressions": 3022,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-001",
+          "pillar": "PS",
+          "spend": 48.31,
+          "impressions": 1652,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-001",
+          "pillar": "P&R",
+          "spend": 14.2,
+          "impressions": 517,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-001",
+          "pillar": "DR",
+          "spend": 29.74,
+          "impressions": 803,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-001",
+          "pillar": "SSB",
+          "spend": 4.92,
+          "impressions": 84,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-001",
+          "pillar": "HYROX",
+          "spend": 210.52,
+          "impressions": 9375,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-002",
+          "pillar": "DF",
+          "spend": 59.2,
+          "impressions": 2181,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-002",
+          "pillar": "PS",
+          "spend": 122.12,
+          "impressions": 4049,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-002",
+          "pillar": "P&R",
+          "spend": 7.85,
+          "impressions": 303,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-002",
+          "pillar": "DR",
+          "spend": 41.07,
+          "impressions": 1002,
+          "leads": 1,
+          "cpl": 41.07
+        },
+        {
+          "studio_code": "NJ-002",
+          "pillar": "SSB",
+          "spend": 13.35,
+          "impressions": 177,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-002",
+          "pillar": "HYROX",
+          "spend": 212.47,
+          "impressions": 8480,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-003",
+          "pillar": "DF",
+          "spend": 31.6,
+          "impressions": 1156,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-003",
+          "pillar": "PS",
+          "spend": 36.22,
+          "impressions": 904,
+          "leads": 1,
+          "cpl": 36.22
+        },
+        {
+          "studio_code": "NJ-003",
+          "pillar": "P&R",
+          "spend": 69.01,
+          "impressions": 2199,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-003",
+          "pillar": "DR",
+          "spend": 18.27,
+          "impressions": 271,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-003",
+          "pillar": "SSB",
+          "spend": 11.96,
+          "impressions": 192,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-003",
+          "pillar": "HYROX",
+          "spend": 228.06,
+          "impressions": 8325,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-002",
+          "pillar": "DF",
+          "spend": 179.49,
+          "impressions": 5561,
+          "leads": 1,
+          "cpl": 179.49
+        },
+        {
+          "studio_code": "NY-002",
+          "pillar": "PS",
+          "spend": 209.59,
+          "impressions": 4253,
+          "leads": 3,
+          "cpl": 69.86
+        },
+        {
+          "studio_code": "NY-002",
+          "pillar": "P&R",
+          "spend": 6.62,
+          "impressions": 124,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-002",
+          "pillar": "DR",
+          "spend": 23.88,
+          "impressions": 377,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-002",
+          "pillar": "SSB",
+          "spend": 8.08,
+          "impressions": 115,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-003",
+          "pillar": "DF",
+          "spend": 15.63,
+          "impressions": 526,
+          "leads": 1,
+          "cpl": 15.63
+        },
+        {
+          "studio_code": "NY-003",
+          "pillar": "PS",
+          "spend": 248.8,
+          "impressions": 5563,
+          "leads": 5,
+          "cpl": 49.76
+        },
+        {
+          "studio_code": "NY-003",
+          "pillar": "P&R",
+          "spend": 109.15,
+          "impressions": 3327,
+          "leads": 1,
+          "cpl": 109.15
+        },
+        {
+          "studio_code": "NY-003",
+          "pillar": "DR",
+          "spend": 49.13,
+          "impressions": 929,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-003",
+          "pillar": "SSB",
+          "spend": 4.5,
+          "impressions": 55,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-004",
+          "pillar": "DF",
+          "spend": 171.34,
+          "impressions": 4263,
+          "leads": 1,
+          "cpl": 171.34
+        },
+        {
+          "studio_code": "NY-004",
+          "pillar": "PS",
+          "spend": 240.78,
+          "impressions": 4777,
+          "leads": 1,
+          "cpl": 240.78
+        },
+        {
+          "studio_code": "NY-004",
+          "pillar": "P&R",
+          "spend": 19.12,
+          "impressions": 495,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-004",
+          "pillar": "DR",
+          "spend": 48.56,
+          "impressions": 791,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-004",
+          "pillar": "SSB",
+          "spend": 20.45,
+          "impressions": 306,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "TX-001",
+          "pillar": "DF",
+          "spend": 12.05,
+          "impressions": 438,
+          "leads": 1,
+          "cpl": 12.05
+        },
+        {
+          "studio_code": "TX-001",
+          "pillar": "PS",
+          "spend": 19.86,
+          "impressions": 502,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "TX-001",
+          "pillar": "P&R",
+          "spend": 68.73,
+          "impressions": 2689,
+          "leads": 1,
+          "cpl": 68.73
+        },
+        {
+          "studio_code": "TX-001",
+          "pillar": "DR",
+          "spend": 6.26,
+          "impressions": 45,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "TX-001",
+          "pillar": "SSB",
+          "spend": 1.88,
+          "impressions": 37,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "TX-001",
+          "pillar": "HYROX",
+          "spend": 260.53,
+          "impressions": 13067,
+          "leads": 4,
+          "cpl": 65.13
+        },
+        {
+          "studio_code": "TX-002",
+          "pillar": "DF",
+          "spend": 10.48,
+          "impressions": 411,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "TX-002",
+          "pillar": "PS",
+          "spend": 108.69,
+          "impressions": 3754,
+          "leads": 1,
+          "cpl": 108.69
+        },
+        {
+          "studio_code": "TX-002",
+          "pillar": "P&R",
+          "spend": 0.98,
+          "impressions": 31,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "TX-002",
+          "pillar": "DR",
+          "spend": 32.79,
+          "impressions": 714,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "TX-002",
+          "pillar": "SSB",
+          "spend": 4.0,
+          "impressions": 69,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "TX-002",
+          "pillar": "HYROX",
+          "spend": 200.52,
+          "impressions": 7417,
+          "leads": 1,
+          "cpl": 200.52
+        }
+      ],
+      "studio_concepts": [
+        {
+          "studio_code": "FL-001",
+          "concept": "Plan",
+          "spend": 1.87,
+          "impressions": 46,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-001",
+          "concept": "RealResults",
+          "spend": 0.28,
+          "impressions": 15,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-001",
+          "concept": "ShowUp",
+          "spend": 0.09,
+          "impressions": 13,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-001",
+          "concept": "Yourself",
+          "spend": 55.97,
+          "impressions": 1742,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-001",
+          "concept": "Video",
+          "spend": 245.26,
+          "impressions": 10643,
+          "leads": 6,
+          "cpl": 40.88
+        },
+        {
+          "studio_code": "FL-001",
+          "concept": "Blue",
+          "spend": 49.82,
+          "impressions": 1910,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-002",
+          "concept": "Plan",
+          "spend": 33.64,
+          "impressions": 1106,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-002",
+          "concept": "ShowUp",
+          "spend": 313.52,
+          "impressions": 8355,
+          "leads": 2,
+          "cpl": 156.76
+        },
+        {
+          "studio_code": "FL-002",
+          "concept": "RealResults",
+          "spend": 48.15,
+          "impressions": 1408,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-002",
+          "concept": "Yourself",
+          "spend": 9.82,
+          "impressions": 285,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-002",
+          "concept": "Static4",
+          "spend": 0.23,
+          "impressions": 12,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-002",
+          "concept": "Video5",
+          "spend": 0.28,
+          "impressions": 4,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-002",
+          "concept": "Video6",
+          "spend": 38.52,
+          "impressions": 1635,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-002",
+          "concept": "Video",
+          "spend": 47.02,
+          "impressions": 1367,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-002",
+          "concept": "Blue",
+          "spend": 10.34,
+          "impressions": 557,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-003",
+          "concept": "Plan",
+          "spend": 74.28,
+          "impressions": 2513,
+          "leads": 5,
+          "cpl": 14.86
+        },
+        {
+          "studio_code": "FL-003",
+          "concept": "RealResults",
+          "spend": 1.66,
+          "impressions": 89,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-003",
+          "concept": "ShowUp",
+          "spend": 1.28,
+          "impressions": 16,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-003",
+          "concept": "Yourself",
+          "spend": 4.5,
+          "impressions": 167,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-003",
+          "concept": "Video",
+          "spend": 194.85,
+          "impressions": 6175,
+          "leads": 1,
+          "cpl": 194.85
+        },
+        {
+          "studio_code": "FL-003",
+          "concept": "Blue",
+          "spend": 12.37,
+          "impressions": 408,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-004",
+          "concept": "Plan",
+          "spend": 18.59,
+          "impressions": 599,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-004",
+          "concept": "ShowUp",
+          "spend": 22.83,
+          "impressions": 676,
+          "leads": 2,
+          "cpl": 11.41
+        },
+        {
+          "studio_code": "FL-004",
+          "concept": "RealResults",
+          "spend": 5.32,
+          "impressions": 190,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-004",
+          "concept": "Yourself",
+          "spend": 78.79,
+          "impressions": 2930,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-004",
+          "concept": "Video",
+          "spend": 164.3,
+          "impressions": 3850,
+          "leads": 1,
+          "cpl": 164.3
+        },
+        {
+          "studio_code": "FL-005",
+          "concept": "Plan",
+          "spend": 12.26,
+          "impressions": 433,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-005",
+          "concept": "RealResults",
+          "spend": 0.24,
+          "impressions": 12,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-005",
+          "concept": "ShowUp",
+          "spend": 39.47,
+          "impressions": 1425,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-005",
+          "concept": "Yourself",
+          "spend": 0.22,
+          "impressions": 11,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-005",
+          "concept": "Video",
+          "spend": 212.54,
+          "impressions": 9096,
+          "leads": 7,
+          "cpl": 30.36
+        },
+        {
+          "studio_code": "FL-005",
+          "concept": "Blue",
+          "spend": 14.04,
+          "impressions": 719,
+          "leads": 2,
+          "cpl": 7.02
+        },
+        {
+          "studio_code": "FL-006",
+          "concept": "Plan",
+          "spend": 127.76,
+          "impressions": 4259,
+          "leads": 2,
+          "cpl": 63.88
+        },
+        {
+          "studio_code": "FL-006",
+          "concept": "ShowUp",
+          "spend": 7.0,
+          "impressions": 223,
+          "leads": 1,
+          "cpl": 7.0
+        },
+        {
+          "studio_code": "FL-006",
+          "concept": "RealResults",
+          "spend": 1.77,
+          "impressions": 71,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-006",
+          "concept": "Yourself",
+          "spend": 0.27,
+          "impressions": 20,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-006",
+          "concept": "Video",
+          "spend": 53.43,
+          "impressions": 1163,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-007",
+          "concept": "Plan",
+          "spend": 80.48,
+          "impressions": 2641,
+          "leads": 1,
+          "cpl": 80.48
+        },
+        {
+          "studio_code": "FL-007",
+          "concept": "RealResults",
+          "spend": 1.05,
+          "impressions": 29,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-007",
+          "concept": "ShowUp",
+          "spend": 9.22,
+          "impressions": 266,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-007",
+          "concept": "Yourself",
+          "spend": 1.82,
+          "impressions": 120,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-007",
+          "concept": "Video",
+          "spend": 170.58,
+          "impressions": 3542,
+          "leads": 1,
+          "cpl": 170.58
+        },
+        {
+          "studio_code": "FL-008",
+          "concept": "Plan",
+          "spend": 9.45,
+          "impressions": 328,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-008",
+          "concept": "RealResults",
+          "spend": 34.61,
+          "impressions": 1324,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-008",
+          "concept": "ShowUp",
+          "spend": 0.8,
+          "impressions": 44,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-008",
+          "concept": "Yourself",
+          "spend": 1.78,
+          "impressions": 64,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-008",
+          "concept": "Video",
+          "spend": 137.9,
+          "impressions": 3310,
+          "leads": 2,
+          "cpl": 68.95
+        },
+        {
+          "studio_code": "FL-009",
+          "concept": "Plan",
+          "spend": 3.33,
+          "impressions": 107,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-009",
+          "concept": "ShowUp",
+          "spend": 59.87,
+          "impressions": 1961,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-009",
+          "concept": "RealResults",
+          "spend": 27.54,
+          "impressions": 635,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-009",
+          "concept": "Yourself",
+          "spend": 0.97,
+          "impressions": 31,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-009",
+          "concept": "Video",
+          "spend": 285.51,
+          "impressions": 10088,
+          "leads": 3,
+          "cpl": 95.17
+        },
+        {
+          "studio_code": "FL-009",
+          "concept": "Blue",
+          "spend": 30.62,
+          "impressions": 1257,
+          "leads": 2,
+          "cpl": 15.31
+        },
+        {
+          "studio_code": "FL-010",
+          "concept": "Plan",
+          "spend": 28.64,
+          "impressions": 1225,
+          "leads": 1,
+          "cpl": 28.64
+        },
+        {
+          "studio_code": "FL-010",
+          "concept": "RealResults",
+          "spend": 38.9,
+          "impressions": 1512,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-010",
+          "concept": "ShowUp",
+          "spend": 4.29,
+          "impressions": 205,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-010",
+          "concept": "Yourself",
+          "spend": 8.72,
+          "impressions": 228,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-010",
+          "concept": "Video",
+          "spend": 220.81,
+          "impressions": 5557,
+          "leads": 2,
+          "cpl": 110.4
+        },
+        {
+          "studio_code": "FL-011",
+          "concept": "Plan",
+          "spend": 19.74,
+          "impressions": 513,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-011",
+          "concept": "RealResults",
+          "spend": 4.25,
+          "impressions": 126,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-011",
+          "concept": "ShowUp",
+          "spend": 5.76,
+          "impressions": 189,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-011",
+          "concept": "Yourself",
+          "spend": 45.11,
+          "impressions": 1435,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-011",
+          "concept": "Video",
+          "spend": 158.47,
+          "impressions": 3915,
+          "leads": 2,
+          "cpl": 79.23
+        },
+        {
+          "studio_code": "FL-012",
+          "concept": "Plan",
+          "spend": 35.62,
+          "impressions": 969,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-012",
+          "concept": "RealResults",
+          "spend": 37.61,
+          "impressions": 1543,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-012",
+          "concept": "ShowUp",
+          "spend": 36.11,
+          "impressions": 799,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-012",
+          "concept": "Yourself",
+          "spend": 0.29,
+          "impressions": 19,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-012",
+          "concept": "Video",
+          "spend": 365.59,
+          "impressions": 9218,
+          "leads": 5,
+          "cpl": 73.12
+        },
+        {
+          "studio_code": "FL-013",
+          "concept": "Plan",
+          "spend": 80.52,
+          "impressions": 2826,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-013",
+          "concept": "RealResults",
+          "spend": 25.61,
+          "impressions": 879,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-013",
+          "concept": "ShowUp",
+          "spend": 21.96,
+          "impressions": 712,
+          "leads": 1,
+          "cpl": 21.96
+        },
+        {
+          "studio_code": "FL-013",
+          "concept": "Yourself",
+          "spend": 9.76,
+          "impressions": 270,
+          "leads": 1,
+          "cpl": 9.76
+        },
+        {
+          "studio_code": "FL-013",
+          "concept": "Video",
+          "spend": 122.52,
+          "impressions": 2640,
+          "leads": 1,
+          "cpl": 122.52
+        },
+        {
+          "studio_code": "FL-014",
+          "concept": "Plan",
+          "spend": 1.41,
+          "impressions": 28,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-014",
+          "concept": "RealResults",
+          "spend": 20.93,
+          "impressions": 764,
+          "leads": 1,
+          "cpl": 20.93
+        },
+        {
+          "studio_code": "FL-014",
+          "concept": "ShowUp",
+          "spend": 2.07,
+          "impressions": 58,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-014",
+          "concept": "Yourself",
+          "spend": 3.02,
+          "impressions": 85,
+          "leads": 1,
+          "cpl": 3.02
+        },
+        {
+          "studio_code": "FL-014",
+          "concept": "Video",
+          "spend": 275.49,
+          "impressions": 10468,
+          "leads": 8,
+          "cpl": 34.44
+        },
+        {
+          "studio_code": "FL-014",
+          "concept": "Blue",
+          "spend": 35.4,
+          "impressions": 1636,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-015",
+          "concept": "Plan",
+          "spend": 17.73,
+          "impressions": 569,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-015",
+          "concept": "RealResults",
+          "spend": 2.28,
+          "impressions": 122,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-015",
+          "concept": "ShowUp",
+          "spend": 229.42,
+          "impressions": 6069,
+          "leads": 3,
+          "cpl": 76.47
+        },
+        {
+          "studio_code": "FL-015",
+          "concept": "Yourself",
+          "spend": 1.89,
+          "impressions": 66,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-015",
+          "concept": "Video",
+          "spend": 116.6,
+          "impressions": 2753,
+          "leads": 1,
+          "cpl": 116.6
+        },
+        {
+          "studio_code": "FL-016",
+          "concept": "Plan",
+          "spend": 97.7,
+          "impressions": 2591,
+          "leads": 1,
+          "cpl": 97.7
+        },
+        {
+          "studio_code": "FL-016",
+          "concept": "RealResults",
+          "spend": 44.16,
+          "impressions": 1298,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-016",
+          "concept": "ShowUp",
+          "spend": 7.1,
+          "impressions": 147,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-016",
+          "concept": "Yourself",
+          "spend": 4.42,
+          "impressions": 78,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "FL-016",
+          "concept": "Video",
+          "spend": 215.46,
+          "impressions": 3541,
+          "leads": 2,
+          "cpl": 107.73
+        },
+        {
+          "studio_code": "NC-001",
+          "concept": "Plan",
+          "spend": 11.1,
+          "impressions": 406,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NC-001",
+          "concept": "RealResults",
+          "spend": 20.03,
+          "impressions": 1040,
+          "leads": 1,
+          "cpl": 20.03
+        },
+        {
+          "studio_code": "NC-001",
+          "concept": "ShowUp",
+          "spend": 31.5,
+          "impressions": 1240,
+          "leads": 1,
+          "cpl": 31.5
+        },
+        {
+          "studio_code": "NC-001",
+          "concept": "Yourself",
+          "spend": 0.04,
+          "impressions": 7,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NC-001",
+          "concept": "Video",
+          "spend": 245.55,
+          "impressions": 9659,
+          "leads": 1,
+          "cpl": 245.55
+        },
+        {
+          "studio_code": "NC-001",
+          "concept": "Blue",
+          "spend": 31.24,
+          "impressions": 1757,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-001",
+          "concept": "Plan",
+          "spend": 61.37,
+          "impressions": 2847,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-001",
+          "concept": "RealResults",
+          "spend": 3.61,
+          "impressions": 175,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-001",
+          "concept": "ShowUp",
+          "spend": 18.76,
+          "impressions": 664,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-001",
+          "concept": "Yourself",
+          "spend": 14.2,
+          "impressions": 517,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-001",
+          "concept": "Video",
+          "spend": 242.44,
+          "impressions": 9449,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-001",
+          "concept": "Blue",
+          "spend": 32.29,
+          "impressions": 1801,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-002",
+          "concept": "Plan",
+          "spend": 23.16,
+          "impressions": 725,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-002",
+          "concept": "RealResults",
+          "spend": 36.04,
+          "impressions": 1456,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-002",
+          "concept": "ShowUp",
+          "spend": 94.91,
+          "impressions": 3255,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-002",
+          "concept": "Yourself",
+          "spend": 7.85,
+          "impressions": 303,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-002",
+          "concept": "Video",
+          "spend": 277.36,
+          "impressions": 9342,
+          "leads": 1,
+          "cpl": 277.36
+        },
+        {
+          "studio_code": "NJ-002",
+          "concept": "Blue",
+          "spend": 16.74,
+          "impressions": 1111,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-003",
+          "concept": "Plan",
+          "spend": 26.81,
+          "impressions": 960,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-003",
+          "concept": "RealResults",
+          "spend": 4.79,
+          "impressions": 196,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-003",
+          "concept": "ShowUp",
+          "spend": 17.37,
+          "impressions": 456,
+          "leads": 1,
+          "cpl": 17.37
+        },
+        {
+          "studio_code": "NJ-003",
+          "concept": "Yourself",
+          "spend": 69.01,
+          "impressions": 2199,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-003",
+          "concept": "Video",
+          "spend": 239.06,
+          "impressions": 7541,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NJ-003",
+          "concept": "Blue",
+          "spend": 38.08,
+          "impressions": 1695,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-002",
+          "concept": "Plan",
+          "spend": 154.34,
+          "impressions": 4812,
+          "leads": 1,
+          "cpl": 154.34
+        },
+        {
+          "studio_code": "NY-002",
+          "concept": "RealResults",
+          "spend": 25.15,
+          "impressions": 749,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-002",
+          "concept": "ShowUp",
+          "spend": 62.28,
+          "impressions": 1396,
+          "leads": 3,
+          "cpl": 20.76
+        },
+        {
+          "studio_code": "NY-002",
+          "concept": "Yourself",
+          "spend": 6.62,
+          "impressions": 124,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-002",
+          "concept": "Video",
+          "spend": 179.27,
+          "impressions": 3349,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-003",
+          "concept": "Plan",
+          "spend": 10.39,
+          "impressions": 395,
+          "leads": 1,
+          "cpl": 10.39
+        },
+        {
+          "studio_code": "NY-003",
+          "concept": "ShowUp",
+          "spend": 27.8,
+          "impressions": 758,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-003",
+          "concept": "RealResults",
+          "spend": 5.24,
+          "impressions": 131,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-003",
+          "concept": "Yourself",
+          "spend": 109.15,
+          "impressions": 3327,
+          "leads": 1,
+          "cpl": 109.15
+        },
+        {
+          "studio_code": "NY-003",
+          "concept": "Video",
+          "spend": 274.63,
+          "impressions": 5789,
+          "leads": 5,
+          "cpl": 54.93
+        },
+        {
+          "studio_code": "NY-004",
+          "concept": "Plan",
+          "spend": 166.64,
+          "impressions": 4139,
+          "leads": 1,
+          "cpl": 166.64
+        },
+        {
+          "studio_code": "NY-004",
+          "concept": "ShowUp",
+          "spend": 37.15,
+          "impressions": 924,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-004",
+          "concept": "RealResults",
+          "spend": 4.7,
+          "impressions": 124,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-004",
+          "concept": "Yourself",
+          "spend": 19.12,
+          "impressions": 495,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "NY-004",
+          "concept": "Video",
+          "spend": 272.64,
+          "impressions": 4950,
+          "leads": 1,
+          "cpl": 272.64
+        },
+        {
+          "studio_code": "TX-001",
+          "concept": "Plan",
+          "spend": 9.16,
+          "impressions": 332,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "TX-001",
+          "concept": "RealResults",
+          "spend": 2.89,
+          "impressions": 106,
+          "leads": 1,
+          "cpl": 2.89
+        },
+        {
+          "studio_code": "TX-001",
+          "concept": "ShowUp",
+          "spend": 8.03,
+          "impressions": 192,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "TX-001",
+          "concept": "Yourself",
+          "spend": 68.73,
+          "impressions": 2689,
+          "leads": 1,
+          "cpl": 68.73
+        },
+        {
+          "studio_code": "TX-001",
+          "concept": "Video",
+          "spend": 235.27,
+          "impressions": 11090,
+          "leads": 4,
+          "cpl": 58.82
+        },
+        {
+          "studio_code": "TX-001",
+          "concept": "Blue",
+          "spend": 45.23,
+          "impressions": 2369,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "TX-002",
+          "concept": "Plan",
+          "spend": 6.25,
+          "impressions": 217,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "TX-002",
+          "concept": "RealResults",
+          "spend": 4.23,
+          "impressions": 194,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "TX-002",
+          "concept": "ShowUp",
+          "spend": 81.04,
+          "impressions": 3120,
+          "leads": 1,
+          "cpl": 81.04
+        },
+        {
+          "studio_code": "TX-002",
+          "concept": "Yourself",
+          "spend": 0.98,
+          "impressions": 31,
+          "leads": 0,
+          "cpl": 0
+        },
+        {
+          "studio_code": "TX-002",
+          "concept": "Video",
+          "spend": 240.47,
+          "impressions": 7763,
+          "leads": 1,
+          "cpl": 240.47
+        },
+        {
+          "studio_code": "TX-002",
+          "concept": "Blue",
+          "spend": 24.49,
+          "impressions": 1071,
+          "leads": 0,
+          "cpl": 0
+        }
+      ],
+      "daily": [
+        {
+          "date": "2026-04-15",
+          "impressions": 47648,
+          "clicks": 399,
+          "spend": 1386.36,
+          "reach": 32163,
+          "leads": 7,
+          "purchases": 1,
+          "trials": 4
+        },
+        {
+          "date": "2026-04-16",
+          "impressions": 43201,
+          "clicks": 440,
+          "spend": 1459.54,
+          "reach": 29073,
+          "leads": 18,
+          "purchases": 0,
+          "trials": 3
+        },
+        {
+          "date": "2026-04-17",
+          "impressions": 43224,
+          "clicks": 365,
+          "spend": 1312.89,
+          "reach": 30249,
+          "leads": 14,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "date": "2026-04-18",
+          "impressions": 42503,
+          "clicks": 451,
+          "spend": 1398.59,
+          "reach": 29379,
+          "leads": 16,
+          "purchases": 0,
+          "trials": 2
+        },
+        {
+          "date": "2026-04-19",
+          "impressions": 30445,
+          "clicks": 317,
+          "spend": 1036.95,
+          "reach": 21341,
+          "leads": 11,
+          "purchases": 2,
+          "trials": 6
+        },
+        {
+          "date": "2026-04-20",
+          "impressions": 28677,
+          "clicks": 311,
+          "spend": 830.72,
+          "reach": 19210,
+          "leads": 16,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "date": "2026-04-21",
+          "impressions": 23102,
+          "clicks": 195,
+          "spend": 803.55,
+          "reach": 14964,
+          "leads": 6,
+          "purchases": 0,
+          "trials": 0
+        },
+        {
+          "date": "2026-04-22",
+          "impressions": 15580,
+          "clicks": 138,
+          "spend": 520.07,
+          "reach": 11340,
+          "leads": 6,
+          "purchases": 0,
+          "trials": 0
+        }
+      ]
+    }
+  }
+}
