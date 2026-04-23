@@ -1,0 +1,60 @@
+name: Refresh Paid Ads data
+
+on:
+  schedule:
+    # 8:00 UTC = 3:00 AM EST / 4:00 AM EDT. Corre diario.
+    # Corre DESPUÉS de refresh.yml (el de Snowflake) para no pisarlo.
+    - cron: "15 8 * * *"
+  workflow_dispatch: {}        # permite correrlo manual desde la UI
+  push:
+    branches: [paid-ads-dashboard]
+    paths:
+      - "fetch_paid_ads.py"
+      - "meta_client.py"
+      - "config.yaml"
+      - ".github/workflows/refresh-paid-ads.yml"
+
+permissions:
+  contents: write               # para poder hacer commit del JSON
+
+concurrency:
+  group: refresh-paid-ads
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-paid-ads.txt
+
+      - name: Run ETL (Meta → paid-ads-data.json)
+        env:
+          # Convención del repo: META_TOKEN. meta_client.py acepta ambos nombres.
+          META_TOKEN:        ${{ secrets.META_TOKEN }}
+          META_API_VERSION:  ${{ secrets.META_API_VERSION }}
+        run: |
+          python fetch_paid_ads.py
+
+      - name: Commit updated data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add paid-ads-data.json
+          if git diff --cached --quiet; then
+            echo "No changes in paid-ads-data.json"
+          else
+            git commit -m "chore(paid-ads): refresh data $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          fi
