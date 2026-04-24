@@ -311,9 +311,8 @@ async function loadData() {
   document.getElementById('fFrom').value = localDateStr(_firstOfPrev);
   document.getElementById('fTo').value   = localDateStr(_lastOfPrev);
 
-  // Franchisee view: show only Brickell and Miami Beach in studio filter
-  const franchiseeExcluded = RAW.studios.filter(s => !FRANCHISEE_STUDIOS.includes(s));
-  buildMultiSelect('studioMenu', 'studioLabel', RAW.studios, franchiseeExcluded);
+  // Franchisee view: only pass the 2 allowed studios to the dropdown
+  buildMultiSelect('studioMenu', 'studioLabel', FRANCHISEE_STUDIOS, []);
   buildMultiSelect('sourceMenu', 'sourceLabel', RAW.sources, DEFAULT_EXCL_SOURCES);
   setGran('daily');
 
