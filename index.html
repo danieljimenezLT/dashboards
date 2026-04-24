@@ -375,7 +375,8 @@ function buildFunnel(curr, prev, pyear, ppLabel, pyLabel) {
     const dpy = calcDelta(s.curr,s.py);
     const ppHTML = dpp!==null ? `<span class="delta ${dpp>=0?'pos':'neg'}" title="vs ${ppLabel}">${dpp>=0?'▲':'▼'} ${Math.abs(dpp).toFixed(1)}% prev period</span>` : `<span class="delta neu"> prev period</span>`;
     const pyHTML = dpy!==null ? `<span class="delta ${dpy>=0?'pos':'neg'}" title="vs ${pyLabel}">${dpy>=0?'▲':'▼'} ${Math.abs(dpy).toFixed(1)}% prev year</span>`   : `<span class="delta neu"> prev year</span>`;
-    return `<div><div class="funnel-stage-label">${s.label}</div><div class="funnel-row"><div class="funnel-bar-track"><div class="funnel-bar-fill" style="width:${w}%;background:${s.color}"></div></div><div class="funnel-num">${s.curr.toLocaleString()}</div><div class="funnel-deltas">${ppHTML}${pyHTML}</div></div></div>`;
+    const helpTexts = {'Leads':'A new user created for a SWEAT440 studio in MBO. Uses lead creation date.','First Timers':'A person who attended their first ever class at a specific SWEAT440 location. Uses first class date.','New Members':'A person who activated their first ever recurring membership at a specific SWEAT440 location. Uses membership activation date.'};
+    return `<div><div class="funnel-stage-label" style="display:flex;align-items:center;gap:6px">${s.label}<span class="help-icon" onclick="this.classList.toggle('open')">?<span class="help-box">${helpTexts[s.label]||''}</span></span></div><div class="funnel-row"><div class="funnel-bar-track"><div class="funnel-bar-fill" style="width:${w}%;background:${s.color}"></div></div><div class="funnel-num">${s.curr.toLocaleString()}</div><div class="funnel-deltas">${ppHTML}${pyHTML}</div></div></div>`;
   }).join('');
 }
 
@@ -399,9 +400,9 @@ function buildTrend(series) {
   trendChart = new Chart(ctx, {
     type:'line',
     data:{labels,datasets:[
-      {label:'Leads',       data:leadsD,borderColor:'#00A3E0',backgroundColor:'#00A3E022',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.4,fill:true},
-      {label:'First Timers',data:ftD,   borderColor:'#00FFC2',backgroundColor:'#00FFC222',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.4,fill:true},
-      {label:'New Members', data:memD,  borderColor:'#DDFF00',backgroundColor:'#DDFF0022',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.4,fill:true},
+      {label:'Leads',       data:leadsD,borderColor:'#00A3E0',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.4,fill:false},
+      {label:'First Timers',data:ftD,   borderColor:'#00FFC2',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.4,fill:false},
+      {label:'New Members', data:memD,  borderColor:'#DDFF00',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.4,fill:false},
     ]},
     options:{
       responsive:true,maintainAspectRatio:false,
@@ -644,6 +645,14 @@ function buildGoogleTab(){
   const dtb=document.querySelector('#google-desc-table tbody');if(dtb)dtb.innerHTML=ds.map(d=>'<tr><td style="max-width:260px;white-space:normal">'+d.t+'</td><td class="num">'+d.i+'</td><td class="num">'+d.c+'</td><td class="num">'+d.r2+'</td><td class="num">'+rb(d.r)+'</td></tr>').join('');
 }
 
+
+
+// Close help tooltips on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('.help-icon')) {
+    document.querySelectorAll('.help-icon.open').forEach(el => el.classList.remove('open'));
+  }
+});
 
 loadData();
 </script>
