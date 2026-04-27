@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SWEAT440 — Open Studio Dashboard</title>
+<title>SWEAT440 — Miami Brickell &amp; Miami Beach</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="shared/style.css"/>
 </head>
@@ -259,8 +259,11 @@
 let RAW = null;
 let trendChart = null;
 let GRAN = 'weekly';
-const COLORS = ['#00A3E0','#00FFC2','#DDFF00']; // Leads, First Timers, New Members
+const COLORS = ['#00A3E0','#00FFC2','#DDFF00'];
 const AREA_GRAN = {leadsAreaChart:'weekly', ftAreaChart:'weekly', memAreaChart:'weekly'};
+
+// ── Franchisee view: locked to these studios ───────────────────────────────
+const FRANCHISEE_STUDIOS = ['SWEAT440 Miami - Brickell', 'SWEAT440 Miami Beach'];
 
 function switchTab(id, btn) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -306,7 +309,8 @@ async function loadData() {
   document.getElementById('fFrom').value = localDateStr(_jan1);
   document.getElementById('fTo').value   = localDateStr(_today);
 
-  buildMultiSelect('studioMenu', 'studioLabel', RAW.studios, DEFAULT_EXCL_STUDIOS);
+  // Franchisee view: only pass the 2 allowed studios to the dropdown
+  buildMultiSelect('studioMenu', 'studioLabel', FRANCHISEE_STUDIOS, []);
   buildMultiSelect('sourceMenu', 'sourceLabel', RAW.sources, DEFAULT_EXCL_SOURCES);
   setGran('weekly');
 
@@ -643,7 +647,6 @@ function buildGoogleTab(){
   const ds=[{t:'World-class HIIT in just 45 minutes. New classes start every 10 min.',i:'92K',c:'3,100',r2:'3.37%',r:'Best'},{t:'No experience needed. Expert coaches guide every session.',i:'78K',c:'2,560',r2:'3.28%',r:'Best'},{t:'Burn up to 800 calories per class. Try your first session free.',i:'65K',c:'2,050',r2:'3.15%',r:'Good'},{t:'Join thousands who transformed their fitness with SWEAT440.',i:'54K',c:'1,620',r2:'3.00%',r:'Good'},{t:'State-of-the-art facilities. Flexible scheduling. No contracts.',i:'43K',c:'1,180',r2:'2.74%',r:'Low'}];
   const dtb=document.querySelector('#google-desc-table tbody');if(dtb)dtb.innerHTML=ds.map(d=>'<tr><td style="max-width:260px;white-space:normal">'+d.t+'</td><td class="num">'+d.i+'</td><td class="num">'+d.c+'</td><td class="num">'+d.r2+'</td><td class="num">'+rb(d.r)+'</td></tr>').join('');
 }
-
 
 
 loadData();
