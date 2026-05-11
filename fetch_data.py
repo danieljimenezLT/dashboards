@@ -15,7 +15,7 @@ SF_TOKEN     = os.getenv("SF_TOKEN")
 
 META_TOKEN   = os.getenv("META_TOKEN")
 META_ACT     = os.getenv("META_ACT", "act_1553887681409034")  # Corporate Studios
-META_API     = "https://graph.facebook.com/v19.0"
+META_API     = "https://graph.facebook.com/v21.0"
 
 
 def json_serial(obj):
