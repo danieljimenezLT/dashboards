@@ -304,6 +304,21 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
 
     studios_cfg = c["studios"]
 
+    # Normalize studio names to match Snowflake canonical names (source of truth).
+    # config.yaml may use different casing/spacing; this ensures paid-ads-data.json
+    # always uses the same names as data.json for the studio filter merge key.
+    _CANONICAL = {
+        'Miami Brickell':        'Miami - Brickell',
+        'Miami Upper East Side': 'Miami - Upper East Side',
+        'Midtown Miami':         'Miami - Midtown',
+        'Coconut Grove':         'Miami - Coconut Grove',
+        'NYC Chelsea':           'NYC - Chelsea',
+        'NYC Park Slope':        'NYC - Park Slope',
+    }
+    for s in studios_cfg:
+        if s.get('name') in _CANONICAL:
+            s['name'] = _CANONICAL[s['name']]
+
     def _empty_bucket():
         return {"spend": 0.0, "impressions": 0, "leads": 0, "ads": []}
 
