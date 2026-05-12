@@ -141,6 +141,59 @@
   }
   .tab-panel.hidden { display: none; }
 
+  /* Granularity toggle */
+  .gran-toggle {
+    display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+  }
+  .gran-btn {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 12px; font-weight: 600;
+    padding: 6px 12px;
+    border: none; border-right: 1px solid var(--border);
+    background: #fff; color: var(--ink-soft);
+    cursor: pointer; transition: background .15s, color .15s;
+  }
+  .gran-btn:last-child { border-right: none; }
+  .gran-btn:hover:not(.active) { background: #F1F5F9; color: var(--ink); }
+  .gran-btn.active { background: var(--brand-blue); color: #fff; }
+
+  /* Metric picker (Daily Trend) */
+  .chart-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .chart-card-header h2 { margin: 0; }
+  .metric-picker { position: relative; }
+  .metric-picker-btn {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 12px; font-weight: 600;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    background: #fff; color: var(--ink-soft);
+    cursor: pointer; border-radius: 6px;
+    display: flex; align-items: center; gap: 6px;
+    transition: border-color .15s, color .15s;
+  }
+  .metric-picker-btn:hover { border-color: var(--brand-blue); color: var(--ink); }
+  .metric-picker-menu {
+    position: absolute; right: 0; top: calc(100% + 6px);
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.10);
+    padding: 6px 0; min-width: 170px; z-index: 200;
+  }
+  .metric-picker-menu[hidden] { display: none; }
+  .metric-picker-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 16px; cursor: pointer; font-size: 13px;
+    user-select: none; transition: background .1s;
+  }
+  .metric-picker-item:hover { background: #F8FAFC; }
+  .metric-picker-item input[type="checkbox"] { cursor: pointer; width: 14px; height: 14px; }
+  .metric-color-dot {
+    display: inline-block; width: 10px; height: 10px;
+    border-radius: 50%; flex-shrink: 0;
+  }
+
   /* Filter bar */
   .filter-bar {
     display: flex;
@@ -277,7 +330,23 @@
 
   <!-- Daily trend -->
   <div class="card">
-    <h2>Daily Trend</h2>
+    <div class="chart-card-header">
+      <h2>Daily Trend</h2>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="gran-toggle">
+          <button class="gran-btn active" data-gran="daily">Daily</button>
+          <button class="gran-btn" data-gran="weekly">Weekly</button>
+          <button class="gran-btn" data-gran="monthly">Monthly</button>
+        </div>
+        <div class="metric-picker" id="metricPicker">
+          <button class="metric-picker-btn" id="metricPickerBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Metrics ▾
+          </button>
+          <div class="metric-picker-menu" id="metricPickerMenu" hidden></div>
+        </div>
+      </div>
+    </div>
     <div class="chart-wrap h-daily"><canvas id="dailyChart"></canvas></div>
   </div>
 
@@ -427,6 +496,17 @@ let charts = {};
 
 let dateFilter = { type: "all", start: null, end: null };
 let studioFilter = null;
+let currentDailyData = [];
+
+const DAILY_METRICS = [
+  { key: "cpl",       label: "CPL",       color: "#00A3E0", bgColor: "rgba(0,163,224,.15)",    yAxis: "y",  fmt: v => fmtMoney(v), fill: true,  compute: d => d.leads > 0 ? d.spend / d.leads : null },
+  { key: "leads",     label: "Leads",     color: "#F59E0B", bgColor: "rgba(245,158,11,.15)",   yAxis: "y1", fmt: v => fmtInt(v),   fill: false, compute: d => d.leads },
+  { key: "spend",     label: "Spend",     color: "#10B981", bgColor: "rgba(16,185,129,.15)",   yAxis: "y_spend", fmt: v => fmtMoney(v), fill: false, compute: d => d.spend },
+  { key: "trials",    label: "Trials",    color: "#6366F1", bgColor: "rgba(99,102,241,.15)",   yAxis: "y1", fmt: v => fmtInt(v),   fill: false, compute: d => d.trials },
+  { key: "purchases", label: "Purchases", color: "#EC4899", bgColor: "rgba(236,72,153,.15)",   yAxis: "y1", fmt: v => fmtMoney(v), fill: false, compute: d => d.purchases },
+];
+let dailyMetricSel = new Set(["cpl", "leads"]);
+let dailyGran = "daily";
 
 const BRAND = {
   blue: "#00A3E0",
@@ -474,6 +554,8 @@ async function bootstrap() {
 
   initTabs();
   initFilters();
+  initMetricPicker();
+  initGranToggle();
   populateStudioFilter();
   render();
 }
@@ -776,7 +858,8 @@ function renderKpis(t) {
   const cpp = t.purchases ? (t.spend / t.purchases) : 0;
   const cards = [
     { label: "Spend",       value: fmtMoney(t.spend),      accent: true },
-    { label: "Leads",       value: fmtInt(t.leads),        sub: "CPL " + fmtMoney(t.cpl) },
+    { label: "Leads",       value: fmtInt(t.leads) },
+    { label: "CPL",         value: fmtMoney(t.cpl),        sub: "Cost per Lead", accent: false, accentColor: "#00A3E0" },
     { label: "Trials",      value: fmtInt(t.trials),       sub: t.trials    ? "CPT " + fmtMoney(cpt) : "—" },
     { label: "Purchases",   value: fmtInt(t.purchases),    sub: t.purchases ? "CPP " + fmtMoney(cpp) : "—" },
     { label: "Impressions", value: fmtInt(t.impressions),  sub: "CPM " + fmtMoney(t.cpm) },
@@ -785,45 +868,101 @@ function renderKpis(t) {
   ];
   const grid = document.getElementById("kpiGrid");
   grid.innerHTML = cards.map(c => `
-    <div class="kpi ${c.accent ? "accent" : ""}">
+    <div class="kpi ${c.accent ? "accent" : ""}" ${c.accentColor ? `style="border-left:4px solid ${c.accentColor}"` : ""}>
       <div class="label">${c.label}</div>
-      <div class="value">${c.value}</div>
+      <div class="value" ${c.accentColor ? `style="color:${c.accentColor}"` : ""}>${c.value}</div>
       ${c.sub ? `<div class="sub">${c.sub}</div>` : ""}
     </div>
   `).join("");
 }
 
 function renderDaily(daily) {
-  const labels = daily.map(d => d.date);
-  const cpl   = daily.map(d => (d.leads && d.leads > 0) ? d.spend / d.leads : null);
-  const leads = daily.map(d => d.leads);
+  currentDailyData = daily;
+  renderDailyChart(daily);
+}
+
+function aggregateByGran(daily, gran) {
+  if (gran === "daily") return daily;
+  const groups = {};
+  daily.forEach(d => {
+    let key;
+    const dt = new Date(d.date + "T00:00:00Z");
+    if (gran === "weekly") {
+      const dow  = dt.getUTCDay();
+      const diff = dow === 0 ? -6 : 1 - dow;
+      const mon  = new Date(dt);
+      mon.setUTCDate(dt.getUTCDate() + diff);
+      key = mon.toISOString().slice(0, 10);
+    } else {
+      key = d.date.slice(0, 7) + "-01";
+    }
+    if (!groups[key]) groups[key] = { date: key, spend: 0, leads: 0, trials: 0, purchases: 0, impressions: 0, clicks: 0 };
+    const g = groups[key];
+    g.spend       += d.spend       || 0;
+    g.leads       += d.leads       || 0;
+    g.trials      += d.trials      || 0;
+    g.purchases   += d.purchases   || 0;
+    g.impressions += d.impressions || 0;
+    g.clicks      += d.clicks      || 0;
+  });
+  return Object.values(groups).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function formatGranLabel(dateStr, gran) {
+  const dt = new Date(dateStr + "T00:00:00Z");
+  if (gran === "weekly")  return "Wk " + (dt.getUTCMonth() + 1) + "/" + dt.getUTCDate();
+  if (gran === "monthly") return dt.toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
+  return dateStr;
+}
+
+function renderDailyChart(daily) {
+  const rows     = aggregateByGran(daily, dailyGran);
+  const labels   = rows.map(d => formatGranLabel(d.date, dailyGran));
+  const selected = DAILY_METRICS.filter(m => dailyMetricSel.has(m.key));
+
+  const needY      = selected.some(m => m.yAxis === "y");
+  const needY1     = selected.some(m => m.yAxis === "y1");
+  const needSpend  = selected.some(m => m.yAxis === "y_spend");
+
+  const datasets = selected.map(m => ({
+    label:           m.label,
+    data:            rows.map(d => m.compute(d)),
+    yAxisID:         m.yAxis,
+    borderColor:     m.color,
+    backgroundColor: m.bgColor,
+    tension: .3, fill: m.fill, pointRadius: 2, spanGaps: true,
+  }));
+
+  const scales = {};
+  if (needY) {
+    scales.y = { position: "left", beginAtZero: true, title: { display: true, text: "CPL ($)" } };
+  }
+  if (needY1) {
+    const y1Label = selected.filter(m => m.yAxis === "y1").map(m => m.label).join(" / ");
+    scales.y1 = { position: "right", beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: y1Label } };
+  }
+  if (needSpend) {
+    // Spend always gets its own independent scale so it never compresses CPL or counts
+    // Show the axis on the left only when CPL isn't also displayed there
+    const showAxis = !needY;
+    scales.y_spend = {
+      position:  showAxis ? "left" : "right",
+      beginAtZero: true,
+      display:   showAxis || !needY1,
+      grid:      { drawOnChartArea: showAxis && !needY },
+      title:     { display: true, text: "Spend ($)" },
+    };
+  }
 
   if (charts.daily) charts.daily.destroy();
   const ctx = document.getElementById("dailyChart").getContext("2d");
   charts.daily = new Chart(ctx, {
     type: "line",
-    data: {
-      labels,
-      datasets: [
-        {
-          label: "CPL", data: cpl, yAxisID: "y",
-          borderColor: BRAND.blue, backgroundColor: "rgba(0,163,224,.15)",
-          tension: .3, fill: true, pointRadius: 2, spanGaps: true,
-        },
-        {
-          label: "Leads", data: leads, yAxisID: "y1",
-          borderColor: "#F59E0B", backgroundColor: "rgba(245,158,11,.15)",
-          tension: .3, pointRadius: 2,
-        },
-      ],
-    },
+    data: { labels, datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
       interaction: { mode: "index", intersect: false },
-      scales: {
-        y:  { position: "left",  title: { display: true, text: "CPL ($)" }, beginAtZero: true },
-        y1: { position: "right", title: { display: true, text: "Leads" }, beginAtZero: true, grid: { drawOnChartArea: false } },
-      },
+      scales,
       plugins: {
         legend: { position: "bottom" },
         tooltip: {
@@ -831,13 +970,61 @@ function renderDaily(daily) {
             label: ctx => {
               const v = ctx.parsed.y;
               if (v === null || v === undefined) return ctx.dataset.label + ": —";
-              return ctx.dataset.label + ": " + (ctx.dataset.label === "CPL" ? fmtMoney(v) : fmtInt(v));
+              const m = DAILY_METRICS.find(m => m.label === ctx.dataset.label);
+              return ctx.dataset.label + ": " + (m ? m.fmt(v) : v);
             },
           },
         },
       },
     },
   });
+}
+
+function initGranToggle() {
+  document.querySelectorAll(".gran-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".gran-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      dailyGran = btn.dataset.gran;
+      renderDailyChart(currentDailyData);
+    });
+  });
+}
+
+function initMetricPicker() {
+  const btn  = document.getElementById("metricPickerBtn");
+  const menu = document.getElementById("metricPickerMenu");
+  if (!btn || !menu) return;
+
+  DAILY_METRICS.forEach(m => {
+    const item = document.createElement("label");
+    item.className = "metric-picker-item";
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.value = m.key;
+    cb.checked = dailyMetricSel.has(m.key);
+    cb.addEventListener("change", () => {
+      if (cb.checked) dailyMetricSel.add(m.key);
+      else            dailyMetricSel.delete(m.key);
+      renderDailyChart(currentDailyData);
+    });
+
+    const dot = document.createElement("span");
+    dot.className = "metric-color-dot";
+    dot.style.background = m.color;
+
+    item.appendChild(cb);
+    item.appendChild(dot);
+    item.appendChild(document.createTextNode(m.label));
+    menu.appendChild(item);
+  });
+
+  btn.addEventListener("click", e => {
+    e.stopPropagation();
+    menu.hidden = !menu.hidden;
+  });
+  document.addEventListener("click", () => { menu.hidden = true; });
 }
 
 function renderStudios(studios) {

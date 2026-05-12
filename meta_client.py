@@ -190,6 +190,31 @@ class MetaClient:
             params["time_increment"] = str(time_increment)
         return list(self._paginate(f"{object_id}/insights", params=params))
 
+    def list_campaigns(
+        self,
+        ad_account_id: str,
+        name_filter: str | None = None,
+        status_filter: list[str] | None = None,
+    ) -> list[dict]:
+        """
+        List campaigns from an ad account.
+        name_filter: optional substring to match in campaign name (case-insensitive via Meta API).
+        status_filter: optional list of statuses to include (e.g. ["ACTIVE", "PAUSED"]).
+        """
+        import json as _json
+        params: dict = {
+            "fields": "id,name,status,start_time,stop_time,objective,daily_budget,lifetime_budget",
+            "limit": 200,
+        }
+        filters: list[dict] = []
+        if name_filter:
+            filters.append({"field": "name", "operator": "CONTAIN", "value": name_filter})
+        if status_filter:
+            filters.append({"field": "effective_status", "operator": "IN", "value": status_filter})
+        if filters:
+            params["filtering"] = _json.dumps(filters)
+        return list(self._paginate(f"{ad_account_id}/campaigns", params=params))
+
     def get_daily_insights(
         self,
         campaign_id: str,
