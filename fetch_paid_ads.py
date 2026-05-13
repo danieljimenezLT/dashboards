@@ -1,7 +1,7 @@
 """
 fetch_paid_ads.py
 ─────────────────────────────────────────────────────────────
-ETL Meta Ads → daniel-paid-ads-data.json
+ETL Meta Ads → paid-ads-data.json
 """
 from __future__ import annotations
 import json
@@ -21,7 +21,7 @@ from meta_client import MetaClient, leads_of, purchases_of, trials_of
 
 REPO_ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = REPO_ROOT / "config.yaml"
-OUT_PATH = REPO_ROOT / "daniel-paid-ads-data.json"
+OUT_PATH = REPO_ROOT / "paid-ads-data.json"
 
 DAILY_AD_STUDIO_START = "2026-04-01"  # earliest date for daily_ad_studio; grows forward indefinitely
 
