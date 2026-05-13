@@ -40,7 +40,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-paid-ads.txt
 
-      - name: Run ETL (Meta → paid-ads-data.json)
+      - name: Run ETL (Meta → daniel-paid-ads-data.json)
         env:
           # meta_client.py acepta META_TOKEN o META_ACCESS_TOKEN.
           META_TOKEN:        ${{ secrets.META_TOKEN }}
@@ -53,9 +53,9 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add paid-ads-data.json
+          git add daniel-paid-ads-data.json
           if git diff --cached --quiet; then
-            echo "No changes in paid-ads-data.json"
+            echo "No changes in daniel-paid-ads-data.json"
           else
             git commit -m "chore(paid-ads): refresh data $(date -u +%Y-%m-%dT%H:%MZ)"
             git push
