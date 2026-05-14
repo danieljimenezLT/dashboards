@@ -98,6 +98,20 @@
   th.sort-desc::after { content: " ▼"; color: var(--brand-blue); }
   td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   tbody tr:hover { background: #F8FAFC; }
+  .type-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700; letter-spacing:.4px; }
+  .type-video    { background:#dbeafe; color:#1e40af; }
+  .type-estatico { background:#fce7f3; color:#9d174d; }
+  .type-carrusel { background:#d1fae5; color:#065f46; }
+  .cpl-good span, .cpl-warn span, .cpl-bad span {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .cpl-good span { background: #bbf7d0; color: #14532d; }
+  .cpl-warn span { background: #fef08a; color: #713f12; }
+  .cpl-bad  span { background: #fecaca; color: #7f1d1d; }
 
   /* Layout helpers */
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
@@ -468,7 +482,15 @@
   <!-- ── Ads tab (antes "Concepts") ──────────────────────────── -->
   <div class="tab-panel hidden" id="panel-concepts">
     <div class="card">
-      <h2>Ads — Summary <span id="conceptsWindowNote" class="period" style="font-weight:400;margin-left:8px;"></span></h2>
+      <div class="chart-card-header">
+        <h2>Ads — Summary <span id="conceptsWindowNote" class="period" style="font-weight:400;margin-left:8px;"></span></h2>
+        <div class="gran-toggle">
+          <button class="gran-btn active" data-type="all">All</button>
+          <button class="gran-btn" data-type="Video">Video</button>
+          <button class="gran-btn" data-type="Static">Static</button>
+          <button class="gran-btn" data-type="Carousel">Carousel</button>
+        </div>
+      </div>
       <div id="conceptsTableDailyWrap" style="overflow:auto;"></div>
     </div>
     <div class="grid-2">
@@ -497,6 +519,21 @@ let charts = {};
 let dateFilter = { type: "all", start: null, end: null };
 let studioFilter = null;
 let currentDailyData = [];
+let adTypeFilter = "all";
+const lineTabSort = {}; // { [tableId]: { col, dir } }
+
+function detectAdType(name) {
+  const n = (name || "").toLowerCase();
+  if (n.includes("video"))                              return "Video";
+  if (n.includes("static") || n.includes("estatic"))   return "Static";
+  if (n.includes("carousel") || n.includes("carrusel")) return "Carousel";
+  return "Static"; // default: static image
+}
+
+function adTypeBadge(type) {
+  const cls = type === "Video" ? "type-video" : type === "Carousel" ? "type-carrusel" : "type-estatico";
+  return `<span class="type-badge ${cls}">${type}</span>`;
+}
 
 const DAILY_METRICS = [
   { key: "cpl",       label: "CPL",       color: "#00A3E0", bgColor: "rgba(0,163,224,.15)",    yAxis: "y",  fmt: v => fmtMoney(v), fill: true,  compute: d => d.leads > 0 ? d.spend / d.leads : null },
@@ -556,6 +593,7 @@ async function bootstrap() {
   initFilters();
   initMetricPicker();
   initGranToggle();
+  initAdTypeFilter();
   populateStudioFilter();
   render();
 }
@@ -1046,7 +1084,7 @@ function renderStudios(studios) {
       <td>${s.state}</td>
       <td class="num">${fmtMoney(s.spend)}</td>
       <td class="num">${fmtInt(s.leads)}</td>
-      <td class="num">${s.leads ? fmtMoney(s.cpl) : "—"}</td>
+      <td class="num ${s.leads ? (s.cpl < 50 ? 'cpl-good' : s.cpl <= 100 ? 'cpl-warn' : 'cpl-bad') : ''}">${s.leads ? `<span>${fmtMoney(s.cpl)}</span>` : "—"}</td>
       <td class="num">${fmtInt(s.trials)}</td>
       <td class="num">${s.trials ? fmtMoney(s.cpt) : "—"}</td>
       <td class="num">${fmtInt(s.purchases)}</td>
@@ -1221,14 +1259,32 @@ function renderTabPillars(c) {
 }
 
 function renderTabConcepts(c) {
+  const allRows = (c.daily_series && c.daily_series.by_concept) || [];
+  const filteredRows = adTypeFilter === "all"
+    ? allRows
+    : allRows.filter(r => detectAdType(r.concept) === adTypeFilter);
+
   renderLineTab({
-    rows: (c.daily_series && c.daily_series.by_concept) || [],
+    rows: filteredRows,
     window: c.daily_series, dimKey: "concept",
     chartId: "conceptsLineChart", chartName: "conceptsLine",
     barChartId: "conceptsBarChart", barChartName: "conceptsBar",
     doughnutChartId: "conceptsDoughnutChart", doughnutChartName: "conceptsDoughnut",
     tableId: "conceptsTableDailyWrap", windowNoteId: "conceptsWindowNote", titleId: "conceptsLineTitle",
     label: "Ad", titleBase: "Leads by Ad — Daily", topN: 12,
+    extraColHeader: "Type",
+    extraColValue: dim => adTypeBadge(detectAdType(dim)),
+  });
+}
+
+function initAdTypeFilter() {
+  document.querySelectorAll("[data-type]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-type]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      adTypeFilter = btn.dataset.type;
+      render();
+    });
   });
 }
 
@@ -1260,15 +1316,19 @@ function renderLineTab(opts) {
 
   const tableEl = document.getElementById(tableId);
   const noteEl  = document.getElementById(windowNoteId);
-  const titleEl = document.getElementById(titleId);
 
-  const rangeTxt = window && window.window_start && window.window_end
-    ? `${window.window_start} → ${window.window_end}` : "—";
-  if (noteEl)  noteEl.textContent = rangeTxt;
-  if (titleEl) titleEl.textContent = `${titleBase} (${rangeTxt})`;
+  // Only update the date-range note and chart title on a full (non-sort) render
+  if (!opts._sortOnly) {
+    const rangeTxt = window && window.window_start && window.window_end
+      ? `${window.window_start} – ${window.window_end}` : "";
+    if (noteEl) noteEl.textContent = rangeTxt;
+  }
 
-  const killChart = name => { if (charts[name]) { charts[name].destroy(); charts[name] = null; } };
-  killChart(chartName); killChart(barChartName); killChart(doughnutChartName);
+  // Skip chart re-render on sort-only updates
+  if (!opts._sortOnly) {
+    const killChart = name => { if (charts[name]) { charts[name].destroy(); charts[name] = null; } };
+    killChart(chartName); killChart(barChartName); killChart(doughnutChartName);
+  }
 
   const clearCanvas = id => {
     const ctx = document.getElementById(id);
@@ -1276,7 +1336,7 @@ function renderLineTab(opts) {
   };
 
   if (!rows.length) {
-    clearCanvas(chartId); clearCanvas(barChartId); clearCanvas(doughnutChartId);
+    if (!opts._sortOnly) { clearCanvas(chartId); clearCanvas(barChartId); clearCanvas(doughnutChartId); }
     tableEl.innerHTML = `<div class='empty'>No daily series data for this campaign / filter. Regenera <code>daniel-paid-ads-data.json</code> con el ETL nuevo, o ajusta el filtro de período.</div>`;
     return;
   }
@@ -1292,46 +1352,85 @@ function renderLineTab(opts) {
     totals[dim].impressions += r.impressions || 0;
     totals[dim].clicks      += r.clicks      || 0;
   });
-  let ordered = Object.values(totals).sort((a, b) => b.spend - a.spend);
+  // Enrich totals with computed fields
+  const allRows2 = Object.values(totals).map(o => ({
+    ...o,
+    cpl: o.leads      ? o.spend / o.leads      : 0,
+    cpt: o.trials     ? o.spend / o.trials     : 0,
+    cpp: o.purchases  ? o.spend / o.purchases  : 0,
+    ctr: o.impressions ? o.clicks / o.impressions * 100 : 0,
+  }));
+
+  // Sort state
+  if (!lineTabSort[tableId]) lineTabSort[tableId] = { col: "spend", dir: "desc" };
+  const srt = lineTabSort[tableId];
+
+  const sortRows = arr => [...arr].sort((a, b) => {
+    const av = a[srt.col], bv = b[srt.col];
+    const cmp = typeof av === "string" ? String(av).localeCompare(String(bv)) : (Number(av) - Number(bv));
+    return srt.dir === "asc" ? cmp : -cmp;
+  });
+
+  let ordered = sortRows(allRows2);
   if (topN) ordered = ordered.slice(0, topN);
   const keptDims = new Set(ordered.map(o => o.dim));
 
   // Tabla resumen (top)
+  const extraColHeader = opts.extraColHeader || null;
+  const extraColValue  = opts.extraColValue  || null;
+
+  const cols = [
+    { key: "dim",         label: label,   cls: "" },
+    ...(extraColHeader ? [{ key: null, label: extraColHeader, cls: "" }] : []),
+    { key: "spend",       label: "Spend",  cls: "num" },
+    { key: "leads",       label: "Leads",  cls: "num" },
+    { key: "cpl",         label: "CPL",    cls: "num" },
+    { key: "trials",      label: "Trials", cls: "num" },
+    { key: "cpt",         label: "CPT",    cls: "num" },
+    { key: "purchases",   label: "Purch.", cls: "num" },
+    { key: "cpp",         label: "CPP",    cls: "num" },
+    { key: "impressions", label: "Impr.",  cls: "num" },
+    { key: "ctr",         label: "CTR%",   cls: "num" },
+  ];
+
   tableEl.innerHTML = `
     <table>
       <thead><tr>
-        <th>${label}</th>
-        <th class="num">Spend</th>
-        <th class="num">Leads</th>
-        <th class="num">CPL</th>
-        <th class="num">Trials</th>
-        <th class="num">CPT</th>
-        <th class="num">Purch.</th>
-        <th class="num">CPP</th>
-        <th class="num">Impr.</th>
-        <th class="num">CTR%</th>
+        ${cols.map(c => {
+          if (!c.key) return `<th class="${c.cls}">${c.label}</th>`;
+          const active = srt.col === c.key;
+          return `<th class="${c.cls}${active ? (srt.dir === "asc" ? " sort-asc" : " sort-desc") : ""}" data-k="${c.key}" style="cursor:pointer">${c.label}</th>`;
+        }).join("")}
       </tr></thead>
       <tbody>
-        ${ordered.map(o => {
-          const cpl = o.leads      ? o.spend / o.leads      : 0;
-          const cpt = o.trials     ? o.spend / o.trials     : 0;
-          const cpp = o.purchases  ? o.spend / o.purchases  : 0;
-          const ctr = o.impressions ? o.clicks / o.impressions * 100 : 0;
-          return `<tr>
+        ${ordered.map(o => `<tr>
             <td>${o.dim}</td>
+            ${extraColValue ? `<td>${extraColValue(o.dim)}</td>` : ""}
             <td class="num">${fmtMoney(o.spend)}</td>
             <td class="num">${fmtInt(o.leads)}</td>
-            <td class="num">${o.leads     ? fmtMoney(cpl) : "—"}</td>
+            <td class="num">${o.leads     ? fmtMoney(o.cpl) : "—"}</td>
             <td class="num">${fmtInt(o.trials)}</td>
-            <td class="num">${o.trials    ? fmtMoney(cpt) : "—"}</td>
+            <td class="num">${o.trials    ? fmtMoney(o.cpt) : "—"}</td>
             <td class="num">${fmtInt(o.purchases)}</td>
-            <td class="num">${o.purchases ? fmtMoney(cpp) : "—"}</td>
+            <td class="num">${o.purchases ? fmtMoney(o.cpp) : "—"}</td>
             <td class="num">${fmtInt(o.impressions)}</td>
-            <td class="num">${fmtPct(ctr)}</td>
-          </tr>`;
-        }).join("")}
+            <td class="num">${fmtPct(o.ctr)}</td>
+          </tr>`).join("")}
       </tbody>
     </table>`;
+
+  // Wire sort clicks — _sortOnly skips chart/note re-renders
+  tableEl.querySelectorAll("th[data-k]").forEach(th => {
+    th.addEventListener("click", () => {
+      const k = th.dataset.k;
+      if (srt.col === k) srt.dir = srt.dir === "asc" ? "desc" : "asc";
+      else { srt.col = k; srt.dir = k === "dim" ? "asc" : "desc"; }
+      renderLineTab({ ...opts, _sortOnly: true });
+    });
+  });
+
+  // Skip chart re-renders when only sorting the table
+  if (opts._sortOnly) return;
 
   // Bar chart (defaults: Spend + Leads. opts.barLeft/barRight override.)
   const barLeft = opts.barLeft || {

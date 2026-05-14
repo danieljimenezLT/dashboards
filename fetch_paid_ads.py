@@ -610,7 +610,7 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
             b["leads"]       += leads_of(row)
             b["trials"]      += trials_of(row)
 
-        for (d, sc, ad_id), b in sorted(d_ad_studio.keys()):
+        for (d, sc, ad_id) in sorted(d_ad_studio.keys()):
             b = d_ad_studio[(d, sc, ad_id)]
             das_rows.append({
                 "date":        d,
