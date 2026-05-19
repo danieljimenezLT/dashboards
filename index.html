@@ -252,6 +252,11 @@
   <!-- META ADS TAB -->
   <div class="tab-content" id="tab-meta">
 
+    <!-- Date-cutoff warning -->
+    <div class="date-warning-banner" id="meta-date-warning">
+      <strong>Heads up:</strong> Meta Ads data is only available starting April 1, 2026. Selecting an earlier date will show partial or no spend.
+    </div>
+
     <!-- KPI row: 6 cards -->
     <div class="kpi-grid" id="meta-kpis" style="grid-template-columns:repeat(6,1fr);margin-bottom:20px"></div>
 
@@ -1256,6 +1261,12 @@ async function buildMetaTab() {
   const data = await ensureMetaAds();
   const kpisEl = document.getElementById('meta-kpis');
   if (!kpisEl) return;
+
+  // Show date-cutoff warning if start date is before Meta Ads data availability (2026-04-01)
+  const META_DATA_START = '2026-04-01';
+  const warnEl = document.getElementById('meta-date-warning');
+  const curFrom = document.getElementById('fFrom')?.value;
+  if (warnEl) warnEl.classList.toggle('show', !!curFrom && curFrom < META_DATA_START);
 
   if (!data) {
     kpisEl.innerHTML = '<div style="color:#888;padding:20px;grid-column:1/-1">No meta-ads-data.json found.</div>';
