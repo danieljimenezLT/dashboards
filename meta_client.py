@@ -27,14 +27,14 @@ DEFAULT_INSIGHT_FIELDS = [
 ]
 
 # Creative fields for get_creatives_by_ids.
-# Use explicit nested field selection on object_story_spec / asset_feed_spec.
-# Requesting the whole subtree returns enormous payloads and Meta rejects
-# the batch with "code 1 - reduce the amount of data".
+# Only request fields that exist in Marketing API v20.0 schema.
+# Requesting unknown fields (permalink_url on images, url/video_id on videos)
+# returns code 100 and kills the whole batch.
 CREATIVE_FIELDS = [
     "id", "name", "object_type", "thumbnail_url", "image_url",
     "image_hash", "video_id",
-    "object_story_spec{video_data{image_url,video_id},link_data{picture,image_hash,video_id},photo_data{image_hash}}",
-    "asset_feed_spec{images{url,permalink_url},videos{thumbnail_url,url,video_id}}",
+    "object_story_spec{video_data{image_url},link_data{picture,image_hash},photo_data{image_hash}}",
+    "asset_feed_spec{images{url},videos{thumbnail_url}}",
 ]
 
 AD_FIELDS = "id,name,status,creative{id}"
@@ -155,11 +155,7 @@ class MetaClient:
         return self._paginate(f"{ad_account_id}/ads", {"fields": AD_FIELDS, "limit": 500})
 
     def get_creatives_by_ids(self, creative_ids: list[str]) -> dict[str, dict]:
-        """
-        Batch-fetch creative details by ID. Meta caps the response payload,
-        so with nested object_story_spec / asset_feed_spec a batch of 50
-        gets rejected (code 1). Start at 10 and halve on failure.
-        """
+        """Batch-fetch creative details. Start at 10, halve on failure."""
         if not creative_ids:
             return {}
 
