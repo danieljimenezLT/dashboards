@@ -18,6 +18,13 @@ campaigns_to_track:
   - free_class_open_studios_2026
   - buy_1_get_3_open_studios_2026
 
+# 'campaigns_to_refresh' son las campanas que el ETL re-fetchea desde Meta
+# cada run. Las campanas en 'campaigns_to_track' que NO esten aqui se cargan
+# del JSON existente (cache), ahorrando tiempo y quota de API.
+# Para forzar el re-fetch de una campana completada, agregala aqui temporalmente.
+campaigns_to_refresh:
+  - buy_1_get_3_open_studios_2026
+
 
 campaigns:
 

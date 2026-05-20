@@ -45,7 +45,7 @@ class MetaClient:
         # limit), 32 (page request limit), 613 (unknown). También responde
         # 429 a veces, y 400 con texto "rate limit" / "too many calls".
         retry_codes = {4, 17, 32, 613}
-        for attempt, delay in enumerate([30, 60, 120], start=1):
+        for attempt, delay in enumerate([60, 120, 300], start=1):
             if r.status_code == 200:
                 break
             should_retry = False

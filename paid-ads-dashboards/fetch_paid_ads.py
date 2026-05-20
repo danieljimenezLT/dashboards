@@ -829,17 +829,77 @@ def run():
     keys = cfg.get("campaigns_to_track") or [cfg["active_campaign"]]
     active = cfg.get("active_campaign", keys[0])
 
+    # 'campaigns_to_refresh' controls which campaigns are re-fetched from the
+    # Meta API each run. Campaigns NOT in this list are loaded from the existing
+    # JSON (cached), so completed campaigns don't consume API quota every day.
+    # If the key is absent, all campaigns are refreshed (original behavior).
+    refresh_set: set[str] | None = None
+    if "campaigns_to_refresh" in cfg:
+        refresh_set = set(cfg["campaigns_to_refresh"])
+
+    # Load existing JSON once — used to restore cached campaigns and preserve
+    # static data (monthly_spend) and the growing daily_ad_studio array.
+    existing_campaigns: dict[str, dict] = {}
+    existing_das: list[dict] = []
+    existing_static: dict = {}
+    if OUT_PATH.exists():
+        try:
+            existing = json.loads(OUT_PATH.read_text(encoding="utf-8"))
+            existing_campaigns = existing.get("campaigns", {})
+            for key in ("monthly_spend",):
+                if key in existing:
+                    existing_static[key] = existing[key]
+            existing_das = existing.get("daily_ad_studio", [])
+        except Exception:
+            pass
+
     meta = MetaClient()
 
     campaigns_data: dict[str, dict] = {}
     campaigns_index: list[dict] = []
+    api_calls = 0  # track how many campaigns actually hit the API
 
-    for key in keys:
+    for i, key in enumerate(keys):
         if key not in cfg["campaigns"]:
             log.warning(f"Skipping '{key}' — not in config.campaigns")
             continue
+
+        c_cfg = cfg["campaigns"][key]
+
+        # Use cached data for campaigns not in campaigns_to_refresh
+        if refresh_set is not None and key not in refresh_set:
+            if key in existing_campaigns:
+                log.info(f"-- Campaign: {c_cfg['display_name']} [{key}] — using cached data (not in campaigns_to_refresh)")
+                data = existing_campaigns[key]
+                data.pop("_das_rows", None)  # cached data has no _das_rows
+                campaigns_data[key] = data
+                campaigns_index.append({
+                    "key": key,
+                    "display_name": data["display_name"],
+                    "period_label": data["period_label"],
+                    "date_start": data["date_start"],
+                    "date_end": data["date_end"],
+                    "leads": data["totals"]["leads"],
+                    "spend": data["totals"]["spend"],
+                    "is_default": key == active,
+                })
+            else:
+                log.warning(f"-- Campaign: {key} not in campaigns_to_refresh and no cached data — fetching anyway")
+                # Fall through to API fetch below
+            continue
+
+        # After the first API-fetched campaign, wait 5 min before the next one
+        # to let the Meta API rate limit (code=17 "User request limit reached")
+        # recover. Processing large campaigns back-to-back exhausts the
+        # per-ad-account call budget; 300s is enough for it to fully reset.
+        if api_calls > 0:
+            import time as _time
+            log.info(f"  Sleeping 300s between campaigns to avoid Meta rate limits...")
+            _time.sleep(300)
+
         try:
-            data = run_one(meta, key, cfg["campaigns"][key])
+            data = run_one(meta, key, c_cfg)
+            api_calls += 1
         except Exception as e:
             log.exception(f"❌ Campaign '{key}' failed: {e}")
             continue
@@ -855,20 +915,6 @@ def run():
             "spend": data["totals"]["spend"],
             "is_default": key == active,
         })
-
-    # Preserve manually-baked static data (monthly_spend) and the growing
-    # daily_ad_studio array from the existing file.
-    existing_das: list[dict] = []
-    existing_static: dict = {}
-    if OUT_PATH.exists():
-        try:
-            existing = json.loads(OUT_PATH.read_text(encoding="utf-8"))
-            for key in ("monthly_spend",):
-                if key in existing:
-                    existing_static[key] = existing[key]
-            existing_das = existing.get("daily_ad_studio", [])
-        except Exception:
-            pass
 
     # Merge _das_rows from all campaigns into the existing daily_ad_studio.
     # Key: (date, studio_code, ad_id) — new data overwrites old for same key.
