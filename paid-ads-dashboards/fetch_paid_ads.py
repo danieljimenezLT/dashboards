@@ -834,10 +834,18 @@ def run():
     campaigns_data: dict[str, dict] = {}
     campaigns_index: list[dict] = []
 
-    for key in keys:
+    for i, key in enumerate(keys):
         if key not in cfg["campaigns"]:
             log.warning(f"Skipping '{key}' — not in config.campaigns")
             continue
+        # After the first campaign, wait 5 min before the next one to let the
+        # Meta API rate limit (code=17 "User request limit reached") recover.
+        # Processing 2 large campaigns back-to-back exhausts the per-ad-account
+        # call budget; 300s is enough for it to fully reset.
+        if i > 0:
+            import time as _time
+            log.info(f"  Sleeping 300s between campaigns to avoid Meta rate limits...")
+            _time.sleep(300)
         try:
             data = run_one(meta, key, cfg["campaigns"][key])
         except Exception as e:
