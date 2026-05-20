@@ -1,0 +1,29 @@
+name: Test Library URL (Fast)
+
+# Validates the library_url construction logic for one or more ad_ids
+# without running the full Meta fetch. Takes ~10 seconds.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ad_ids:
+        description: "Space-separated ad_ids to test (default: the StillWondering ad)"
+        required: false
+        default: "120248075197290249"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install requests
+
+      - name: Probe ad and show library URL
+        env:
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+        run: python test_library_url.py ${{ github.event.inputs.ad_ids }}
