@@ -276,6 +276,18 @@ def run():
 
     status_by_ad = {ad["id"]: ad.get("status", "UNKNOWN") for ad in all_ads if ad.get("id")}
 
+    # Meta Ads Library URL uses the page-post ID, NOT the ad ID.
+    # effective_object_story_id is formatted "{page_id}_{post_id}"; we want
+    # the post_id portion. Falls back to ad_id when missing.
+    library_id_by_ad: dict[str, str] = {}
+    for ad in all_ads:
+        ad_id = ad.get("id")
+        if not ad_id: continue
+        eosi = ad.get("effective_object_story_id") or ""
+        post_id = eosi.split("_", 1)[1] if "_" in eosi else eosi
+        if post_id:
+            library_id_by_ad[ad_id] = post_id
+
     # ── 3. Process daily ad rows → ad_daily + studio_daily ───────────
     # Index buckets keyed by (date, studio_code, ad_id) and (date, studio_code)
     ad_daily_idx:     dict[tuple, dict] = {}
@@ -403,7 +415,7 @@ def run():
             "media_type":    media_type,
             "studio_code":   ad_studio_seen.get(ad_id) or (ad_meta.get(ad_id) or {}).get("studio_code"),
             "thumbnail_url": thumb or (ad_meta.get(ad_id) or {}).get("thumbnail_url", ""),
-            "library_url":   f"https://www.facebook.com/ads/library/?id={ad_id}&country=US",
+            "library_url":   f"https://www.facebook.com/ads/library/?id={library_id_by_ad.get(ad_id, ad_id)}&country=US",
         }
 
     log.info(f"  ad_meta: {len(ad_meta)} ads (thumb hits {thumb_hits}, creatives w/ no thumb {thumb_missing})")

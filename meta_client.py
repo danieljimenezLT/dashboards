@@ -37,7 +37,7 @@ CREATIVE_FIELDS = [
     "asset_feed_spec{images{url},videos{thumbnail_url}}",
 ]
 
-AD_FIELDS = "id,name,status,creative{id}"
+AD_FIELDS = "id,name,status,creative{id},effective_object_story_id"
 ADSET_FIELDS = "id,name,status,campaign_id"
 
 MAX_RETRIES    = 5
