@@ -78,7 +78,7 @@ jobs:
       # Run fetch_all_marketing with last 3 days, then merge each key separately.
       - name: Refresh Meta Ads / GA4 / Google Ads (yesterday + 2 days ago)
         env:
-          META_ACCESS_TOKEN:              ${{ secrets.META_ACCESS_TOKEN }}
+          META_ACCESS_TOKEN:              ${{ secrets.META_TOKEN }}
           META_APP_ID:                    ${{ secrets.META_APP_ID }}
           META_APP_SECRET:                ${{ secrets.META_APP_SECRET }}
           GOOGLE_ADS_DEVELOPER_TOKEN:     ${{ secrets.GOOGLE_ADS_DEVELOPER_TOKEN }}
@@ -111,7 +111,7 @@ jobs:
       # Always overwrites — script already fetches recent posts by design.
       - name: Refresh Social Insights
         env:
-          META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
+          META_ACCESS_TOKEN: ${{ secrets.META_TOKEN }}
           META_APP_ID:       ${{ secrets.META_APP_ID }}
           META_APP_SECRET:   ${{ secrets.META_APP_SECRET }}
         run: |

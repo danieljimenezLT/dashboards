@@ -1,0 +1,17 @@
+# Local environment credentials — never commit
+.env
+**/.env
+nso-dashboard/credentials/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# macOS / Windows
+.DS_Store
+Thumbs.db
