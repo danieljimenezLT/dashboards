@@ -1,0 +1,50 @@
+name: Test Social Insights (Manual)
+
+# Manual-only: runs fetch_social_insights.py and commits the results.
+# Use this to test Instagram fetching without triggering the full NSO refresh.
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Days of history to fetch (default: 30)"
+        required: false
+        default: "30"
+
+permissions:
+  contents: write
+
+jobs:
+  social-insights:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests python-dotenv
+
+      - name: Fetch Instagram insights + thumbnails
+        env:
+          META_ACCESS_TOKEN: ${{ secrets.META_TOKEN }}
+        run: |
+          python nso-dashboard/scripts/fetch_social_insights.py \
+            --days ${{ github.event.inputs.days }} \
+            --output nso-dashboard/social_insights.json
+
+      - name: Commit results
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add nso-dashboard/social_insights.json
+          find nso-dashboard/thumbnails -type f 2>/dev/null | grep -q . && \
+            git add nso-dashboard/thumbnails/ || true
+          git diff --cached --quiet || \
+            git commit -m "test: social insights refresh $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
