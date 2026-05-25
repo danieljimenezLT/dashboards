@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 fetch_social_insights.py - Fetch Facebook Page + Instagram organic insights
-for all 5 NSO studios.
+for all SWEAT440 studios.
 
 Outputs: social_insights.json
 
@@ -25,39 +25,72 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 
 BASE = "https://graph.facebook.com/v21.0"
 
-# Studio config from nso_studio_config.xlsx
+# All SWEAT440 studios — ig_id is discovered at runtime via the Meta API.
+# code = short slug used as the thumbnails sub-directory name.
 STUDIOS = [
-    {
-        "name": "Herriman",
-        "code": "UT-001",
-        "page_id": "1016504601542354",
-        "ig_id": "17841447639266583",
-    },
-    {
-        "name": "Naples - Mercato",
-        "code": "FL-019",
-        "page_id": "986896304505624",
-        "ig_id": None,
-    },
-    {
-        "name": "Dallas - Prestonwood",
-        "code": "TX-003",
-        "page_id": "845182982009071",
-        "ig_id": "17841477656432324",
-    },
-    {
-        "name": "Pinecrest - Palmetto Bay",
-        "code": "FL-017",
-        "page_id": "848877064975048",
-        "ig_id": "17841477435248000",  # stored as float in Excel — verify if needed
-    },
-    {
-        "name": "Reston",
-        "code": "VA-001",
-        "page_id": "875200972337017",
-        "ig_id": "17841477453277172",
-    },
+    {"name": "Coral Gables",          "code": "gables",        "page_id": "110268611810389",    "ig_id": None},
+    {"name": "Dallas - Prestonwood",  "code": "prestonwood",   "page_id": "845182982009071",    "ig_id": None},
+    {"name": "Toms River",            "code": "tomsriver",     "page_id": "108238962107956",    "ig_id": None},
+    {"name": "South Beach",           "code": "sobe",          "page_id": "105547208952141",    "ig_id": None},
+    {"name": "North Miami",           "code": "northmiami",    "page_id": "1145229115329264",   "ig_id": None},
+    {"name": "Austin - Highland",     "code": "highland",      "page_id": "351629338025804",    "ig_id": None},
+    {"name": "Miami Lakes",           "code": "miamilakes",    "page_id": "101752329601099",    "ig_id": None},
+    {"name": "Aventura",              "code": "aventura",      "page_id": "1047698415096383",   "ig_id": None},
+    {"name": "Eastchester",           "code": "eastchester",   "page_id": "664055870131827",    "ig_id": None},
+    {"name": "Boca Raton",            "code": "boca",          "page_id": "637367179456983",    "ig_id": None},
+    {"name": "Midtown Miami",         "code": "midtown",       "page_id": "103476569380316",    "ig_id": None},
+    {"name": "Orlando - Dr. Phillips","code": "drphillips",    "page_id": "986634234541338",    "ig_id": None},
+    {"name": "Dallas - Uptown",       "code": "uptown",        "page_id": "1013504171849728",   "ig_id": None},
+    {"name": "Herriman",              "code": "herriman",      "page_id": "1016504601542354",   "ig_id": None},
+    {"name": "Pinecrest",             "code": "pinecrest",     "page_id": "848877064975048",    "ig_id": None},
+    {"name": "Austin - Zilker",       "code": "zilker",        "page_id": "119087484495208",    "ig_id": None},
+    {"name": "Coral Springs",         "code": "coralsprings",  "page_id": "106485985557697",    "ig_id": None},
+    {"name": "South Miami",           "code": "southmiami",    "page_id": "116631111441913",    "ig_id": None},
+    {"name": "Deerfield Beach",       "code": "deerfield",     "page_id": "106597632212836",    "ig_id": None},
+    {"name": "Doral",                 "code": "doral",         "page_id": "103789732469470",    "ig_id": None},
+    {"name": "Brooklyn - Park Slope", "code": "parkslope",     "page_id": "681591261709097",    "ig_id": None},
+    {"name": "West Palm Beach",       "code": "westpalm",      "page_id": "703238786198886",    "ig_id": None},
+    {"name": "Coconut Grove",         "code": "coconutgrove",  "page_id": "196520916880971",    "ig_id": None},
+    {"name": "Charlotte - NoDa",      "code": "noda",          "page_id": "104198619263881",    "ig_id": None},
+    {"name": "Corporate",             "code": "corporate",     "page_id": "2077978269155137",   "ig_id": None},
+    {"name": "Ocean Township",        "code": "oceantownship", "page_id": "184923338027883",    "ig_id": None},
+    {"name": "Upper East Side",       "code": "uppereastside", "page_id": "108861828669519",    "ig_id": None},
+    {"name": "Brickell",              "code": "brickell",      "page_id": "107873258720021",    "ig_id": None},
+    {"name": "Reston",                "code": "reston",        "page_id": "875200972337017",    "ig_id": None},
+    {"name": "Wall NJ",               "code": "wallnj",        "page_id": "700746796454324",    "ig_id": None},
+    {"name": "Chelsea",               "code": "chelsea",       "page_id": "105456357683242",    "ig_id": None},
+    {"name": "Las Olas",              "code": "lasolas",       "page_id": "300173986520471",    "ig_id": None},
+    {"name": "Miramar",               "code": "miramar",       "page_id": "203760659484865",    "ig_id": None},
+    {"name": "Pembroke Pines",        "code": "pembrokepines", "page_id": "328512683684059",    "ig_id": None},
+    {"name": "FiDi",                  "code": "fidi",          "page_id": "149250091597748",    "ig_id": None},
+    {"name": "Madison",               "code": "madison",       "page_id": "111726744769276",    "ig_id": None},
 ]
+
+
+def discover_ig_ids(studios, user_token):
+    """
+    Query Meta API to resolve Instagram Business Account IDs from Page IDs.
+    Populates studio['ig_id'] in-place for any page that has a linked IG account.
+    """
+    print("\nDiscovering Instagram Business Account IDs from Pages...")
+    found = 0
+    for studio in studios:
+        try:
+            r = requests.get(f"{BASE}/{studio['page_id']}", params={
+                "fields": "instagram_business_account",
+                "access_token": user_token,
+            })
+            data = r.json()
+            if "error" not in data and "instagram_business_account" in data:
+                studio["ig_id"] = data["instagram_business_account"]["id"]
+                print(f"  ✓ {studio['name']}: {studio['ig_id']}")
+                found += 1
+            else:
+                print(f"  – {studio['name']}: no IG account linked")
+            time.sleep(0.15)  # stay within rate limits
+        except Exception as e:
+            print(f"  ! {studio['name']}: {e}")
+    print(f"  {found}/{len(studios)} studios have a linked Instagram account\n")
 
 
 def date_chunks(start_date, end_date, chunk_days=28):
@@ -436,7 +469,13 @@ def main():
     print("SWEAT440 - Social Insights Fetch")
     print(f"Date range: {start_date} to {end_date}")
     print(f"Source: {args.source}")
+    print(f"Studios: {len(STUDIOS)}")
     print("=" * 60)
+
+    # Resolve Instagram Business Account IDs from Page IDs at runtime.
+    # This avoids hardcoding IDs that can become stale.
+    if args.source in ("instagram", "all"):
+        discover_ig_ids(STUDIOS, user_token)
 
     output = {
         "generated_at": datetime.now().isoformat(),
