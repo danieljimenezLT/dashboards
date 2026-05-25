@@ -144,8 +144,10 @@ jobs:
             nso-dashboard/marketing_data.json \
             nso-dashboard/nso_google_ads.json \
             nso-dashboard/social_insights.json \
-            nso-dashboard/nso_scorecard_data.json \
-            nso-dashboard/thumbnails/
+            nso-dashboard/nso_scorecard_data.json
+          # Only add thumbnails if the directory exists and has files
+          find nso-dashboard/thumbnails -type f 2>/dev/null | grep -q . && \
+            git add nso-dashboard/thumbnails/ || true
           git diff --cached --quiet || \
             git commit -m "chore: nso daily refresh $YESTERDAY"
           git push
