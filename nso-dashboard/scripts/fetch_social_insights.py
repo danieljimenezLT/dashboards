@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
-fetch_social_insights.py - Fetch Facebook Page + Instagram organic insights
-for all SWEAT440 studios.
+fetch_social_insights.py - Fetch Instagram organic insights for all SWEAT440 studios.
+Instagram Business Account IDs are auto-discovered from Facebook Page IDs at runtime.
 
-Outputs: social_insights.json
+Outputs: social_insights.json  (instagram section only)
 
 Usage:
-    python scripts/fetch_social_insights.py --days 90
-    python scripts/fetch_social_insights.py --start 2026-01-27 --end 2026-04-26
+    python scripts/fetch_social_insights.py
+    python scripts/fetch_social_insights.py --days 30
+    python scripts/fetch_social_insights.py --start 2026-04-01 --end 2026-05-24
 """
 
 import argparse
@@ -16,6 +17,7 @@ import os
 import sys
 import time
 import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -104,198 +106,6 @@ def date_chunks(start_date, end_date, chunk_days=28):
         chunks.append((cur.strftime("%Y-%m-%d"), chunk_end.strftime("%Y-%m-%d")))
         cur = chunk_end + timedelta(days=1)
     return chunks
-
-
-def get_page_token(page_id, user_token):
-    """Exchange user access token for a page access token."""
-    r = requests.get(f"{BASE}/{page_id}", params={
-        "fields": "access_token,name",
-        "access_token": user_token,
-    })
-    data = r.json()
-    if "error" in data:
-        print(f"    WARNING get_page_token: {data['error'].get('message')}")
-        return user_token  # fall back to user token
-    page_name = data.get("name", "")
-    page_token = data.get("access_token", user_token)
-    if page_token != user_token:
-        print(f"    Page token obtained for: {page_name}")
-    else:
-        print(f"    Using user token for: {page_name} (page token not returned)")
-    return page_token
-
-
-def fetch_page_insights(page_id, studio_name, start_date, end_date, user_token):
-    print(f"  [{studio_name}] page {page_id}...")
-
-    page_token = get_page_token(page_id, user_token)
-    daily_map = {}
-
-    # ── 1. Follower / fan count via page fields ──
-    total_fans = None
-    talking_about = None
-    try:
-        r = requests.get(f"{BASE}/{page_id}", params={
-            "fields": "followers_count,fan_count,talking_about_count,name",
-            "access_token": page_token,
-        })
-        data = r.json()
-        if "error" not in data:
-            total_fans = data.get("followers_count") or data.get("fan_count")
-            talking_about = data.get("talking_about_count")
-            print(f"    Followers: {total_fans}, Talking about: {talking_about}")
-        else:
-            print(f"    WARNING page fields: {data['error'].get('message')}")
-    except Exception as e:
-        print(f"    WARNING page fields: {e}")
-
-    # ── 2. Page-level daily insights (deprecated for New Pages Experience, try anyway) ──
-    METRIC_CANDIDATES = [
-        "page_impressions",
-        "page_impressions_unique",
-        "page_engaged_users",
-        "page_views_total",
-        "page_fans_add",
-    ]
-    for metric in METRIC_CANDIDATES:
-        try:
-            r = requests.get(f"{BASE}/{page_id}/insights", params={
-                "metric": metric,
-                "period": "day",
-                "since": start_date,
-                "until": end_date,
-                "access_token": page_token,
-            })
-            data = r.json()
-            if "error" not in data:
-                for metric_obj in data.get("data", []):
-                    for val in metric_obj.get("values", []):
-                        day = val["end_time"][:10]
-                        if start_date <= day <= end_date:
-                            if day not in daily_map:
-                                daily_map[day] = {"date": day}
-                            daily_map[day][metric] = val["value"]
-        except Exception:
-            pass
-
-    # ── 3. Posts with reactions, comments, shares ──
-    posts = []
-    try:
-        params = {
-            "fields": "id,message,created_time,full_picture,permalink_url,reactions.summary(true),comments.summary(true),shares",
-            "limit": 100,
-            "access_token": page_token,
-        }
-        r = requests.get(f"{BASE}/{page_id}/posts", params=params)
-        data = r.json()
-        if "error" in data:
-            params["fields"] = "id,message,created_time,full_picture,permalink_url,shares"
-            r = requests.get(f"{BASE}/{page_id}/posts", params=params)
-            data = r.json()
-
-        if "error" in data:
-            print(f"    WARNING page posts: {data['error'].get('message')}")
-        else:
-            for post in data.get("data", []):
-                ts = (post.get("created_time") or "")[:10]
-                if not ts or ts < start_date or ts > end_date:
-                    continue
-                likes = 0
-                comments = 0
-                shares = 0
-                try:
-                    likes = post["reactions"]["summary"]["total_count"]
-                except Exception:
-                    pass
-                try:
-                    comments = post["comments"]["summary"]["total_count"]
-                except Exception:
-                    pass
-                try:
-                    shares = post["shares"]["count"]
-                except Exception:
-                    pass
-                posts.append({
-                    "_id": post.get("id", ""),
-                    "date": ts,
-                    "message": (post.get("message") or "")[:150],
-                    "image_url": post.get("full_picture") or "",
-                    "permalink": post.get("permalink_url") or "",
-                    "likes": likes,
-                    "comments": comments,
-                    "shares": shares,
-                    "engagement": likes + comments + shares,
-                })
-            posts.sort(key=lambda x: x["engagement"], reverse=True)
-            print(f"    {len(posts)} posts in range")
-    except Exception as e:
-        print(f"    WARNING page posts: {e}")
-
-    # ── 4. If no page-level daily data, build daily aggregates from per-post insights ──
-    if not daily_map and posts:
-        # Aggregate engagement from all posts by date into daily_map
-        for p in posts:
-            day = p["date"]
-            if day not in daily_map:
-                daily_map[day] = {"date": day, "likes": 0, "comments": 0, "shares": 0, "engagement": 0}
-            daily_map[day]["likes"]      += p["likes"]
-            daily_map[day]["comments"]   += p["comments"]
-            daily_map[day]["shares"]     += p["shares"]
-            daily_map[day]["engagement"] += p["engagement"]
-
-        # Fetch per-post reach/impressions for the 20 most recent posts
-        recent_posts = sorted(posts, key=lambda x: x["date"], reverse=True)[:20]
-        print(f"    Page insights deprecated — fetching per-post reach for {len(recent_posts)} recent posts...")
-        for p in recent_posts:
-            pid = p.get("_id")
-            if not pid:
-                continue
-            try:
-                r = requests.get(f"{BASE}/{pid}/insights", params={
-                    "metric": "post_impressions,post_impressions_unique,post_engaged_users",
-                    "access_token": page_token,
-                })
-                data = r.json()
-                if "error" not in data:
-                    day = p["date"]
-                    for metric_obj in data.get("data", []):
-                        mname = metric_obj.get("name", "")
-                        vals = metric_obj.get("values", [])
-                        if vals:
-                            v = vals[0].get("value", 0)
-                            daily_map[day][mname] = daily_map[day].get(mname, 0) + (v or 0)
-                time.sleep(0.3)
-            except Exception:
-                pass
-
-        if daily_map:
-            print(f"    Built {len(daily_map)} daily rows from post data")
-        else:
-            print(f"    No daily data available")
-    else:
-        # Merge post engagement into existing daily_map where dates match
-        for p in posts:
-            day = p["date"]
-            if day not in daily_map:
-                daily_map[day] = {"date": day}
-            daily_map[day]["likes"]      = daily_map[day].get("likes", 0)      + p["likes"]
-            daily_map[day]["comments"]   = daily_map[day].get("comments", 0)   + p["comments"]
-            daily_map[day]["shares"]     = daily_map[day].get("shares", 0)     + p["shares"]
-            daily_map[day]["engagement"] = daily_map[day].get("engagement", 0) + p["engagement"]
-
-        if daily_map:
-            print(f"    {len(daily_map)} daily rows")
-
-    # Remove internal post IDs before returning
-    for p in posts:
-        p.pop("_id", None)
-
-    return {
-        "total_fans": total_fans,
-        "talking_about": talking_about,
-        "daily": sorted(daily_map.values(), key=lambda x: x["date"]),
-        "posts": posts[:20],
-    }
 
 
 def fetch_instagram_insights(ig_id, studio_name, start_date, end_date, user_token):
@@ -446,11 +256,10 @@ def fetch_instagram_insights(ig_id, studio_name, start_date, end_date, user_toke
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Fetch Facebook Page + Instagram insights for all NSO studios")
-    parser.add_argument("--days", type=int, default=90)
+    parser = argparse.ArgumentParser(description="Fetch Instagram insights for all SWEAT440 studios")
+    parser.add_argument("--days", type=int, default=30)
     parser.add_argument("--start", help="YYYY-MM-DD")
     parser.add_argument("--end", help="YYYY-MM-DD")
-    parser.add_argument("--source", choices=["facebook", "instagram", "all"], default="all")
     parser.add_argument("--output", default="social_insights.json")
     args = parser.parse_args()
 
@@ -466,70 +275,49 @@ def main():
         sys.exit(1)
 
     print("=" * 60)
-    print("SWEAT440 - Social Insights Fetch")
+    print("SWEAT440 - Instagram Insights Fetch")
     print(f"Date range: {start_date} to {end_date}")
-    print(f"Source: {args.source}")
     print(f"Studios: {len(STUDIOS)}")
     print("=" * 60)
 
     # Resolve Instagram Business Account IDs from Page IDs at runtime.
-    # This avoids hardcoding IDs that can become stale.
-    if args.source in ("instagram", "all"):
-        discover_ig_ids(STUDIOS, user_token)
+    discover_ig_ids(STUDIOS, user_token)
 
     output = {
         "generated_at": datetime.now().isoformat(),
         "date_range": {"start": start_date, "end": end_date},
-        "facebook": [],
         "instagram": [],
     }
 
-    for studio in STUDIOS:
-        # Facebook Page
-        if args.source in ("facebook", "all") and studio["page_id"]:
-            print(f"\n>> Facebook: {studio['name']}")
-            try:
-                fb_data = fetch_page_insights(
-                    studio["page_id"], studio["name"], start_date, end_date, user_token
-                )
-                output["facebook"].append({
-                    "studio": studio["name"],
-                    "code": studio["code"],
-                    "page_id": studio["page_id"],
-                    **fb_data,
-                })
-            except Exception as e:
-                print(f"  ERROR: {e}")
-                output["facebook"].append({
-                    "studio": studio["name"],
-                    "code": studio["code"],
-                    "page_id": studio["page_id"],
-                    "total_fans": None, "daily": [], "posts": [],
-                    "error": str(e),
-                })
+    def fetch_studio(studio):
+        """Fetch Instagram data for one studio."""
+        if not studio.get("ig_id"):
+            return studio, None
+        print(f"\n>> Instagram: {studio['name']}")
+        try:
+            ig_data = fetch_instagram_insights(
+                studio["ig_id"], studio["name"], start_date, end_date, user_token
+            )
+            return studio, {"studio": studio["name"], "code": studio["code"],
+                            "ig_id": studio["ig_id"], **ig_data}
+        except Exception as e:
+            print(f"  ERROR {studio['name']}: {e}")
+            return studio, {"studio": studio["name"], "code": studio["code"],
+                            "ig_id": studio["ig_id"],
+                            "current_followers": None, "daily": [], "posts": [], "error": str(e)}
 
-        # Instagram
-        if args.source in ("instagram", "all") and studio["ig_id"]:
-            print(f"\n>> Instagram: {studio['name']}")
-            try:
-                ig_data = fetch_instagram_insights(
-                    studio["ig_id"], studio["name"], start_date, end_date, user_token
-                )
-                output["instagram"].append({
-                    "studio": studio["name"],
-                    "code": studio["code"],
-                    "ig_id": studio["ig_id"],
-                    **ig_data,
-                })
-            except Exception as e:
-                print(f"  ERROR: {e}")
-                output["instagram"].append({
-                    "studio": studio["name"],
-                    "code": studio["code"],
-                    "ig_id": studio["ig_id"],
-                    "daily": [], "posts": [],
-                    "error": str(e),
-                })
+    # Fetch all studios in parallel — 5 workers balances speed vs Meta rate limits.
+    ig_map = {}
+    print(f"\nFetching {len(STUDIOS)} studios with 5 parallel workers...")
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = {executor.submit(fetch_studio, s): s for s in STUDIOS}
+        for future in as_completed(futures):
+            studio, ig_result = future.result()
+            if ig_result:
+                ig_map[studio["name"]] = ig_result
+
+    # Re-order results to match STUDIOS list order
+    output["instagram"] = [ig_map[s["name"]] for s in STUDIOS if s["name"] in ig_map]
 
     # ── Download thumbnails and replace image_url with local paths ────────
     # Instagram/Facebook CDN URLs expire in ~24h. We download each post's
@@ -542,45 +330,39 @@ def main():
     print("Downloading thumbnails...")
     total_ok = total_fail = 0
 
-    for section in ("facebook", "instagram"):
-        for studio in output[section]:
-            code = studio.get("code", "unknown")
-            studio_dir = thumbs_root / code
-            studio_dir.mkdir(parents=True, exist_ok=True)
-            for post in studio.get("posts", []):
-                url = post.get("image_url", "")
-                if not url:
-                    continue
-                # Derive a stable filename from the permalink slug or date+index
-                slug = ""
-                permalink = post.get("permalink", "")
-                if permalink:
-                    slug = permalink.rstrip("/").split("/")[-1]
-                if not slug:
-                    slug = post.get("date", "unknown").replace("-", "") + "_" + str(total_ok + total_fail)
-                local_path = studio_dir / f"{slug}.jpg"
-                # Always re-download to keep images fresh
-                try:
-                    r = requests.get(url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
-                    r.raise_for_status()
-                    with open(local_path, "wb") as f:
-                        f.write(r.content)
-                    # Store repo-relative path for the dashboard
-                    post["image_url"] = f"nso-dashboard/thumbnails/{code}/{slug}.jpg"
-                    total_ok += 1
-                except Exception as e:
-                    print(f"  WARNING thumbnail {slug}: {e}")
-                    post["image_url"] = ""  # clear expired URL; dashboard shows placeholder
-                    total_fail += 1
+    for studio in output["instagram"]:
+        code = studio.get("code", "unknown")
+        studio_dir = thumbs_root / code
+        studio_dir.mkdir(parents=True, exist_ok=True)
+        for post in studio.get("posts", []):
+            url = post.get("image_url", "")
+            if not url:
+                continue
+            slug = ""
+            permalink = post.get("permalink", "")
+            if permalink:
+                slug = permalink.rstrip("/").split("/")[-1]
+            if not slug:
+                slug = post.get("date", "unknown").replace("-", "") + "_" + str(total_ok + total_fail)
+            local_path = studio_dir / f"{slug}.jpg"
+            try:
+                r = requests.get(url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
+                r.raise_for_status()
+                with open(local_path, "wb") as f:
+                    f.write(r.content)
+                post["image_url"] = f"nso-dashboard/thumbnails/{code}/{slug}.jpg"
+                total_ok += 1
+            except Exception as e:
+                print(f"  WARNING thumbnail {slug}: {e}")
+                post["image_url"] = ""
+                total_fail += 1
 
     print(f"  Downloaded: {total_ok}  Failed/cleared: {total_fail}")
 
     # Summary
     print("\n" + "=" * 60)
-    fb_ok = [s["studio"] for s in output["facebook"] if s.get("daily") or s.get("total_fans")]
     ig_ok = [s["studio"] for s in output["instagram"] if s.get("daily") or s.get("posts")]
-    print(f"  Facebook: {len(output['facebook'])} studios, data for: {', '.join(fb_ok) or 'none'}")
-    print(f"  Instagram: {len(output['instagram'])} studios, posts for: {', '.join(ig_ok) or 'none'}")
+    print(f"  Instagram: {len(output['instagram'])} studios, posts for: {len(ig_ok)}")
 
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, default=str)
