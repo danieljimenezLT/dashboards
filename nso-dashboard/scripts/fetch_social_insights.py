@@ -492,6 +492,50 @@ def main():
                     "error": str(e),
                 })
 
+    # ── Download thumbnails and replace image_url with local paths ────────
+    # Instagram/Facebook CDN URLs expire in ~24h. We download each post's
+    # thumbnail as a static file so GitHub Pages serves them with no expiry.
+    # Saved to: nso-dashboard/thumbnails/{code}/{post_slug}.jpg
+    # JSON stores the repo-relative path so the dashboard can load them directly.
+    out_path = Path(args.output)
+    thumbs_root = out_path.parent / "thumbnails"
+    print(f"\n{'=' * 60}")
+    print("Downloading thumbnails...")
+    total_ok = total_fail = 0
+
+    for section in ("facebook", "instagram"):
+        for studio in output[section]:
+            code = studio.get("code", "unknown")
+            studio_dir = thumbs_root / code
+            studio_dir.mkdir(parents=True, exist_ok=True)
+            for post in studio.get("posts", []):
+                url = post.get("image_url", "")
+                if not url:
+                    continue
+                # Derive a stable filename from the permalink slug or date+index
+                slug = ""
+                permalink = post.get("permalink", "")
+                if permalink:
+                    slug = permalink.rstrip("/").split("/")[-1]
+                if not slug:
+                    slug = post.get("date", "unknown").replace("-", "") + "_" + str(total_ok + total_fail)
+                local_path = studio_dir / f"{slug}.jpg"
+                # Always re-download to keep images fresh
+                try:
+                    r = requests.get(url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
+                    r.raise_for_status()
+                    with open(local_path, "wb") as f:
+                        f.write(r.content)
+                    # Store repo-relative path for the dashboard
+                    post["image_url"] = f"nso-dashboard/thumbnails/{code}/{slug}.jpg"
+                    total_ok += 1
+                except Exception as e:
+                    print(f"  WARNING thumbnail {slug}: {e}")
+                    post["image_url"] = ""  # clear expired URL; dashboard shows placeholder
+                    total_fail += 1
+
+    print(f"  Downloaded: {total_ok}  Failed/cleared: {total_fail}")
+
     # Summary
     print("\n" + "=" * 60)
     fb_ok = [s["studio"] for s in output["facebook"] if s.get("daily") or s.get("total_fans")]
@@ -499,7 +543,6 @@ def main():
     print(f"  Facebook: {len(output['facebook'])} studios, data for: {', '.join(fb_ok) or 'none'}")
     print(f"  Instagram: {len(output['instagram'])} studios, posts for: {', '.join(ig_ok) or 'none'}")
 
-    out_path = Path(args.output)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, default=str)
 

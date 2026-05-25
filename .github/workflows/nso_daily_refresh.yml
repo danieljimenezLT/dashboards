@@ -144,7 +144,8 @@ jobs:
             nso-dashboard/marketing_data.json \
             nso-dashboard/nso_google_ads.json \
             nso-dashboard/social_insights.json \
-            nso-dashboard/nso_scorecard_data.json
+            nso-dashboard/nso_scorecard_data.json \
+            nso-dashboard/thumbnails/
           git diff --cached --quiet || \
             git commit -m "chore: nso daily refresh $YESTERDAY"
           git push

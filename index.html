@@ -41,7 +41,7 @@
     <div class="nav-group">
       <button class="nav-tab nav-group-label" onclick="toggleNavGroup('organic-group',this)">Organic Channels ▾</button>
       <div class="nav-submenu" id="organic-group">
-        <button class="nav-tab nav-sub" onclick="switchTab('website',this)">Website</button>
+        <button class="nav-tab nav-sub" onclick="switchTab('website',this)">Website (GA4)</button>
         <button class="nav-tab nav-sub" onclick="switchTab('gbp',this)">Google Business Profile</button>
         <button class="nav-tab nav-sub" onclick="switchTab('instagram',this)">Instagram</button>
       </div>
@@ -346,28 +346,17 @@
   </div>
 
   <div class="tab-content" id="tab-website">
-    <div class="placeholder-tab">
-      <div class="placeholder-icon">🌐</div>
-      <div class="placeholder-title">Website</div>
-      <div class="placeholder-sub">Website traffic and conversion analytics — coming soon</div>
-    </div>
+    <div id="ga4-content"></div>
   </div>
 
   <div class="tab-content" id="tab-gbp">
-    <div class="placeholder-tab">
-      <div class="placeholder-icon">📍</div>
-      <div class="placeholder-title">Google Business Profile</div>
-      <div class="placeholder-sub">Local search visibility, calls and direction requests — coming soon</div>
-    </div>
+    <div id="gbp-content"></div>
   </div>
 
   <div class="tab-content" id="tab-instagram">
-    <div class="placeholder-tab">
-      <div class="placeholder-icon">📸</div>
-      <div class="placeholder-title">Instagram</div>
-      <div class="placeholder-sub">Organic Instagram reach, engagement and profile visits — coming soon</div>
-    </div>
+    <div id="instagram-content"></div>
   </div>
+
 
 </div>
 
@@ -398,9 +387,12 @@ function switchTab(id, btn) {
   if (['leads','stage','members'].includes(id) && window._lastCurrFiltered) {
     buildStageTabs(window._lastCurrFiltered, window._lastPpFiltered, window._lastPyFiltered, window._lastPpLabel, window._lastPyLabel);
   }
-  if (id === 'cpr')    { buildCPRTab(); checkCPRWarning(); }
-  if (id === 'meta')   buildMetaTab();
-  if (id === 'google') buildGoogleTab();
+  if (id === 'cpr')       { buildCPRTab(); checkCPRWarning(); }
+  if (id === 'meta')      buildMetaTab();
+  if (id === 'google')    buildGoogleTab();
+  if (id === 'website')   renderGA4();
+  if (id === 'gbp')       renderGBP();
+  if (id === 'instagram') renderInstagram();
   // Hide source filter for single-source tabs
   const singleSourceTabs = ['meta', 'google', 'website', 'gbp', 'instagram'];
   const srcDropEl  = document.getElementById('sourceDropdown');
@@ -426,6 +418,7 @@ function toggleControls() {
 
 
 async function loadData() {
+  // Main dashboard data — load in parallel (blocks initial render)
   const [rawRes, metaRes, googleRes] = await Promise.allSettled([
     fetch('data.json?_='            + Date.now()),
     fetch('meta-ads-data.json?_='   + Date.now()),
@@ -440,6 +433,9 @@ async function loadData() {
   }
   try { META_ADS_RAW   = await metaRes.value.json();   } catch(e) { console.warn('meta-ads-data.json unavailable:', e); }
   try { GOOGLE_ADS_RAW = await googleRes.value.json(); } catch(e) { console.warn('google-ads-data.json unavailable:', e); }
+
+  // Organic channel data — load in background, does NOT block main dashboard
+  _loadOrganicData();
   // Set default date range: year to date
   const _today = new Date();
   const _jan1  = new Date(_today.getFullYear(), 0, 1);
@@ -530,6 +526,15 @@ function applyFilters() {
   buildGoogleTab();
   buildCPRTab();
   buildSummaryTab();
+
+  // Re-render whichever organic tab is currently active
+  const _activeOrgTab = document.querySelector('.tab-content.active');
+  if (_activeOrgTab) {
+    const _tid = _activeOrgTab.id.replace('tab-','');
+    if (_tid === 'instagram') renderInstagram();
+    if (_tid === 'gbp')       renderGBP();
+    if (_tid === 'website')   renderGA4();
+  }
 }
 
 
@@ -1651,6 +1656,434 @@ function checkCPRWarning() {
 }
 
 
+
+// ============================================================
+//  ORGANIC CHANNELS — GBP / GA4 / Instagram / Facebook
+// ============================================================
+
+// Load organic data files in the background (non-blocking).
+// social_insights: ~370 KB  |  gbp_data: ~740 KB  |  marketing_data: ~17 MB
+async function _loadOrganicData() {
+  // Social + GBP load quickly — fetch in parallel
+  const [socialRes, gbpRes] = await Promise.allSettled([
+    fetch('nso-dashboard/social_insights.json?_=' + Date.now()),
+    fetch('nso-dashboard/gbp_data.json?_='        + Date.now()),
+  ]);
+  try { SOCIAL_RAW = await socialRes.value.json(); }
+  catch(e) { console.warn('social_insights.json unavailable:', e); SOCIAL_RAW = {facebook:[],instagram:[]}; }
+  try { GBP_RAW_ORG = await gbpRes.value.json(); }
+  catch(e) { console.warn('gbp_data.json unavailable:', e); GBP_RAW_ORG = null; }
+
+  // If user is already on a social/GBP tab, re-render now that data is ready
+  const activeTab = document.querySelector('.tab-content.active');
+  if (activeTab) {
+    const tid = activeTab.id.replace('tab-','');
+    if (tid === 'instagram') renderInstagram();
+    if (tid === 'gbp')       renderGBP();
+  }
+
+  // marketing_data.json is 17 MB — load last so it never delays anything above
+  try {
+    const mktRes = await fetch('nso-dashboard/marketing_data.json?_=' + Date.now());
+    const mkt = await mktRes.json();
+    GA4_RAW_ORG = mkt.ga4_traffic || [];
+  } catch(e) { console.warn('marketing_data.json unavailable:', e); GA4_RAW_ORG = []; }
+
+  // Re-render Website/GA4 tab if it's active
+  const activeTab2 = document.querySelector('.tab-content.active');
+  if (activeTab2 && activeTab2.id === 'tab-website') renderGA4();
+}
+
+// Data loaded in loadData() alongside other sources
+let SOCIAL_RAW   = null;
+let GBP_RAW_ORG  = null;
+let GA4_RAW_ORG  = [];
+
+// Chart registry for organic tabs
+const _orgCharts = {};
+
+// Studio code map (used by social data which stores short names + codes)
+const SOC_CODE_MAP = {
+  'Herriman':              'UT-001',
+  'Dallas - Prestonwood':  'TX-003',
+  'Naples - Mercato':      'FL-019',
+  'Pinecrest - Palmetto Bay': 'FL-017',
+  'Reston':                'VA-001'
+};
+
+// GA4 landing-page paths per studio
+const GA4_PATHS = {
+  'Herriman':              ['/gyms/utah-herriman','/nso-2026-herriman','/secure-founders-rate-herriman','/opening-herriman'],
+  'Dallas - Prestonwood':  ['/gyms/locations-texas-prestonwood','/nso-2026-prestonwood','/opening-prestonwood','/secure-founders-rate-prestonwood','/events-prestonwood'],
+  'Naples - Mercato':      ['/nso-2026-naples','/locations-florida-naples','/naples-secure-founders-rate','/opening-naples'],
+  'Pinecrest - Palmetto Bay': ['/gyms/locations-florida-pinecrest','/nso-2026-pinecrest','/opening-pinecrest','/secure-founders-rate-pinecrest','/nso-pinecrest'],
+  'Reston':                ['/gyms/locations-virginia-reston','/nso-2026-reston','/opening-reston','/secure-founders-rate-reston']
+};
+
+// Per-studio color palette for organic charts
+const ORG_COLORS = {
+  'Herriman':              '#00A3E0',
+  'Dallas - Prestonwood':  '#4285F4',
+  'Naples - Mercato':      '#00C9A7',
+  'Pinecrest - Palmetto Bay': '#f4a021',
+  'Reston':                '#e05a5a'
+};
+function _orgColor(studio) { return ORG_COLORS[studio] || '#8aaabb'; }
+
+// Helper: no-data placeholder
+function _orgEmpty(msg) {
+  return `<div style="padding:40px;text-align:center;color:#8aaabb;font-family:'Oswald',sans-serif;font-style:italic;font-size:14px">${msg}</div>`;
+}
+
+// Helper: kpi card for organic tabs (no deltas needed)
+function _orgKpi(label, value, icon) {
+  return `<div class="kpi-card"><div class="kpi-card-label">${icon ? icon + ' ' : ''}${label}</div><div class="kpi-card-val">${value}</div></div>`;
+}
+
+// ---- GBP ---------------------------------------------------------------
+function renderGBP() {
+  const el = document.getElementById('gbp-content');
+  if (!el) return;
+  const selStudios = getSelected('studioMenu');
+  const from = document.getElementById('fFrom').value || null;
+  const to   = document.getElementById('fTo').value   || null;
+
+  // Live API data path
+  if (GBP_RAW_ORG && (GBP_RAW_ORG.studios || []).length) {
+    const studios = (GBP_RAW_ORG.studios || []).filter(s => selStudios.includes(s.name.replace(/^SWEAT440\s+/, '')));
+    if (!studios.length) { el.innerHTML = _orgEmpty('No studios selected or no GBP data for selected studios.'); return; }
+    let h = '';
+    studios.forEach(s => {
+      const rows = (s.daily || []).filter(r => (!from || r.date >= from) && (!to || r.date <= to));
+      const sum  = k => rows.reduce((a, r) => a + (r[k] || 0), 0);
+      const totalViews  = sum('total_views');
+      const searchViews = sum('desktop_search') + sum('mobile_search');
+      const mapsViews   = sum('desktop_maps') + sum('mobile_maps');
+      const periodLabel = rows.length ? (rows[0].date + ' - ' + rows[rows.length-1].date) : (from && to ? from + ' - ' + to : 'All time');
+      h += `<div class="chart-card" style="margin-bottom:20px">`;
+      h += `<div class="chart-card-title">${s.name} <span style="font-size:12px;font-weight:400;color:#5a7a8a;margin-left:8px">${periodLabel}</span></div>`;
+      h += `<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#5a7a8a;margin-bottom:10px">Profile Views</div>`;
+      h += `<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">`;
+      h += _orgKpi('Total Views',   totalViews.toLocaleString(), '');
+      h += _orgKpi('Google Search', searchViews.toLocaleString(), '🔍');
+      h += _orgKpi('Google Maps',   mapsViews.toLocaleString(),   '📍');
+      h += `</div>`;
+      h += `<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#5a7a8a;margin-bottom:10px">Search Detail</div>`;
+      h += `<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">`;
+      h += _orgKpi('Search - Mobile',  sum('mobile_search').toLocaleString(),  '📱');
+      h += _orgKpi('Search - Desktop', sum('desktop_search').toLocaleString(), '🖥️');
+      h += _orgKpi('Maps - Mobile',    sum('mobile_maps').toLocaleString(),    '📱');
+      h += _orgKpi('Maps - Desktop',   sum('desktop_maps').toLocaleString(),   '🖥️');
+      h += `</div>`;
+      h += `<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#5a7a8a;margin-bottom:10px">Customer Actions</div>`;
+      h += `<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:8px">`;
+      h += _orgKpi('Direction Requests', sum('direction_requests').toLocaleString(), '🧭');
+      h += _orgKpi('Website Clicks',     sum('website_clicks').toLocaleString(),     '🌐');
+      h += _orgKpi('Calls',              sum('calls').toLocaleString(),              '📞');
+      h += `</div>`;
+      h += `<div style="font-size:10px;color:#aab;margin-top:12px">Source: Google Business Profile API &middot; ${rows.length} daily data points</div>`;
+      h += `</div>`;
+    });
+    el.innerHTML = h || _orgEmpty('No GBP data available.');
+    return;
+  }
+
+  el.innerHTML = _orgEmpty('No GBP data loaded. Data refreshes daily via GitHub Actions.');
+}
+
+// ---- GA4 / Website -------------------------------------------------------
+function renderGA4() {
+  const el = document.getElementById('ga4-content');
+  if (!el) return;
+  if (!GA4_RAW_ORG || !GA4_RAW_ORG.length) {
+    el.innerHTML = _orgEmpty('No GA4 website data available.');
+    return;
+  }
+  const from = document.getElementById('fFrom').value || null;
+  const to   = document.getElementById('fTo').value   || null;
+  const selStudios = getSelected('studioMenu');
+
+  // Only studios that have GA4 paths defined
+  const activeStudios = selStudios.filter(s => GA4_PATHS[s]);
+  if (!activeStudios.length) {
+    el.innerHTML = _orgEmpty('No website data available for selected studios. GA4 data covers: Herriman, Dallas - Prestonwood, Naples, Pinecrest, Reston.');
+    return;
+  }
+
+  function ga4Filter(studio) {
+    const paths = GA4_PATHS[studio] || [];
+    return GA4_RAW_ORG.filter(r => {
+      if (!paths.some(p => r.landing_page.startsWith(p))) return false;
+      if (from && r.date < from) return false;
+      if (to   && r.date > to)   return false;
+      return true;
+    });
+  }
+
+  const studioTotals = activeStudios.map(studio => {
+    const rows = ga4Filter(studio);
+    return {
+      studio,
+      sessions: rows.reduce((s, r) => s + (r.sessions || 0), 0),
+      users:    rows.reduce((s, r) => s + (r.total_users || 0), 0),
+      newUsers: rows.reduce((s, r) => s + (r.new_users || 0), 0)
+    };
+  });
+
+  let h = '';
+  h += '<div class="chart-card"><div class="chart-card-title">Website Visits by Studio</div>';
+  h += '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));margin-bottom:0">';
+  studioTotals.forEach(({ studio, sessions, users, newUsers }) => {
+    const name = studio.replace('SWEAT440 ', '');
+    const col  = _orgColor(studio);
+    h += `<div class="kpi-card"><div class="kpi-card-label" style="color:${col}">${name}</div><div class="kpi-card-val">${sessions.toLocaleString()}</div><div style="font-size:11px;color:#8aaabb;margin-top:2px">Sessions</div><div style="font-size:11px;color:#5a7a8a;margin-top:6px">${users.toLocaleString()} users &nbsp;&middot;&nbsp; ${newUsers.toLocaleString()} new</div></div>`;
+  });
+  h += '</div></div>';
+
+  h += '<div class="chart-card"><div class="chart-card-title">Sessions Over Time</div><div style="position:relative;width:100%;height:280px"><canvas id="ga4TrendChart"></canvas></div></div>';
+
+  h += '<div class="chart-card"><div class="chart-card-title">Traffic Sources by Studio</div><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Studio</th><th>Source / Medium</th><th class="num">Sessions</th><th class="num">Users</th><th class="num">New Users</th></tr></thead><tbody>';
+  activeStudios.forEach(studio => {
+    const rows  = ga4Filter(studio);
+    const bySrc = {};
+    rows.forEach(r => {
+      const k = r.source + ' / ' + r.medium;
+      if (!bySrc[k]) bySrc[k] = { s: 0, u: 0, n: 0 };
+      bySrc[k].s += r.sessions || 0;
+      bySrc[k].u += r.total_users || 0;
+      bySrc[k].n += r.new_users || 0;
+    });
+    Object.entries(bySrc).sort((a, b) => b[1].s - a[1].s).slice(0, 5).forEach(([src, v], i) => {
+      h += `<tr><td>${i === 0 ? studio.replace('SWEAT440 ','') : ''}</td><td>${src}</td><td class="num">${v.s.toLocaleString()}</td><td class="num">${v.u.toLocaleString()}</td><td class="num">${v.n.toLocaleString()}</td></tr>`;
+    });
+  });
+  h += '</tbody></table></div></div>';
+
+  el.innerHTML = h;
+  setTimeout(() => _drawGA4Trend(from, to, activeStudios, ga4Filter), 50);
+}
+
+function _drawGA4Trend(from, to, activeStudios, ga4Filter) {
+  const ctx = document.getElementById('ga4TrendChart');
+  if (!ctx) return;
+  if (_orgCharts.ga4) { _orgCharts.ga4.destroy(); _orgCharts.ga4 = null; }
+  const datasets = activeStudios.map(studio => {
+    const rows   = ga4Filter(studio);
+    const byDate = {};
+    rows.forEach(r => { byDate[r.date] = (byDate[r.date] || 0) + (r.sessions || 0); });
+    return { studio, byDate };
+  });
+  const allDates = [...new Set(datasets.flatMap(d => Object.keys(d.byDate)))].sort();
+  const isMob    = window.innerWidth <= 768;
+  _orgCharts.ga4 = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: allDates.map(d => fmtDayLabel(d)),
+      datasets: datasets.map(({ studio, byDate }) => ({
+        label:       studio.replace('SWEAT440 ', ''),
+        data:        allDates.map(d => byDate[d] || 0),
+        borderColor: _orgColor(studio),
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: .4,
+        fill: false
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Oswald', size: 12, style: 'italic' }, usePointStyle: true, padding: 14 } },
+        tooltip: { mode: 'index', intersect: false }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { size: 10 }, color: '#5a7a8a', autoSkip: true, maxTicksLimit: isMob ? 5 : 14, maxRotation: 0 } },
+        y: { grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { size: 11 }, color: '#5a7a8a' } }
+      }
+    }
+  });
+}
+
+// ---- Sort state for social tables ----------------------------------------
+const _SOC_SORTS = { fb: { col: -1, dir: 'desc' }, ig: { col: -1, dir: 'desc' } };
+function _socSortHdr(text, key, colIdx, sortable = true) {
+  if (!sortable) return `<div class="soc-cell">${text}</div>`;
+  const st = _SOC_SORTS[key]; const sorted = st.col === colIdx;
+  const arr = sorted ? (st.dir === 'desc' ? ' ▼' : ' ▲') : '';
+  return `<div class="soc-cell${sorted ? ' sorted' : ''}" onclick="_socSort('${key}',${colIdx})">${text}${arr}</div>`;
+}
+function _socSort(key, colIdx) {
+  const st = _SOC_SORTS[key];
+  if (st.col === colIdx) st.dir = st.dir === 'desc' ? 'asc' : 'desc';
+  else { st.col = colIdx; st.dir = 'desc'; }
+  if (key === 'fb') renderFacebook(); else renderInstagram();
+}
+function _scCls(key, col) { return _SOC_SORTS[key].col === col ? 'sc' : ''; }
+
+// ---- Facebook ------------------------------------------------------------
+function renderFacebook() {
+  const el = document.getElementById('facebook-content');
+  if (!el) return;
+  const selStudios = getSelected('studioMenu');
+  const from = document.getElementById('fFrom').value || null;
+  const to   = document.getElementById('fTo').value   || null;
+
+  if (!SOCIAL_RAW || !(SOCIAL_RAW.facebook || []).length) {
+    el.innerHTML = _orgEmpty('No Facebook data available. Data refreshes daily via GitHub Actions.');
+    return;
+  }
+
+  // Match social entries against selected studios by prepending "SWEAT440 "
+  const activeCodes = selStudios.map(s => SOC_CODE_MAP[s]).filter(Boolean);
+  const studios = (SOCIAL_RAW.facebook || []).filter(s => activeCodes.includes(s.code));
+
+  if (!studios.length) {
+    el.innerHTML = _orgEmpty('No Facebook data for selected studios. Available: Herriman, Dallas - Prestonwood, Naples - Mercato, Pinecrest - Palmetto Bay, Reston.');
+    return;
+  }
+
+  const filtered = studios.map(s => ({ ...s, posts: (s.posts || []).filter(p => (!from || p.date >= from) && (!to || p.date <= to)) }));
+  const allPosts  = filtered.flatMap(s => s.posts.map(p => ({ ...p, studio: 'SWEAT440 ' + s.studio, code: s.code })));
+
+  const totalFans     = studios.reduce((a, s) => a + (s.total_fans || 0), 0);
+  const totalTalking  = studios.reduce((a, s) => a + (s.talking_about || 0), 0);
+  const totalLikes    = allPosts.reduce((a, p) => a + (p.likes || 0), 0);
+  const totalComments = allPosts.reduce((a, p) => a + (p.comments || 0), 0);
+
+  let h = '';
+  h += `<div class="kpi-grid">`;
+  h += _orgKpi('Total Followers',  totalFans     > 0 ? totalFans.toLocaleString()    : '-', '');
+  h += _orgKpi('Talking About',    totalTalking  > 0 ? totalTalking.toLocaleString() : '-', '');
+  h += _orgKpi('Total Reactions',  totalLikes.toLocaleString(),    '');
+  h += _orgKpi('Total Comments',   totalComments.toLocaleString(), '');
+  h += `</div>`;
+
+  if (allPosts.length) {
+    const ST   = _SOC_SORTS.fb;
+    const KEYS = ['date', 'message', 'likes', 'comments', 'engagement'];
+    const NUM  = [2, 3, 4];
+    let sorted = [...allPosts];
+    if (ST.col >= 0) {
+      const k = KEYS[ST.col]; const isN = NUM.includes(ST.col);
+      sorted.sort((a, b) => {
+        let va = isN ? parseInt(a[k]) || 0 : String(a[k] || '').toLowerCase();
+        let vb = isN ? parseInt(b[k]) || 0 : String(b[k] || '').toLowerCase();
+        return (va < vb ? -1 : va > vb ? 1 : 0) * (ST.dir === 'asc' ? 1 : -1);
+      });
+    }
+    h += `<div class="chart-card"><div class="chart-card-title">Posts <span style="font-size:11px;color:#8aaabb;font-style:normal;font-weight:400">(click column header to sort)</span></div>`;
+    h += `<div style="overflow-x:auto"><div style="min-width:460px">`;
+    h += `<div class="soc-row soc-th soc-fb">${_socSortHdr('Date','fb',0)}${_socSortHdr('','fb',-1,false)}${_socSortHdr('Post','fb',1)}${_socSortHdr('Likes','fb',2)}${_socSortHdr('Comments','fb',3)}</div>`;
+    sorted.slice(0, 30).forEach(p => {
+      const img     = p.image_url
+        ? `<a href="${p.permalink || '#'}" target="_blank" rel="noopener"><img class="soc-thumb" src="${p.image_url}" loading="lazy" onerror="this.outerHTML='<div class=soc-thumb-ph>📘</div>'"></a>`
+        : `<div class="soc-thumb-ph">📘</div>`;
+      const caption = p.permalink
+        ? `<a href="${p.permalink}" target="_blank" rel="noopener">${(p.message || '').slice(0, 90) || '(no text)'}</a>`
+        : (p.message || '').slice(0, 90) || '(no text)';
+      h += `<div class="soc-row soc-fb">
+        <div class="soc-cell soc-date ${_scCls('fb',0)}">${fmtDayLabel(p.date)}</div>
+        <div class="soc-cell">${img}</div>
+        <div class="soc-cell soc-caption soc-left ${_scCls('fb',1)}">${caption}</div>
+        <div class="soc-cell ${_scCls('fb',2)}">${(p.likes || 0).toLocaleString()}</div>
+        <div class="soc-cell ${_scCls('fb',3)}">${(p.comments || 0).toLocaleString()}</div>
+      </div>`;
+    });
+    h += `</div></div></div>`;
+  }
+
+  el.innerHTML = h;
+}
+
+// ---- Instagram -----------------------------------------------------------
+function renderInstagram() {
+  const el = document.getElementById('instagram-content');
+  if (!el) return;
+  const selStudios = getSelected('studioMenu');
+  const from = document.getElementById('fFrom').value || null;
+  const to   = document.getElementById('fTo').value   || null;
+
+  if (!SOCIAL_RAW || !(SOCIAL_RAW.instagram || []).length) {
+    el.innerHTML = _orgEmpty('No Instagram data available. Data refreshes daily via GitHub Actions.');
+    return;
+  }
+
+  const activeCodes = selStudios.map(s => SOC_CODE_MAP[s]).filter(Boolean);
+  const studios     = (SOCIAL_RAW.instagram || []).filter(s => activeCodes.includes(s.code));
+
+  if (!studios.length) {
+    el.innerHTML = _orgEmpty('No Instagram data for selected studios. Available: Herriman, Dallas - Prestonwood, Pinecrest - Palmetto Bay, Reston.');
+    return;
+  }
+
+  const filtered = studios.map(s => ({
+    ...s,
+    current_followers: s.current_followers || 0,
+    daily: (s.daily || []).filter(r => (!from || r.date >= from) && (!to || r.date <= to)),
+    posts: (s.posts || []).filter(p => (!from || p.date >= from) && (!to || p.date <= to))
+  }));
+
+  const allPosts      = filtered.flatMap(s => s.posts.map(p => ({ ...p, studio: 'SWEAT440 ' + s.studio, code: s.code })));
+  let totalReach = 0;
+  filtered.forEach(s => s.daily.forEach(r => { totalReach += r.reach || 0; }));
+  const days          = new Set(filtered.flatMap(s => s.daily.map(r => r.date))).size || 1;
+  const avgReach      = Math.round(totalReach / days);
+  const totalFollowers = filtered.reduce((a, s) => a + (s.current_followers || 0), 0);
+  const hasFollowers  = filtered.some(s => s.current_followers > 0);
+
+  let h = '';
+  h += `<div class="kpi-grid">`;
+  if (hasFollowers) h += _orgKpi('Total Followers', totalFollowers.toLocaleString(), '');
+  h += _orgKpi('Avg Daily Reach', avgReach.toLocaleString(),  '');
+  h += _orgKpi('Total Reach',     totalReach.toLocaleString(), '');
+  h += _orgKpi('Posts in Period', allPosts.length.toString(),  '');
+  h += `</div>`;
+
+  if (allPosts.length) {
+    const ST   = _SOC_SORTS.ig;
+    const KEYS = ['date', 'caption', 'media_type', 'likes', 'comments', 'engagement'];
+    const NUM  = [3, 4, 5];
+    let sorted = [...allPosts];
+    if (ST.col >= 0) {
+      const k = KEYS[ST.col]; const isN = NUM.includes(ST.col);
+      sorted.sort((a, b) => {
+        let va = isN ? parseInt(a[k]) || 0 : String(a[k] || '').toLowerCase();
+        let vb = isN ? parseInt(b[k]) || 0 : String(b[k] || '').toLowerCase();
+        return (va < vb ? -1 : va > vb ? 1 : 0) * (ST.dir === 'asc' ? 1 : -1);
+      });
+    }
+    h += `<div class="chart-card"><div class="chart-card-title">Best Performing Posts <span style="font-size:11px;color:#8aaabb;font-style:normal;font-weight:400">(click column header to sort)</span></div>`;
+    h += `<div style="overflow-x:auto"><div style="min-width:580px">`;
+    h += `<div class="soc-row soc-th soc-ig">${_socSortHdr('Date','ig',0)}<div class="soc-cell"></div>${_socSortHdr('Post','ig',1)}${_socSortHdr('Type','ig',2)}${_socSortHdr('Likes','ig',3)}${_socSortHdr('Comments','ig',4)}${_socSortHdr('Eng.','ig',5)}</div>`;
+    sorted.slice(0, 30).forEach(p => {
+      const isVid = p.media_type === 'VIDEO' || p.media_type === 'REELS';
+      const vidBadge = isVid ? '<div style="position:absolute;bottom:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;border-radius:3px;font-size:9px;padding:1px 4px">&#9654;</div>' : '';
+      const imgInner = p.image_url
+        ? `<img class="soc-thumb" src="${p.image_url}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="soc-thumb-ph" style="display:none">${isVid ? '&#9654;' : '&#128247;'}</div>`
+        : `<div class="soc-thumb-ph">${isVid ? '&#9654;' : '&#128247;'}</div>`;
+      const img = p.permalink
+        ? `<a href="${p.permalink}" target="_blank" rel="noopener" style="position:relative;display:block;width:60px">${imgInner}${vidBadge}</a>`
+        : `<div style="position:relative;display:block;width:60px">${imgInner}</div>`;
+      const caption   = p.permalink
+        ? `<a href="${p.permalink}" target="_blank" rel" style="color:#1a4d6e;text-decoration:none">${(p.caption || '').slice(0,80) || '(no caption)'}</a>`
+        : (p.caption || '').slice(0,80) || '(no caption)';
+      const typeLabel = p.media_type === 'CAROUSEL_ALBUM' ? 'CAROUSEL' : (p.media_type || '-');
+      h += `<div class="soc-row soc-ig">`;
+      h += `<div class="soc-cell soc-date ${_scCls('ig',0)}">${fmtDayLabel(p.date)}</div>`;
+      h += `<div class="soc-cell">${img}</div>`;
+      h += `<div class="soc-caption soc-cell ${_scCls('ig',1)}">${caption}</div>`;
+      h += `<div class="soc-cell ${_scCls('ig',2)}">${typeLabel}</div>`;
+      h += `<div class="soc-cell ${_scCls('ig',3)}">${(p.likes || 0).toLocaleString()}</div>`;
+      h += `<div class="soc-cell ${_scCls('ig',4)}">${(p.comments || 0).toLocaleString()}</div>`;
+      h += `<div class="soc-cell ${_scCls('ig',5)}">${(p.engagement || 0).toLocaleString()}</div>`;
+      h += `</div>`;
+    });
+    h += `</div></div></div>`;
+  }
+
+  el.innerHTML = h;
+}
+
+// ============================================================
 
 loadData();
 </script>
