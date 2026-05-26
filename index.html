@@ -1703,13 +1703,8 @@ let GA4_RAW_ORG  = [];
 const _orgCharts = {};
 
 // Studio code map (used by social data which stores short names + codes)
-const SOC_CODE_MAP = {
-  'Herriman':              'UT-001',
-  'Dallas - Prestonwood':  'TX-003',
-  'Naples - Mercato':      'FL-019',
-  'Pinecrest - Palmetto Bay': 'FL-017',
-  'Reston':                'VA-001'
-};
+// Social data is matched by studio name directly (case-insensitive).
+// SOC_CODE_MAP removed — no longer needed.
 
 // GA4 landing-page paths per studio
 const GA4_PATHS = {
@@ -1932,12 +1927,11 @@ function renderFacebook() {
     return;
   }
 
-  // Match social entries against selected studios by prepending "SWEAT440 "
-  const activeCodes = selStudios.map(s => SOC_CODE_MAP[s]).filter(Boolean);
-  const studios = (SOCIAL_RAW.facebook || []).filter(s => activeCodes.includes(s.code));
+  const selLower = new Set(selStudios.map(s => s.toLowerCase()));
+  const studios = (SOCIAL_RAW.facebook || []).filter(s => selLower.has((s.studio || '').toLowerCase()));
 
   if (!studios.length) {
-    el.innerHTML = _orgEmpty('No Facebook data for selected studios. Available: Herriman, Dallas - Prestonwood, Naples - Mercato, Pinecrest - Palmetto Bay, Reston.');
+    el.innerHTML = _orgEmpty('No Facebook data for selected studios.');
     return;
   }
 
@@ -2007,12 +2001,28 @@ function renderInstagram() {
     return;
   }
 
-  const activeCodes = selStudios.map(s => SOC_CODE_MAP[s]).filter(Boolean);
-  const studios     = (SOCIAL_RAW.instagram || []).filter(s => activeCodes.includes(s.code));
+  const selLower = new Set(selStudios.map(s => s.toLowerCase()));
+  const studios  = (SOCIAL_RAW.instagram || []).filter(s => selLower.has((s.studio || '').toLowerCase()));
 
   if (!studios.length) {
-    el.innerHTML = _orgEmpty('No Instagram data for selected studios. Available: Herriman, Dallas - Prestonwood, Pinecrest - Palmetto Bay, Reston.');
+    el.innerHTML = _orgEmpty('No Instagram data for selected studios.');
     return;
+  }
+
+  // Convert date strings to Date objects for window computation
+  const fromD = from ? new Date(from + 'T00:00:00') : null;
+  const toD   = to   ? new Date(to   + 'T00:00:00') : null;
+
+  // Previous period window (same duration, immediately before current)
+  let ppFromStr = null, ppToStr = null, ppOutOfRange = false;
+  if (fromD && toD) {
+    const { ppFrom: ppF, ppTo: ppT } = computeWindows(fromD, toD);
+    ppFromStr = localDateStr(ppF);
+    ppToStr   = localDateStr(ppT);
+    // Find the earliest date available across all selected studios
+    const allAvailDates = studios.flatMap(s => (s.daily || []).map(r => r.date));
+    const dataStart = allAvailDates.length ? [...allAvailDates].sort()[0] : null;
+    ppOutOfRange = !dataStart || ppFromStr < dataStart;
   }
 
   const filtered = studios.map(s => ({
@@ -2022,40 +2032,103 @@ function renderInstagram() {
     posts: (s.posts || []).filter(p => (!from || p.date >= from) && (!to || p.date <= to))
   }));
 
-  const allPosts      = filtered.flatMap(s => s.posts.map(p => ({ ...p, studio: 'SWEAT440 ' + s.studio, code: s.code })));
-  let totalReach = 0;
-  filtered.forEach(s => s.daily.forEach(r => { totalReach += r.reach || 0; }));
-  const days          = new Set(filtered.flatMap(s => s.daily.map(r => r.date))).size || 1;
-  const avgReach      = Math.round(totalReach / days);
+  const ppFiltered = ppFromStr ? studios.map(s => ({
+    ...s,
+    daily: (s.daily || []).filter(r => r.date >= ppFromStr && r.date <= ppToStr),
+    posts: (s.posts || []).filter(p => p.date >= ppFromStr && p.date <= ppToStr)
+  })) : [];
+
+  // Estimate per-post reach: daily reach ÷ number of posts on that day
+  function _enrichPosts(studioList) {
+    return studioList.flatMap(s => {
+      const reachByDate = {};
+      s.daily.forEach(r => { reachByDate[r.date] = r.reach || 0; });
+      const postsPerDay = {};
+      s.posts.forEach(p => { postsPerDay[p.date] = (postsPerDay[p.date] || 0) + 1; });
+      return s.posts.map(p => ({
+        ...p,
+        studio: 'SWEAT440 ' + s.studio,
+        code: s.code,
+        est_reach: postsPerDay[p.date] ? Math.round((reachByDate[p.date] || 0) / postsPerDay[p.date]) : 0
+      }));
+    });
+  }
+  const allPosts   = _enrichPosts(filtered);
+  const ppAllPosts = _enrichPosts(ppFiltered);
+
+  function _sum(studioList, key) {
+    let t = 0; studioList.forEach(s => s.daily.forEach(r => { t += r[key] || 0; })); return t;
+  }
+  function _median(arr) {
+    if (!arr.length) return 0;
+    const s = [...arr].sort((a, b) => a - b);
+    const m = Math.floor(s.length / 2);
+    return s.length % 2 ? s[m] : Math.round((s[m - 1] + s[m]) / 2);
+  }
+
+  const totalReach     = _sum(filtered, 'reach');
+  const ppTotalReach   = _sum(ppFiltered, 'reach');
+  const days           = new Set(filtered.flatMap(s => s.daily.map(r => r.date))).size || 1;
+  const avgReach       = Math.round(totalReach / days);
+  const ppDays         = new Set(ppFiltered.flatMap(s => s.daily.map(r => r.date))).size || 1;
+  const ppAvgReach     = Math.round(ppTotalReach / ppDays);
   const totalFollowers = filtered.reduce((a, s) => a + (s.current_followers || 0), 0);
-  const hasFollowers  = filtered.some(s => s.current_followers > 0);
+  const hasFollowers   = filtered.some(s => s.current_followers > 0);
+  const medianLikes    = _median(allPosts.map(p => p.likes || 0));
+  const medianReach    = _median(allPosts.map(p => p.est_reach || 0));
+  const ppMedianLikes  = _median(ppAllPosts.map(p => p.likes || 0));
+  const ppMedianReach  = _median(ppAllPosts.map(p => p.est_reach || 0));
+
+  // Delta badge — prev period only, with out-of-range rule
+  function _igDelta(curr, pp) {
+    if (!ppFromStr) return '';
+    if (ppOutOfRange) return '<div class="kpi-card-delta neu">&#9651; out of range</div>';
+    if (!pp) return '';
+    const d = (curr - pp) / pp * 100;
+    const cls = d >= 0 ? 'pos' : 'neg';
+    const arrow = d >= 0 ? '&#9650;' : '&#9660;';
+    return `<div class="kpi-card-delta ${cls}">${arrow} ${Math.abs(d).toFixed(1)}% prev period</div>`;
+  }
+  function _igKpi(label, value, delta) {
+    return `<div class="kpi-card"><div class="kpi-card-label">${label}</div><div class="kpi-card-val">${value}</div>${delta}</div>`;
+  }
 
   let h = '';
   h += `<div class="kpi-grid">`;
   if (hasFollowers) h += _orgKpi('Total Followers', totalFollowers.toLocaleString(), '');
-  h += _orgKpi('Avg Daily Reach', avgReach.toLocaleString(),  '');
-  h += _orgKpi('Total Reach',     totalReach.toLocaleString(), '');
-  h += _orgKpi('Posts in Period', allPosts.length.toString(),  '');
+  h += _igKpi('Total Reach',         totalReach.toLocaleString(),   _igDelta(totalReach,   ppTotalReach));
+  h += _igKpi('Avg Daily Reach',     avgReach.toLocaleString(),     _igDelta(avgReach,     ppAvgReach));
+  h += _igKpi('Median Reach / Post', medianReach.toLocaleString(),  _igDelta(medianReach,  ppMedianReach));
+  h += _igKpi('Median Likes',        medianLikes.toLocaleString(),  _igDelta(medianLikes,  ppMedianLikes));
+  h += _igKpi('Posts in Period',     allPosts.length.toString(),    _igDelta(allPosts.length, ppAllPosts.length));
   h += `</div>`;
 
   if (allPosts.length) {
-    const ST   = _SOC_SORTS.ig;
-    const KEYS = ['date', 'caption', 'media_type', 'likes', 'comments', 'engagement'];
-    const NUM  = [3, 4, 5];
-    let sorted = [...allPosts];
-    if (ST.col >= 0) {
-      const k = KEYS[ST.col]; const isN = NUM.includes(ST.col);
-      sorted.sort((a, b) => {
-        let va = isN ? parseInt(a[k]) || 0 : String(a[k] || '').toLowerCase();
-        let vb = isN ? parseInt(b[k]) || 0 : String(b[k] || '').toLowerCase();
-        return (va < vb ? -1 : va > vb ? 1 : 0) * (ST.dir === 'asc' ? 1 : -1);
-      });
-    }
-    h += `<div class="chart-card"><div class="chart-card-title">Best Performing Posts <span style="font-size:11px;color:#8aaabb;font-style:normal;font-weight:400">(click column header to sort)</span></div>`;
-    h += `<div style="overflow-x:auto"><div style="min-width:580px">`;
-    h += `<div class="soc-row soc-th soc-ig">${_socSortHdr('Date','ig',0)}<div class="soc-cell"></div>${_socSortHdr('Post','ig',1)}${_socSortHdr('Type','ig',2)}${_socSortHdr('Likes','ig',3)}${_socSortHdr('Comments','ig',4)}${_socSortHdr('Eng.','ig',5)}</div>`;
-    sorted.slice(0, 30).forEach(p => {
-      const isVid = p.media_type === 'VIDEO' || p.media_type === 'REELS';
+    h += `<div class="chart-card">
+      <div class="chart-card-title">Best Performing Posts</div>
+      <div style="overflow-x:auto">
+        <table class="data-table" id="ig-posts-table">
+          <thead><tr>
+            <th style="width:68px"></th>
+            <th data-sort="date">Date</th>
+            <th data-sort="caption">Post</th>
+            <th data-sort="media_type">Type</th>
+            <th class="num" data-sort="est_reach">Reach</th>
+            <th class="num" data-sort="likes">Likes</th>
+            <th class="num" data-sort="comments">Comments</th>
+            <th class="num" data-sort="engagement">Eng.</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  el.innerHTML = h;
+
+  if (allPosts.length) {
+    sortableTable('ig-posts-table', allPosts, (p) => {
+      const isVid    = p.media_type === 'VIDEO' || p.media_type === 'REELS';
       const vidBadge = isVid ? '<div style="position:absolute;bottom:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;border-radius:3px;font-size:9px;padding:1px 4px">&#9654;</div>' : '';
       const imgInner = p.image_url
         ? `<img class="soc-thumb" src="${p.image_url}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="soc-thumb-ph" style="display:none">${isVid ? '&#9654;' : '&#128247;'}</div>`
@@ -2064,23 +2137,21 @@ function renderInstagram() {
         ? `<a href="${p.permalink}" target="_blank" rel="noopener" style="position:relative;display:block;width:60px">${imgInner}${vidBadge}</a>`
         : `<div style="position:relative;display:block;width:60px">${imgInner}</div>`;
       const caption   = p.permalink
-        ? `<a href="${p.permalink}" target="_blank" rel" style="color:#1a4d6e;text-decoration:none">${(p.caption || '').slice(0,80) || '(no caption)'}</a>`
-        : (p.caption || '').slice(0,80) || '(no caption)';
-      const typeLabel = p.media_type === 'CAROUSEL_ALBUM' ? 'CAROUSEL' : (p.media_type || '-');
-      h += `<div class="soc-row soc-ig">`;
-      h += `<div class="soc-cell soc-date ${_scCls('ig',0)}">${fmtDayLabel(p.date)}</div>`;
-      h += `<div class="soc-cell">${img}</div>`;
-      h += `<div class="soc-caption soc-cell ${_scCls('ig',1)}">${caption}</div>`;
-      h += `<div class="soc-cell ${_scCls('ig',2)}">${typeLabel}</div>`;
-      h += `<div class="soc-cell ${_scCls('ig',3)}">${(p.likes || 0).toLocaleString()}</div>`;
-      h += `<div class="soc-cell ${_scCls('ig',4)}">${(p.comments || 0).toLocaleString()}</div>`;
-      h += `<div class="soc-cell ${_scCls('ig',5)}">${(p.engagement || 0).toLocaleString()}</div>`;
-      h += `</div>`;
+        ? `<a href="${p.permalink}" target="_blank" rel="noopener" style="color:#1a4d6e;text-decoration:none">${(p.caption || '').slice(0, 90) || '(no caption)'}</a>`
+        : ((p.caption || '').slice(0, 90) || '(no caption)');
+      const typeLabel = p.media_type === 'CAROUSEL_ALBUM' ? 'CAROUSEL' : (p.media_type || '—');
+      return `<tr>
+        <td>${img}</td>
+        <td style="white-space:nowrap;color:#8aaabb;font-size:12px">${fmtDayLabel(p.date)}</td>
+        <td style="font-size:12px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${caption}</td>
+        <td style="font-size:12px">${typeLabel}</td>
+        <td class="num">${(p.est_reach || 0).toLocaleString()}</td>
+        <td class="num">${(p.likes    || 0).toLocaleString()}</td>
+        <td class="num">${(p.comments || 0).toLocaleString()}</td>
+        <td class="num">${(p.engagement || 0).toLocaleString()}</td>
+      </tr>`;
     });
-    h += `</div></div></div>`;
   }
-
-  el.innerHTML = h;
 }
 
 // ============================================================

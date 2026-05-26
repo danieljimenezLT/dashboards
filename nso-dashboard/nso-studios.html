@@ -1086,17 +1086,15 @@ let SOCIAL_RAW=null;
 function _socialStudios(key){
   const sel=_getSel('studioMenu');
   const data=(SOCIAL_RAW&&SOCIAL_RAW[key])||[];
-  // Match by studio code: 'SWEAT440 Herriman' → 'UT-001'
-  const CODE_MAP={
-    'SWEAT440 Herriman':'UT-001','SWEAT440 Dallas - Prestonwood':'TX-003',
-    'SWEAT440 Naples - Mercato':'FL-019','SWEAT440 Pinecrest - Palmetto Bay':'FL-017',
-    'SWEAT440 Reston':'VA-001'
-  };
-  const activeCodes=sel.map(s=>CODE_MAP[s]).filter(Boolean);
-  return data.filter(s=>activeCodes.includes(s.code));
+  if(!data.length)return[];
+  // Strip "SWEAT440 " prefix from selected studio names, then match against
+  // social data's studio field (e.g. "SWEAT440 Coral Gables" → "Coral Gables")
+  const selClean=new Set(sel.map(s=>s.replace(/^SWEAT440\s+/i,'').trim()));
+  return selClean.size?data.filter(s=>selClean.has(s.studio)):data;
 }
 
-const _C2S={'UT-001':'SWEAT440 Herriman','TX-003':'SWEAT440 Dallas - Prestonwood','FL-019':'SWEAT440 Naples - Mercato','FL-017':'SWEAT440 Pinecrest - Palmetto Bay','VA-001':'SWEAT440 Reston'};
+// _C2S: code → full studio name, built dynamically when social data loads
+let _C2S={};
 const _SOC_SORTS={fb:{col:-1,dir:'desc'},ig:{col:-1,dir:'desc'}};
 
 function _socSortHdr(text,key,colIdx,sortable=true){
@@ -1290,7 +1288,14 @@ async function init(){
   if(gadsRes.status==='fulfilled'){GOOGLE_RAW=gadsRes.value.google_ads||[]}
   else{console.warn('nso_google_ads.json not found');GOOGLE_RAW=[]}
 
-  if(socialRes.status==='fulfilled'){SOCIAL_RAW=socialRes.value}
+  if(socialRes.status==='fulfilled'){
+    SOCIAL_RAW=socialRes.value;
+    // Build _C2S (code → "SWEAT440 Name") from loaded Instagram data for chart colors
+    _C2S={};
+    (SOCIAL_RAW.instagram||[]).forEach(s=>{
+      if(s.code)_C2S[s.code]='SWEAT440 '+s.studio;
+    });
+  }
   else{console.warn('social_insights.json not found');SOCIAL_RAW={facebook:[],instagram:[]}}
 
   if(salesRes.status==='fulfilled'){
