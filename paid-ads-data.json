@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-29T11:41:50.022384+00:00",
+  "generated_at": "2026-05-30T10:18:25.147464+00:00",
   "active_campaign": "win_a_free_month_apr2026",
   "campaigns_index": [
     {
@@ -224446,7 +224446,7 @@
         "reach": 221220,
         "leads": 210,
         "purchases": 9,
-        "trials": 48,
+        "trials": 49,
         "spend": 14935.46,
         "ctr": 0.94,
         "cpm": 31.59,
@@ -224602,6 +224602,16 @@
           "leads": 3,
           "trials": 2,
           "purchases": 1
+        },
+        {
+          "date": "2026-05-27",
+          "spend": 0.0,
+          "impressions": 0,
+          "clicks": 0,
+          "reach": 0,
+          "leads": 0,
+          "trials": 1,
+          "purchases": 0
         }
       ],
       "studios": [
@@ -224738,7 +224748,7 @@
           "leads": 9,
           "cpl": 79.64,
           "purchases": 1,
-          "trials": 2
+          "trials": 3
         },
         {
           "code": "FL-010",
@@ -229757,8 +229767,8 @@
       ],
       "daily_series": {
         "window_start": "2026-05-12",
-        "window_end": "2026-05-29",
-        "window_days": 15,
+        "window_end": "2026-05-30",
+        "window_days": 16,
         "campaign": "Buy 1 Get 3",
         "by_studio": [
           {
@@ -235760,6 +235770,22 @@
             "cpp": 0,
             "ctr": 0.0,
             "cpm": 19.87
+          },
+          {
+            "studio_code": "FL-009",
+            "date": "2026-05-27",
+            "spend": 0.0,
+            "impressions": 0,
+            "clicks": 0,
+            "leads": 0,
+            "trials": 1,
+            "purchases": 0,
+            "reach": 0,
+            "cpl": 0,
+            "cpt": 0.0,
+            "cpp": 0,
+            "ctr": 0,
+            "cpm": 0
           }
         ],
         "by_audience": [
@@ -236887,6 +236913,21 @@
             "cpp": 68.4,
             "ctr": 0.93,
             "cpm": 31.87
+          },
+          {
+            "audience": "SAHP",
+            "date": "2026-05-27",
+            "spend": 0.0,
+            "impressions": 0,
+            "clicks": 0,
+            "leads": 0,
+            "trials": 1,
+            "purchases": 0,
+            "cpl": 0,
+            "cpt": 0.0,
+            "cpp": 0,
+            "ctr": 0,
+            "cpm": 0
           }
         ],
         "by_pillar": [
@@ -237819,6 +237860,21 @@
             "cpp": 80.08,
             "ctr": 0.92,
             "cpm": 33.52
+          },
+          {
+            "pillar": "Psychological Safety",
+            "date": "2026-05-27",
+            "spend": 0.0,
+            "impressions": 0,
+            "clicks": 0,
+            "leads": 0,
+            "trials": 1,
+            "purchases": 0,
+            "cpl": 0,
+            "cpt": 0.0,
+            "cpp": 0,
+            "ctr": 0,
+            "cpm": 0
           }
         ],
         "by_concept": [
@@ -239426,6 +239482,21 @@
             "cpp": 0,
             "ctr": 0.82,
             "cpm": 48.07
+          },
+          {
+            "concept": "Judgment",
+            "date": "2026-05-27",
+            "spend": 0.0,
+            "impressions": 0,
+            "clicks": 0,
+            "leads": 0,
+            "trials": 1,
+            "purchases": 0,
+            "cpl": 0,
+            "cpt": 0.0,
+            "cpp": 0,
+            "ctr": 0,
+            "cpm": 0
           }
         ],
         "by_media_type": [
@@ -239878,6 +239949,21 @@
             "cpp": 0,
             "ctr": 0.8,
             "cpm": 48.59
+          },
+          {
+            "media_type": "Other",
+            "date": "2026-05-27",
+            "spend": 0.0,
+            "impressions": 0,
+            "clicks": 0,
+            "leads": 0,
+            "trials": 1,
+            "purchases": 0,
+            "cpl": 0,
+            "cpt": 0.0,
+            "cpp": 0,
+            "ctr": 0,
+            "cpm": 0
           }
         ],
         "by_studio_audience": [
@@ -266568,6 +266654,22 @@
             "cpp": 0,
             "ctr": 0.0,
             "cpm": 16.1
+          },
+          {
+            "studio_code": "FL-009",
+            "audience": "SAHP",
+            "date": "2026-05-27",
+            "spend": 0.0,
+            "impressions": 0,
+            "clicks": 0,
+            "leads": 0,
+            "trials": 1,
+            "purchases": 0,
+            "cpl": 0,
+            "cpt": 0.0,
+            "cpp": 0,
+            "ctr": 0,
+            "cpm": 0
           }
         ],
         "by_studio_pillar": [
@@ -289514,6 +289616,22 @@
             "cpp": 0,
             "ctr": 0.0,
             "cpm": 16.1
+          },
+          {
+            "studio_code": "FL-009",
+            "pillar": "Psychological Safety",
+            "date": "2026-05-27",
+            "spend": 0.0,
+            "impressions": 0,
+            "clicks": 0,
+            "leads": 0,
+            "trials": 1,
+            "purchases": 0,
+            "cpl": 0,
+            "cpt": 0.0,
+            "cpp": 0,
+            "ctr": 0,
+            "cpm": 0
           }
         ],
         "by_studio_concept": [
@@ -323548,6 +323666,22 @@
             "cpp": 0,
             "ctr": 0.0,
             "cpm": 16.1
+          },
+          {
+            "studio_code": "FL-009",
+            "concept": "Judgment",
+            "date": "2026-05-27",
+            "spend": 0.0,
+            "impressions": 0,
+            "clicks": 0,
+            "leads": 0,
+            "trials": 1,
+            "purchases": 0,
+            "cpl": 0,
+            "cpt": 0.0,
+            "cpp": 0,
+            "ctr": 0,
+            "cpm": 0
           }
         ],
         "by_studio_media_type": [
@@ -335006,6 +335140,22 @@
             "cpp": 0,
             "ctr": 0.0,
             "cpm": 19.87
+          },
+          {
+            "studio_code": "FL-009",
+            "media_type": "Other",
+            "date": "2026-05-27",
+            "spend": 0.0,
+            "impressions": 0,
+            "clicks": 0,
+            "leads": 0,
+            "trials": 1,
+            "purchases": 0,
+            "cpl": 0,
+            "cpt": 0.0,
+            "cpp": 0,
+            "ctr": 0,
+            "cpm": 0
           }
         ]
       },
@@ -420773,6 +420923,16 @@
       "clicks": 0,
       "leads": 0,
       "trials": 0
+    },
+    {
+      "date": "2026-05-27",
+      "studio_code": "FL-009",
+      "ad_id": "120248078633320249",
+      "spend": 0.0,
+      "impressions": 0,
+      "clicks": 0,
+      "leads": 0,
+      "trials": 1
     }
   ]
 }
