@@ -35,8 +35,6 @@ jobs:
           echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > nso-dashboard/credentials/service_account.json
 
       # ── NSO SALES ──────────────────────────────────────────────────────────
-      # Fetches yesterday + 2 days ago to catch late-arriving Snowflake data.
-      # Merges into the full nso_sales_data.json (keeps all history).
       - name: Refresh NSO Sales (yesterday + 2 days ago)
         env:
           SNOWFLAKE_ACCOUNT:   ${{ secrets.SNOWFLAKE_ACCOUNT }}
@@ -57,7 +55,6 @@ jobs:
         continue-on-error: true
 
       # ── GBP ────────────────────────────────────────────────────────────────
-      # Quota-limited API — fetch last 3 days and merge to preserve history.
       - name: Refresh Google Business Profile (yesterday + 2 days ago)
         env:
           GBP_CLIENT_ID:     ${{ secrets.GBP_CLIENT_ID }}
@@ -75,7 +72,6 @@ jobs:
         continue-on-error: true
 
       # ── META ADS + GA4 + GOOGLE ADS ────────────────────────────────────────
-      # Run fetch_all_marketing with last 3 days, then merge each key separately.
       - name: Refresh Meta Ads / GA4 / Google Ads (yesterday + 2 days ago)
         env:
           META_ACCESS_TOKEN:              ${{ secrets.META_TOKEN }}
@@ -91,24 +87,18 @@ jobs:
             --start $TWO_DAYS_AGO \
             --end   $YESTERDAY \
             --output nso-dashboard/marketing_all_new.json
-
-          # Merge meta_ads + ga4_traffic into marketing_data.json
           python nso-dashboard/scripts/merge_array_json.py \
             --existing nso-dashboard/marketing_data.json \
             --new      nso-dashboard/marketing_all_new.json \
             --keys     meta_ads ga4_traffic
-
-          # Merge google_ads into nso_google_ads.json
           python nso-dashboard/scripts/merge_array_json.py \
             --existing nso-dashboard/nso_google_ads.json \
             --new      nso-dashboard/marketing_all_new.json \
             --keys     google_ads
-
           rm -f nso-dashboard/marketing_all_new.json
         continue-on-error: true
 
       # ── SOCIAL INSIGHTS ────────────────────────────────────────────────────
-      # Always overwrites — script already fetches recent posts by design.
       - name: Refresh Social Insights
         env:
           META_ACCESS_TOKEN: ${{ secrets.META_TOKEN }}
@@ -120,7 +110,6 @@ jobs:
         continue-on-error: true
 
       # ── SCORECARD ──────────────────────────────────────────────────────────
-      # Rebuilt daily from data.json + nso_sales_data.json (no external API).
       - name: Rebuild Scorecard
         env:
           SNOWFLAKE_ACCOUNT:   ${{ secrets.SNOWFLAKE_ACCOUNT }}
@@ -129,8 +118,34 @@ jobs:
           SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
           SNOWFLAKE_DATABASE:  ${{ secrets.SNOWFLAKE_DATABASE }}
           SNOWFLAKE_ROLE:      ${{ secrets.SNOWFLAKE_ROLE }}
+          GOOGLE_SERVICE_ACCOUNT_KEY_PATH: nso-dashboard/credentials/service_account.json
         run: |
           python nso-dashboard/scripts/build_all_scorecards.py
+        continue-on-error: true
+
+      # ── MILESTONES + PRICING + TARGETS FROM NSO CONFIG SHEET ───────────────
+      - name: Apply pricing, milestones, targets and dates from NSO Config sheet
+        run: |
+          cd nso-dashboard && python scripts/fetch_sheet_milestones.py
+        continue-on-error: true
+
+      # ── RESTON HISTORICAL DATA FROM SHEET ──────────────────────────────────
+      - name: Patch Reston early weeks from Google Sheet
+        run: |
+          cd nso-dashboard && python scripts/patch_reston_early_weeks.py
+        continue-on-error: true
+
+      # ── TIER RMR (real prices from Snowflake) ───────────────────────────────
+      - name: Calculate tier RMR from actual prices
+        env:
+          SNOWFLAKE_ACCOUNT:   ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER:      ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD:  ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_DATABASE:  ${{ secrets.SNOWFLAKE_DATABASE }}
+          SNOWFLAKE_ROLE:      ${{ secrets.SNOWFLAKE_ROLE }}
+        run: |
+          cd nso-dashboard && python scripts/fetch_tier_rmr.py
         continue-on-error: true
 
       # ── COMMIT ─────────────────────────────────────────────────────────────
@@ -145,7 +160,6 @@ jobs:
             nso-dashboard/nso_google_ads.json \
             nso-dashboard/social_insights.json \
             nso-dashboard/nso_scorecard_data.json
-          # Only add thumbnails if the directory exists and has files
           find nso-dashboard/thumbnails -type f 2>/dev/null | grep -q . && \
             git add nso-dashboard/thumbnails/ || true
           git diff --cached --quiet || \
