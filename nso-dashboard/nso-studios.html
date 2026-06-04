@@ -33,9 +33,8 @@
 .sk-goal{font-size:11px;color:#8aaabb;margin-top:2px}
 .sk-check{color:#0a8a4a;font-weight:700;margin-left:4px}
 .sk-miss{color:#d32f2f;font-weight:700;margin-left:4px}
-.sk-progress{height:6px;background:#f0f6fa;border-radius:3px;margin-top:4px;overflow:hidden;position:relative}
-.sk-progress-fill{height:100%;border-radius:3px;transition:width .6s ease}
-.sk-progress-over{height:4px;border-radius:3px;margin-top:2px;opacity:.55;transition:width .6s ease;margin-left:auto}
+.sk-progress{height:14px;background:#f0f6fa;border-radius:7px;margin-top:5px;overflow:visible;position:relative;margin-bottom:16px}
+.sk-progress-fill{height:100%;border-radius:7px;transition:width .6s ease}
 .open-countdown{display:flex;flex-direction:column;align-items:center;justify-content:center}
 .open-days{font-family:'Oswald',sans-serif;font-size:48px;font-weight:700;color:var(--c-leads);line-height:1}
 .open-label{font-family:'Oswald',sans-serif;font-style:italic;font-size:14px;font-weight:600;text-transform:uppercase;color:#e05a5a;letter-spacing:1px;margin-bottom:4px}
@@ -461,13 +460,14 @@ function renderSummary(){
     return b;
   }
 
-  // Last 7 Days — pull directly from data.json and nso_sales_data.json
-  const d7ago=new Date(Date.now()-6*864e5).toISOString().slice(0,10);
+  // Last 7 Full Days — window ends 2 days ago to ensure complete data
+  const d7end=new Date(Date.now()-2*864e5).toISOString().slice(0,10);
+  const d7ago=new Date(Date.now()-8*864e5).toISOString().slice(0,10);
   const _strip=s=>(s||'').replace(/^SWEAT440\s+/,'');
   const _sname=studio.data_name||studio.name;
-  const raw7=(RAW&&RAW.daily_detail||[]).filter(r=>_strip(r.studio)===_sname&&r.date>=d7ago);
+  const raw7=(RAW&&RAW.daily_detail||[]).filter(r=>_strip(r.studio)===_sname&&r.date>=d7ago&&r.date<=d7end);
   const lastLeads=raw7.reduce((s,r)=>s+(r.signups||0),0);
-  const sales7=NSO_SALES_ROWS.filter(r=>_strip(r.studio)===_sname&&r.date>=d7ago);
+  const sales7=NSO_SALES_ROWS.filter(r=>_strip(r.studio)===_sname&&r.date>=d7ago&&r.date<=d7end);
   const lastNetPresales=Math.max(0,sales7.reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));
   const lastSpend=cur.total_marketing_spend||0;
   const wkLeadGoal=tgt.total_leads?Math.round(tgt.total_leads/totalWeeks):0;
@@ -481,9 +481,9 @@ function renderSummary(){
 
   h+=`<div class="two-col" style="margin-bottom:20px">`;
 
-  // Card A — Last 7 Days
-  const last7Range=`${_fmtDate(d7ago)} – ${_fmtDate(todayStr)}`;
-  h+=`<div class="chart-card summary-card"><div class="summary-card-section">Last 7 Days</div><div style="font-size:10px;color:#8aaabb;margin-top:-10px;margin-bottom:10px">${last7Range}</div>`;
+  // Card A — Last 7 Full Days
+  const last7Range=`${_fmtDate(d7ago)} – ${_fmtDate(d7end)}`;
+  h+=`<div class="chart-card summary-card"><div class="summary-card-section">Last 7 Full Days</div><div style="font-size:10px;color:#8aaabb;margin-top:-10px;margin-bottom:10px">${last7Range}</div>`;
   h+=skRow('Leads',lastLeads,wkLeadGoal,'#00A3E0',true);
   h+=skRow('Presales (net)',lastNetPresales,wkPresaleGoal,'#00C9A7',true);
   const last7Cvr=lastLeads>0?Math.round(lastNetPresales/lastLeads*100):null;
@@ -493,7 +493,14 @@ function renderSummary(){
     const cvrFillPct=Math.min(100,Math.round(cvrRatio*100));
     const cvrOverPct=cvrRatio>1?Math.min(60,Math.round((cvrRatio-1)*100)):0;
     h+=`<div class="sk-row"><div><div class="sk-label">Conversion Rate</div></div><div class="sk-vals"><div class="sk-actual">${last7Cvr}%</div>${goalCvr!=null?`<div class="sk-goal">Goal: ${goalCvr}%</div>`:''}</div></div>`;
-    if(goalCvr>0){h+=`<div class="sk-progress"><div class="sk-progress-fill" style="width:${cvrFillPct}%;background:#f4a021"></div></div>`;if(cvrOverPct>0)h+=`<div class="sk-progress-over" style="width:${cvrOverPct}%;background:#f4a021"></div>`;}
+    if(goalCvr>0){
+      if(cvrRatio>1){
+        const goalLinePct=Math.round(goalCvr/last7Cvr*100);
+        h+=`<div class="sk-progress"><div class="sk-progress-fill" style="width:100%;background:#f4a021"></div><div style="position:absolute;top:-4px;left:${goalLinePct}%;width:2px;height:22px;background:#f4a021;filter:brightness(0.7);border-radius:1px;transform:translateX(-50%);z-index:2"><div style="position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:8px;color:#f4a021;font-weight:700;white-space:nowrap;margin-top:3px">Goal: ${goalCvr}%</div></div></div>`;
+      } else {
+        h+=`<div class="sk-progress"><div class="sk-progress-fill" style="width:${cvrFillPct}%;background:#f4a021"></div></div>`;
+      }
+    }
   }
   h+=`</div>`;
 
@@ -519,7 +526,7 @@ function renderSummary(){
   // Charts
   _sumStudio=studio;_sumView='cum';_sumSrcMetric='leads';
   h+=`<div class="chart-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px"><div class="chart-card-title" style="margin-bottom:0">Leads &amp; Presales</div><div class="gran-group"><button class="gran-btn active" id="sumCumBtn" onclick="setSumView('cum')">Cumulative</button><button class="gran-btn" id="sumWeekBtn" onclick="setSumView('weekly')">Weekly</button></div></div><div style="position:relative;width:100%;height:320px"><canvas id="sumChartCanvas"></canvas></div></div>`;
-  h+=`<div class="chart-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px"><div class="chart-card-title" style="margin-bottom:0">Last 7 Days by Source</div><div class="gran-group"><button class="gran-btn active" id="sumSrcLeadsBtn" onclick="setSumSrcMetric('leads')">Leads</button><button class="gran-btn" id="sumSrcSalesBtn" onclick="setSumSrcMetric('sales')">Sales</button></div></div><div class="toggle-group" id="sumSrcToggles" style="margin-bottom:12px;flex-wrap:wrap;display:flex;gap:6px"></div><div style="position:relative;width:100%;height:260px"><canvas id="sumSrcCanvas"></canvas></div></div>`;
+  h+=`<div class="chart-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px"><div><div class="chart-card-title" style="margin-bottom:0">Last 7 Full Days by Source</div><div style="font-size:10px;color:#8aaabb;margin-top:2px">${last7Range}</div></div><div class="gran-group"><button class="gran-btn active" id="sumSrcLeadsBtn" onclick="setSumSrcMetric('leads')">Leads</button><button class="gran-btn" id="sumSrcSalesBtn" onclick="setSumSrcMetric('sales')">Sales</button></div></div><div style="display:flex;align-items:center;justify-content:center;gap:32px;flex-wrap:wrap;margin-top:14px"><div style="width:180px;height:180px;flex-shrink:0"><canvas id="sumSrcCanvas"></canvas></div><div id="sumSrcLegend" style="min-width:160px;max-width:260px"></div></div></div>`;
 
   document.getElementById('summaryContent').innerHTML=h;
   setTimeout(()=>{drawCumChart(studio);drawSumSourceChart(studio,'leads')},50);
@@ -537,10 +544,19 @@ function skRow(label,actual,goal,color,noCheck){
   h+=`</div></div>`;
   if(typeof actual==='number'&&typeof goal==='number'&&goal>0){
     const ratio=actual/goal;
-    const basePct=Math.min(100,Math.round(ratio*100));
-    const overPct=ratio>1?Math.min(60,Math.round((ratio-1)*100)):0;
-    h+=`<div class="sk-progress"><div class="sk-progress-fill" style="width:${basePct}%;background:${color}"></div></div>`;
-    if(overPct>0)h+=`<div class="sk-progress-over" style="width:${overPct}%;background:${color}"></div>`;
+    if(ratio>1){
+      const goalLinePct=Math.round(goal/actual*100);
+      const goalFmt=goal.toLocaleString('en-US');
+      h+=`<div class="sk-progress">`;
+      h+=`<div class="sk-progress-fill" style="width:100%;background:${color}"></div>`;
+      h+=`<div style="position:absolute;top:-4px;left:${goalLinePct}%;width:2px;height:22px;background:#f4a021;border-radius:1px;transform:translateX(-50%);z-index:2">`;
+      h+=`<div style="position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:8px;color:#f4a021;font-weight:700;white-space:nowrap;margin-top:3px">Goal: ${goalFmt}</div>`;
+      h+=`</div>`;
+      h+=`</div>`;
+    } else {
+      const basePct=Math.round(ratio*100);
+      h+=`<div class="sk-progress"><div class="sk-progress-fill" style="width:${basePct}%;background:${color}"></div></div>`;
+    }
   }
   return h;
 }
@@ -565,9 +581,9 @@ function drawCumChart(studio){
   const presPace=w.map((_,i)=>Math.round(tPres/totalW*i));
   _ch.sum=new Chart(ctx,{type:'line',data:{labels,datasets:[
     {label:'Leads',data:leadsD,borderColor:'#00A3E0',backgroundColor:'rgba(0,163,224,0.08)',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.3,fill:true,spanGaps:false},
-    {label:'Presales (net)',data:presD,borderColor:'#00C9A7',backgroundColor:'rgba(0,201,167,0.08)',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.3,fill:true,spanGaps:false},
+    {label:'Presales (net)',data:presD,borderColor:'#DDFF00',backgroundColor:'rgba(221,255,0,0.08)',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.3,fill:true,spanGaps:false},
     {label:'Leads Pace ('+tLeads+')',data:leadsPace,borderColor:'rgba(0,163,224,0.45)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false},
-    {label:'Presales Pace ('+tPres+')',data:presPace,borderColor:'rgba(0,201,167,0.45)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false},
+    {label:'Presales Pace ('+tPres+')',data:presPace,borderColor:'rgba(221,255,0,0.55)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false},
   ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
     plugins:{legend:{position:'bottom',labels:{font:{family:'Oswald',size:12,style:'italic'},usePointStyle:true,padding:16}},tooltip:{mode:'index',intersect:false}},
     scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',maxRotation:0}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'}}}}});
@@ -590,9 +606,9 @@ function drawWeeklyChart(studio){
   const leadsDelta=leadsD.map((v,i)=>v===null?null:(i===0?0:Math.max(0,v-(leadsD[i-1]||0))));
   _ch.sum=new Chart(ctx,{type:'bar',data:{labels,datasets:[
     {label:'Leads',data:leadsDelta,backgroundColor:'rgba(0,163,224,0.3)',borderColor:'#00A3E0',borderWidth:1,type:'bar',order:3},
-    {label:'Presales (net)',data:presDelta,backgroundColor:'rgba(0,201,167,0.3)',borderColor:'#00C9A7',borderWidth:1,type:'bar',order:4},
+    {label:'Presales (net)',data:presDelta,backgroundColor:'rgba(221,255,0,0.35)',borderColor:'#DDFF00',borderWidth:1,type:'bar',order:4},
     {label:'Leads Pace ('+wkLeadPace+'/wk)',data:w.map(()=>wkLeadPace),borderColor:'rgba(0,163,224,0.6)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false,type:'line',order:1},
-    {label:'Presales Pace ('+wkPresPace+'/wk)',data:w.map(()=>wkPresPace),borderColor:'rgba(0,201,167,0.6)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false,type:'line',order:2},
+    {label:'Presales Pace ('+wkPresPace+'/wk)',data:w.map(()=>wkPresPace),borderColor:'rgba(221,255,0,0.65)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false,type:'line',order:2},
   ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
     plugins:{legend:{position:'bottom',labels:{font:{family:'Oswald',size:12,style:'italic'},usePointStyle:true,padding:16}},tooltip:{mode:'index',intersect:false}},
     scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',maxRotation:0}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'},min:0}}}});
@@ -621,11 +637,12 @@ function setSumSrcMetric(m){
 function drawSumSourceChart(studio,metric){
   const ctx=document.getElementById('sumSrcCanvas');if(!ctx)return;
   if(_ch.sumSrc){_ch.sumSrc.destroy();_ch.sumSrc=null}
+  const _d7base=new Date(Date.now()-2*864e5);
   const days=[];
-  for(let i=6;i>=0;i--){const d=new Date(Date.now()-i*864e5);days.push(d.toISOString().slice(0,10));}
-  let rows,netFn;
+  for(let i=6;i>=0;i--){const d=new Date(_d7base.getTime()-i*864e5);days.push(d.toISOString().slice(0,10));}
   const _stripS=s=>(s||'').replace(/^SWEAT440\s+/,'');
   const _snameS=studio.data_name||studio.name;
+  let rows,netFn;
   if(metric==='leads'){
     rows=(RAW?.daily_detail||[]).filter(r=>_stripS(r.studio)===_snameS&&days.includes(r.date));
     netFn=r=>r.signups||0;
@@ -636,26 +653,31 @@ function drawSumSourceChart(studio,metric){
   const srcTotals={};
   rows.forEach(r=>{const s=r.source||'Unknown';srcTotals[s]=(srcTotals[s]||0)+netFn(r);});
   const sources=Object.keys(srcTotals).filter(s=>srcTotals[s]>0).sort((a,b)=>srcTotals[b]-srcTotals[a]);
-  const datasets=sources.map((src,i)=>{
-    const c=srcColor(src,i);
-    return{label:src,data:days.map(d=>rows.filter(r=>r.date===d&&(r.source||'Unknown')===src).reduce((s,r)=>s+netFn(r),0)),
-      borderColor:c,backgroundColor:c+'cc',borderWidth:1,pointRadius:0,tension:.35,fill:true};
+  const leg=document.getElementById('sumSrcLegend');
+  if(!sources.length){
+    if(leg)leg.innerHTML=`<div style="color:#8aaabb;font-size:12px;font-style:italic">No data for the last 7 days</div>`;
+    return;
+  }
+  const values=sources.map(s=>srcTotals[s]);
+  const colors=sources.map((s,i)=>srcColor(s,i));
+  const total=values.reduce((a,b)=>a+b,0);
+  _ch.sumSrc=new Chart(ctx,{
+    type:'doughnut',
+    data:{labels:sources,datasets:[{data:values,backgroundColor:colors,borderColor:'#fff',borderWidth:2,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed.toLocaleString('en-US')} (${(c.parsed/total*100).toFixed(1)}%)`}}},
+      cutout:'62%'}
   });
-  _ch.sumSrc=new Chart(ctx,{type:'line',data:{labels:days.map(d=>fmDay(d)),datasets},
-    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
-      scales:{x:{stacked:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a'}},
-              y:{stacked:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'},min:0}}}});
-  const tg=document.getElementById('sumSrcToggles');
-  if(tg){tg.innerHTML='';sources.forEach((src,i)=>{
-    const c=srcColor(src,i);
-    const btn=document.createElement('button');
-    btn.className='tog-btn on';
-    btn.style.cssText='border-color:'+c+';background:'+c+';color:#fff;font-size:11px;padding:4px 10px';
-    btn.innerHTML='<span class="dot" style="background:#fff"></span>'+src;
-    btn.onclick=function(){const ch=_ch.sumSrc;if(!ch)return;ch.data.datasets[i].hidden=!ch.data.datasets[i].hidden;this.classList.toggle('on');if(this.classList.contains('on')){this.style.background=c;this.style.borderColor=c;this.style.color='#fff'}else{this.style.background='#f4f9fd';this.style.borderColor='#c0d4df';this.style.color='#5a7a8a'}ch.update()};
-    tg.appendChild(btn);
-  });}
+  if(leg)leg.innerHTML=sources.map((src,i)=>{
+    const pct=total?(values[i]/total*100).toFixed(1):0;
+    return`<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
+      <div style="width:10px;height:10px;border-radius:50%;background:${colors[i]};flex-shrink:0"></div>
+      <div style="font-size:11px;color:#5a7a8a;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${src}</div>
+      <div style="font-size:11px;font-weight:700;color:#1a1a2e;margin-left:4px">${values[i].toLocaleString('en-US')}</div>
+      <div style="font-size:10px;color:#8aaabb;min-width:34px;text-align:right">${pct}%</div>
+    </div>`;
+  }).join('');
 }
 
 /* ══════════════════════════════════════════════════════════════════════════

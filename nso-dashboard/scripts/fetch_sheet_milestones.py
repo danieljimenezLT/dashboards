@@ -32,7 +32,13 @@ COL = {
     "target_open_date":      11,
     "tier2_move_date":       12,
     "tier3_move_date":       13,
+    "total_leads_target":    14,
+    "presales_target":       15,
+    "day1_rmr_target":       16,
     "estimated_roms_target": 17,
+    "cpl_range":             18,
+    "cpa_range":             19,
+    "conversion_rate":       20,
     "tier1_members_target":  21,
     "tier2_members_target":  22,
     "tier3_members_target":  23,
@@ -70,6 +76,16 @@ def norm_price(s):
         return None
     try:
         return int(re.sub(r"[^0-9]", "", s.strip()))
+    except (ValueError, TypeError):
+        return None
+
+
+def norm_float(s):
+    """'1,257' or '48660' → float. Returns None if blank/n/a."""
+    if not s or str(s).strip().lower() in ("", "n/a", "-"):
+        return None
+    try:
+        return float(re.sub(r"[^0-9.]", "", str(s).strip()))
     except (ValueError, TypeError):
         return None
 
@@ -134,6 +150,12 @@ for row in data_rows:
     t2_move     = norm_date(cell(row, COL["tier2_move_date"]))
     t3_move     = norm_date(cell(row, COL["tier3_move_date"]))
 
+    co_date   = norm_date(cell(row, COL["target_co_date"]))
+    open_date = norm_date(cell(row, COL["target_open_date"]))
+    cpl_raw   = (cell(row, COL["cpl_range"]) or "").strip() or None
+    cpa_raw   = (cell(row, COL["cpa_range"]) or "").strip() or None
+    cr_raw    = norm_float(cell(row, COL["conversion_rate"]))
+
     sheet_map[code] = {
         "milestones":            milestones,
         "tier1_price":           norm_price(cell(row, COL["tier1_price"])),
@@ -148,6 +170,17 @@ for row in data_rows:
         "tier2_members_target":  norm_price(cell(row, COL["tier2_members_target"])),
         "tier3_members_target":  norm_price(cell(row, COL["tier3_members_target"])),
         "estimated_roms_target": (cell(row, COL["estimated_roms_target"]) or "").strip() or None,
+        # Studio-level targets & dates
+        "total_leads_target":    norm_float(cell(row, COL["total_leads_target"])),
+        "presales_target":       norm_float(cell(row, COL["presales_target"])),
+        "day1_rmr_target":       norm_float(cell(row, COL["day1_rmr_target"])),
+        "cpl_range":             f"${cpl_raw}" if cpl_raw else None,
+        "cpa_range":             f"${cpa_raw}" if cpa_raw else None,
+        "conversion_rate":       cr_raw,
+        "co_date":               co_date,
+        "co_week":               date_to_week_num(co_date, week1_start),
+        "opening_date":          open_date,
+        "go_week":               date_to_week_num(open_date, week1_start),
     }
 
 # ── Patch scorecard JSON ────────────────────────────────────────────────────
@@ -186,9 +219,32 @@ for studio in sc.get("studios", []):
 
     studio["pricing"] = pricing if pricing else None
 
+    # Update studio-level targets from sheet
+    tgt = studio.setdefault("targets", {})
+    for key, sheet_key in [
+        ("total_leads",        "total_leads_target"),
+        ("presales_count",     "presales_target"),
+        ("estimated_day1_rmr", "day1_rmr_target"),
+        ("blended_cpl",        "cpl_range"),
+        ("blended_cpa",        "cpa_range"),
+        ("conversion_rate",    "conversion_rate"),
+    ]:
+        v = info.get(sheet_key)
+        if v is not None:
+            tgt[key] = v
+
+    # Update CO / GO dates and week numbers
+    if info.get("opening_date"):
+        studio["opening_date"] = info["opening_date"]
+    if info.get("co_week") is not None:
+        studio["co_week"] = info["co_week"]
+    if info.get("go_week") is not None:
+        studio["go_week"] = info["go_week"]
+
     updated += 1
     print(f"  {code} ({studio['name']}): "
-          f"pricing={pricing} | "
+          f"co_week={info.get('co_week')} go_week={info.get('go_week')} | "
+          f"leads={info.get('total_leads_target')} ps={info.get('presales_target')} | "
           f"{len(info['milestones'])} milestone(s)")
 
 with open(SCORECARD_FILE, "w") as f:

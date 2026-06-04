@@ -2,7 +2,7 @@ name: NSO Dashboard Daily Refresh
 
 on:
   schedule:
-    - cron: '0 12 * * *'   # 4:00 AM PT (after main refresh.yml at 11:00 UTC)
+    - cron: '0 11 * * *'   # 3:00 AM PT (UTC-8 PST / UTC-7 PDT ≈ 11:00 UTC)
   workflow_dispatch:        # Allow manual trigger from GitHub UI
 
 permissions:
@@ -11,8 +11,6 @@ permissions:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout repo
@@ -28,9 +26,8 @@ jobs:
 
       - name: Set date variables
         run: |
-          echo "TODAY=$(date -u +%Y-%m-%d)"                          >> $GITHUB_ENV
-          echo "YESTERDAY=$(date -u -d '1 day ago' +%Y-%m-%d)"       >> $GITHUB_ENV
-          echo "THREE_DAYS_AGO=$(date -u -d '3 days ago' +%Y-%m-%d)" >> $GITHUB_ENV
+          echo "YESTERDAY=$(date -u -d '1 day ago' +%Y-%m-%d)"    >> $GITHUB_ENV
+          echo "TWO_DAYS_AGO=$(date -u -d '2 days ago' +%Y-%m-%d)" >> $GITHUB_ENV
 
       - name: Write Google service account credentials
         run: |
@@ -38,18 +35,18 @@ jobs:
           echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > nso-dashboard/credentials/service_account.json
 
       # ── NSO SALES ──────────────────────────────────────────────────────────
-      - name: Refresh NSO Sales
+      - name: Refresh NSO Sales (yesterday + 2 days ago)
         env:
-          SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
-          SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
-          SNOWFLAKE_PASSWORD:  ${{ secrets.SF_TOKEN }}
-          SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-          SNOWFLAKE_DATABASE:  ${{ secrets.SF_DATABASE }}
-          SNOWFLAKE_ROLE:      ${{ secrets.SF_ROLE }}
+          SNOWFLAKE_ACCOUNT:   ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER:      ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD:  ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_DATABASE:  ${{ secrets.SNOWFLAKE_DATABASE }}
+          SNOWFLAKE_ROLE:      ${{ secrets.SNOWFLAKE_ROLE }}
         run: |
           python nso-dashboard/scripts/fetch_nso_sales.py \
-            --start $THREE_DAYS_AGO \
-            --end   $TODAY \
+            --start $TWO_DAYS_AGO \
+            --end   $YESTERDAY \
             --output nso-dashboard/nso_sales_new.json
           python nso-dashboard/scripts/merge_nso_sales.py \
             --existing nso-dashboard/nso_sales_data.json \
@@ -58,15 +55,15 @@ jobs:
         continue-on-error: true
 
       # ── GBP ────────────────────────────────────────────────────────────────
-      - name: Refresh Google Business Profile
+      - name: Refresh Google Business Profile (yesterday + 2 days ago)
         env:
           GBP_CLIENT_ID:     ${{ secrets.GBP_CLIENT_ID }}
           GBP_CLIENT_SECRET: ${{ secrets.GBP_CLIENT_SECRET }}
           GBP_REFRESH_TOKEN: ${{ secrets.GBP_REFRESH_TOKEN }}
         run: |
           python nso-dashboard/scripts/fetch_gbp.py \
-            --start $THREE_DAYS_AGO \
-            --end   $TODAY \
+            --start $TWO_DAYS_AGO \
+            --end   $YESTERDAY \
             --output nso-dashboard/gbp_data_new.json
           python nso-dashboard/scripts/merge_gbp.py \
             --existing nso-dashboard/gbp_data.json \
@@ -75,85 +72,78 @@ jobs:
         continue-on-error: true
 
       # ── META ADS + GA4 + GOOGLE ADS ────────────────────────────────────────
-      - name: Refresh Meta Ads / GA4 / Google Ads
+      - name: Refresh Meta Ads / GA4 / Google Ads (yesterday + 2 days ago)
         env:
-          META_ACCESS_TOKEN:               ${{ secrets.META_TOKEN }}
-          META_APP_ID:                     ${{ secrets.META_APP_ID }}
-          META_APP_SECRET:                 ${{ secrets.META_APP_SECRET }}
-          GOOGLE_ADS_DEVELOPER_TOKEN:      ${{ secrets.GOOGLE_ADS_DEVELOPER_TOKEN }}
-          GOOGLE_ADS_CLIENT_ID:            ${{ secrets.GOOGLE_ADS_CLIENT_ID }}
-          GOOGLE_ADS_CLIENT_SECRET:        ${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}
-          GOOGLE_ADS_REFRESH_TOKEN:        ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}
-          GOOGLE_ADS_LOGIN_CUSTOMER_ID:    ${{ secrets.GOOGLE_ADS_LOGIN_CUSTOMER_ID }}
+          META_ACCESS_TOKEN:              ${{ secrets.META_TOKEN }}
+          META_APP_ID:                    ${{ secrets.META_APP_ID }}
+          META_APP_SECRET:                ${{ secrets.META_APP_SECRET }}
+          GOOGLE_ADS_DEVELOPER_TOKEN:     ${{ secrets.GOOGLE_ADS_DEVELOPER_TOKEN }}
+          GOOGLE_ADS_CLIENT_ID:           ${{ secrets.GOOGLE_ADS_CLIENT_ID }}
+          GOOGLE_ADS_CLIENT_SECRET:       ${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}
+          GOOGLE_ADS_REFRESH_TOKEN:       ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}
           GOOGLE_SERVICE_ACCOUNT_KEY_PATH: nso-dashboard/credentials/service_account.json
-          GA4_PROPERTY_ID:                 ${{ secrets.GA4_PROPERTY_ID }}
         run: |
           python nso-dashboard/scripts/fetch_all_marketing.py \
-            --source all \
-            --start $THREE_DAYS_AGO \
-            --end   $TODAY \
+            --start $TWO_DAYS_AGO \
+            --end   $YESTERDAY \
             --output nso-dashboard/marketing_all_new.json
-
           python nso-dashboard/scripts/merge_array_json.py \
             --existing nso-dashboard/marketing_data.json \
             --new      nso-dashboard/marketing_all_new.json \
-            --keys     meta_ads ga4_traffic ga4_page_views ga4_conversions
-
+            --keys     meta_ads ga4_traffic
           python nso-dashboard/scripts/merge_array_json.py \
             --existing nso-dashboard/nso_google_ads.json \
             --new      nso-dashboard/marketing_all_new.json \
             --keys     google_ads
-
           rm -f nso-dashboard/marketing_all_new.json
         continue-on-error: true
 
       # ── SOCIAL INSIGHTS ────────────────────────────────────────────────────
-      - name: Refresh Social Insights (Facebook + Instagram)
+      - name: Refresh Social Insights
         env:
           META_ACCESS_TOKEN: ${{ secrets.META_TOKEN }}
           META_APP_ID:       ${{ secrets.META_APP_ID }}
           META_APP_SECRET:   ${{ secrets.META_APP_SECRET }}
         run: |
           python nso-dashboard/scripts/fetch_social_insights.py \
-            --days 7 \
             --output nso-dashboard/social_insights.json
         continue-on-error: true
 
       # ── SCORECARD ──────────────────────────────────────────────────────────
       - name: Rebuild Scorecard
         env:
-          SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
-          SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
-          SNOWFLAKE_PASSWORD:  ${{ secrets.SF_TOKEN }}
-          SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-          SNOWFLAKE_DATABASE:  ${{ secrets.SF_DATABASE }}
-          SNOWFLAKE_ROLE:      ${{ secrets.SF_ROLE }}
+          SNOWFLAKE_ACCOUNT:   ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER:      ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD:  ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_DATABASE:  ${{ secrets.SNOWFLAKE_DATABASE }}
+          SNOWFLAKE_ROLE:      ${{ secrets.SNOWFLAKE_ROLE }}
           GOOGLE_SERVICE_ACCOUNT_KEY_PATH: nso-dashboard/credentials/service_account.json
         run: |
-          cd nso-dashboard && python scripts/build_all_scorecards.py
+          python nso-dashboard/scripts/build_all_scorecards.py
         continue-on-error: true
 
-      # ── MILESTONES + PRICING FROM NSO CONFIG SHEET ────────────────────────
-      - name: Apply pricing, milestones and tier targets from NSO Config sheet
+      # ── MILESTONES + PRICING + TARGETS FROM NSO CONFIG SHEET ───────────────
+      - name: Apply pricing, milestones, targets and dates from NSO Config sheet
         run: |
           cd nso-dashboard && python scripts/fetch_sheet_milestones.py
         continue-on-error: true
 
-      # ── RESTON HISTORICAL DATA FROM SHEET ─────────────────────────────────
+      # ── RESTON HISTORICAL DATA FROM SHEET ──────────────────────────────────
       - name: Patch Reston early weeks from Google Sheet
         run: |
           cd nso-dashboard && python scripts/patch_reston_early_weeks.py
         continue-on-error: true
 
-      # ── TIER RMR (real prices from Snowflake) ──────────────────────────────
+      # ── TIER RMR (real prices from Snowflake) ───────────────────────────────
       - name: Calculate tier RMR from actual prices
         env:
-          SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
-          SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
-          SNOWFLAKE_PASSWORD:  ${{ secrets.SF_TOKEN }}
-          SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-          SNOWFLAKE_DATABASE:  ${{ secrets.SF_DATABASE }}
-          SNOWFLAKE_ROLE:      ${{ secrets.SF_ROLE }}
+          SNOWFLAKE_ACCOUNT:   ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER:      ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD:  ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_DATABASE:  ${{ secrets.SNOWFLAKE_DATABASE }}
+          SNOWFLAKE_ROLE:      ${{ secrets.SNOWFLAKE_ROLE }}
         run: |
           cd nso-dashboard && python scripts/fetch_tier_rmr.py
         continue-on-error: true
@@ -170,6 +160,8 @@ jobs:
             nso-dashboard/nso_google_ads.json \
             nso-dashboard/social_insights.json \
             nso-dashboard/nso_scorecard_data.json
+          find nso-dashboard/thumbnails -type f 2>/dev/null | grep -q . && \
+            git add nso-dashboard/thumbnails/ || true
           git diff --cached --quiet || \
-            git commit -m "chore: nso daily refresh $TODAY"
+            git commit -m "chore: nso daily refresh $YESTERDAY"
           git push
