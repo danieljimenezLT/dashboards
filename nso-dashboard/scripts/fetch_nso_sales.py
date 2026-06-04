@@ -37,9 +37,12 @@ import snowflake.connector
 NSO_STUDIOS = {
     5751381: {"name": "SWEAT440 Naples - Mercato",        "code": "FL-019"},
     5752080: {"name": "SWEAT440 Herriman",                "code": "UT-001"},
-    5750138: {"name": "SWEAT440 Dallas - Prestonwood",    "code": "TX-003"},
-    5750128: {"name": "SWEAT440 Pinecrest - Palmetto Bay","code": "FL-017"},
     5750130: {"name": "SWEAT440 Reston",                  "code": "VA-001"},
+    5753281: {"name": "SWEAT440 Dr Phillips",             "code": "FL-020"},
+    5753604: {"name": "SWEAT440 Aventura",                "code": "FL-018"},
+    5753608: {"name": "SWEAT440 North Miami",             "code": "FL-021"},
+    5753491: {"name": "SWEAT440 Dallas - Uptown",         "code": "TX-004"},
+    5753073: {"name": "SWEAT440 Old Bridge",              "code": "NJ-004"},
 }
 ID_LIST = ",".join(str(i) for i in NSO_STUDIOS)
 
@@ -59,22 +62,22 @@ def fetch_sales(cur, start_date, end_date):
     sql = f"""
         WITH leads_dedup AS (
             SELECT
-                CLIENT_EMAIL,
+                LOWER(TRIM(CLIENT_EMAIL)) AS email,
                 STUDIO_ID,
                 LEAD_SOURCE,
                 ROW_NUMBER() OVER (
-                    PARTITION BY CLIENT_EMAIL, STUDIO_ID
+                    PARTITION BY LOWER(TRIM(CLIENT_EMAIL)), STUDIO_ID
                     ORDER BY IFF(LEAD_SOURCE IS NULL, 1, 0), STAGE_START ASC
                 ) AS rn
             FROM MINDBODY_REPORTING_ANALYTICS.MART_LEADS_LOG
         ),
         clients AS (
             SELECT
-                EMAIL_ID,
+                LOWER(TRIM(EMAIL_ID)) AS email,
                 STUDIO_ID,
                 REFERRED_BY,
                 ROW_NUMBER() OVER (
-                    PARTITION BY EMAIL_ID, STUDIO_ID
+                    PARTITION BY LOWER(TRIM(EMAIL_ID)), STUDIO_ID
                     ORDER BY SIGNEDUP_DATE ASC
                 ) AS rn
             FROM MINDBODY_REPORTING_ANALYTICS.MART_CLIENTS
@@ -113,7 +116,7 @@ def fetch_sales(cur, start_date, end_date):
                             AND s.QUANTITY = 1 AND s.IS_RETURN = 0
                        THEN 1 END)                                           AS presales,
             COUNT(CASE WHEN LOWER(s.PRODUCT_DESCRIPTION) LIKE '%pre%sale%'
-                            AND s.QUANTITY = -1 AND s.IS_RETURN = 1
+                            AND (s.QUANTITY = -1 OR s.IS_RETURN = 1)
                        THEN 1 END)                                           AS cancellations,
             SUM(CASE WHEN LOWER(s.PRODUCT_DESCRIPTION) LIKE '%pre%sale%'
                             AND s.QUANTITY = 1 AND s.IS_RETURN = 0
@@ -131,11 +134,11 @@ def fetch_sales(cur, start_date, end_date):
               AND SALE_DATE::DATE <= '{end_date}'
         ) s
         LEFT JOIN leads_dedup l
-            ON LOWER(TRIM(l.CLIENT_EMAIL)) = LOWER(TRIM(s.EMAIL_ID))
+            ON l.email = LOWER(TRIM(s.EMAIL_ID))
            AND l.STUDIO_ID = s.STUDIO_ID
            AND l.rn = 1
         LEFT JOIN clients c
-            ON LOWER(TRIM(c.EMAIL_ID)) = LOWER(TRIM(s.EMAIL_ID))
+            ON c.email = LOWER(TRIM(s.EMAIL_ID))
            AND c.STUDIO_ID = s.STUDIO_ID
            AND c.rn = 1
         WHERE s.rn = 1
