@@ -73,7 +73,7 @@ def fetch_daily_sales(cur, studio_id):
                GROSS_PAYMENTAMT_LOCAL AS price,
                COUNT(*)               AS total_buys,
                MIN(SALE_DATE::DATE)   AS first_buy
-        FROM MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
+        FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
         WHERE STUDIO_ID = {studio_id}
           AND ITEM_TYPE = 'Pricing Option'
           AND GROSS_PAYMENTAMT_LOCAL > 0
@@ -89,7 +89,7 @@ def fetch_daily_sales(cur, studio_id):
         SELECT CLIENT_ID, PRODUCT_DESCRIPTION,
                COUNT(*)             AS total_cancels,
                MIN(SALE_DATE::DATE) AS first_cancel
-        FROM MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
+        FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
         WHERE STUDIO_ID = {studio_id}
           AND ITEM_TYPE = 'Pricing Option'
           AND (QUANTITY = -1 OR IS_RETURN = 1)
