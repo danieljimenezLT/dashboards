@@ -122,16 +122,28 @@ def fetch_sales(cur, start_date, end_date):
                             AND s.QUANTITY = 1 AND s.IS_RETURN = 0
                      THEN COALESCE(s.GROSS_PAYMENTAMT_LOCAL, 0) ELSE 0 END)  AS presale_gross_revenue
         FROM (
-            SELECT *,
-                ROW_NUMBER() OVER (
+            -- Presales: dedup by (client, product, date) — one per day
+            SELECT *, ROW_NUMBER() OVER (
                     PARTITION BY CLIENT_ID, PRODUCT_DESCRIPTION,
                                  SALE_DATE::DATE, QUANTITY
-                    ORDER BY UNIQUE_SALE_ID
-                ) AS rn
+                    ORDER BY UNIQUE_SALE_ID) AS rn
             FROM MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
             WHERE STUDIO_ID IN ({ID_LIST})
               AND SALE_DATE::DATE >= '{start_date}'
               AND SALE_DATE::DATE <= '{end_date}'
+              AND QUANTITY = 1 AND IS_RETURN = 0
+            UNION ALL
+            -- Cancellations: dedup by (client, product) only — keeps FIRST cancel.
+            -- MindBody creates duplicate cancel records for loc 1 vs loc 98 on
+            -- different dates; partitioning without SALE_DATE keeps only the first.
+            SELECT *, ROW_NUMBER() OVER (
+                    PARTITION BY CLIENT_ID, PRODUCT_DESCRIPTION
+                    ORDER BY SALE_DATE::DATE, UNIQUE_SALE_ID) AS rn
+            FROM MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
+            WHERE STUDIO_ID IN ({ID_LIST})
+              AND SALE_DATE::DATE >= '{start_date}'
+              AND SALE_DATE::DATE <= '{end_date}'
+              AND (QUANTITY = -1 OR IS_RETURN = 1)
         ) s
         LEFT JOIN leads_dedup l
             ON l.email = LOWER(TRIM(s.EMAIL_ID))

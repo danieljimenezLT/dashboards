@@ -88,29 +88,30 @@ def fetch_daily_sales(cur, studio_id):
     """)
     buy_rows = cur.fetchall()  # [(client_id, prod_desc, price, total_buys, first_buy), ...]
 
-    # ── Query 2: per-client, per-product cancel summary ──────────────────
+    # ── Query 2: per-client, per-product cancel — FIRST cancel only ─────────
+    # Partition by (CLIENT_ID, PRODUCT_DESCRIPTION) without SALE_DATE to
+    # collapse the MindBody loc-1/loc-98 phantom where the same cancellation
+    # is recorded on different dates for each location copy.
     cur.execute(f"""
         WITH dedup AS (
             SELECT CLIENT_ID, PRODUCT_DESCRIPTION,
                    SALE_DATE::DATE AS sale_date,
                    ROW_NUMBER() OVER (
-                       PARTITION BY CLIENT_ID, PRODUCT_DESCRIPTION,
-                                    SALE_DATE::DATE, QUANTITY
-                       ORDER BY UNIQUE_SALE_ID) AS rn
+                       PARTITION BY CLIENT_ID, PRODUCT_DESCRIPTION
+                       ORDER BY SALE_DATE::DATE, UNIQUE_SALE_ID) AS rn
             FROM MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
             WHERE STUDIO_ID = {studio_id}
               AND ITEM_TYPE = 'Pricing Option'
               AND (QUANTITY = -1 OR IS_RETURN = 1)
         )
         SELECT CLIENT_ID, PRODUCT_DESCRIPTION,
-               COUNT(*) AS total_cancels,
-               MAX(sale_date) AS last_cancel
+               1          AS total_cancels,
+               sale_date  AS first_cancel
         FROM dedup WHERE rn = 1
-        GROUP BY 1, 2
     """)
-    # key: (client_id, prod_desc) → {total_cancels, last_cancel}
+    # key: (client_id, prod_desc) → {n:1, date: first_cancel_date}
     cancel_map = {
-        (str(r[0]), str(r[1])): {"n": int(r[2]), "date": str(r[3])}
+        (str(r[0]), str(r[1])): {"n": 1, "date": str(r[3])}
         for r in cur.fetchall()
     }
 
