@@ -88,7 +88,7 @@ def fetch_sales(cur, start_date, end_date):
                    COUNT(*)               AS total_buys,
                    MIN(SALE_DATE::DATE)   AS first_buy,
                    SUM(COALESCE(GROSS_PAYMENTAMT_LOCAL, 0)) AS total_revenue
-            FROM MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
+            FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
             WHERE STUDIO_ID IN ({ID_LIST})
               AND ITEM_TYPE = 'Pricing Option'
               AND LOWER(PRODUCT_DESCRIPTION) LIKE '%pre%sale%'
@@ -99,7 +99,7 @@ def fetch_sales(cur, start_date, end_date):
             SELECT STUDIO_ID, CLIENT_ID, PRODUCT_DESCRIPTION,
                    COUNT(*)               AS total_cancels,
                    MIN(SALE_DATE::DATE)   AS first_cancel
-            FROM MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
+            FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
             WHERE STUDIO_ID IN ({ID_LIST})
               AND ITEM_TYPE = 'Pricing Option'
               AND LOWER(PRODUCT_DESCRIPTION) LIKE '%pre%sale%'
@@ -123,7 +123,7 @@ def fetch_sales(cur, start_date, end_date):
                        PARTITION BY LOWER(TRIM(CLIENT_EMAIL)), STUDIO_ID
                        ORDER BY IFF(LEAD_SOURCE IS NULL, 1, 0), STAGE_START ASC
                    ) AS rn
-            FROM MINDBODY_REPORTING_ANALYTICS.MART_LEADS_LOG
+            FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_LEADS_LOG
         ),
         clients AS (
             SELECT LOWER(TRIM(EMAIL_ID)) AS email, STUDIO_ID, REFERRED_BY,
@@ -131,7 +131,7 @@ def fetch_sales(cur, start_date, end_date):
                        PARTITION BY LOWER(TRIM(EMAIL_ID)), STUDIO_ID
                        ORDER BY SIGNEDUP_DATE ASC
                    ) AS rn
-            FROM MINDBODY_REPORTING_ANALYTICS.MART_CLIENTS
+            FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_CLIENTS
             WHERE LOWER(TRIM(EMAIL_ID)) NOT LIKE '%sweat440%'
               AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%leadteam%'
               AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%test%'
