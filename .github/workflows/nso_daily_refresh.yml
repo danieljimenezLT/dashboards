@@ -32,7 +32,7 @@ jobs:
       - name: Write Google service account credentials
         run: |
           mkdir -p nso-dashboard/credentials
-          echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > nso-dashboard/credentials/service_account.json
+          printf '%s' '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > nso-dashboard/credentials/service_account.json
 
       # ── NSO SALES ──────────────────────────────────────────────────────────
       - name: Refresh NSO Sales (yesterday + 2 days ago)
