@@ -65,53 +65,39 @@ def fetch_daily_sales(cur, studio_id):
     twice and cancelled once) instead of netting to zero at the daily level.
     """
     # ── Query 1: per-client, per-product, per-price buy summary ──────────
+    # NO date-level dedup — count ALL records including loc1+loc98 duplicates.
+    # When a cancel only removes ONE location record (e.g. loc1 cancelled,
+    # loc98 still open), net = 2 buys - 1 cancel = 1 → ACTIVE.
     cur.execute(f"""
-        WITH dedup AS (
-            SELECT CLIENT_ID, PRODUCT_DESCRIPTION,
-                   GROSS_PAYMENTAMT_LOCAL AS price,
-                   SALE_DATE::DATE AS sale_date,
-                   ROW_NUMBER() OVER (
-                       PARTITION BY CLIENT_ID, PRODUCT_DESCRIPTION,
-                                    SALE_DATE::DATE, QUANTITY
-                       ORDER BY UNIQUE_SALE_ID) AS rn
-            FROM MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
-            WHERE STUDIO_ID = {studio_id}
-              AND ITEM_TYPE = 'Pricing Option'
-              AND GROSS_PAYMENTAMT_LOCAL > 0
-              AND QUANTITY = 1 AND IS_RETURN = 0
-        )
-        SELECT CLIENT_ID, PRODUCT_DESCRIPTION, price,
-               COUNT(*) AS total_buys,
-               MIN(sale_date) AS first_buy
-        FROM dedup WHERE rn = 1
+        SELECT CLIENT_ID, PRODUCT_DESCRIPTION,
+               GROSS_PAYMENTAMT_LOCAL AS price,
+               COUNT(*)               AS total_buys,
+               MIN(SALE_DATE::DATE)   AS first_buy
+        FROM MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
+        WHERE STUDIO_ID = {studio_id}
+          AND ITEM_TYPE = 'Pricing Option'
+          AND GROSS_PAYMENTAMT_LOCAL > 0
+          AND QUANTITY = 1 AND IS_RETURN = 0
         GROUP BY 1, 2, 3
     """)
     buy_rows = cur.fetchall()  # [(client_id, prod_desc, price, total_buys, first_buy), ...]
 
-    # ── Query 2: per-client, per-product cancel — FIRST cancel only ─────────
-    # Partition by (CLIENT_ID, PRODUCT_DESCRIPTION) without SALE_DATE to
-    # collapse the MindBody loc-1/loc-98 phantom where the same cancellation
-    # is recorded on different dates for each location copy.
+    # ── Query 2: per-client, per-product cancel — raw count, first cancel date
+    # Count ALL cancel records (loc1 + loc98) to match raw buy count.
+    # Use MIN(sale_date) as the first real cancel date for time-series.
     cur.execute(f"""
-        WITH dedup AS (
-            SELECT CLIENT_ID, PRODUCT_DESCRIPTION,
-                   SALE_DATE::DATE AS sale_date,
-                   ROW_NUMBER() OVER (
-                       PARTITION BY CLIENT_ID, PRODUCT_DESCRIPTION
-                       ORDER BY SALE_DATE::DATE, UNIQUE_SALE_ID) AS rn
-            FROM MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
-            WHERE STUDIO_ID = {studio_id}
-              AND ITEM_TYPE = 'Pricing Option'
-              AND (QUANTITY = -1 OR IS_RETURN = 1)
-        )
         SELECT CLIENT_ID, PRODUCT_DESCRIPTION,
-               1          AS total_cancels,
-               sale_date  AS first_cancel
-        FROM dedup WHERE rn = 1
+               COUNT(*)             AS total_cancels,
+               MIN(SALE_DATE::DATE) AS first_cancel
+        FROM MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
+        WHERE STUDIO_ID = {studio_id}
+          AND ITEM_TYPE = 'Pricing Option'
+          AND (QUANTITY = -1 OR IS_RETURN = 1)
+        GROUP BY 1, 2
     """)
-    # key: (client_id, prod_desc) → {n:1, date: first_cancel_date}
+    # key: (client_id, prod_desc) → {n: total_cancels, date: first_cancel}
     cancel_map = {
-        (str(r[0]), str(r[1])): {"n": 1, "date": str(r[3])}
+        (str(r[0]), str(r[1])): {"n": int(r[2]), "date": str(r[3])}
         for r in cur.fetchall()
     }
 
@@ -129,22 +115,20 @@ def fetch_daily_sales(cur, studio_id):
         key_cp = (str(client_id), str(prod_desc))
         c_info  = cancel_map.get(key_cp, {"n": 0, "date": None})
         total_cancels = c_info["n"]
-        last_cancel   = c_info["date"]
+        last_cancel   = c_info["date"]  # first_cancel date
 
         net = int(total_buys) - total_cancels
         p   = float(price)
         d0  = str(first_buy)
 
         if net > 0:
-            # Active: client has net memberships at this price from first_buy
-            daily[(d0, p)] += net
+            # Active: at least one location record is uncancelled → 1 active member
+            daily[(d0, p)] += 1
         elif net == 0 and last_cancel:
-            # Bought and fully cancelled
-            daily[(d0, p)]          += int(total_buys)
-            daily[(last_cancel, p)] -= int(total_buys)
-        elif net < 0 and last_cancel:
-            # More cancels than buys (data anomaly): net cancel effect
-            daily[(last_cancel, p)] += net  # negative delta
+            # All location records cancelled → member left on first_cancel date
+            daily[(d0, p)]          += 1
+            daily[(last_cancel, p)] -= 1
+        # net < 0 is a data anomaly — skip
 
     if skipped:
         print(f"    ({skipped} non-presale products skipped)")

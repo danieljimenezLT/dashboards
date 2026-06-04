@@ -58,102 +58,102 @@ def get_conn():
     )
 
 
+_SOURCE_CASE = """
+        CASE
+            WHEN LOWER(TRIM(l.LEAD_SOURCE)) LIKE '%facebook%' OR LOWER(TRIM(l.LEAD_SOURCE)) = 'instagram' THEN 'Meta Ads'
+            WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('internet / ai search','google ads') THEN 'Google Ads'
+            WHEN LOWER(TRIM(c.REFERRED_BY)) = 'tiktok ads' THEN 'TikTok Ads'
+            WHEN LOWER(TRIM(c.REFERRED_BY)) = 'local listings' THEN 'Local Listings'
+            WHEN LOWER(TRIM(c.REFERRED_BY)) = 'local event' THEN 'Grassroots'
+            WHEN LOWER(TRIM(l.LEAD_SOURCE)) = 'branded web app (bwa)' THEN 'Website (unattributed)'
+            WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('branded mobile app (bma)','consumer mode') THEN 'SWEAT440 App'
+            WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('business app','business mode','public api') THEN 'Business Mode'
+            WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('mindbody app','mindbody web') THEN 'MindBody App'
+            WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('another client','word of mouth') THEN 'Word of Mouth'
+            WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('classpass','wellhub','wellness passport') THEN 'ClassPass / Platforms'
+            WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('drive by','flyer','internet','n/a','newspaper','other','radio','tv / streaming') THEN 'Other'
+            ELSE 'N/A'
+        END"""
+
+
 def fetch_sales(cur, start_date, end_date):
+    """Client-level approach matching fetch_tier_rmr.py:
+    1 presale event per client on first_buy_date.
+    1 cancel event only when total_raw_cancels >= total_raw_buys (truly inactive).
+    Net presales = RMR active member count = MindBody count."""
     sql = f"""
-        WITH leads_dedup AS (
-            SELECT
-                LOWER(TRIM(CLIENT_EMAIL)) AS email,
-                STUDIO_ID,
-                LEAD_SOURCE,
-                ROW_NUMBER() OVER (
-                    PARTITION BY LOWER(TRIM(CLIENT_EMAIL)), STUDIO_ID
-                    ORDER BY IFF(LEAD_SOURCE IS NULL, 1, 0), STAGE_START ASC
-                ) AS rn
+        WITH
+        client_buys AS (
+            SELECT STUDIO_ID, CLIENT_ID, EMAIL_ID, PRODUCT_DESCRIPTION,
+                   COUNT(*)               AS total_buys,
+                   MIN(SALE_DATE::DATE)   AS first_buy,
+                   SUM(COALESCE(GROSS_PAYMENTAMT_LOCAL, 0)) AS total_revenue
+            FROM MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
+            WHERE STUDIO_ID IN ({ID_LIST})
+              AND ITEM_TYPE = 'Pricing Option'
+              AND LOWER(PRODUCT_DESCRIPTION) LIKE '%pre%sale%'
+              AND QUANTITY = 1 AND IS_RETURN = 0
+            GROUP BY 1, 2, 3, 4
+        ),
+        client_cancels AS (
+            SELECT STUDIO_ID, CLIENT_ID, PRODUCT_DESCRIPTION,
+                   COUNT(*)               AS total_cancels,
+                   MIN(SALE_DATE::DATE)   AS first_cancel
+            FROM MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
+            WHERE STUDIO_ID IN ({ID_LIST})
+              AND ITEM_TYPE = 'Pricing Option'
+              AND LOWER(PRODUCT_DESCRIPTION) LIKE '%pre%sale%'
+              AND (QUANTITY = -1 OR IS_RETURN = 1)
+            GROUP BY 1, 2, 3
+        ),
+        client_status AS (
+            SELECT b.STUDIO_ID, b.CLIENT_ID, b.EMAIL_ID, b.PRODUCT_DESCRIPTION,
+                   b.first_buy,
+                   ROUND(b.total_revenue / b.total_buys, 2) AS unit_revenue,
+                   CASE WHEN COALESCE(c.total_cancels, 0) >= b.total_buys
+                        THEN c.first_cancel ELSE NULL END AS cancel_date
+            FROM client_buys b
+            LEFT JOIN client_cancels c
+                ON b.STUDIO_ID=c.STUDIO_ID AND b.CLIENT_ID=c.CLIENT_ID
+               AND b.PRODUCT_DESCRIPTION=c.PRODUCT_DESCRIPTION
+        ),
+        leads_dedup AS (
+            SELECT LOWER(TRIM(CLIENT_EMAIL)) AS email, STUDIO_ID, LEAD_SOURCE,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY LOWER(TRIM(CLIENT_EMAIL)), STUDIO_ID
+                       ORDER BY IFF(LEAD_SOURCE IS NULL, 1, 0), STAGE_START ASC
+                   ) AS rn
             FROM MINDBODY_REPORTING_ANALYTICS.MART_LEADS_LOG
         ),
         clients AS (
-            SELECT
-                LOWER(TRIM(EMAIL_ID)) AS email,
-                STUDIO_ID,
-                REFERRED_BY,
-                ROW_NUMBER() OVER (
-                    PARTITION BY LOWER(TRIM(EMAIL_ID)), STUDIO_ID
-                    ORDER BY SIGNEDUP_DATE ASC
-                ) AS rn
+            SELECT LOWER(TRIM(EMAIL_ID)) AS email, STUDIO_ID, REFERRED_BY,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY LOWER(TRIM(EMAIL_ID)), STUDIO_ID
+                       ORDER BY SIGNEDUP_DATE ASC
+                   ) AS rn
             FROM MINDBODY_REPORTING_ANALYTICS.MART_CLIENTS
             WHERE LOWER(TRIM(EMAIL_ID)) NOT LIKE '%sweat440%'
               AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%leadteam%'
               AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%test%'
         )
-        SELECT
-            s.STUDIO_ID,
-            s.SALE_DATE::DATE AS date,
-            CASE
-                WHEN LOWER(TRIM(l.LEAD_SOURCE)) = 'facebook lead ad'                                         THEN 'Meta Ads'
-                WHEN LOWER(TRIM(l.LEAD_SOURCE)) = 'instagram'                                                THEN 'Meta Ads'
-                WHEN LOWER(TRIM(l.LEAD_SOURCE)) LIKE '%facebook%' AND LOWER(TRIM(l.LEAD_SOURCE)) LIKE '%lead%' THEN 'Meta Ads'
-                WHEN LOWER(TRIM(l.LEAD_SOURCE)) LIKE '%instagram%'                                           THEN 'Meta Ads'
-                WHEN LOWER(TRIM(c.REFERRED_BY)) = 'internet / ai search'                                    THEN 'Google Ads'
-                WHEN LOWER(TRIM(c.REFERRED_BY)) = 'google ads'                                              THEN 'Google Ads'
-                WHEN LOWER(TRIM(c.REFERRED_BY)) = 'tiktok ads'                                              THEN 'TikTok Ads'
-                WHEN LOWER(TRIM(c.REFERRED_BY)) = 'local listings'                                          THEN 'Local Listings'
-                WHEN LOWER(TRIM(c.REFERRED_BY)) = 'local event'                                             THEN 'Grassroots'
-                WHEN LOWER(TRIM(c.REFERRED_BY)) = 'print ads / signs'                                       THEN 'Print Ads / Signs'
-                WHEN LOWER(TRIM(c.REFERRED_BY)) = 'social media'                                            THEN 'Social Media Organic'
-                WHEN LOWER(TRIM(l.LEAD_SOURCE)) = 'branded web app (bwa)'                                   THEN 'Website (unattributed)'
-                WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('branded mobile app (bma)', 'consumer mode')            THEN 'SWEAT440 App'
-                WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('business app', 'business mode', 'public api')          THEN 'Business Mode'
-                WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('mindbody app', 'mindbody web')                         THEN 'MindBody App'
-                WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('another client', 'word of mouth')                      THEN 'Word of Mouth'
-                WHEN LOWER(TRIM(c.REFERRED_BY)) IN (
-                    'drive by', 'flyer', 'frederick', 'holly met outside of gym.',
-                    'internet', 'n/a', 'newspaper', 'other', 'radio', 'tv / streaming'
-                )                                                                                            THEN 'Other'
-                WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('classpass', 'wellhub', 'wellness passport')            THEN 'ClassPass / Platforms'
-                ELSE 'N/A'
-            END AS source,
-            COUNT(CASE WHEN LOWER(s.PRODUCT_DESCRIPTION) LIKE '%pre%sale%'
-                            AND s.QUANTITY = 1 AND s.IS_RETURN = 0
-                       THEN 1 END)                                           AS presales,
-            COUNT(CASE WHEN LOWER(s.PRODUCT_DESCRIPTION) LIKE '%pre%sale%'
-                            AND (s.QUANTITY = -1 OR s.IS_RETURN = 1)
-                       THEN 1 END)                                           AS cancellations,
-            SUM(CASE WHEN LOWER(s.PRODUCT_DESCRIPTION) LIKE '%pre%sale%'
-                            AND s.QUANTITY = 1 AND s.IS_RETURN = 0
-                     THEN COALESCE(s.GROSS_PAYMENTAMT_LOCAL, 0) ELSE 0 END)  AS presale_gross_revenue
+        SELECT STUDIO_ID, date, source,
+               SUM(presales) AS presales, SUM(cancellations) AS cancellations,
+               SUM(presale_gross_revenue) AS presale_gross_revenue
         FROM (
-            -- Presales: dedup by (client, product, date) — one per day
-            SELECT *, ROW_NUMBER() OVER (
-                    PARTITION BY CLIENT_ID, PRODUCT_DESCRIPTION,
-                                 SALE_DATE::DATE, QUANTITY
-                    ORDER BY UNIQUE_SALE_ID) AS rn
-            FROM MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
-            WHERE STUDIO_ID IN ({ID_LIST})
-              AND SALE_DATE::DATE >= '{start_date}'
-              AND SALE_DATE::DATE <= '{end_date}'
-              AND QUANTITY = 1 AND IS_RETURN = 0
+            SELECT cs.STUDIO_ID, cs.first_buy AS date,
+                   COALESCE({_SOURCE_CASE}, 'N/A') AS source,
+                   1 AS presales, 0 AS cancellations, cs.unit_revenue AS presale_gross_revenue
+            FROM client_status cs
+            LEFT JOIN leads_dedup l ON l.email=LOWER(TRIM(cs.EMAIL_ID)) AND l.STUDIO_ID=cs.STUDIO_ID AND l.rn=1
+            LEFT JOIN clients   c ON c.email=LOWER(TRIM(cs.EMAIL_ID)) AND c.STUDIO_ID=cs.STUDIO_ID AND c.rn=1
+            WHERE cs.first_buy BETWEEN '{start_date}' AND '{end_date}'
             UNION ALL
-            -- Cancellations: dedup by (client, product) only — keeps FIRST cancel.
-            -- MindBody creates duplicate cancel records for loc 1 vs loc 98 on
-            -- different dates; partitioning without SALE_DATE keeps only the first.
-            SELECT *, ROW_NUMBER() OVER (
-                    PARTITION BY CLIENT_ID, PRODUCT_DESCRIPTION
-                    ORDER BY SALE_DATE::DATE, UNIQUE_SALE_ID) AS rn
-            FROM MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
-            WHERE STUDIO_ID IN ({ID_LIST})
-              AND SALE_DATE::DATE >= '{start_date}'
-              AND SALE_DATE::DATE <= '{end_date}'
-              AND (QUANTITY = -1 OR IS_RETURN = 1)
-        ) s
-        LEFT JOIN leads_dedup l
-            ON l.email = LOWER(TRIM(s.EMAIL_ID))
-           AND l.STUDIO_ID = s.STUDIO_ID
-           AND l.rn = 1
-        LEFT JOIN clients c
-            ON c.email = LOWER(TRIM(s.EMAIL_ID))
-           AND c.STUDIO_ID = s.STUDIO_ID
-           AND c.rn = 1
-        WHERE s.rn = 1
+            SELECT cs.STUDIO_ID, cs.cancel_date AS date, 'N/A' AS source,
+                   0 AS presales, 1 AS cancellations, 0 AS presale_gross_revenue
+            FROM client_status cs
+            WHERE cs.cancel_date IS NOT NULL
+              AND cs.cancel_date BETWEEN '{start_date}' AND '{end_date}'
+        ) t
         GROUP BY 1, 2, 3
         ORDER BY 1, 2, 3
     """
