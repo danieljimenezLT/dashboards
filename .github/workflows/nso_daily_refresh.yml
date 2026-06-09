@@ -159,4 +159,5 @@ jobs:
             git add nso-dashboard/thumbnails/ || true
           git diff --cached --quiet || \
             git commit -m "chore: nso daily refresh $YESTERDAY"
+          git pull --rebase origin main
           git push
