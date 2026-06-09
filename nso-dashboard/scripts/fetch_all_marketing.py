@@ -152,7 +152,7 @@ def fetch_google_ads(start_date, end_date):
         print("  WARNING: GOOGLE_ADS_DEVELOPER_TOKEN not set - skipping")
         return []
 
-    mcc_id = os.environ.get("GOOGLE_ADS_LOGIN_CUSTOMER_ID", os.environ.get("GOOGLE_ADS_MCC_ID", "")).replace("-", "")
+    mcc_id = os.environ.get("GOOGLE_ADS_LOGIN_CUSTOMER_ID", os.environ.get("GOOGLE_ADS_MCC_ID", "6055462417")).replace("-", "")
 
     config = {
         "developer_token": dev_token,

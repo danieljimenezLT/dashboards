@@ -10,7 +10,7 @@ Per-week fields calculated:
   cancellations_week, cancellations_count (cum),
   grassroots_leads, grassroots_presales, conversion_rate,
   comm_events, meta_spend, google_spend, grassroots_spend,
-  leadteam_fee ($300/active week), total_marketing_spend,
+  leadteam_fee ($1,200/month prorated daily), total_marketing_spend,
   blended_cpl, blended_cpa, ig_new_followers, est_rmr (null)
 
 Usage:
@@ -18,6 +18,7 @@ Usage:
   python scripts/build_all_scorecards.py --dry-run
 """
 
+import calendar
 import json
 import re
 import sys
@@ -33,12 +34,56 @@ TODAY = date.today()
 
 CREDS_PATH = ROOT / "credentials" / "service_account.json"
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
-LEADTEAM_FEE = 300.0
+LEADTEAM_MONTHLY = 1200.0  # $1,200/month, prorated daily
+NSO_CONFIG_SHEET_URL = "https://docs.google.com/spreadsheets/d/1Ku0VSwOY6HVXuqucduWlsbKIiNzb0ojL21rozaPpHHU"
+
+# Calendar week 1 = Dec 29, 2025 (Mon); week N Monday = CAL_WEEK1_START + (N-1) weeks
+CAL_WEEK1_START = date(2025, 12, 29)
+
+# Maps studio display names (lowercase) in "Weekly Events & Spend" tab to studio codes
+EVENTS_SPEND_STUDIO_MAP = {
+    "naples": "FL-019",
+    "naples - mercato": "FL-019",
+    "reston": "VA-001",
+    "herriman": "UT-001",
+    "old bridge": "NJ-004",
+    "dr phillips": "FL-020",
+    "dr. phillips": "FL-020",
+    "orlando - dr phillips": "FL-020",
+    "aventura": "FL-018",
+    "north miami": "FL-021",
+    "uptown": "TX-004",
+    "dallas uptown": "TX-004",
+    "dallas - uptown": "TX-004",
+}
+
+
+def calc_leadteam_fee(date_start, date_end):
+    """$1,200/month prorated: sum of (1200 / days_in_month) for each day in the week."""
+    if date_start is None or date_end is None:
+        return None
+    total = 0.0
+    d = date_start
+    while d <= date_end:
+        total += LEADTEAM_MONTHLY / calendar.monthrange(d.year, d.month)[1]
+        d += timedelta(days=1)
+    return round(total, 2)
 
 # Studios where the data.json name differs from the display name.
 # data.json uses STUDIO_NAME from Snowflake (strip_brand applied).
 DATA_NAME_OVERRIDES = {
     "FL-020": "Orlando - Dr Phillips",
+}
+
+# Maps NSO studio code → social_insights.json 'code' field
+IG_SOCIAL_CODE = {
+    "VA-001": "reston",
+    "UT-001": "herriman",
+    "FL-020": "drphillips",
+    "FL-018": "aventura",
+    "FL-021": "northmiami",
+    "TX-004": "uptown",
+    "NJ-004": "oldbridge",
 }
 
 # Google Sheets tab config per studio code
@@ -254,25 +299,30 @@ def current_week_num(bounds):
 # Data loaders
 # ---------------------------------------------------------------------------
 
+_DIGITAL_SOURCES = {"meta ads", "google ads"}
+
 def load_daily_leads(daily_rows):
-    """Build {data_name: {date_str: {leads, grassroots_leads}}} from data.json."""
-    by = defaultdict(lambda: defaultdict(lambda: {"leads": 0, "grassroots_leads": 0}))
+    """Build {data_name: {date_str: {leads, grassroots_leads, digital_leads}}} from data.json."""
+    by = defaultdict(lambda: defaultdict(lambda: {"leads": 0, "grassroots_leads": 0, "digital_leads": 0}))
     for r in daily_rows:
         studio = str(r.get("studio", ""))
         d = str(r.get("date", ""))[:10]
         if not studio or len(d) < 10:
             continue
         signups = int(r.get("signups") or 0)
+        src = str(r.get("source", "")).lower()
         by[studio][d]["leads"] += signups
-        if str(r.get("source", "")).lower() == "grassroots":
+        if src == "grassroots":
             by[studio][d]["grassroots_leads"] += signups
+        if src in _DIGITAL_SOURCES:
+            by[studio][d]["digital_leads"] += signups
     return by
 
 
 def load_sales_data(sales_raw):
-    """Build {full_name: {date_str: {presales, cancellations, grassroots_presales}}}."""
+    """Build {full_name: {date_str: {presales, cancellations, grassroots_presales, digital_presales}}}."""
     by = defaultdict(lambda: defaultdict(
-        lambda: {"presales": 0, "cancellations": 0, "grassroots_presales": 0}
+        lambda: {"presales": 0, "cancellations": 0, "grassroots_presales": 0, "digital_presales": 0}
     ))
     if not sales_raw:
         return by
@@ -293,18 +343,40 @@ def load_sales_data(sales_raw):
             by[full][d]["cancellations"] += int(row.get("cancellations") or 0)
             if src == "grassroots":
                 by[full][d]["grassroots_presales"] += int(row.get("presales") or 0)
+            if src in _DIGITAL_SOURCES:
+                by[full][d]["digital_presales"] += int(row.get("presales") or 0)
     return by
 
 
 def load_ig_followers(social_raw):
-    """Build {code: {date_str: follower_count}} from social_insights.json."""
+    """Build ({nso_code: {date_str: daily_delta}}, {nso_code: current_followers}).
+
+    For new/small accounts that lack daily follower_count history (Meta API only
+    returns 30 days), falls back to current_followers on yesterday so the count
+    shows up in the current week.  The caller uses current_followers to attribute
+    any gap (followers gained before the API window) to Week 0."""
+    from datetime import datetime, timedelta
+    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+    _social_to_nso = {v: k for k, v in IG_SOCIAL_CODE.items()}
     by = defaultdict(dict)
+    current = {}  # {nso_code: current_followers int}
     for ig in social_raw.get("instagram", []):
-        code = ig.get("code", "")
+        social_code = ig.get("code", "")
+        nso_code = _social_to_nso.get(social_code)
+        if not nso_code:
+            continue
+        cf = ig.get("current_followers")
+        if cf is not None:
+            current[nso_code] = int(cf)
+        has_daily = False
         for r in ig.get("daily", []):
             if "follower_count" in r:
-                by[code][r["date"]] = int(r["follower_count"] or 0)
-    return by
+                by[nso_code][r["date"]] = int(r["follower_count"] or 0)
+                has_daily = True
+        # New/small accounts: no daily history → use current_followers as this-week total
+        if not has_daily and cf is not None:
+            by[nso_code][yesterday] = int(cf)
+    return by, current
 
 
 def load_meta_spend(meta_rows):
@@ -339,6 +411,105 @@ def load_google_spend(gads_rows):
                 if spend > 0 and len(d) >= 10:
                     by[code][d] += spend
     return by
+
+
+def load_marketing_budgets(gc):
+    """Read Marketing Budget column from NSO Config Google Sheet.
+    Returns {code: budget_float} for studios that have a value."""
+    budgets = {}
+    if not gc:
+        return budgets
+    try:
+        sh = gc.open_by_url(NSO_CONFIG_SHEET_URL)
+        ws = sh.worksheet("NSO Config")
+        rows = ws.get_all_values()
+        # Row 2 = headers (index 1), data starts at index 2
+        # Columns (0-indexed): 1=Code, 24=Marketing Budget
+        for row in rows[2:]:
+            if not row or not row[1]:
+                continue
+            code = str(row[1]).strip()
+            budget_raw = row[24].strip() if len(row) > 24 else ""
+            if budget_raw:
+                cleaned = budget_raw.replace("$", "").replace(",", "").strip()
+                try:
+                    budgets[code] = float(cleaned)
+                except ValueError:
+                    pass
+        print(f"  NSO Config sheet: marketing budgets loaded for {list(budgets.keys())}")
+    except Exception as e:
+        print(f"  Warning: could not read marketing budgets from NSO Config sheet: {e}")
+    return budgets
+
+
+def load_events_spend_from_nso_config(gc):
+    """Read 'Weekly Events & Spend' tab from NSO Config sheet.
+    Returns {code: (spend_by_date, events_by_date)} keyed by ISO date string (Monday of each cal week)."""
+    result = {}
+    if not gc:
+        return result
+    try:
+        sh = gc.open_by_url(NSO_CONFIG_SHEET_URL)
+        ws = sh.worksheet("Weekly Events & Spend")
+        all_rows = ws.get_all_values()
+    except Exception as e:
+        print(f"  Warning: could not read Weekly Events & Spend from NSO Config: {e}")
+        return result
+
+    if len(all_rows) < 3:
+        return result
+
+    # Row index 1 = column headers: "Name", "Metric", "Week 1\nDec 29...", ..., "Total"
+    header_row = all_rows[1]
+    col_to_monday = {}
+    for col_i, hdr in enumerate(header_row):
+        m = re.match(r"Week\s+(\d+)", str(hdr).strip(), re.IGNORECASE)
+        if m:
+            wk_num = int(m.group(1))
+            col_to_monday[col_i] = CAL_WEEK1_START + timedelta(weeks=wk_num - 1)
+
+    current_code = None
+    for row in all_rows[2:]:
+        if not row:
+            continue
+        name_cell   = str(row[0]).strip().lower() if row[0] else ""
+        metric_cell = str(row[1]).strip().lower() if len(row) > 1 else ""
+
+        if name_cell:
+            current_code = EVENTS_SPEND_STUDIO_MAP.get(name_cell)
+            if current_code and current_code not in result:
+                result[current_code] = (defaultdict(float), defaultdict(int))
+
+        if not current_code or current_code not in result:
+            continue
+
+        spend_d, events_d = result[current_code]
+        is_spend  = "grassroots" in metric_cell or "$" in metric_cell
+        is_events = "events" in metric_cell or "#" in metric_cell
+
+        for col_i, monday in col_to_monday.items():
+            if col_i >= len(row):
+                continue
+            val = str(row[col_i]).strip()
+            if not val or val == "-":
+                continue
+            date_key = monday.isoformat()
+            if is_spend:
+                amt = _parse_amount(val)
+                if amt > 0:
+                    spend_d[date_key] += amt
+            elif is_events:
+                try:
+                    cnt = int(re.sub(r"[^\d]", "", val))
+                    if cnt > 0:
+                        events_d[date_key] += cnt
+                except (ValueError, TypeError):
+                    pass
+
+    for code, (sp, ev) in result.items():
+        print(f"  NSO Config Events&Spend [{code}]: {len(sp)} spend entries, "
+              f"{sum(ev.values())} total events")
+    return result
 
 
 def load_grassroots_data(gc, sheet_url, code):
@@ -396,25 +567,27 @@ def sum_week_data(wn, ws_date, we_date, data_name, full_name,
                   meta_spend_by_date, gads_spend_by_date,
                   gr_spend_by_date, events_by_date):
     """Sum all per-week metrics for a single week bound."""
-    leads = gr_leads = 0
-    presales = cancellations = gr_presales = 0
+    leads = gr_leads = digital_leads = 0
+    presales = cancellations = gr_presales = digital_presales = 0
     ig_sum = 0; has_ig = False
     meta_spend = gads_spend = gr_spend = comm_events = 0.0
 
     def _add_day(d_str):
-        nonlocal leads, gr_leads, presales, cancellations, gr_presales
+        nonlocal leads, gr_leads, digital_leads, presales, cancellations, gr_presales, digital_presales
         nonlocal ig_sum, has_ig, meta_spend, gads_spend, gr_spend, comm_events
 
         # Leads from data.json (keyed by short name)
         lv = leads_by_date.get(data_name, {}).get(d_str, {})
-        leads    += lv.get("leads", 0)
-        gr_leads += lv.get("grassroots_leads", 0)
+        leads         += lv.get("leads", 0)
+        gr_leads      += lv.get("grassroots_leads", 0)
+        digital_leads += lv.get("digital_leads", 0)
 
         # Sales from nso_sales_data.json (keyed by full name)
         sv = sales_by_date.get(full_name, {}).get(d_str, {})
-        presales      += sv.get("presales", 0)
-        cancellations += sv.get("cancellations", 0)
-        gr_presales   += sv.get("grassroots_presales", 0)
+        presales          += sv.get("presales", 0)
+        cancellations     += sv.get("cancellations", 0)
+        gr_presales       += sv.get("grassroots_presales", 0)
+        digital_presales  += sv.get("digital_presales", 0)
 
         # Instagram followers
         fc = ig_fc.get(d_str)
@@ -449,16 +622,18 @@ def sum_week_data(wn, ws_date, we_date, data_name, full_name,
             day += timedelta(days=1)
 
     return {
-        "leads":         leads,
-        "gr_leads":      gr_leads,
-        "presales":      presales,
-        "cancellations": cancellations,
-        "gr_presales":   gr_presales,
-        "ig":            ig_sum if has_ig else None,
-        "meta_spend":    round(meta_spend, 2),
-        "gads_spend":    round(gads_spend, 2),
-        "gr_spend":      round(gr_spend, 2),
-        "comm_events":   int(comm_events),
+        "leads":            leads,
+        "gr_leads":         gr_leads,
+        "digital_leads":    digital_leads,
+        "presales":         presales,
+        "cancellations":    cancellations,
+        "gr_presales":      gr_presales,
+        "digital_presales": digital_presales,
+        "ig":               ig_sum if has_ig else None,
+        "meta_spend":       round(meta_spend, 2),
+        "gads_spend":       round(gads_spend, 2),
+        "gr_spend":         round(gr_spend, 2),
+        "comm_events":      int(comm_events),
     }
 
 
@@ -517,6 +692,12 @@ def main():
         print("  marketing_data.json not found — meta spend will be 0")
 
     try:
+        with open(ROOT / "nso_spend_overrides.json", encoding="utf-8") as f:
+            spend_overrides = json.load(f)
+    except FileNotFoundError:
+        spend_overrides = {}
+
+    try:
         with open(ROOT / "nso_google_ads.json", encoding="utf-8") as f:
             gads_raw = json.load(f)
         gads_rows = gads_raw.get("google_ads", [])
@@ -528,7 +709,7 @@ def main():
     # -- Build global lookups
     leads_by_date = load_daily_leads(daily_rows)
     sales_by_date = load_sales_data(sales_raw)
-    ig_by_code    = load_ig_followers(social_raw)
+    ig_by_code, ig_current_followers = load_ig_followers(social_raw)
     meta_by_code  = load_meta_spend(meta_rows)
     gads_by_code  = load_google_spend(gads_rows)
 
@@ -544,13 +725,25 @@ def main():
         except Exception as e:
             print(f"  Warning: Google Sheets auth failed: {e}")
 
-    gr_spend_by_code  = {}
-    events_by_code    = {}
+    # Load marketing budgets from NSO Config sheet
+    print("\nLoading marketing budgets from NSO Config sheet...")
+    mkt_budgets = load_marketing_budgets(gc)
+    for cfg in studio_cfgs:
+        b = mkt_budgets.get(cfg["code"])
+        if b is not None:
+            cfg["targets"]["marketing_budget"] = b
+
+    # Load grassroots spend + community events from NSO Config "Weekly Events & Spend" tab.
+    # This is now the single source for all studios; the per-studio Google Sheets are no longer read.
+    print("\nLoading grassroots/events data from NSO Config sheet...")
+    nso_config_gr = load_events_spend_from_nso_config(gc)
+
+    gr_spend_by_code = {}
+    events_by_code   = {}
     for cfg in studio_cfgs:
         code = cfg["code"]
-        if gc and cfg.get("sheet_url"):
-            print(f"\nLoading Sheets for {cfg['name']} ...")
-            sp, ev = load_grassroots_data(gc, cfg["sheet_url"], code)
+        if code in nso_config_gr:
+            sp, ev = nso_config_gr[code]
         else:
             sp, ev = defaultdict(float), defaultdict(int)
         gr_spend_by_code[code] = sp
@@ -637,18 +830,27 @@ def main():
             if w["leads"] > 0 and is_active:
                 conv_rate = round(w["presales"] / w["leads"] * 100, 1)
 
-            # LeadTeam fee: $300 for every active week (wn >= 1)
-            leadteam_fee = LEADTEAM_FEE if (is_active and wn >= 1) else None
+            # LeadTeam fee: $1,200/month prorated daily per week.
+            # Week 0 gets the pre-presales lump sum from nso_spend_overrides.json
+            # (covers LeadTeam work done before the presales period started).
+            ov_pre = spend_overrides.get(code, {}).get("leadteam_pre")
+            if wn == 0 and ov_pre:
+                lt_fee = float(ov_pre)
+            elif is_active and wn >= 1:
+                lt_fee = calc_leadteam_fee(ws_date, we_date)
+            else:
+                lt_fee = None
+            leadteam_fee = lt_fee
 
             # Total marketing spend
             meta_sp  = _weekly_float(w["meta_spend"])
             gads_sp  = _weekly_float(w["gads_spend"])
             gr_sp    = _weekly_float(w["gr_spend"])
 
-            if is_active and wn >= 1:
+            if lt_fee or (is_active and wn >= 1):
                 total_spend = round(
-                    (meta_sp or 0) + (gads_sp or 0) + (gr_sp or 0) + LEADTEAM_FEE, 2
-                )
+                    (meta_sp or 0) + (gads_sp or 0) + (gr_sp or 0) + (lt_fee or 0), 2
+                ) or None
             else:
                 total_spend = None
 
@@ -666,12 +868,14 @@ def main():
                 "date_end":           we_date.isoformat(),
                 "new_leads":          _weekly_int(w["leads"]),
                 "total_leads":        tl,
+                "digital_leads_week": _weekly_int(w["digital_leads"]),
                 "presales_week":      _weekly_int(w["presales"]),
                 "presales_count":     pc,
                 "cancellations_week": _weekly_int(w["cancellations"]),
                 "cancellations_count": cc,
                 "grassroots_leads":   _weekly_int(w["gr_leads"]),
                 "grassroots_presales": _weekly_int(w["gr_presales"]),
+                "digital_presales_week": _weekly_int(w["digital_presales"]),
                 "conversion_rate":    conv_rate,
                 "comm_events":        _weekly_int(w["comm_events"]),
                 "ig_new_followers":   w["ig"],
@@ -680,10 +884,30 @@ def main():
                 "grassroots_spend":   gr_sp if (is_active and wn >= 1) else None,
                 "leadteam_fee":       leadteam_fee,
                 "total_marketing_spend": total_spend,
+            }
+
+            # Apply manual spend overrides (fixed values that won't be overwritten)
+            ov = spend_overrides.get(code, {})
+            wk_str = str(wn)
+            for spend_key in ("meta_spend", "google_spend", "grassroots_spend"):
+                if wk_str in ov.get(spend_key, {}):
+                    entry[spend_key] = ov[spend_key][wk_str]
+            if any(wk_str in ov.get(k, {}) for k in ("meta_spend", "google_spend", "grassroots_spend")):
+                new_total = (
+                    (entry.get("meta_spend") or 0) +
+                    (entry.get("google_spend") or 0) +
+                    (entry.get("grassroots_spend") or 0) +
+                    (entry.get("leadteam_fee") or 0)
+                )
+                entry["total_marketing_spend"] = new_total or None
+                blended_cpl = round(new_total / w["leads"], 2) if w["leads"] > 0 else None
+                blended_cpa = round(new_total / w["presales"], 2) if w["presales"] > 0 else None
+
+            entry.update({
                 "blended_cpl":        blended_cpl,
                 "blended_cpa":        blended_cpa,
                 "estimated_day1_rmr": None,
-            }
+            })
 
             ig_str = str(w["ig"]) if w["ig"] is not None else "-"
             print(
@@ -696,6 +920,19 @@ def main():
             )
 
             weeks_out.append(entry)
+
+        # Attribute all IG followers not captured by the API's 30-day window to Week 0.
+        # This ensures the cumulative always equals current_followers (total account followers).
+        # VA-001 (Reston) handles its own calibration in patch_reston_early_weeks.py.
+        cf_total = ig_current_followers.get(code)
+        if cf_total is not None and weeks_out and code != "VA-001":
+            accounted = sum(w.get("ig_new_followers") or 0 for w in weeks_out)
+            gap = max(0, cf_total - accounted)
+            if gap > 0:
+                w0 = next((w for w in weeks_out if w["week"] == "Week 0"), None)
+                if w0 is not None:
+                    w0["ig_new_followers"] = (w0["ig_new_followers"] or 0) + gap
+                    print(f"  IG gap {gap} added to Week 0 (total {cf_total}, accounted {accounted})")
 
         studio_entry = {
             "name":          cfg["name"],
@@ -715,7 +952,23 @@ def main():
         print("\n[DRY RUN] Not writing.")
         return
 
+    # Preserve tier_rmr_by_week from previous file — that field is written by
+    # fetch_tier_rmr.py (requires Snowflake) and must not be wiped on each rebuild.
     out_path = ROOT / "nso_scorecard_data.json"
+    if out_path.exists():
+        try:
+            with open(out_path, encoding="utf-8") as f:
+                prev = json.load(f)
+            prev_map = {s["code"]: s for s in prev.get("studios", [])}
+            for s in output_studios:
+                prev_s = prev_map.get(s["code"], {})
+                if prev_s.get("tier_rmr_by_week") is not None:
+                    s["tier_rmr_by_week"] = prev_s["tier_rmr_by_week"]
+                if prev_s.get("pricing") is not None:
+                    s["pricing"] = prev_s["pricing"]
+        except Exception:
+            pass
+
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump({"studios": output_studios}, f, indent=2, default=str)
     size_kb = out_path.stat().st_size // 1000

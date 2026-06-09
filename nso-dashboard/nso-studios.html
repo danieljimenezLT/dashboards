@@ -147,7 +147,7 @@
 
   <!-- FUNNEL TAB -->
   <div class="tab-content" id="tab-funnel">
-    <div class="chart-card"><div class="chart-card-title">Conversion Funnel — NSO Studios</div><div class="funnel-wrap" id="funnelBars"></div></div>
+    <div id="funnel-kpis" class="kpi-grid"></div>
     <div class="chart-card"><div class="chart-card-title">Funnel Over Time</div>
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
         <div class="toggle-group" style="margin-bottom:0">
@@ -233,7 +233,7 @@
 /* ══════════════════════════════════════════════════════════════════════════
    NSO STUDIOS DASHBOARD — Self-contained
    ══════════════════════════════════════════════════════════════════════════ */
-const NSO=['SWEAT440 Herriman','SWEAT440 Naples - Mercato','SWEAT440 Reston'];
+const NSO=['SWEAT440 Herriman','SWEAT440 Naples - Mercato','SWEAT440 Reston','SWEAT440 Orlando - Dr Phillips','SWEAT440 Aventura','SWEAT440 North Miami','SWEAT440 Dallas - Uptown','SWEAT440 Old Bridge'];
 const EXCL_SRC=['ClassPass / Platforms','Grassroots','N/A'];
 
 let RAW=null,SC=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null;const _ch={};
@@ -262,8 +262,8 @@ function switchTab(id,btn){
   else if(id==='ga4')renderGA4();
   else if(id==='meta')renderMeta();
   else if(id==='google')renderGoogle();
-
   else if(id==='instagram')renderInstagram();
+  else if(id==='funnel'){renderFunnel();applyFilters();}
   else applyFilters();
 }
 function toggleNavGroup(groupId,btn){
@@ -300,11 +300,11 @@ function fmMo(iso){return new Date(iso+'T00:00:00Z').toLocaleString('en-US',{mon
 function _wkLabel(dateStr){
   if(!SC||!SC.studios)return'';
   const sel=_getSel('studioMenu');
-  // Use selected studio's schedule; if multiple selected, only label when all share the same week
   const studios=sel.length?SC.studios.filter(s=>sel.includes(s.full_name)):SC.studios;
-  // Only show week label when exactly 1 NSO studio is selected (weeks differ per studio)
-  if(studios.length!==1)return'';
-  for(const wk of(studios[0].weeks||[])){
+  // Prefer a single-selected studio; fall back to the funnel/summary focused studio
+  const studio=studios.length===1?studios[0]:(_sumStudio||null);
+  if(!studio)return'';
+  for(const wk of(studio.weeks||[])){
     if(wk.date_start&&wk.date_end&&dateStr>=wk.date_start&&dateStr<=wk.date_end)
       return wk.week.replace('Week ','W').replace('WEEK ','W');
   }
@@ -326,6 +326,7 @@ function switchSumStudio(code){
   if(!sc)return;
   _sumStudio=sc;
   renderSummary();
+  if(document.getElementById('tab-funnel').classList.contains('active'))renderFunnel();
 }
 
 function renderSummary(){
@@ -473,7 +474,8 @@ function renderSummary(){
   const wkLeadGoal=tgt.total_leads?Math.round(tgt.total_leads/totalWeeks):0;
   const wkPresaleGoal=tgt.presales_count?Math.round(tgt.presales_count/totalWeeks):0;
   const cumSpend=w.slice(0,displayCw+1).reduce((s,x)=>s+(x.total_marketing_spend||0),0);
-  const estTotalSpend=displayCw>0?Math.round(cumSpend/displayCw*totalWeeks):0;
+  const cumSpendNoLT=w.slice(0,displayCw+1).reduce((s,x)=>s+(x.meta_spend||0)+(x.google_spend||0)+(x.grassroots_spend||0),0);
+  const estTotalSpend=displayCw>0?Math.round(cumSpendNoLT/displayCw*totalWeeks):0;
 
   // Pacing benchmarks (300-in-12wk and 440-in-16wk) at current week
   const pace300=Math.round(300/12*cw);
@@ -510,14 +512,14 @@ function renderSummary(){
   const netPresales=Math.max(0,(cur.presales_count||0)-(cur.cancellations_count||0));
   h+=_progBar('Presales (net)',netPresales,tgt.presales_count||0,'#00C9A7',Math.round((tgt.presales_count||0)/totalWeeks*displayCw),'W'+displayCw+' Pace');
   if((cur.estimated_day1_rmr||0)>0){const _rmrA=cur.estimated_day1_rmr||0,_rmrT=tgt.estimated_day1_rmr||0,_rmrPct=_rmrT>0?Math.min(100,Math.round(_rmrA/_rmrT*100)):0;h+=`<div style="margin-bottom:18px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><div style="font-size:11px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Est. Day-1 RMR</div><div style="text-align:right"><span style="font-size:20px;font-weight:700;color:#1a1a2e;font-family:'Oswald',sans-serif">$${_rmrA.toLocaleString('en-US')}</span><span style="font-size:10px;color:#8aaabb;margin-left:6px">/ $${_rmrT.toLocaleString('en-US')}</span></div></div><div style="position:relative;height:14px;background:#f0f6fa;border-radius:7px"><div style="position:absolute;left:0;top:0;height:100%;width:${_rmrPct}%;background:#f4a021;border-radius:7px;min-width:${_rmrPct>0?4:0}px"></div></div></div>`;}
-  if(estTotalSpend>0){
+  if(estTotalSpend>0||cumSpendNoLT>0){
     const _fmtS=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
-    // Parse CPL range string e.g. "$28 - 41" → average 34.5
     const _parseCpl=s=>{if(typeof s==='number')return s;if(typeof s==='string'){const ns=s.replace(/[^0-9.]/g,' ').trim().split(/\s+/).map(Number).filter(n=>!isNaN(n)&&n>0);if(ns.length>=2)return(ns[0]+ns[ns.length-1])/2;if(ns.length===1)return ns[0];}return null;};
     const cplMid=_parseCpl(tgt.blended_cpl);
-    const budgetTarget=cplMid&&tgt.total_leads?Math.round(cplMid*tgt.total_leads):estTotalSpend;
+    // Budget: explicit value from NSO Config sheet takes priority, then CPL-based estimate
+    const budgetTarget=tgt.marketing_budget||( cplMid&&tgt.total_leads?Math.round(cplMid*tgt.total_leads):estTotalSpend );
     const spendBench=Math.round(budgetTarget/totalWeeks*displayCw);
-    h+=_progBar('Mktg Spend',Math.round(cumSpend),budgetTarget,'#9b59b6',spendBench,'W'+displayCw+' Pace',_fmtS,'Budget');
+    h+=_progBar('Mktg Spend (without Leadteam Fee)',Math.round(cumSpendNoLT),budgetTarget,'#9b59b6',spendBench,'W'+displayCw+' Pace',_fmtS,'Budget');
   }
   h+=`</div>`;
 
@@ -689,7 +691,111 @@ function buildRing(cid,lid,rows,vk){const byS={};rows.forEach(r=>{byS[r.source]=
 function buildRank(tid,rows,vk){const tb=document.querySelector('#'+tid+' tbody');if(!tb)return;const byS={};rows.forEach(r=>{byS[r.studio]=(byS[r.studio]||0)+(r[vk]||0)});const sorted=Object.entries(byS).sort((a,b)=>b[1]-a[1]);const total=sorted.reduce((s,[,v])=>s+v,0);tb.innerHTML=sorted.map(([st,v])=>{const p=total?(v/total*100).toFixed(1):0;const bw=total?Math.round(v/total*80):0;return`<tr><td><span class="bar-mini" style="width:${bw}px"></span>${st.replace('SWEAT440 ','')}</td><td class="num">${v.toLocaleString('en-US')}</td><td class="pct">${p}%</td></tr>`}).join('')}
 
 /* ══════════════════════════════════════════════════════════════════════════ */
-function buildFunnel(c,p,y,ppL,pyL){const stages=[{l:'Leads',c:c.leads,p:p.leads,y:y.leads,col:'#00A3E0'},{l:'Sales',c:c.mem,p:p.mem,y:y.mem,col:'#00FFC2'}];const mx=Math.max(...stages.map(s=>s.c),1);document.getElementById('funnelBars').innerHTML=stages.map(s=>{const w=Math.max(2,s.c/mx*100);const dpp=cD(s.c,s.p),dpy=cD(s.c,s.y);const ppH=dpp!=null?`<span class="delta ${dpp>=0?'pos':'neg'}">${dpp>=0?'▲':'▼'} ${Math.abs(dpp).toFixed(1)}% prev period</span>`:'<span class="delta neu">—</span>';const pyH=dpy!=null?`<span class="delta ${dpy>=0?'pos':'neg'}">${dpy>=0?'▲':'▼'} ${Math.abs(dpy).toFixed(1)}% prev year</span>`:'<span class="delta neu">—</span>';return`<div><div class="funnel-stage-label">${s.l}</div><div class="funnel-row"><div class="funnel-bar-track"><div class="funnel-bar-fill" style="width:${w}%;background:${s.col}"></div></div><div class="funnel-num">${s.c.toLocaleString('en-US')}</div><div class="funnel-deltas">${ppH}${pyH}</div></div></div>`}).join('')}
+function buildFunnel(){}  // retired — funnelBars replaced by renderFunnel()
+
+function renderFunnel(){
+  const el=document.getElementById('funnelAllStudios');
+  if(!el)return;
+  if(!SC||!SC.studios||!SC.studios.length){el.innerHTML='<div style="padding:32px;text-align:center;color:#8aaabb;font-family:Oswald,sans-serif;font-style:italic">Scorecard data loading…</div>';return;}
+  const progCol=p=>p>=90?'#0a8a4a':p>=70?'#f4a021':'#e05a5a';
+  const fmt=n=>n!=null?n.toLocaleString('en-US'):'—';
+  const fmtPct=p=>p!=null?p.toFixed(1)+'%':'—';
+
+  // Show only the selected studio (same as Summary tab)
+  if(!_sumStudio)_sumStudio=SC.studios[0];
+  const activeCode=_sumStudio?_sumStudio.code:null;
+
+  // Studio switcher tabs
+  let h='<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">';
+  SC.studios.forEach(s=>{
+    const active=s.code===activeCode;
+    h+=`<button onclick="_sumStudio=SC.studios.find(x=>x.code==='${s.code}');renderFunnel()" style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;padding:6px 16px;border-radius:4px;border:2px solid ${active?'#00A3E0':'#c0d4df'};background:${active?'#00A3E0':'transparent'};color:${active?'#fff':'#5a7a8a'};cursor:pointer;letter-spacing:.5px">${s.name}</button>`;
+  });
+  h+='</div>';
+
+  const studio=_sumStudio||SC.studios[0];
+  {
+    const weeks=studio.weeks||[];
+    const cw=studio.current_week||0;
+    const tgt=studio.targets||{};
+    const curWk=weeks.find(w=>(parseInt(String(w.week).replace(/[^0-9]/g,''))||0)===cw)||{};
+
+    const cumLeads=curWk.total_leads||0;
+    const cumPres=curWk.presales_count||0;
+    const cumCanc=curWk.cancellations_count||0;
+    const netActive=Math.max(0,cumPres-cumCanc);
+    const newLeads=curWk.new_leads||0;
+    const newPres=curWk.presales_week||0;
+    const convRateCum=cumLeads>0?cumPres/cumLeads*100:null;
+    const convRateWk=curWk.conversion_rate||null;
+
+    const tLeads=tgt.total_leads;
+    const tPres=tgt.presales_count;
+    const leadsPct=tLeads&&cumLeads?Math.min(100,Math.round(cumLeads/tLeads*100)):null;
+    const salesPct=tPres&&netActive?Math.min(100,Math.round(netActive/tPres*100)):null;
+
+    const totalWeeks=studio.go_week||(weeks.length-1);
+    const ds=curWk.date_start;
+    const de=curWk.date_end;
+    const fmtD=iso=>{if(!iso)return'';const d=new Date(iso+'T00:00:00Z');return`${d.getUTCMonth()+1}/${d.getUTCDate()}`};
+    const drFmt=ds&&de?`${fmtD(ds)} – ${fmtD(de)}`:curWk.date_range||'';
+    const isPreLaunch=cw===0;
+    const weekLabel=isPreLaunch?'Pre-Launch':`WEEK ${cw}`;
+    const funnelPresW=cumLeads>0?Math.max(4,Math.round(netActive/cumLeads*100)):0;
+    const pBar=(pct,col)=>pct!=null?`<div style="height:5px;background:#e8f0f5;border-radius:3px;margin-top:4px"><div style="height:100%;width:${pct}%;background:${col||'#00A3E0'};border-radius:3px;transition:width .3s"></div></div>`:'';
+
+    h+=`<div class="chart-card" style="padding:14px 16px">`;
+
+    // Header: name
+    h+=`<div style="font-family:Oswald,sans-serif;font-style:italic;font-size:15px;font-weight:700;text-transform:uppercase;color:#1a1a2e;letter-spacing:.5px;margin-bottom:6px">${studio.name}</div>`;
+
+    // Week + date row
+    h+=`<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px">`;
+    h+=`<span style="font-size:12px;font-weight:700;font-family:Oswald,sans-serif;font-style:italic;text-transform:uppercase;color:#00A3E0;letter-spacing:.5px">${weekLabel}</span>`;
+    h+=`<span style="font-size:10px;color:#8aaabb">of ${totalWeeks}</span>`;
+    if(drFmt){h+=`<span style="font-size:11px;color:#5a7a8a;margin-left:4px">${drFmt}</span>`;}
+    h+=`</div>`;
+
+    // Leads row
+    h+=`<div style="margin-bottom:8px">`;
+    h+=`<div style="display:flex;justify-content:space-between;align-items:baseline">`;
+    h+=`<span style="font-size:11px;color:#5a7a8a;font-family:Oswald,sans-serif;font-style:italic;text-transform:uppercase;letter-spacing:.3px">Leads</span>`;
+    h+=`<span style="font-size:15px;font-weight:700;color:#1a1a2e">${fmt(cumLeads)}${tLeads?'<span style="font-size:11px;color:#8aaabb"> / '+fmt(tLeads)+'</span>':''}</span>`;
+    h+=`</div>`;
+    h+=pBar(leadsPct,'#00A3E0');
+    if(leadsPct!=null)h+=`<div style="font-size:9px;color:#8aaabb;text-align:right;margin-top:2px">${leadsPct}% of target${newLeads>0?' · +'+newLeads+' this week':''}</div>`;
+    h+=`</div>`;
+
+    // Presales row
+    h+=`<div style="margin-bottom:8px">`;
+    h+=`<div style="display:flex;justify-content:space-between;align-items:baseline">`;
+    h+=`<span style="font-size:11px;color:#5a7a8a;font-family:Oswald,sans-serif;font-style:italic;text-transform:uppercase;letter-spacing:.3px">Presales (net)</span>`;
+    h+=`<span style="font-size:15px;font-weight:700;color:#1a1a2e">${fmt(netActive)}${tPres?'<span style="font-size:11px;color:#8aaabb"> / '+fmt(tPres)+'</span>':''}</span>`;
+    h+=`</div>`;
+    h+=pBar(salesPct,progCol(salesPct||0));
+    if(salesPct!=null)h+=`<div style="font-size:9px;color:#8aaabb;text-align:right;margin-top:2px">${salesPct}% of target${newPres>0?' · +'+newPres+' this week':''}</div>`;
+    h+=`</div>`;
+
+    // Conv rate + mini funnel
+    h+=`<div style="display:flex;align-items:center;gap:12px;padding-top:8px;border-top:1px solid #e8f0f5">`;
+    h+=`<div style="flex:1">`;
+    h+=`<div style="font-size:9px;color:#8aaabb;text-transform:uppercase;letter-spacing:.5px;font-family:Oswald,sans-serif;font-style:italic">Conv Rate</div>`;
+    h+=`<div style="font-size:16px;font-weight:700;color:#00A3E0">${fmtPct(convRateCum)}</div>`;
+    if(convRateWk!=null)h+=`<div style="font-size:9px;color:#8aaabb">This week: ${convRateWk.toFixed(1)}%</div>`;
+    h+=`</div>`;
+    // Mini funnel visual
+    h+=`<div style="flex:1.5">`;
+    h+=`<div style="font-size:9px;color:#8aaabb;margin-bottom:3px">Leads → Presales</div>`;
+    h+=`<div style="height:7px;background:#00A3E0;border-radius:2px;margin-bottom:2px"></div>`;
+    h+=`<div style="height:7px;width:${funnelPresW}%;background:#00FFC2;border-radius:2px"></div>`;
+    h+=`</div>`;
+    h+=`</div>`;
+
+    h+=`</div>`;  // card
+  }
+
+  el.innerHTML=h;
+}
 
 function applyFilters(){
   if(!RAW)return;
@@ -706,12 +812,9 @@ function applyFilters(){
   const sPY=wins.pyFrom?fR(NSO_SALES_ROWS,wins.pyFrom,wins.pyTo,st,sr):[];
   const netSales=rows=>Math.max(0,rows.reduce((a,r)=>a+(r.first_sales||0)-(r.cancellations||0),0));
   const smC=netSales(sCurr),smP=netSales(sPP),smY=netSales(sPY);
-  // Funnel bar uses NSO sales (net presales) instead of data.json first_sales
-  const funnelSales={leads:cS.leads,mem:smC};
-  const funnelSalesPP={leads:pS.leads,mem:smP};
-  const funnelSalesPY={leads:yS.leads,mem:smY};
-  buildFunnel(funnelSales,funnelSalesPP,funnelSalesPY);
   buildTrend(toTS(curr.daily,curr.monthly));
+  const fkpi=document.getElementById('funnel-kpis');
+  if(fkpi)fkpi.innerHTML=kpiCard('Total Leads',cS.leads,pS.leads,yS.leads)+kpiCard('Total Sales',smC,smP||null,smY||null);
   const srcList=sr||[];
   document.getElementById('leads-kpis').innerHTML=kpiCard('Total Leads',cS.leads,pS.leads,yS.leads);
   buildArea('leadsChart','leads-toggles',toSrcTSGran(curr.daily,curr.monthly),srcList,'signups');
@@ -795,6 +898,20 @@ function toggleScDigital(){
   subs.forEach(r=>r.style.display=open?'none':'');
   if(icon)icon.textContent=open?'▶':'▼';
 }
+function toggleScCpl(){
+  const subs=document.querySelectorAll('.sc-cpl-sub');
+  const icon=document.getElementById('sc-cpl-icon');
+  const open=subs[0]&&subs[0].style.display!=='none';
+  subs.forEach(r=>r.style.display=open?'none':'');
+  if(icon)icon.textContent=open?'▶':'▼';
+}
+function toggleScCpa(){
+  const subs=document.querySelectorAll('.sc-cpa-sub');
+  const icon=document.getElementById('sc-cpa-icon');
+  const open=subs[0]&&subs[0].style.display!=='none';
+  subs.forEach(r=>r.style.display=open?'none':'');
+  if(icon)icon.textContent=open?'▶':'▼';
+}
 
 function renderScorecard(){
   const el=document.getElementById('scorecard-content');if(!el)return;
@@ -811,13 +928,14 @@ function renderScorecard(){
   const tgt=sc.targets||{};
 
   // Build week list with running cumulative spend/ig
-  let _cMs=0,_cGs=0,_cGrs=0,_cLtf=0,_cTs=0,_cDs=0,_cIg=0;
+  let _cMs=0,_cGs=0,_cGrs=0,_cLtf=0,_cTs=0,_cDs=0,_cIg=0,_cNl=0,_cDl=0,_cDp=0;
   const weeks=sc.weeks.map(w=>{
     const wn=parseInt(String(w.week).replace(/[^0-9]/g,''))||0;
     const nl=w.new_leads??null, np=w.presales_week??null;
     const crRaw=w.conversion_rate;
     _cMs+=w.meta_spend||0;_cGs+=w.google_spend||0;_cGrs+=w.grassroots_spend||0;
-    _cLtf+=w.leadteam_fee||0;_cTs+=w.total_marketing_spend||0;_cDs+=(w.meta_spend||0)+(w.google_spend||0);_cIg+=w.ig_new_followers||0;
+    _cLtf+=w.leadteam_fee||0;_cTs+=w.total_marketing_spend||0;_cDs+=(w.meta_spend||0)+(w.google_spend||0);_cIg+=w.ig_new_followers||0;_cNl+=w.new_leads||0;
+    _cDl+=w.digital_leads_week||0;_cDp+=w.digital_presales_week||0;
     return{
       w:wn, date:w.date_range||'', isCur:wn===cw,
       ds:w.date_start||null, de:w.date_end||null,
@@ -828,13 +946,15 @@ function renderScorecard(){
       tl:w.total_leads??null, pc:w.presales_count??null,
       cancTot:w.cancellations_count??null, canc:w.cancellations_week??null,
       rmr:w.estimated_day1_rmr||null,
+      t0m:w.tier0_members??null, t1m:w.tier1_members??null, t2m:w.tier2_members??null,
       ms:w.meta_spend??null, gs:w.google_spend??null,
       grs:w.grassroots_spend??null, ltf:w.leadteam_fee??null,
       ts:w.total_marketing_spend??null,
       dsp:(w.meta_spend!=null||w.google_spend!=null)?(w.meta_spend||0)+(w.google_spend||0):null,
-      cpl:w.blended_cpl??null, cpa:w.blended_cpa??null,
+      dlw:w.digital_leads_week??null, dpw:w.digital_presales_week??null,
       ig:w.ig_new_followers??null,
-      cumMs:_cMs, cumGs:_cGs, cumGrs:_cGrs, cumLtf:_cLtf, cumTs:_cTs, cumDsp:_cDs, cumIg:_cIg,
+      cumMs:_cMs, cumGs:_cGs, cumGrs:_cGrs, cumLtf:_cLtf, cumTs:_cTs, cumDsp:_cDs, cumIg:_cIg, cumNl:_cNl,
+      cumDl:_cDl, cumDp:_cDp,
       cumCr:(w.total_leads>0&&w.presales_count!=null)?w.presales_count/w.total_leads:null,
     };
   }).filter(w=>w.w<=cw+1);
@@ -861,9 +981,13 @@ function renderScorecard(){
     {label:'Google Spend',        key:'gs',  req:null,       fmt:$v,   color:false, spendSubSub:true},
     {label:'Grassroots Spend',    key:'grs', req:null,       fmt:$v,   color:false, spendSub:true},
     {label:'LeadTeam Fee',        key:'ltf', req:null,       fmt:$v,   color:false, spendSub:true},
-    {label:'Blended CPL', key:'cpl', fmt:fCur, reqLabel:'$28 – $41',
+    {label:'▶ Blended CPL', computed:wk=>wk.ts&&((wk.nl||0)+(wk.gl||0))>0?wk.ts/((wk.nl||0)+(wk.gl||0)):null, fmt:fCur, reqLabel:'$28 – $41', color:false, cplParent:true,
      colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
-    {label:'Blended CPA', key:'cpa', fmt:fCur, reqLabel:'$80 – $116',
+    {label:'Ads CPL', computed:wk=>wk.dsp&&wk.dlw>0?wk.dsp/wk.dlw:null, fmt:fCur, reqLabel:'—', color:false, cplSub:true,
+     colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
+    {label:'▶ Blended CPA', computed:wk=>wk.ts&&wk.np>0?wk.ts/wk.np:null, fmt:fCur, reqLabel:'$80 – $116', color:false, cpaParent:true,
+     colorFn:v=>!v?'':(v<=116?'sc-cell-good':v<=116*1.3?'sc-cell-warn':'sc-cell-bad')},
+    {label:'Ads CPA', computed:wk=>wk.dsp&&wk.dpw>0?wk.dsp/wk.dpw:null, fmt:fCur, reqLabel:'—', color:false, cpaSub:true,
      colorFn:v=>!v?'':(v<=116?'sc-cell-good':v<=116*1.3?'sc-cell-warn':'sc-cell-bad')},
   ];
 
@@ -887,9 +1011,13 @@ function renderScorecard(){
     {label:'Google Spend',        key:'cumGs', req:null, fmt:$v, color:false, spendSubSub:true},
     {label:'Grassroots Spend',    key:'cumGrs',req:null, fmt:$v, color:false, spendSub:true},
     {label:'LeadTeam Fee',        key:'cumLtf',req:null, fmt:$v, color:false, spendSub:true},
-    {label:'Blended CPL', key:'cpl', fmt:fCur, reqLabel:'$28 – $41',
+    {label:'▶ Blended CPL', computed:wk=>wk.cumTs&&wk.tl>0?wk.cumTs/wk.tl:null, fmt:fCur, reqLabel:'$28 – $41', color:false, cplParent:true,
      colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
-    {label:'Blended CPA', key:'cpa', fmt:fCur, reqLabel:'$80 – $116',
+    {label:'Ads CPL', computed:wk=>wk.cumDsp&&wk.cumDl>0?wk.cumDsp/wk.cumDl:null, fmt:fCur, reqLabel:'—', color:false, cplSub:true,
+     colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
+    {label:'▶ Blended CPA', computed:wk=>wk.cumTs&&wk.pc>0?wk.cumTs/wk.pc:null, fmt:fCur, reqLabel:'$80 – $116', color:false, cpaParent:true,
+     colorFn:v=>!v?'':(v<=116?'sc-cell-good':v<=116*1.3?'sc-cell-warn':'sc-cell-bad')},
+    {label:'Ads CPA', computed:wk=>wk.cumDsp&&wk.cumDp>0?wk.cumDsp/wk.cumDp:null, fmt:fCur, reqLabel:'—', color:false, cpaSub:true,
      colorFn:v=>!v?'':(v<=116?'sc-cell-good':v<=116*1.3?'sc-cell-warn':'sc-cell-bad')},
   ];
 
@@ -899,30 +1027,38 @@ function renderScorecard(){
 
   // ── RMR Tier Breakdown ──────────────────────────────────────────────────
   const pricing=sc.pricing||{tier1_price:99,tier2_price:129,tier2_start_week:99};
+  const t0p=pricing.tier0_price||null;
   const t1p=pricing.tier1_price||99;
   const t2p=pricing.tier2_price||129;
   const t3p=pricing.tier3_price||null;
   const t2sw=pricing.tier2_start_week||99;
   const t3sw=pricing.tier3_start_week||null;
-  // Build lookup from real Snowflake tier data (week → {t1,t2,t3})
+  // Build lookup from real Snowflake tier data (week → {t0,t1,t2,t3})
   const _tierReal={};
   (sc.tier_rmr_by_week||[]).forEach(r=>{_tierReal[r.week]=r;});
   const _hasReal=Object.keys(_tierReal).length>0;
 
-  let _t1=0,_t2=0,_t3=0;
-  // Seed from W0 only when no real data (fallback path)
+  let _t0=0,_t1=0,_t2=0,_t3=0;
+  // Seed from W0 only when using week-based accumulation fallback
   if(!_hasReal){
     const _w0=weeks.find(w=>w.w===0);
-    if(_w0){_t1+=_w0.np||0;let _c0=_w0.canc||0;_t1=Math.max(0,_t1-_c0);}
+    if(_w0&&_w0.t1m==null){_t1+=_w0.np||0;let _c0=_w0.canc||0;_t1=Math.max(0,_t1-_c0);}
   }
   const rmrtRows=pastWeeks.map(wk=>{
     if(_tierReal[wk.w]){
       // Use actual prices from Snowflake
+      _t0=_tierReal[wk.w].t0||0;
       _t1=_tierReal[wk.w].t1||0;
       _t2=_tierReal[wk.w].t2||0;
       _t3=_tierReal[wk.w].t3||0;
+    } else if(wk.t1m!=null){
+      // Use cumulative tier counts from scorecard data (e.g., from sheet patch)
+      _t0=wk.t0m||0;
+      _t1=wk.t1m||0;
+      _t2=wk.t2m||0;
+      _t3=0;
     } else {
-      // Fallback: week-based tier assignment for future weeks
+      // Fallback: week-based tier assignment
       const newPs=wk.np||0, canc=wk.canc||0;
       if(t3sw&&wk.w>=t3sw)_t3+=newPs;
       else if(wk.w>=t2sw)_t2+=newPs;
@@ -931,11 +1067,11 @@ function renderScorecard(){
       if(t3p){const c3=Math.min(c,_t3);_t3-=c3;c-=c3;}
       const c2=Math.min(c,_t2);_t2-=c2;c-=c2;_t1=Math.max(0,_t1-c);
     }
-    const rmr=Math.round(_t1*t1p+_t2*t2p+(t3p?_t3*t3p:0));
-    const netPs=_t1+_t2+_t3;
+    const rmr=Math.round((t0p?_t0*t0p:0)+_t1*t1p+_t2*t2p+(t3p?_t3*t3p:0));
+    const netPs=_t0+_t1+_t2+_t3;
     const totalSpend=wk.cumTs||0;
     const roms=totalSpend>0?((netPs*640)/totalSpend):null;
-    return{w:wk.w,isCur:wk.isCur,ds:wk.ds,de:wk.de,t1:_t1,t2:_t2,t3:t3p?_t3:null,rmr,roms};
+    return{w:wk.w,isCur:wk.isCur,ds:wk.ds,de:wk.de,t0:t0p?_t0:null,t1:_t1,t2:_t2,t3:t3p?_t3:null,rmr,roms};
   });
 
   let h='';
@@ -949,9 +1085,12 @@ function renderScorecard(){
   // Mini RMR table
   h+=`<div class="chart-card" style="padding:14px 20px;margin-bottom:12px">`;
   h+=`<div style="font-family:Oswald,sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;color:#5a7a8a;letter-spacing:1px;margin-bottom:10px">`;
-  const _tierSubtitle=`Tier 1 $${t1p} → Tier 2 $${t2p} from W${t2sw}`+(t3p&&t3sw?` → Tier 3 $${t3p} from W${t3sw}`:'');
+  const _tierSubtitle=t0p
+    ?`Founders $${t0p} + Tier 1 $${t1p}`+(t2sw<99?` → Tier 2 $${t2p} from W${t2sw}`:'')+(t3p&&t3sw?` → Tier 3 $${t3p} from W${t3sw}`:'')
+    :`Tier 1 $${t1p} → Tier 2 $${t2p} from W${t2sw}`+(t3p&&t3sw?` → Tier 3 $${t3p} from W${t3sw}`:'');
   h+=`RMR Breakdown &nbsp;<span style="font-weight:400;font-size:10px;color:#aabbc8">${_tierSubtitle}</span></div>`;
   // Target column values — read from NSO Config sheet via pricing block, fallback to calculation
+  const _t0tgt=pricing.tier0_members_target||null;
   const _t1tgt=pricing.tier1_members_target||(()=>{
     const _reqPs=tgt.presales_count&&sc.go_week?tgt.presales_count/sc.go_week:0;
     return t2sw>1?Math.round(_reqPs*(t2sw-1)):0;
@@ -968,7 +1107,7 @@ function renderScorecard(){
     const _reqPs=tgt.presales_count&&sc.go_week?tgt.presales_count/sc.go_week:0;
     _t2tgt=Math.max(0,Math.round(tgt.presales_count||0)-_t1tgt);
   }
-  const _totalMembersTgt=_t1tgt+_t2tgt+_t3tgt;
+  const _totalMembersTgt=(_t0tgt||0)+_t1tgt+_t2tgt+_t3tgt;
   const _rmrTgt=tgt.estimated_day1_rmr||null;
   const _romsTgt=pricing.estimated_roms_target||null;
 
@@ -977,17 +1116,22 @@ function renderScorecard(){
   h+=`<th class="num" style="min-width:80px;font-size:11px;background:#f8f4ec;color:#b8860b;position:sticky;left:200px;z-index:3">Target</th>`;
   rmrtRows.forEach(wk=>{
     const ds=wk.ds?`<br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.ds)}</span><br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.de)}</span>`:'';
-    const tierB=wk.w===t2sw?`<br><span style="font-size:7px;background:#27ae60;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block;margin-top:2px">→$${t2p}</span>`:wk.w===t3sw?`<br><span style="font-size:7px;background:#8e44ad;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block;margin-top:2px">→$${t3p}</span>`:'';
-    h+=`<th class="num${wk.isCur?' sc-cell-cur':''}" style="min-width:80px;font-size:11px">W${wk.w}${ds}${tierB}</th>`;
+    const _b=[];
+    if(wk.w===sc.co_week)_b.push(`<span style="font-size:7px;background:#0084B5;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">Target C/O</span>`);
+    if(wk.w===t2sw)_b.push(`<span style="font-size:7px;background:#27ae60;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">→$${t2p}</span>`);
+    else if(wk.w===t3sw)_b.push(`<span style="font-size:7px;background:#8e44ad;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">→$${t3p}</span>`);
+    const topRow=`<span style="display:block;min-height:14px;text-align:center;margin-bottom:1px">${_b.join(' ')}</span>`;
+    h+=`<th class="num${wk.isCur?' sc-cell-cur':''}" style="min-width:80px;font-size:11px;vertical-align:bottom">${topRow}W${wk.w}${ds}</th>`;
   });
   h+=`</tr></thead><tbody>`;
   const rmrRows2=[
+    ...(t0p?[{label:`Founders ($${t0p})`,key:'t0',target:_t0tgt}]:[]),
     {label:`Tier 1 Members ($${t1p})`,key:'t1',target:_t1tgt},
     {label:`Tier 2 Members ($${t2p})`,key:'t2',target:_t2tgt},
     ...(t3p?[{label:`Tier 3 Members ($${t3p})`,key:'t3',target:_t3tgt}]:[]),
-    {label:'Total Members',key:null,computed:wk=>(wk.t1||0)+(wk.t2||0)+(wk.t3||0),target:_totalMembersTgt,style:'font-weight:700;border-top:1px solid #e0ecf4'},
+    {label:'Total Members',key:null,computed:wk=>(wk.t0||0)+(wk.t1||0)+(wk.t2||0)+(wk.t3||0),target:_totalMembersTgt,style:'font-weight:700;border-top:1px solid #e0ecf4'},
     {label:'Est. Day 1 RMR',key:'rmr',fmt:v=>`$${v.toLocaleString('en-US')}`,target:_rmrTgt,tgtFmt:v=>`$${Math.round(v).toLocaleString('en-US')}`,style:'border-top:1px solid #e0ecf4'},
-    {label:'Est. ROMS',sublabel:'(Presales × $640 LTV) ÷ Mktg Spend',key:'roms',fmt:v=>v.toFixed(1)+'x',target:_romsTgt,tgtFmt:v=>typeof v==='string'?v:(+v).toFixed(1)+'x'},
+    {label:'Est. ROMS',key:'roms',fmt:v=>v.toFixed(1)+'x',target:_romsTgt,tgtFmt:v=>typeof v==='string'?v:(+v).toFixed(1)+'x'},
   ];
   rmrRows2.forEach(row=>{
     const labelCell=row.sublabel
@@ -1017,8 +1161,12 @@ function renderScorecard(){
   h+=`<th class="num" style="background:#f8f4ec;color:#b8860b;min-width:70px;position:sticky;left:200px;z-index:3">${_scView==='weekly'?'Req/Wk':'Target'}</th>`;
   pastWeeks.forEach(wk=>{
     const dateSpan=wk.ds?`<span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.ds)}</span><br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.de)}</span>`:`<span style="font-size:9px;font-weight:400;color:#8aaabb">${(wk.date||'').slice(0,9)}</span>`;
-    const tierBadge=wk.w===t2sw?`<br><span style="font-size:7px;background:#27ae60;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block;margin-top:2px">→$${t2p}</span>`:wk.w===t3sw?`<br><span style="font-size:7px;background:#8e44ad;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block;margin-top:2px">→$${t3p}</span>`:'';
-    h+=`<th class="num${wk.isCur?' sc-cell-cur':''}" style="min-width:90px;font-size:13px">W${wk.w}<br>${dateSpan}${tierBadge}</th>`;
+    const _b=[];
+    if(wk.w===sc.co_week)_b.push(`<span style="font-size:7px;background:#0084B5;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">Target C/O</span>`);
+    if(wk.w===t2sw)_b.push(`<span style="font-size:7px;background:#27ae60;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">→$${t2p}</span>`);
+    else if(wk.w===t3sw)_b.push(`<span style="font-size:7px;background:#8e44ad;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">→$${t3p}</span>`);
+    const topRow=`<span style="display:block;min-height:14px;text-align:center;margin-bottom:1px">${_b.join(' ')}</span>`;
+    h+=`<th class="num${wk.isCur?' sc-cell-cur':''}" style="min-width:90px;font-size:13px;vertical-align:bottom">${topRow}W${wk.w}<br>${dateSpan}</th>`;
   });
   h+=`</tr></thead><tbody>`;
 
@@ -1027,6 +1175,10 @@ function renderScorecard(){
     const isSubParent=row.spendSubParent;
     const isSub=row.spendSub&&!row.spendSubParent;
     const isSubSub=row.spendSubSub;
+    const isCplParent=row.cplParent;
+    const isCplSub=row.cplSub;
+    const isCpaParent=row.cpaParent;
+    const isCpaSub=row.cpaSub;
     let trClass='', trStyle='', tdStyle='font-size:13px;font-weight:600', trClick='', labelHtml=row.label;
     if(isParent){
       trClick=` onclick="toggleScSpend()" style="cursor:pointer"`;
@@ -1042,6 +1194,18 @@ function renderScorecard(){
     } else if(isSubSub){
       trClass='sc-digital-sub'; trStyle='display:none';
       tdStyle='padding-left:40px;font-size:12px;color:#7a7a9a';
+    } else if(isCplParent){
+      trClick=` onclick="toggleScCpl()" style="cursor:pointer"`;
+      labelHtml=`<span id="sc-cpl-icon" style="margin-right:6px;font-size:10px">▶</span>${row.label.replace('▶ ','')}`;
+    } else if(isCplSub){
+      trClass='sc-cpl-sub'; trStyle='display:none';
+      tdStyle='padding-left:20px;font-size:12px;color:#7a7a9a';
+    } else if(isCpaParent){
+      trClick=` onclick="toggleScCpa()" style="cursor:pointer"`;
+      labelHtml=`<span id="sc-cpa-icon" style="margin-right:6px;font-size:10px">▶</span>${row.label.replace('▶ ','')}`;
+    } else if(isCpaSub){
+      trClass='sc-cpa-sub'; trStyle='display:none';
+      tdStyle='padding-left:20px;font-size:12px;color:#7a7a9a';
     }
     h+=`<tr class="${trClass}" style="${trStyle}"${trClick}>`;
     h+=`<td style="${tdStyle};position:sticky;left:0;z-index:1;background:#fff">${labelHtml}</td>`;
@@ -1696,7 +1860,7 @@ async function init(){
 
   if(dataRes.status==='fulfilled'){RAW=dataRes.value;if(!RAW.daily_detail)RAW.daily_detail=[];if(!RAW.monthly_detail)RAW.monthly_detail=[]
     // data.json stores studio names without "SWEAT440 " prefix — normalize to match NSO array
-    const _nsoShort=['Dallas - Prestonwood','Herriman','Naples - Mercato','Pinecrest - Palmetto Bay','Reston'];
+    const _nsoShort=['Dallas - Prestonwood','Herriman','Naples - Mercato','Pinecrest - Palmetto Bay','Reston','Dr Phillips','Orlando - Dr Phillips','Aventura','North Miami','Dallas - Uptown','Old Bridge'];
     function _normStudio(arr){return arr.map(r=>_nsoShort.includes(r.studio)?{...r,studio:'SWEAT440 '+r.studio}:r)}
     RAW.daily_detail=_normStudio(RAW.daily_detail);RAW.monthly_detail=_normStudio(RAW.monthly_detail);}
   else{console.error('data.json failed');RAW={daily_detail:[],monthly_detail:[],sources:[],studios:[]}}
@@ -1743,6 +1907,7 @@ async function init(){
   if(allKeys.length){const lk=allKeys[allKeys.length-1].slice(0,7);const df=document.getElementById('fFrom').value.slice(0,7);const has=allKeys.some(k=>k>=df+'-01'&&k<=df+'-31');if(!has){const ld=new Date(lk+'-01T00:00:00Z');document.getElementById('fFrom').value=new Date(Date.UTC(ld.getUTCFullYear(),ld.getUTCMonth(),1)).toISOString().slice(0,10);document.getElementById('fTo').value=new Date(Date.UTC(ld.getUTCFullYear(),ld.getUTCMonth()+1,0)).toISOString().slice(0,10)}}
 
   renderSummary();
+  renderFunnel();
   applyFilters();
 }
 init();
