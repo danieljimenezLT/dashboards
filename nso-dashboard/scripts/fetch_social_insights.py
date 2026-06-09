@@ -66,6 +66,7 @@ STUDIOS = [
     {"name": "Pembroke Pines",        "code": "pembrokepines", "page_id": "328512683684059",    "ig_id": None},
     {"name": "FiDi",                  "code": "fidi",          "page_id": "149250091597748",    "ig_id": None},
     {"name": "Madison",               "code": "madison",       "page_id": "111726744769276",    "ig_id": None},
+    {"name": "Old Bridge",            "code": "oldbridge",     "page_id": None,                  "ig_id": "17841439161726674"},
 ]
 
 
@@ -77,6 +78,13 @@ def discover_ig_ids(studios, user_token):
     print("\nDiscovering Instagram Business Account IDs from Pages...")
     found = 0
     for studio in studios:
+        if studio.get("ig_id"):
+            print(f"  ✓ {studio['name']}: {studio['ig_id']} (pre-configured)")
+            found += 1
+            continue
+        if not studio.get("page_id"):
+            print(f"  – {studio['name']}: no page_id configured, skipping")
+            continue
         try:
             r = requests.get(f"{BASE}/{studio['page_id']}", params={
                 "fields": "instagram_business_account",

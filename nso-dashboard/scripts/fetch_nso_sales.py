@@ -83,7 +83,8 @@ def fetch_sales(cur, start_date, end_date):
     Net presales = RMR active member count = MindBody count."""
     sql = f"""
         WITH
-        client_buys AS (
+        client_buys_raw AS (
+            -- Exclude test/internal emails before any counting
             SELECT STUDIO_ID, CLIENT_ID, EMAIL_ID, PRODUCT_DESCRIPTION,
                    COUNT(*)               AS total_buys,
                    MIN(SALE_DATE::DATE)   AS first_buy,
@@ -93,7 +94,19 @@ def fetch_sales(cur, start_date, end_date):
               AND ITEM_TYPE = 'Pricing Option'
               AND LOWER(PRODUCT_DESCRIPTION) LIKE '%pre%sale%'
               AND QUANTITY = 1 AND IS_RETURN = 0
+              AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%test%'
+              AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%sweat440%'
+              AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%leadteam%'
             GROUP BY 1, 2, 3, 4
+        ),
+        client_buys AS (
+            -- Deduplicate: same email = same person; keep the earliest record per studio+product
+            SELECT *,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY LOWER(TRIM(EMAIL_ID)), STUDIO_ID, PRODUCT_DESCRIPTION
+                       ORDER BY first_buy ASC
+                   ) AS email_rn
+            FROM client_buys_raw
         ),
         client_cancels AS (
             SELECT STUDIO_ID, CLIENT_ID, PRODUCT_DESCRIPTION,
@@ -116,6 +129,7 @@ def fetch_sales(cur, start_date, end_date):
             LEFT JOIN client_cancels c
                 ON b.STUDIO_ID=c.STUDIO_ID AND b.CLIENT_ID=c.CLIENT_ID
                AND b.PRODUCT_DESCRIPTION=c.PRODUCT_DESCRIPTION
+            WHERE b.email_rn = 1   -- one record per real person
         ),
         leads_dedup AS (
             SELECT LOWER(TRIM(CLIENT_EMAIL)) AS email, STUDIO_ID, LEAD_SOURCE,

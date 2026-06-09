@@ -35,7 +35,7 @@ jobs:
           printf '%s' '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > nso-dashboard/credentials/service_account.json
 
       # ── NSO SALES ──────────────────────────────────────────────────────────
-      - name: Refresh NSO Sales (yesterday + 2 days ago)
+      - name: Refresh NSO Sales (full scan)
         env:
           SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
           SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
@@ -45,13 +45,8 @@ jobs:
           SNOWFLAKE_ROLE:      ${{ secrets.SF_ROLE }}
         run: |
           python nso-dashboard/scripts/fetch_nso_sales.py \
-            --start $TWO_DAYS_AGO \
-            --end   $YESTERDAY \
-            --output nso-dashboard/nso_sales_new.json
-          python nso-dashboard/scripts/merge_nso_sales.py \
-            --existing nso-dashboard/nso_sales_data.json \
-            --new      nso-dashboard/nso_sales_new.json
-          rm -f nso-dashboard/nso_sales_new.json
+            --end $YESTERDAY \
+            --output nso-dashboard/nso_sales_data.json
         continue-on-error: true
 
       # ── GBP ────────────────────────────────────────────────────────────────
@@ -81,6 +76,7 @@ jobs:
           GOOGLE_ADS_CLIENT_ID:           ${{ secrets.GOOGLE_ADS_CLIENT_ID }}
           GOOGLE_ADS_CLIENT_SECRET:       ${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}
           GOOGLE_ADS_REFRESH_TOKEN:       ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}
+          GOOGLE_ADS_MCC_ID:              "6055462417"
           GOOGLE_SERVICE_ACCOUNT_KEY_PATH: nso-dashboard/credentials/service_account.json
         run: |
           python nso-dashboard/scripts/fetch_all_marketing.py \
