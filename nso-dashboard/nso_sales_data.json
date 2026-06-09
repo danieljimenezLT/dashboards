@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-08T14:46:31",
+  "generated_at": "2026-06-09T13:43:22",
   "date_range": {
     "start": "2025-01-01",
     "end": "2026-06-03"
@@ -1177,13 +1177,27 @@
           "presales": 3,
           "cancellations": 0,
           "gross_revenue": 387.0
+        },
+        {
+          "date": "2026-06-08",
+          "source": "Grassroots",
+          "presales": 2,
+          "cancellations": 0,
+          "gross_revenue": 258.0
+        },
+        {
+          "date": "2026-06-08",
+          "source": "N/A",
+          "presales": 0,
+          "cancellations": 5,
+          "gross_revenue": 0.0
         }
       ],
       "totals": {
-        "presales": 262,
-        "cancellations": 20,
-        "net_presales": 242,
-        "gross_revenue": 31328.0
+        "presales": 264,
+        "cancellations": 25,
+        "net_presales": 239,
+        "gross_revenue": 31586.0
       }
     },
     "5752080": {
@@ -1630,13 +1644,20 @@
           "presales": 4,
           "cancellations": 0,
           "gross_revenue": 396.0
+        },
+        {
+          "date": "2026-06-08",
+          "source": "Business Mode",
+          "presales": 1,
+          "cancellations": 0,
+          "gross_revenue": 99.0
         }
       ],
       "totals": {
-        "presales": 109,
+        "presales": 110,
         "cancellations": 5,
-        "net_presales": 104,
-        "gross_revenue": 10791.0
+        "net_presales": 105,
+        "gross_revenue": 10890.0
       }
     },
     "5750130": {
@@ -2971,13 +2992,20 @@
           "presales": 1,
           "cancellations": 0,
           "gross_revenue": 99.0
+        },
+        {
+          "date": "2026-06-08",
+          "source": "Business Mode",
+          "presales": 2,
+          "cancellations": 0,
+          "gross_revenue": 198.0
         }
       ],
       "totals": {
-        "presales": 45,
+        "presales": 47,
         "cancellations": 1,
-        "net_presales": 44,
-        "gross_revenue": 4485.0
+        "net_presales": 46,
+        "gross_revenue": 4683.0
       }
     },
     "5753073": {
