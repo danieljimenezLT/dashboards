@@ -3,7 +3,7 @@
 build_all_scorecards.py
 
 Generates nso_scorecard_data.json for all NSO studios.
-Reads all studio config from nso_config.xlsx (single source of truth).
+Reads all studio config from the NSO Config Google Sheet (single source of truth).
 
 Per-week fields calculated:
   new_leads, total_leads (cum), presales_week, presales_count (cum),
@@ -20,13 +20,12 @@ Usage:
 
 import calendar
 import json
+import math
 import re
 import sys
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from pathlib import Path
-
-import openpyxl
 
 ROOT = Path(__file__).parent.parent        # nso-dashboard/
 REPO_ROOT = ROOT.parent                    # dashboards/ (where data.json lives)
@@ -39,6 +38,25 @@ NSO_CONFIG_SHEET_URL = "https://docs.google.com/spreadsheets/d/1Ku0VSwOY6HVXuquc
 
 # Calendar week 1 = Dec 29, 2025 (Mon); week N Monday = CAL_WEEK1_START + (N-1) weeks
 CAL_WEEK1_START = date(2025, 12, 29)
+
+# NSO Config sheet column indices (0-based).
+# Row 0 = group headers, Row 1 = column headers, Row 2+ = data.
+NSO_CFG_COL = {
+    "name":                  0,
+    "code":                  1,
+    "week1_start":           9,
+    "target_co_date":        10,
+    "target_open_date":      11,
+    "tier2_move_date":       12,
+    "total_leads_target":    14,
+    "presales_target":       15,
+    "day1_rmr_target":       16,
+    "cpl_range":             18,
+    "cpa_range":             19,
+    "conversion_rate":       20,
+    "marketing_budget":      24,
+    # Platform IDs: found by header-name lookup (columns 25+)
+}
 
 # Maps studio display names (lowercase) in "Weekly Events & Spend" tab to studio codes
 EVENTS_SPEND_STUDIO_MAP = {
@@ -176,74 +194,116 @@ def _parse_amount(s):
 # Config from nso_config.xlsx
 # ---------------------------------------------------------------------------
 
-def load_studio_config():
-    """Read per-studio config from nso_config.xlsx."""
-    wb = openpyxl.load_workbook(ROOT / "nso_config.xlsx")
-    ws = wb.active
+def load_studio_config(gc):
+    """Read per-studio config from the NSO Config Google Sheet."""
 
-    studios = []
-    for row in range(3, ws.max_row + 1):
-        vals = [ws.cell(row, c).value for c in range(1, 23)]
-        if not vals[0]:
-            continue
+    def _parse_date(s):
+        if not s or str(s).strip().lower() in ("", "n/a", "tbd", "-"):
+            return None
+        s = str(s).strip()
+        for fmt in ("%m/%d/%Y", "%Y-%m-%d", "%m-%d-%Y"):
+            try:
+                return datetime.strptime(s, fmt).date()
+            except ValueError:
+                continue
+        return None
 
-        name, code, state = vals[0], vals[1], vals[2]
-
-        def _d(v):
-            if isinstance(v, datetime):   # datetime is subclass of date; check first
-                return v.date()
-            if isinstance(v, date):
-                return v
+    def _parse_float(s):
+        if not s or str(s).strip().lower() in ("", "n/a", "-"):
+            return None
+        try:
+            return float(re.sub(r"[^0-9.]", "", str(s).strip()))
+        except ValueError:
             return None
 
-        week0_date   = _d(vals[3])
-        week1_start  = _d(vals[4])
-        co_date      = _d(vals[5])
-        co_week      = vals[6]
-        opening_date = _d(vals[7])
-        go_week      = vals[8]
-        tier_move    = _d(vals[9])
+    def _date_to_week(d, week1_start):
+        if not d or not week1_start:
+            return None
+        delta = (d - week1_start).days
+        if delta <= 0:
+            return None
+        return math.ceil(delta / 7)
 
-        total_leads  = float(vals[10]) if vals[10] else None
-        presales_tgt = float(vals[11]) if vals[11] else None
-        rmr_tgt      = float(vals[12]) if vals[12] else None
-        cpl_range    = vals[13]
-        cpa_range    = vals[14]
-        conv_rate    = float(vals[15]) if vals[15] else None
+    sh = gc.open_by_url(NSO_CONFIG_SHEET_URL)
+    ws = sh.worksheet("NSO Config")
+    all_rows = ws.get_all_values()
 
-        fb_page_id   = str(vals[16]) if vals[16] else None
-        ig_id        = str(vals[17]) if vals[17] else None
-        sheet_url    = vals[18]
+    # Row 0 = group headers, Row 1 = column headers, Row 2+ = data
+    header_row = all_rows[1] if len(all_rows) > 1 else []
+    hdr_map = {h.strip().lower(): i for i, h in enumerate(header_row)}
 
-        snowflake_id = str(int(vals[19])) if vals[19] else None
-        gads_cid     = str(vals[20]) if vals[20] else None
-        gbp_loc_id   = str(vals[21]) if vals[21] else None
+    def _c(row, idx):
+        return row[idx].strip() if 0 <= idx < len(row) else ""
+
+    def _ch(row, *names):
+        for name in names:
+            i = hdr_map.get(name.lower(), -1)
+            if 0 <= i < len(row) and row[i].strip():
+                return row[i].strip()
+        return ""
+
+    studios = []
+    for row in all_rows[2:]:
+        name = _c(row, NSO_CFG_COL["name"])
+        code = _c(row, NSO_CFG_COL["code"])
+        if not name or not code:
+            continue
+
+        week1_start  = _parse_date(_c(row, NSO_CFG_COL["week1_start"]))
+        co_date      = _parse_date(_c(row, NSO_CFG_COL["target_co_date"]))
+        opening_date = _parse_date(_c(row, NSO_CFG_COL["target_open_date"]))
+        tier2_move   = _parse_date(_c(row, NSO_CFG_COL["tier2_move_date"]))
+
+        co_week = _date_to_week(co_date, week1_start)
+        go_week = _date_to_week(opening_date, week1_start)
+
+        total_leads  = _parse_float(_c(row, NSO_CFG_COL["total_leads_target"]))
+        presales_tgt = _parse_float(_c(row, NSO_CFG_COL["presales_target"]))
+        rmr_tgt      = _parse_float(_c(row, NSO_CFG_COL["day1_rmr_target"]))
+        cpl_raw      = _c(row, NSO_CFG_COL["cpl_range"]) or None
+        cpa_raw      = _c(row, NSO_CFG_COL["cpa_range"]) or None
+        conv_rate    = _parse_float(_c(row, NSO_CFG_COL["conversion_rate"]))
+        mkt_budget   = _parse_float(_c(row, NSO_CFG_COL["marketing_budget"]))
+
+        # Platform IDs — found by header name (columns may vary)
+        ig_id      = _ch(row, "instagram id") or None
+        sheet_url  = _ch(row, "grassroots sheet url") or None
+        gads_cid   = _ch(row, "google ads cid") or None
+        gbp_loc_id = _ch(row, "gbp location id") or None
+        fb_page_id = _ch(row, "facebook page id") or None
+
+        sf_raw = _ch(row, "snowflake id")
+        try:
+            snowflake_id = str(int(float(sf_raw.replace(",", "")))) if sf_raw else None
+        except (ValueError, TypeError):
+            snowflake_id = sf_raw or None
 
         studios.append({
             "name":          name,
             "code":          code,
-            "state":         state,
+            "state":         "",
             "full_name":     f"SWEAT440 {name}",
-            "data_name":     DATA_NAME_OVERRIDES.get(code, name),  # name used in data.json
-            "week0_date":    week0_date,
+            "data_name":     DATA_NAME_OVERRIDES.get(code, name),
+            "week0_date":    (week1_start - timedelta(days=1)) if week1_start else None,
             "week1_start":   week1_start,
             "co_date":       co_date,
-            "co_week":       int(co_week) if co_week else None,
+            "co_week":       co_week,
             "opening_date":  opening_date,
-            "go_week":       int(go_week) if go_week else None,
-            "tier_move":     tier_move,
+            "go_week":       go_week,
+            "tier_move":     tier2_move,
             "targets": {
-                "total_leads":       total_leads,
-                "presales_count":    presales_tgt,
+                "total_leads":        total_leads,
+                "presales_count":     presales_tgt,
                 "estimated_day1_rmr": rmr_tgt,
-                "blended_cpl":       f"${cpl_range}" if cpl_range else None,
-                "blended_cpa":       f"${cpa_range}" if cpa_range else None,
-                "conversion_rate":   conv_rate,
+                "blended_cpl":        f"${cpl_raw}" if cpl_raw else None,
+                "blended_cpa":        f"${cpa_raw}" if cpa_raw else None,
+                "conversion_rate":    conv_rate,
+                "marketing_budget":   mkt_budget,
             },
-            "fb_page_id":    fb_page_id,
-            "ig_id":         ig_id,
-            "sheet_url":     sheet_url,
-            "snowflake_id":  snowflake_id,
+            "fb_page_id":      fb_page_id,
+            "ig_id":           ig_id,
+            "sheet_url":       sheet_url,
+            "snowflake_id":    snowflake_id,
             "gads_account_id": gads_cid.replace("-", "") if gads_cid else None,
         })
 
@@ -412,34 +472,6 @@ def load_google_spend(gads_rows):
                     by[code][d] += spend
     return by
 
-
-def load_marketing_budgets(gc):
-    """Read Marketing Budget column from NSO Config Google Sheet.
-    Returns {code: budget_float} for studios that have a value."""
-    budgets = {}
-    if not gc:
-        return budgets
-    try:
-        sh = gc.open_by_url(NSO_CONFIG_SHEET_URL)
-        ws = sh.worksheet("NSO Config")
-        rows = ws.get_all_values()
-        # Row 2 = headers (index 1), data starts at index 2
-        # Columns (0-indexed): 1=Code, 24=Marketing Budget
-        for row in rows[2:]:
-            if not row or not row[1]:
-                continue
-            code = str(row[1]).strip()
-            budget_raw = row[24].strip() if len(row) > 24 else ""
-            if budget_raw:
-                cleaned = budget_raw.replace("$", "").replace(",", "").strip()
-                try:
-                    budgets[code] = float(cleaned)
-                except ValueError:
-                    pass
-        print(f"  NSO Config sheet: marketing budgets loaded for {list(budgets.keys())}")
-    except Exception as e:
-        print(f"  Warning: could not read marketing budgets from NSO Config sheet: {e}")
-    return budgets
 
 
 def load_events_spend_from_nso_config(gc):
@@ -647,9 +679,25 @@ _STUDIO_CFG_CACHE = []   # populated early so load_sales_data can use it
 def main():
     dry_run = "--dry-run" in sys.argv
 
-    # -- Load studio config from Excel
-    print("Loading nso_config.xlsx ...")
-    studio_cfgs = load_studio_config()
+    # -- Init Google Sheets client (needed for studio config + events/spend)
+    gc = None
+    if CREDS_PATH.exists():
+        try:
+            from google.oauth2.service_account import Credentials
+            import gspread
+            creds = Credentials.from_service_account_file(str(CREDS_PATH), scopes=SCOPES)
+            gc = gspread.authorize(creds)
+            print("Google Sheets auth OK")
+        except Exception as e:
+            print(f"  Warning: Google Sheets auth failed: {e}")
+
+    if gc is None:
+        print("ERROR: Google Sheets credentials required — cannot load studio config")
+        sys.exit(1)
+
+    # -- Load studio config from NSO Config Google Sheet
+    print("\nLoading studio config from NSO Config sheet...")
+    studio_cfgs = load_studio_config(gc)
     _STUDIO_CFG_CACHE.extend(studio_cfgs)
     for c in studio_cfgs:
         print(f"  {c['name']} ({c['code']})  GO week={c['go_week']}  "
@@ -713,28 +761,7 @@ def main():
     meta_by_code  = load_meta_spend(meta_rows)
     gads_by_code  = load_google_spend(gads_rows)
 
-    # -- Google Sheets (grassroots spend + events)
-    gc = None
-    if CREDS_PATH.exists():
-        try:
-            from google.oauth2.service_account import Credentials
-            import gspread
-            creds = Credentials.from_service_account_file(str(CREDS_PATH), scopes=SCOPES)
-            gc = gspread.authorize(creds)
-            print("Google Sheets auth OK")
-        except Exception as e:
-            print(f"  Warning: Google Sheets auth failed: {e}")
-
-    # Load marketing budgets from NSO Config sheet
-    print("\nLoading marketing budgets from NSO Config sheet...")
-    mkt_budgets = load_marketing_budgets(gc)
-    for cfg in studio_cfgs:
-        b = mkt_budgets.get(cfg["code"])
-        if b is not None:
-            cfg["targets"]["marketing_budget"] = b
-
     # Load grassroots spend + community events from NSO Config "Weekly Events & Spend" tab.
-    # This is now the single source for all studios; the per-studio Google Sheets are no longer read.
     print("\nLoading grassroots/events data from NSO Config sheet...")
     nso_config_gr = load_events_spend_from_nso_config(gc)
 
