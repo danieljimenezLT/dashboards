@@ -469,9 +469,7 @@ function renderSummary(){
   const raw7=(RAW&&RAW.daily_detail||[]).filter(r=>_strip(r.studio)===_sname&&r.date>=d7ago&&r.date<=d7end);
   const lastLeads=raw7.reduce((s,r)=>s+(r.signups||0),0);
   const sales7=NSO_SALES_ROWS.filter(r=>_strip(r.studio)===_sname&&r.date>=d7ago&&r.date<=d7end);
-  // Per-source clamp so one source's excess cancellations don't offset other sources' net sales
-  const _srcNet7={};sales7.forEach(r=>{const _src=r.source||'Unknown';_srcNet7[_src]=(_srcNet7[_src]||0)+(r.first_sales||0)-(r.cancellations||0);});
-  const lastNetPresales=Object.values(_srcNet7).reduce((sum,v)=>sum+Math.max(0,v),0);
+  const lastNetPresales=Math.max(0,sales7.reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));
   const lastSpend=cur.total_marketing_spend||0;
   const wkLeadGoal=tgt.total_leads?Math.round(tgt.total_leads/totalWeeks):0;
   const wkPresaleGoal=tgt.presales_count?Math.round(tgt.presales_count/totalWeeks):0;
@@ -656,8 +654,16 @@ function drawSumSourceChart(studio,metric){
   }
   const srcTotals={};
   rows.forEach(r=>{const s=r.source||'Unknown';srcTotals[s]=(srcTotals[s]||0)+netFn(r);});
-  // Clamp each source to 0 so doughnut chart handles no negatives, matching the aggregate total logic
-  Object.keys(srcTotals).forEach(s=>{srcTotals[s]=Math.max(0,srcTotals[s]);});
+  // For sales: scale positive sources so ring total = aggregate net (matches the bar)
+  let _ringNet=null;
+  if(metric!=='leads'){
+    _ringNet=Math.max(0,Object.values(srcTotals).reduce((s,v)=>s+v,0));
+    const _pos=Object.values(srcTotals).reduce((s,v)=>s+Math.max(0,v),0);
+    const _sc=_pos>0?_ringNet/_pos:1;
+    Object.keys(srcTotals).forEach(s=>{srcTotals[s]=Math.max(0,Math.round(srcTotals[s]*_sc));});
+  }else{
+    Object.keys(srcTotals).forEach(s=>{srcTotals[s]=Math.max(0,srcTotals[s]);});
+  }
   const sources=Object.keys(srcTotals).filter(s=>srcTotals[s]>0).sort((a,b)=>srcTotals[b]-srcTotals[a]);
   const leg=document.getElementById('sumSrcLegend');
   if(!sources.length){
@@ -666,7 +672,7 @@ function drawSumSourceChart(studio,metric){
   }
   const values=sources.map(s=>srcTotals[s]);
   const colors=sources.map((s,i)=>srcColor(s,i));
-  const total=values.reduce((a,b)=>a+b,0);
+  const total=_ringNet!==null?_ringNet:values.reduce((a,b)=>a+b,0);
   _ch.sumSrc=new Chart(ctx,{
     type:'doughnut',
     data:{labels:sources,datasets:[{data:values,backgroundColor:colors,borderColor:'#fff',borderWidth:2,hoverOffset:6}]},
