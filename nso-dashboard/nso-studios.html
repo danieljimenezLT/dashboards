@@ -469,7 +469,9 @@ function renderSummary(){
   const raw7=(RAW&&RAW.daily_detail||[]).filter(r=>_strip(r.studio)===_sname&&r.date>=d7ago&&r.date<=d7end);
   const lastLeads=raw7.reduce((s,r)=>s+(r.signups||0),0);
   const sales7=NSO_SALES_ROWS.filter(r=>_strip(r.studio)===_sname&&r.date>=d7ago&&r.date<=d7end);
-  const lastNetPresales=Math.max(0,sales7.reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));
+  // Per-source clamp so one source's excess cancellations don't offset other sources' net sales
+  const _srcNet7={};sales7.forEach(r=>{const _src=r.source||'Unknown';_srcNet7[_src]=(_srcNet7[_src]||0)+(r.first_sales||0)-(r.cancellations||0);});
+  const lastNetPresales=Object.values(_srcNet7).reduce((sum,v)=>sum+Math.max(0,v),0);
   const lastSpend=cur.total_marketing_spend||0;
   const wkLeadGoal=tgt.total_leads?Math.round(tgt.total_leads/totalWeeks):0;
   const wkPresaleGoal=tgt.presales_count?Math.round(tgt.presales_count/totalWeeks):0;
