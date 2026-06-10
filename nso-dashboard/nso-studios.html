@@ -1896,9 +1896,10 @@ async function init(){
     NSO_SALES=salesRes.value;
     NSO_SALES_ROWS=[];
     Object.values(NSO_SALES.studios||{}).forEach(s=>{
-      // Use scorecard data_name so the key matches the filter in Summary/charts
+      // Use "SWEAT440 {data_name}" when data_name differs (e.g. Dr Phillips → "SWEAT440 Orlando - Dr Phillips")
+      // so fR exact-match filter AND _strip()-based Summary filter both work
       const _scStu=SC.studios?SC.studios.find(x=>x.code===s.code):null;
-      const _stuKey=_scStu?(_scStu.data_name||_scStu.name):s.name.replace(/^SWEAT440\s+/,'');
+      const _stuKey=(_scStu&&_scStu.data_name)?'SWEAT440 '+_scStu.data_name:s.name;
       (s.daily||[]).forEach(r=>{
         NSO_SALES_ROWS.push({date:r.date,studio:_stuKey,source:r.source||'Unknown',first_sales:r.presales||0,cancellations:r.cancellations||0,gross_revenue:r.gross_revenue||0});
       });
