@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SWEAT440 — Campaign Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../shared/style.css"/>
+<style>
+.camp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 24px;
+  margin-bottom: 20px;
+}
+.camp-title {
+  font-family: Oswald, sans-serif;
+  font-style: italic;
+  font-size: 22px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #00A3E0;
+}
+.camp-subtitle {
+  font-size: 12px;
+  color: #8aaabb;
+  margin-top: 3px;
+  font-family: Open Sans, sans-serif;
+}
+.kpi-grid-8 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.funnel-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 24px 0 16px;
+  flex-wrap: wrap;
+}
+.funnel-step { text-align: center; flex: 1; min-width: 120px; }
+.funnel-box {
+  border-radius: 10px;
+  margin: 0 auto 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Oswald, sans-serif;
+  font-style: italic;
+  font-weight: 700;
+  color: #fff;
+  transition: transform .2s;
+}
+.funnel-box:hover { transform: scale(1.04); }
+.funnel-arrow {
+  font-size: 22px;
+  color: #99DAF3;
+  flex-shrink: 0;
+  padding: 0 6px;
+  margin-bottom: 20px;
+}
+.funnel-step-label {
+  font-family: Oswald, sans-serif;
+  font-style: italic;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #5a7a8a;
+  letter-spacing: .5px;
+}
+.funnel-step-sub {
+  font-size: 12px;
+  color: #8aaabb;
+  margin-top: 3px;
+  font-family: Open Sans, sans-serif;
+}
+.src-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+select.camp-select {
+  font-family: Open Sans, sans-serif;
+  font-size: 13px;
+  padding: 8px 14px;
+  border: 1.5px solid #c0d4df;
+  border-radius: 6px;
+  background: #fff;
+  color: #1a1a2e;
+  cursor: pointer;
+  min-width: 200px;
+}
+.gen-at {
+  font-size: 11px;
+  color: #8aaabb;
+  font-family: Open Sans, sans-serif;
+}
+.no-data {
+  color: #8aaabb;
+  font-style: italic;
+  text-align: center;
+  padding: 40px 0;
+  font-family: Oswald, sans-serif;
+  font-size: 14px;
+}
+.conv-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: Open Sans, sans-serif;
+}
+.conv-badge.high { background: #e0fff6; color: #00a87a; }
+.conv-badge.mid  { background: #fff8e0; color: #c08800; }
+.conv-badge.low  { background: #fff0f0; color: #c03030; }
+.conv-badge.zero { background: #f0f0f0; color: #8aaabb; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo"><img src="../logo.png" alt="SWEAT440"/></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showTab('sources')">Lead Sources</button>
+    <button class="nav-tab" onclick="showTab('studios')">By Studio</button>
+    <button class="nav-tab" onclick="showTab('segments')">Client Segments</button>
+    <button class="nav-tab" onclick="showTab('funnel')">Post-Promo Funnel</button>
+  </div>
+  <div style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;color:#99DAF3;letter-spacing:1px">
+    Campaign Dashboard
+  </div>
+</nav>
+
+<div style="max-width:1400px;margin:0 auto;padding:24px 20px">
+
+  <!-- Campaign selector -->
+  <div class="chart-card camp-header">
+    <div>
+      <div class="camp-title" id="campTitle">Select a Campaign</div>
+      <div class="camp-subtitle" id="campSubtitle"></div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <label style="font-size:12px;color:#5a7a8a;font-family:Oswald,sans-serif;font-style:italic;text-transform:uppercase">Campaign</label>
+      <select id="campSelect" class="camp-select" onchange="applyCampaign()">
+        <option value="">— select —</option>
+      </select>
+      <div class="gen-at" id="genAt"></div>
+    </div>
+  </div>
+
+  <!-- 8 KPI Cards -->
+  <div class="kpi-grid-8" id="kpiGrid"></div>
+
+  <!-- ── Tab: Lead Sources ─────────────────────────────────────────────── -->
+  <div id="tab-sources">
+    <div class="two-col" style="margin-bottom:20px">
+      <div class="chart-card">
+        <div class="chart-card-title">Clients by Lead Source</div>
+        <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+          <div style="position:relative;width:200px;height:200px;flex-shrink:0">
+            <canvas id="srcRingChart"></canvas>
+          </div>
+          <div id="srcRingLegend" style="flex:1;min-width:120px"></div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Purchases Over Time</div>
+        <div style="position:relative;height:220px"><canvas id="timeChart"></canvas></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">Lead Source Detail</div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr>
+            <th>Source</th>
+            <th class="num">Clients</th>
+            <th class="num">New</th>
+            <th class="num">Platform</th>
+            <th class="num">Free Class</th>
+            <th class="num">Existing</th>
+            <th class="num">Revenue</th>
+            <th class="num">Avg Ticket</th>
+          </tr></thead>
+          <tbody id="srcTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tab: By Studio ────────────────────────────────────────────────── -->
+  <div id="tab-studios" style="display:none">
+    <div class="chart-card" style="margin-bottom:20px">
+      <div class="chart-card-title">Clients by Studio (stacked by source)</div>
+      <div id="studioChartWrap" style="position:relative;height:360px">
+        <canvas id="studioBarChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card" style="margin-bottom:20px">
+      <div class="chart-card-title">Studio Detail</div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr>
+            <th>Studio</th>
+            <th class="num">Clients</th>
+            <th class="num">New</th>
+            <th class="num">Platform</th>
+            <th class="num">Free Class</th>
+            <th class="num">Existing</th>
+            <th class="num">Revenue</th>
+            <th>Top Source</th>
+          </tr></thead>
+          <tbody id="studioTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="chart-card" id="multiLocCard" style="display:none">
+      <div class="chart-card-title">
+        Clients Who Bought at Multiple Locations
+        <span id="multiLocCount" style="font-family:'Open Sans',sans-serif;font-style:normal;font-weight:400;font-size:12px;color:#8aaabb;margin-left:8px"></span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th class="num">Locations</th>
+            <th class="num">Purchases</th>
+            <th>Studios</th>
+          </tr></thead>
+          <tbody id="multiLocBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tab: Client Segments ─────────────────────────────────────────── -->
+  <div id="tab-segments" style="display:none">
+
+    <!-- Segment cards -->
+    <div id="segCardsWrap" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-bottom:20px"></div>
+
+    <!-- Charts row -->
+    <div class="two-col" style="margin-bottom:20px">
+      <div class="chart-card">
+        <div class="chart-card-title">Converted vs Not Converted</div>
+        <div style="position:relative;height:260px"><canvas id="segConvChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Post-Promo Revenue by Segment</div>
+        <div style="position:relative;height:260px"><canvas id="segRevChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Detail table -->
+    <div class="chart-card">
+      <div class="chart-card-title">Segment Comparison</div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr>
+            <th>Segment</th>
+            <th class="num">Total Clients</th>
+            <th class="num">Converted</th>
+            <th class="num">Not Converted</th>
+            <th class="num">Conv %</th>
+            <th class="num">Post-Promo Rev</th>
+            <th class="num">Avg / Converter</th>
+          </tr></thead>
+          <tbody id="segTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Tab: Post-Promo Funnel ────────────────────────────────────────── -->
+  <div id="tab-funnel" style="display:none">
+    <div class="chart-card" style="margin-bottom:20px">
+      <div class="chart-card-title">Conversion Funnel</div>
+      <div class="funnel-visual" id="funnelVisual"></div>
+    </div>
+    <div class="two-col" style="margin-bottom:20px">
+      <div class="chart-card">
+        <div class="chart-card-title">Conversion Rate by Source</div>
+        <div style="position:relative;height:300px"><canvas id="funnelConvChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Post-Promo Revenue by Source</div>
+        <div style="position:relative;height:300px"><canvas id="funnelRevChart"></canvas></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">Funnel by Lead Source</div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr>
+            <th>Lead Source</th>
+            <th class="num">Received Promo</th>
+            <th class="num">Converted</th>
+            <th class="num">Conv %</th>
+            <th class="num">Post-Promo Revenue</th>
+            <th class="num">Avg / Converted</th>
+          </tr></thead>
+          <tbody id="funnelTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- What they bought after -->
+    <div class="two-col" style="margin-top:20px">
+      <div class="chart-card">
+        <div class="chart-card-title">What They Bought After the Promo</div>
+        <div style="position:relative;height:320px"><canvas id="postPromoProductsChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Post-Promo Purchases Detail</div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr>
+              <th>Product</th>
+              <th>Category</th>
+              <th class="num">Clients</th>
+              <th class="num">Revenue</th>
+            </tr></thead>
+            <tbody id="postPromoProductsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="../shared/utils.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   CAMPAIGN DASHBOARD — reads campaign_data.json
+   ══════════════════════════════════════════════════════════════════════════ */
+
+let DATA = null;
+let CAMP = null;
+const TABS = ['sources','studios','segments','funnel'];
+
+// ── Formatters ─────────────────────────────────────────────────────────────
+const fmt$ = v => '$' + (+(v||0)).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+const fmtN = v => (+(v||0)).toLocaleString('en-US');
+const fmtP = v => (+(v||0)).toFixed(1) + '%';
+
+// ── Tabs ───────────────────────────────────────────────────────────────────
+function showTab(id) {
+  TABS.forEach(t => document.getElementById('tab-'+t).style.display = t===id ? '' : 'none');
+  document.querySelectorAll('.nav-tab').forEach((b,i) => b.classList.toggle('active', TABS[i]===id));
+}
+
+// ── Chart destroy helper (uses Chart.js global registry) ───────────────────
+function destroyChart(canvasId) {
+  const existing = Chart.getChart(canvasId);
+  if (existing) existing.destroy();
+}
+
+// ── Load ───────────────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const r = await fetch('campaign_data.json?_=' + Date.now());
+    DATA = await r.json();
+  } catch(e) {
+    console.warn('Could not load campaign_data.json:', e);
+    DATA = { campaigns: [] };
+  }
+
+  buildSelect();
+  if ((DATA.campaigns||[]).length) {
+    document.getElementById('campSelect').selectedIndex = 1;
+    applyCampaign();
+  }
+  if (DATA.generated_at) {
+    const d = new Date(DATA.generated_at);
+    document.getElementById('genAt').textContent =
+      'Updated ' + d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+  }
+}
+
+function buildSelect() {
+  const sel = document.getElementById('campSelect');
+  (DATA.campaigns||[]).forEach(c => {
+    const o = document.createElement('option');
+    o.value = c.id;
+    o.textContent = c.name;
+    sel.appendChild(o);
+  });
+}
+
+function applyCampaign() {
+  const id = document.getElementById('campSelect').value;
+  CAMP = (DATA.campaigns||[]).find(c => c.id === id) || null;
+  if (!CAMP) return;
+
+  document.getElementById('campTitle').textContent = CAMP.name;
+  document.getElementById('campSubtitle').textContent =
+    (CAMP.product ? CAMP.product + '  ·  ' : '') +
+    CAMP.date_from + ' – ' + CAMP.date_to;
+
+  renderKPIs();
+  renderSources();
+  renderStudios();
+  renderMultiLocation();
+  renderSegments();
+  renderFunnel();
+}
+
+// ── KPI Cards ──────────────────────────────────────────────────────────────
+function renderKPIs() {
+  const k = CAMP.kpis || {};
+  document.getElementById('kpiGrid').innerHTML = [
+    kpiCard('Total Purchases',       k.total_purchases,        null, null, fmtN),
+    kpiCard('Unique Clients',        k.unique_clients,         null, null, fmtN),
+    kpiCard('New Clients',           k.new_clients,            null, null, fmtN),
+    kpiCard('Platform Users',        k.platform_clients,       null, null, fmtN),
+    kpiCard('Free Class Only',       k.free_class_clients,     null, null, fmtN),
+    kpiCard('Existing Clients',      k.existing_clients,       null, null, fmtN),
+    kpiCard('Promo Revenue',         k.total_revenue,          null, null, fmt$),
+    kpiCard('Converted to Paid',     k.converted_to_paid,      null, null, fmtN),
+    kpiCard('Conversion Rate',       k.conversion_rate,        null, null, fmtP),
+    kpiCard('Post-Promo Revenue',    k.post_promo_revenue,     null, null, fmt$),
+    kpiCard('Revenue / Participant', k.revenue_per_participant, null, null, fmt$),
+    kpiCard('Avg Ticket',            k.avg_ticket,             null, null, fmt$),
+  ].join('');
+}
+
+// ── Tab: Lead Sources ──────────────────────────────────────────────────────
+function renderSources() {
+  const srcs = CAMP.lead_sources || [];
+  if (!srcs.length) {
+    document.getElementById('srcTableBody').innerHTML = '<tr><td colspan="5" class="no-data">No data available</td></tr>';
+    return;
+  }
+
+  const labels = srcs.map(s => s.source);
+  const values = srcs.map(s => s.clients);
+  const colors = labels.map((l,i) => srcColor(l,i));
+
+  // Ring chart (uses utils.js)
+  destroyChart('srcRingChart');
+  buildRingChart('srcRingChart', 'srcRingLegend', labels, values);
+
+  // Time series
+  renderTimeChart();
+
+  // Source table
+  document.getElementById('srcTableBody').innerHTML = srcs.map((s,i) =>
+    `<tr>
+      <td><span class="src-dot" style="background:${srcColor(s.source,i)}"></span>${s.source}</td>
+      <td class="num">${fmtN(s.clients)}</td>
+      <td class="num" style="color:#00A3E0;font-weight:600">${fmtN(s.new_clients ?? 0)}</td>
+      <td class="num" style="color:#DDFF00;font-weight:600">${fmtN(s.platform_clients ?? 0)}</td>
+      <td class="num" style="color:#00FFC2;font-weight:600">${fmtN(s.free_class_clients ?? 0)}</td>
+      <td class="num" style="color:#8aaabb">${fmtN(s.existing_clients ?? 0)}</td>
+      <td class="num">${fmt$(s.revenue)}</td>
+      <td class="num">${fmt$(s.avg_ticket)}</td>
+    </tr>`
+  ).join('');
+}
+
+function renderTimeChart() {
+  const ts = CAMP.time_series || [];
+  destroyChart('timeChart');
+  if (!ts.length) return;
+
+  const labels = ts.map(r => r.date);
+  const values = ts.map(r => r.purchases);
+
+  new Chart(document.getElementById('timeChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Purchases',
+        data: values,
+        backgroundColor: '#00A3E0',
+        borderRadius: 3,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display:false } },
+      scales: {
+        x: { ticks:{ color:'#5a7a8a', font:{size:10}, maxTicksLimit:10, maxRotation:0 }, grid:{display:false} },
+        y: { ticks:{ color:'#5a7a8a', font:{size:11} }, min:0 }
+      }
+    }
+  });
+}
+
+// ── Tab: By Studio ─────────────────────────────────────────────────────────
+function renderStudios() {
+  const rows = CAMP.studios || [];
+  if (!rows.length) {
+    document.getElementById('studioTableBody').innerHTML = '<tr><td colspan="4" class="no-data">No data available</td></tr>';
+    return;
+  }
+
+  // Aggregate by studio
+  const studioMap = {};
+  rows.forEach(r => {
+    if (!studioMap[r.studio]) studioMap[r.studio] = { clients:0, revenue:0, new_clients:0, platform_clients:0, free_class_clients:0, existing_clients:0, sources:{} };
+    studioMap[r.studio].clients            += r.clients;
+    studioMap[r.studio].revenue            += r.revenue;
+    studioMap[r.studio].new_clients        += (r.new_clients        ?? 0);
+    studioMap[r.studio].platform_clients   += (r.platform_clients   ?? 0);
+    studioMap[r.studio].free_class_clients += (r.free_class_clients ?? 0);
+    studioMap[r.studio].existing_clients   += (r.existing_clients   ?? 0);
+    studioMap[r.studio].sources[r.source] = (studioMap[r.studio].sources[r.source]||0) + r.clients;
+  });
+
+  const studioNames = Object.keys(studioMap).sort((a,b) => studioMap[b].clients - studioMap[a].clients);
+  const allSources  = [...new Set(rows.map(r => r.source))];
+  const datasets    = allSources.map((src, i) => ({
+    label: src,
+    data: studioNames.map(s => studioMap[s].sources[src] || 0),
+    backgroundColor: srcColor(src, i),
+    borderRadius: 2,
+  }));
+
+  const h = Math.max(320, studioNames.length * 34 + 80);
+  document.getElementById('studioChartWrap').style.height = h + 'px';
+
+  destroyChart('studioBarChart');
+  new Chart(document.getElementById('studioBarChart'), {
+    type: 'bar',
+    data: { labels: studioNames, datasets },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position:'bottom', labels:{ font:{family:'Oswald',size:11,style:'italic'}, usePointStyle:true } }
+      },
+      scales: {
+        x: { stacked:true, ticks:{ color:'#5a7a8a', font:{size:11} }, min:0 },
+        y: { stacked:true, ticks:{ color:'#3a4a5a', font:{size:11} } }
+      }
+    }
+  });
+
+  document.getElementById('studioTableBody').innerHTML = studioNames.map(s => {
+    const d = studioMap[s];
+    const top = Object.entries(d.sources).sort((a,b) => b[1]-a[1])[0];
+    return `<tr>
+      <td>${s}</td>
+      <td class="num">${fmtN(d.clients)}</td>
+      <td class="num" style="color:#00A3E0;font-weight:600">${fmtN(d.new_clients ?? 0)}</td>
+      <td class="num" style="color:#DDFF00;font-weight:600">${fmtN(d.platform_clients ?? 0)}</td>
+      <td class="num" style="color:#00FFC2;font-weight:600">${fmtN(d.free_class_clients ?? 0)}</td>
+      <td class="num" style="color:#8aaabb">${fmtN(d.existing_clients ?? 0)}</td>
+      <td class="num">${fmt$(d.revenue)}</td>
+      <td>${top ? `<span class="src-dot" style="background:${srcColor(top[0],0)}"></span>${top[0]} (${fmtN(top[1])})` : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Multi-location clients ─────────────────────────────────────────────────
+function renderMultiLocation() {
+  const rows = CAMP.multi_location || [];
+  const card = document.getElementById('multiLocCard');
+  if (!rows.length) { card.style.display = 'none'; return; }
+  card.style.display = '';
+  document.getElementById('multiLocCount').textContent = rows.length + ' clients';
+  document.getElementById('multiLocBody').innerHTML = rows.map(r => `
+    <tr>
+      <td style="font-weight:600">${r.name || '—'}</td>
+      <td style="color:#5a7a8a">${r.email}</td>
+      <td class="num">${r.studio_count}</td>
+      <td class="num">${r.purchases}</td>
+      <td style="font-size:12px;color:#3a4a5a">${r.studios}</td>
+    </tr>`).join('');
+}
+
+// ── Tab: Client Segments ───────────────────────────────────────────────────
+const SEG_META = {
+  'New':        { color: '#00A3E0', label: 'New Clients',     desc: 'Account created during the promo' },
+  'Platform':   { color: '#DDFF00', label: 'Platform Users',  desc: 'Came via ClassPass / Gympass' },
+  'Free Class': { color: '#00FFC2', label: 'Free Class Only', desc: 'Used free intro, no direct payment' },
+  'Existing':   { color: '#8aaabb', label: 'Existing Clients', desc: 'Had prior direct paid purchase' },
+};
+
+function renderSegments() {
+  const segs = CAMP.segment_breakdown || [];
+  if (!segs.length) return;
+
+  // ── Segment cards ──────────────────────────────────────────────────────
+  document.getElementById('segCardsWrap').innerHTML = segs.map(s => {
+    const m    = SEG_META[s.segment] || { color: '#99DAF3', label: s.segment, desc: '' };
+    const pct  = Math.min(100, s.conversion_pct);
+    const notC = s.total_clients - s.converted;
+    return `
+      <div style="background:#fff;border-radius:10px;border:1.5px solid #e0eaf0;overflow:hidden">
+        <div style="background:${m.color};height:5px"></div>
+        <div style="padding:16px 18px">
+          <div style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;font-weight:700;text-transform:uppercase;color:#3a4a5a;letter-spacing:.5px;margin-bottom:2px">${m.label}</div>
+          <div style="font-size:11px;color:#8aaabb;margin-bottom:12px">${m.desc}</div>
+          <div style="font-family:Oswald,sans-serif;font-weight:700;font-size:32px;color:#1a1a2e;line-height:1">${fmtN(s.total_clients)}</div>
+          <div style="font-size:11px;color:#8aaabb;margin-bottom:10px">total clients</div>
+          <!-- conversion bar -->
+          <div style="height:8px;border-radius:4px;background:#e0eaf0;margin-bottom:6px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${m.color};border-radius:4px;transition:width .6s ease"></div>
+          </div>
+          <div style="font-family:Oswald,sans-serif;font-style:italic;font-size:18px;font-weight:700;color:${m.color}">${fmtP(s.conversion_pct)}</div>
+          <div style="font-size:11px;color:#8aaabb;margin-bottom:12px">conversion rate</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:12px">
+            <div>
+              <div style="color:#5a7a8a">Converted</div>
+              <div style="font-weight:600;color:#1a1a2e">${fmtN(s.converted)}</div>
+            </div>
+            <div>
+              <div style="color:#5a7a8a">Not Converted</div>
+              <div style="font-weight:600;color:#1a1a2e">${fmtN(notC)}</div>
+            </div>
+            <div>
+              <div style="color:#5a7a8a">Post-Promo Rev</div>
+              <div style="font-weight:600;color:#1a1a2e">${fmt$(s.post_rev)}</div>
+            </div>
+            <div>
+              <div style="color:#5a7a8a">Avg / Converter</div>
+              <div style="font-weight:600;color:#1a1a2e">${fmt$(s.avg_per_converter)}</div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // ── Chart: Converted vs Not Converted ─────────────────────────────────
+  const labels   = segs.map(s => (SEG_META[s.segment] || { label: s.segment }).label);
+  const colors   = segs.map(s => (SEG_META[s.segment] || { color: '#99DAF3' }).color);
+  const convData = segs.map(s => s.converted);
+  const notData  = segs.map(s => s.total_clients - s.converted);
+
+  destroyChart('segConvChart');
+  new Chart(document.getElementById('segConvChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Converted',     data: convData, backgroundColor: colors,                borderRadius: 4 },
+        { label: 'Not Converted', data: notData,  backgroundColor: 'rgba(200,220,230,.4)', borderRadius: 4 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family:'Oswald', size:11, style:'italic' }, usePointStyle:true } }
+      },
+      scales: {
+        x: { stacked: true, ticks: { color:'#3a4a5a', font:{size:11} } },
+        y: { stacked: true, ticks: { color:'#5a7a8a', font:{size:11} }, min:0 }
+      }
+    }
+  });
+
+  // ── Chart: Post-promo revenue by segment ──────────────────────────────
+  destroyChart('segRevChart');
+  new Chart(document.getElementById('segRevChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Post-Promo Revenue',
+        data: segs.map(s => s.post_rev),
+        backgroundColor: colors,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' ' + fmt$(ctx.raw) } }
+      },
+      scales: {
+        x: { ticks: { color:'#3a4a5a', font:{size:11} } },
+        y: { ticks: { color:'#5a7a8a', font:{size:11}, callback: v => fmt$(v) }, min:0 }
+      }
+    }
+  });
+
+  // ── Comparison table ───────────────────────────────────────────────────
+  document.getElementById('segTableBody').innerHTML = segs.map(s => {
+    const m    = SEG_META[s.segment] || { color:'#99DAF3', label: s.segment };
+    const notC = s.total_clients - s.converted;
+    return `<tr>
+      <td><span class="src-dot" style="background:${m.color}"></span><strong>${m.label}</strong></td>
+      <td class="num">${fmtN(s.total_clients)}</td>
+      <td class="num" style="color:#00A3E0;font-weight:600">${fmtN(s.converted)}</td>
+      <td class="num" style="color:#8aaabb">${fmtN(notC)}</td>
+      <td class="num" style="font-weight:600">${fmtP(s.conversion_pct)}</td>
+      <td class="num">${fmt$(s.post_rev)}</td>
+      <td class="num">${fmt$(s.avg_per_converter)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Tab: Funnel ────────────────────────────────────────────────────────────
+function renderFunnel() {
+  const k   = CAMP.kpis    || {};
+  const frs = CAMP.funnel  || [];
+
+  // ── Big funnel visual
+  const received  = k.unique_clients        || 0;
+  const converted = k.converted_to_paid     || 0;
+  const revenue   = k.post_promo_revenue    || 0;
+  const convPct   = k.conversion_rate       || 0;
+  const revPerP   = k.revenue_per_participant|| 0;
+
+  const MAX = 180;
+  const b1 = MAX;
+  const b2 = Math.max(70, Math.round(MAX * converted / Math.max(received, 1)));
+  const b3 = Math.max(60, Math.min(MAX, Math.round(MAX * (convPct / 100) * 1.2)));
+
+  document.getElementById('funnelVisual').innerHTML = `
+    <div class="funnel-step">
+      <div class="funnel-box" style="width:${b1}px;height:${b1}px;font-size:${b1>120?26:20}px;background:linear-gradient(135deg,#00A3E0,#0084B5)">${fmtN(received)}</div>
+      <div class="funnel-step-label">Received Promo</div>
+      <div class="funnel-step-sub">100% of participants</div>
+    </div>
+    <div class="funnel-arrow">▶</div>
+    <div class="funnel-step">
+      <div class="funnel-box" style="width:${b2}px;height:${b2}px;font-size:${b2>100?22:17}px;background:linear-gradient(135deg,#00C9A7,#00A3E0)">${fmtN(converted)}</div>
+      <div class="funnel-step-label">Converted to Paid</div>
+      <div class="funnel-step-sub">${fmtP(convPct)} conversion rate</div>
+    </div>
+    <div class="funnel-arrow">▶</div>
+    <div class="funnel-step">
+      <div class="funnel-box" style="width:${b3}px;height:${b3}px;font-size:${b3>100?18:14}px;background:linear-gradient(135deg,#DDFF00,#00FFC2);color:#1a1a2e">${fmt$(revenue)}</div>
+      <div class="funnel-step-label">Post-Promo Revenue</div>
+      <div class="funnel-step-sub">${fmt$(revPerP)} avg / client</div>
+    </div>
+  `;
+
+  if (!frs.length) return;
+
+  const labels = frs.map(r => r.source);
+  const colors  = labels.map((l,i) => srcColor(l,i));
+
+  // Conversion rate chart
+  destroyChart('funnelConvChart');
+  new Chart(document.getElementById('funnelConvChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Conversion %',
+        data: frs.map(r => r.conversion_pct),
+        backgroundColor: colors,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{ display:false } },
+      scales: {
+        x: { ticks:{ color:'#5a7a8a', font:{size:11}, callback: v => v+'%' }, max:100, min:0 },
+        y: { ticks:{ color:'#3a4a5a', font:{size:11} } }
+      }
+    }
+  });
+
+  // Post-promo revenue chart
+  destroyChart('funnelRevChart');
+  new Chart(document.getElementById('funnelRevChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Post-Promo Revenue',
+        data: frs.map(r => r.post_promo_revenue),
+        backgroundColor: colors,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{ display:false } },
+      scales: {
+        x: {
+          ticks: {
+            color: '#5a7a8a', font:{size:11},
+            callback: v => '$' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v)
+          },
+          min: 0
+        },
+        y: { ticks:{ color:'#3a4a5a', font:{size:11} } }
+      }
+    }
+  });
+
+  renderPostPromoProducts();
+
+  // Funnel table
+  document.getElementById('funnelTableBody').innerHTML = frs.map((r,i) => {
+    const avgPerConv = r.converted_to_paid > 0
+      ? fmt$(r.post_promo_revenue / r.converted_to_paid)
+      : '—';
+    const pct = r.conversion_pct;
+    const badgeCls = pct === 0 ? 'zero' : pct >= 75 ? 'high' : pct >= 40 ? 'mid' : 'low';
+    return `<tr>
+      <td><span class="src-dot" style="background:${srcColor(r.source,i)}"></span>${r.source}</td>
+      <td class="num">${fmtN(r.received_promo)}</td>
+      <td class="num">${fmtN(r.converted_to_paid)}</td>
+      <td class="num"><span class="conv-badge ${badgeCls}">${fmtP(pct)}</span></td>
+      <td class="num">${fmt$(r.post_promo_revenue)}</td>
+      <td class="num">${avgPerConv}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Post-promo product breakdown ───────────────────────────────────────────
+function renderPostPromoProducts() {
+  const products = CAMP.post_promo_products || [];
+
+  destroyChart('postPromoProductsChart');
+
+  if (!products.length) {
+    document.getElementById('postPromoProductsBody').innerHTML =
+      '<tr><td colspan="4" class="no-data">No post-promo purchases found</td></tr>';
+    return;
+  }
+
+  // Group by REVENUE_CATEGORY for the chart
+  const catMap = {};
+  const CAT_COLORS = {
+    'Memberships':      '#00A3E0',
+    'Class/Class Packs':'#00FFC2',
+    'Retail':           '#DDFF00',
+    'Food & Drink':     '#99DAF3',
+  };
+  products.forEach(p => {
+    const cat = p.category || 'Other';
+    if (!catMap[cat]) catMap[cat] = { clients: 0, revenue: 0 };
+    catMap[cat].clients  += p.clients;
+    catMap[cat].revenue  += p.revenue;
+  });
+
+  const catLabels  = Object.keys(catMap).sort((a,b) => catMap[b].clients - catMap[a].clients);
+  const catClients = catLabels.map(c => catMap[c].clients);
+  const catColors  = catLabels.map(c => CAT_COLORS[c] || '#D2EFFF');
+
+  new Chart(document.getElementById('postPromoProductsChart'), {
+    type: 'bar',
+    data: {
+      labels: products.map(p => p.product),
+      datasets: [{
+        label: 'Clients',
+        data: products.map(p => p.clients),
+        backgroundColor: products.map(p => CAT_COLORS[p.category] || '#D2EFFF'),
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            afterLabel: ctx => {
+              const prod = products[ctx.dataIndex];
+              return `Revenue: ${fmt$(prod.revenue)}  ·  Txns: ${fmtN(prod.transactions)}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks:{ color:'#5a7a8a', font:{size:11} }, min:0 },
+        y: { ticks:{ color:'#3a4a5a', font:{size:11} } }
+      }
+    }
+  });
+
+  // Color legend by category
+  const legendHtml = catLabels.map(c =>
+    `<span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px;font-size:11px;color:#5a7a8a;font-family:Oswald,sans-serif;font-style:italic">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${CAT_COLORS[c]||'#D2EFFF'}"></span>${c}
+    </span>`
+  ).join('');
+  const wrap = document.getElementById('postPromoProductsChart').parentElement;
+  let leg = wrap.querySelector('.prod-legend');
+  if (!leg) { leg = document.createElement('div'); leg.className = 'prod-legend'; leg.style.cssText = 'margin-top:8px'; wrap.appendChild(leg); }
+  leg.innerHTML = legendHtml;
+
+  // Table
+  document.getElementById('postPromoProductsBody').innerHTML = products.map(p =>
+    `<tr>
+      <td><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${CAT_COLORS[p.category]||'#D2EFFF'};margin-right:6px;vertical-align:middle"></span>${p.product}</td>
+      <td><span style="font-size:11px;color:#5a7a8a">${p.category || '—'}</span></td>
+      <td class="num">${fmtN(p.clients)}</td>
+      <td class="num">${fmt$(p.revenue)}</td>
+    </tr>`
+  ).join('');
+}
+
+loadData();
+</script>
+</body>
+</html>
