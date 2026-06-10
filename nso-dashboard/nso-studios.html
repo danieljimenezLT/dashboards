@@ -650,10 +650,12 @@ function drawSumSourceChart(studio,metric){
     netFn=r=>r.signups||0;
   }else{
     rows=NSO_SALES_ROWS.filter(r=>_stripS(r.studio)===_snameS&&days.includes(r.date));
-    netFn=r=>Math.max(0,(r.first_sales||0)-(r.cancellations||0));
+    netFn=r=>(r.first_sales||0)-(r.cancellations||0);
   }
   const srcTotals={};
   rows.forEach(r=>{const s=r.source||'Unknown';srcTotals[s]=(srcTotals[s]||0)+netFn(r);});
+  // Clamp each source to 0 so doughnut chart handles no negatives, matching the aggregate total logic
+  Object.keys(srcTotals).forEach(s=>{srcTotals[s]=Math.max(0,srcTotals[s]);});
   const sources=Object.keys(srcTotals).filter(s=>srcTotals[s]>0).sort((a,b)=>srcTotals[b]-srcTotals[a]);
   const leg=document.getElementById('sumSrcLegend');
   if(!sources.length){
