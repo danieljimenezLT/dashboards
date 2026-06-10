@@ -469,7 +469,9 @@ function renderSummary(){
   const raw7=(RAW&&RAW.daily_detail||[]).filter(r=>_strip(r.studio)===_sname&&r.date>=d7ago&&r.date<=d7end);
   const lastLeads=raw7.reduce((s,r)=>s+(r.signups||0),0);
   const sales7=NSO_SALES_ROWS.filter(r=>_strip(r.studio)===_sname&&r.date>=d7ago&&r.date<=d7end);
-  const lastNetPresales=Math.max(0,sales7.reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));
+  // Per-source clamp so one source's excess cancellations don't offset other sources' net sales
+  const _srcNet7={};sales7.forEach(r=>{const _src=r.source||'Unknown';_srcNet7[_src]=(_srcNet7[_src]||0)+(r.first_sales||0)-(r.cancellations||0);});
+  const lastNetPresales=Object.values(_srcNet7).reduce((sum,v)=>sum+Math.max(0,v),0);
   const lastSpend=cur.total_marketing_spend||0;
   const wkLeadGoal=tgt.total_leads?Math.round(tgt.total_leads/totalWeeks):0;
   const wkPresaleGoal=tgt.presales_count?Math.round(tgt.presales_count/totalWeeks):0;
@@ -1888,8 +1890,11 @@ async function init(){
     NSO_SALES=salesRes.value;
     NSO_SALES_ROWS=[];
     Object.values(NSO_SALES.studios||{}).forEach(s=>{
+      // Use scorecard data_name so the key matches the filter in Summary/charts
+      const _scStu=SC.studios?SC.studios.find(x=>x.code===s.code):null;
+      const _stuKey=_scStu?(_scStu.data_name||_scStu.name):s.name.replace(/^SWEAT440\s+/,'');
       (s.daily||[]).forEach(r=>{
-        NSO_SALES_ROWS.push({date:r.date,studio:s.name,source:r.source||'Unknown',first_sales:r.presales||0,cancellations:r.cancellations||0,gross_revenue:r.gross_revenue||0});
+        NSO_SALES_ROWS.push({date:r.date,studio:_stuKey,source:r.source||'Unknown',first_sales:r.presales||0,cancellations:r.cancellations||0,gross_revenue:r.gross_revenue||0});
       });
     });
   }else{console.warn('nso_sales_data.json not found');NSO_SALES=null;NSO_SALES_ROWS=[]}
