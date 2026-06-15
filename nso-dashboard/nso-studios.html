@@ -107,6 +107,7 @@
     </div>
   </div>
   <button class="hamburger" id="hamburger" onclick="toggleNav()"><span></span><span></span><span></span></button>
+  <div class="nav-user" id="navUser"></div>
 </nav>
 
 <div class="controls-bar">
@@ -228,6 +229,8 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="../users.js"></script>
+<script src="../shared/auth.js"></script>
 <script src="../shared/utils.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════════
@@ -1856,6 +1859,12 @@ function _drawIgChart(filtered){
 
 /* ── LOAD ─────────────────────────────────────────────────────────────── */
 async function init(){
+  // Auth check — redirects to login.html if no valid session
+  const _authUser = checkAuth();
+  if (!_authUser) return;
+  renderAuthNav(_authUser);
+  const _allowedStudios = getAuthStudios(_authUser);
+
   // Load all data files
   const [dataRes,scRes,mktRes,dashRes,gadsRes,socialRes,salesRes,gbpRes]=await Promise.allSettled([
     fetch('../data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
@@ -1909,8 +1918,12 @@ async function init(){
   if(gbpRes.status==='fulfilled'){GBP_RAW=gbpRes.value}
   else{console.warn('gbp_data.json not found');GBP_RAW=null}
 
-  // Build multi-selects
-  _buildMS('studioMenu','studioLabel',NSO,[]);
+  // Build multi-selects (filter NSO list to allowed studios if franchisee)
+  // NSO names have "SWEAT440 " prefix; users.js stores names without it (matching data.json)
+  const _nsoVisible = _allowedStudios
+    ? NSO.filter(s => _allowedStudios.includes(s.replace(/^SWEAT440\s+/, '')))
+    : NSO;
+  _buildMS('studioMenu','studioLabel',_nsoVisible,[]);
   // Canonical source list from MARKETING_REPORTS.PUBLIC.LEADS_LIST
   const _allSrc=['Meta Ads','Google Ads','Local Listings','Social Media Organic','Website (unattributed)','Word of Mouth','SWEAT440 App','MindBody App','ClassPass / Platforms','Grassroots','Business Mode','Print Ads / Signs','Other','N/A'];
   _buildMS('sourceMenu','sourceLabel',_allSrc,EXCL_SRC);

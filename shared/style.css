@@ -153,6 +153,12 @@
 
 
 
+/* ── Auth nav (user name + sign out) ────────────────────────────────────── */
+.nav-user{display:flex;align-items:center;gap:10px;margin-left:16px;flex-shrink:0}
+.nav-user-name{font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.7);white-space:nowrap}
+.logout-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.logout-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+
 /* ── Nav groups & submenus (desktop) ────────────────────────────────────── */
 .nav-group{position:relative;height:100%;display:flex;align-items:center}
 .nav-group-label{padding-right:8px}

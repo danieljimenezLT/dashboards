@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SWEAT440 — Admin Tools</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Open Sans',sans-serif;background:#0084B5;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:32px 20px;gap:0}
+.page{width:100%;max-width:540px;display:flex;flex-direction:column;gap:24px}
+.card{background:#fff;border-radius:16px;padding:36px 36px 32px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.card-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:18px;font-weight:700;text-transform:uppercase;color:#1a1a2e;margin-bottom:4px;letter-spacing:1px}
+.card-sub{font-size:13px;color:#8aaabb;margin-bottom:24px;line-height:1.5}
+.form-group{margin-bottom:14px}
+label{display:block;font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#5a7a8a;margin-bottom:5px}
+input[type=text],input[type=email]{width:100%;padding:9px 13px;border:1.5px solid #c0d4df;border-radius:8px;font-size:13px;font-family:'Open Sans',sans-serif;color:#1a1a2e;outline:none;transition:border-color .15s}
+input:focus{border-color:#00A3E0}
+.btn{padding:9px 18px;background:#00A3E0;color:#fff;border:none;border-radius:8px;font-family:'Oswald',sans-serif;font-style:italic;font-size:13px;font-weight:700;text-transform:uppercase;cursor:pointer;transition:background .15s}
+.btn:hover{background:#0084B5}
+.btn-dark{background:#1a1a2e}.btn-dark:hover{background:#0d0d1e}
+.btn-green{background:#0a8a4a}.btn-green:hover{background:#076b3a}
+.result-box{margin-top:18px;background:#f4f9fd;border:1.5px solid #c0d4df;border-radius:8px;padding:14px;display:none}
+.result-label{font-family:'Oswald',sans-serif;font-style:italic;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#5a7a8a;margin-bottom:5px}
+.result-hash{font-family:monospace;font-size:11px;word-break:break-all;color:#1a1a2e;line-height:1.7;background:#fff;border:1px solid #dde8ef;border-radius:6px;padding:8px 10px;margin-bottom:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.note{margin-top:18px;font-size:12px;color:#8aaabb;line-height:1.6;border-top:1px solid #edf3f7;padding-top:14px}
+.note code{background:#f0f6fa;padding:1px 5px;border-radius:3px;font-size:11px;color:#1a4d6e}
+.step{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.step-num{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#00A3E0;color:#fff;font-family:'Oswald',sans-serif;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.step-text{font-size:12px;color:#5a7a8a;line-height:1.5;padding-top:2px}
+.step-text code{background:#f0f6fa;padding:1px 5px;border-radius:3px;font-size:11px;color:#1a4d6e}
+.email-preview{background:#f9fbfd;border:1px solid #dde8ef;border-radius:8px;padding:12px;font-size:12px;color:#1a1a2e;line-height:1.7;white-space:pre-wrap;font-family:'Open Sans',sans-serif;margin-bottom:10px}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;font-family:'Oswald',sans-serif;letter-spacing:.5px;text-transform:uppercase;margin-left:8px;vertical-align:middle}
+.badge-admin{background:#fff3cd;color:#856404}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── Card 1: New user / change password ─────────────────────────── -->
+  <div class="card">
+    <div class="card-title">Set a Password <span class="badge badge-admin">Admin</span></div>
+    <div class="card-sub">Generate a hash to paste into <code>users.js</code> for a new or existing user.</div>
+
+    <div class="form-group">
+      <label for="pw1">Password</label>
+      <input type="text" id="pw1" placeholder="Type the password" oninput="clearBox('res1')"/>
+    </div>
+    <button class="btn" onclick="genHash()">Generate Hash</button>
+
+    <div class="result-box" id="res1">
+      <div class="result-label">SHA-256 Hash — paste this into users.js</div>
+      <div class="result-hash" id="hash1"></div>
+      <div class="row">
+        <button class="btn btn-dark" onclick="copyEl('hash1',this)">Copy Hash</button>
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Type the password above and click <strong>Generate Hash</strong>.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Copy the hash and paste it as <code>passwordHash</code> in <code>users.js</code>, then push to GitHub.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">Send the user their username + password separately (e.g. via email or Slack).</div></div>
+    </div>
+  </div>
+
+  <!-- ── Card 2: Password reset link ───────────────────────────────── -->
+  <div class="card">
+    <div class="card-title">Reset a User's Password <span class="badge badge-admin">Admin</span></div>
+    <div class="card-sub">Generate a temporary password, update <code>users.js</code>, then send the user a pre-written email with one click.</div>
+
+    <div class="form-group">
+      <label for="resetUser">Username (in users.js)</label>
+      <input type="text" id="resetUser" placeholder="e.g. miami_owner" oninput="clearBox('res2')"/>
+    </div>
+    <div class="form-group">
+      <label for="resetName">User's Display Name</label>
+      <input type="text" id="resetName" placeholder="e.g. John Smith" oninput="clearBox('res2')"/>
+    </div>
+    <div class="form-group">
+      <label for="resetEmail">User's Email Address</label>
+      <input type="email" id="resetEmail" placeholder="e.g. john@example.com" oninput="clearBox('res2')"/>
+    </div>
+    <button class="btn" onclick="genReset()">Generate Temp Password</button>
+
+    <div class="result-box" id="res2">
+      <div class="result-label">Step 1 — Paste this hash into users.js, then push to GitHub</div>
+      <div class="result-hash" id="hash2"></div>
+      <button class="btn btn-dark" style="margin-bottom:16px" onclick="copyEl('hash2',this)">Copy Hash</button>
+
+      <div class="result-label">Step 2 — Send this email (opens your mail app)</div>
+      <div class="email-preview" id="emailPreview"></div>
+      <div class="row">
+        <a id="mailtoLink" href="#" class="btn btn-green" style="text-decoration:none">Open Email Draft</a>
+        <button class="btn btn-dark" onclick="copyEl('emailPreview',this)">Copy Email Text</button>
+      </div>
+    </div>
+
+    <div class="note">
+      The temporary password is randomly generated each time — you never need to invent one.<br/>
+      After the user logs in, you can generate a new permanent password together and update <code>users.js</code>.
+    </div>
+  </div>
+
+</div>
+
+<script>
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function randomPassword(len = 12) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$';
+  let out = '';
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  arr.forEach(b => out += chars[b % chars.length]);
+  return out;
+}
+
+async function genHash() {
+  const pw = document.getElementById('pw1').value;
+  if (!pw) return;
+  const hash = await sha256(pw);
+  document.getElementById('hash1').textContent = hash;
+  document.getElementById('res1').style.display = 'block';
+}
+
+async function genReset() {
+  const username = document.getElementById('resetUser').value.trim();
+  const name     = document.getElementById('resetName').value.trim();
+  const email    = document.getElementById('resetEmail').value.trim();
+  if (!username || !name || !email) { alert('Please fill in all three fields.'); return; }
+
+  const tempPw = randomPassword();
+  const hash   = await sha256(tempPw);
+  const loginUrl = 'https://dev-leadteam.github.io/dashboards/login.html';
+
+  document.getElementById('hash2').textContent = hash;
+
+  const emailBody =
+`Hi ${name},
+
+Your SWEAT440 Dashboard access has been reset. Here are your new login credentials:
+
+  Dashboard: ${loginUrl}
+  Username:  ${username}
+  Password:  ${tempPw}
+
+Sign in and let us know if you have any trouble.
+
+— SWEAT440 Team`;
+
+  document.getElementById('emailPreview').textContent = emailBody;
+
+  const subject = encodeURIComponent('Your SWEAT440 Dashboard Login');
+  const body    = encodeURIComponent(emailBody);
+  document.getElementById('mailtoLink').href = `mailto:${email}?subject=${subject}&body=${body}`;
+
+  document.getElementById('res2').style.display = 'block';
+}
+
+function copyEl(id, btn) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 1600);
+  });
+}
+
+function clearBox(id) {
+  document.getElementById(id).style.display = 'none';
+}
+</script>
+</body>
+</html>

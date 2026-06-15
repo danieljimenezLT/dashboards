@@ -51,6 +51,7 @@
   <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Toggle navigation">
     <span></span><span></span><span></span>
   </button>
+  <div class="nav-user" id="navUser"></div>
 </nav>
 
 <div class="controls-bar">
@@ -361,6 +362,8 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="users.js"></script>
+<script src="shared/auth.js"></script>
 <script src="shared/utils.js"></script>
 <script>
 // -- Dashboard state -------------------------------------------------------
@@ -418,6 +421,12 @@ function toggleControls() {
 
 
 async function loadData() {
+  // Auth check — redirects to login.html if no valid session
+  const _authUser = checkAuth();
+  if (!_authUser) return;
+  renderAuthNav(_authUser);
+  const _allowedStudios = getAuthStudios(_authUser);
+
   // Main dashboard data — load in parallel (blocks initial render)
   const [rawRes, metaRes, googleRes] = await Promise.allSettled([
     fetch('data.json?_='            + Date.now()),
@@ -442,6 +451,7 @@ async function loadData() {
   document.getElementById('fFrom').value = localDateStr(_jan1);
   document.getElementById('fTo').value   = localDateStr(_today);
 
+  if (_allowedStudios) RAW.studios = RAW.studios.filter(s => _allowedStudios.includes(s));
   buildMultiSelect('studioMenu', 'studioLabel', RAW.studios, DEFAULT_EXCL_STUDIOS);
   buildSourceSelect('sourceMenu', 'sourceLabel', RAW.sources, DEFAULT_EXCL_SOURCES);
   setGran('weekly');
