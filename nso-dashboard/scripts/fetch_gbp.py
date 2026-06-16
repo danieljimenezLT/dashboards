@@ -135,20 +135,20 @@ def _extract_location_id(raw: str) -> str:
 def load_studios_from_sheet(token: str) -> list:
     """
     Read the 'General' tab of the studios spreadsheet and return a list of
-    {"name": ..., "code": ..., "location_id": ...} dicts for every row that
-    has a non-empty GBP_LINK value.
+    {"name": ..., "code": ..., "location_id": ...} dicts.
 
     Expected columns (case-insensitive header match):
         STUDIO_NAME  or  Name  or  Studio   → studio display name
         STUDIO_CODE  or  Code               → short code (e.g. FL-001)
         GBP_LINK                            → GBP profile URL or numeric ID
+
+    Returns [] on any error so callers can fall back to a hardcoded list.
     """
     url = f"{SHEETS_API}/{STUDIOS_SHEET_ID}/values/{STUDIOS_SHEET_TAB}"
     try:
         resp = requests.get(url, headers=_headers(token), timeout=30)
         if resp.status_code == 403:
-            print("  WARNING: Sheets API returned 403 — token may lack spreadsheets scope.")
-            print("           Re-authorize with scope: https://www.googleapis.com/auth/spreadsheets.readonly")
+            print("  WARNING: Sheets API 403 — token may lack spreadsheets.readonly scope.")
             return []
         resp.raise_for_status()
         data = resp.json()
@@ -156,60 +156,78 @@ def load_studios_from_sheet(token: str) -> list:
         print(f"  WARNING: Could not read studios spreadsheet: {exc}")
         return []
 
-    rows = data.get("values", [])
-    if not rows:
-        print("  WARNING: Studios spreadsheet is empty.")
+    try:
+        rows = data.get("values", [])
+        if not rows:
+            print("  WARNING: Studios spreadsheet is empty.")
+            return []
+
+        # Find column indices from the header row (case-insensitive)
+        header = [h.strip().upper() for h in rows[0]]
+
+        def _col(candidates):
+            for c in candidates:
+                try:
+                    return header.index(c.upper())
+                except ValueError:
+                    pass
+            return None
+
+        name_col = _col(["STUDIO_NAME", "NAME", "STUDIO", "LOCATION"])
+        code_col = _col(["STUDIO_CODE", "CODE", "ID"])
+        gbp_col  = _col(["GBP_LINK", "GBP_URL", "GBP"])
+
+        if gbp_col is None:
+            print(f"  WARNING: No GBP_LINK column found. Headers: {rows[0]}")
+            return []
+        if name_col is None:
+            print(f"  WARNING: No studio name column found. Headers: {rows[0]}")
+            return []
+
+        # Highest column index we need — used to pad short rows
+        max_col = max(c for c in [name_col, code_col, gbp_col] if c is not None)
+
+        studios = []
+        for row in rows[1:]:
+            # Pad row so indexing never raises IndexError
+            while len(row) <= max_col:
+                row.append("")
+
+            name    = row[name_col].strip()
+            code    = row[code_col].strip() if code_col is not None else ""
+            gbp_raw = row[gbp_col].strip()
+            loc_id  = _extract_location_id(gbp_raw)
+
+            if not name:
+                continue  # skip blank rows
+
+            if not name.upper().startswith("SWEAT440"):
+                name = "SWEAT440 " + name
+
+            studios.append({"name": name, "code": code, "location_id": loc_id})
+
+        found = sum(1 for s in studios if s["location_id"])
+        print(f"  Loaded {len(studios)} studios from sheet, {found} have a GBP location ID.")
+        return studios
+
+    except Exception as exc:
+        print(f"  WARNING: Error parsing studios spreadsheet: {exc}")
         return []
 
-    # Find column indices from the header row (case-insensitive)
-    header = [h.strip().upper() for h in rows[0]]
 
-    def _col(candidates):
-        for c in candidates:
-            try:
-                return header.index(c.upper())
-            except ValueError:
-                pass
-        return None
+# Hardcoded fallback — used when the spreadsheet is unreachable.
+# Only studios with a confirmed location_id are included.
+_FALLBACK_STUDIOS = [
+    {"name": "SWEAT440 Pinecrest - Palmetto Bay", "code": "FL-017", "location_id": "13145255458617855723"},
+    {"name": "SWEAT440 Naples - Mercato",          "code": "FL-019", "location_id": "9241286551304249574"},
+    {"name": "SWEAT440 Dallas - Prestonwood",      "code": "TX-003", "location_id": "11402535545027699120"},
+    {"name": "SWEAT440 Reston",                    "code": "VA-001", "location_id": "10767130387921211013"},
+    {"name": "SWEAT440 Herriman",                  "code": "UT-001", "location_id": "4243744174605320602"},
+]
 
-    name_col = _col(["STUDIO_NAME", "NAME", "STUDIO", "LOCATION"])
-    code_col = _col(["STUDIO_CODE", "CODE", "ID"])
-    gbp_col  = _col(["GBP_LINK", "GBP_URL", "GBP"])
-
-    if gbp_col is None:
-        print(f"  WARNING: No GBP_LINK column found in sheet. Headers: {rows[0]}")
-        return []
-    if name_col is None:
-        print(f"  WARNING: No studio name column found in sheet. Headers: {rows[0]}")
-        return []
-
-    studios = []
-    for row in rows[1:]:
-        # Pad short rows
-        while len(row) <= max(filter(None.__ne__, [name_col, code_col, gbp_col])):
-            row.append("")
-        name     = row[name_col].strip() if name_col is not None else ""
-        code     = row[code_col].strip() if code_col is not None else ""
-        gbp_raw  = row[gbp_col].strip()  if gbp_col  is not None else ""
-        loc_id   = _extract_location_id(gbp_raw)
-
-        if not name:
-            continue  # skip blank rows
-
-        # Normalise name: ensure it starts with "SWEAT440 "
-        if name and not name.upper().startswith("SWEAT440"):
-            name = "SWEAT440 " + name
-
-        studios.append({"name": name, "code": code, "location_id": loc_id})
-
-    found = sum(1 for s in studios if s["location_id"])
-    print(f"  Loaded {len(studios)} studios from sheet, {found} have a GBP location ID.")
-    return studios
-
-
-# Backwards-compatible alias — populated at runtime by fetch_all_studios
-NSO_STUDIOS = []
-ALL_STUDIOS = []
+# Backwards-compatible aliases
+NSO_STUDIOS = _FALLBACK_STUDIOS
+ALL_STUDIOS  = _FALLBACK_STUDIOS
 
 
 # ---------------------------------------------------------------------------
@@ -382,13 +400,8 @@ def fetch_all_studios(
         print("\nLoading studio list from Google Sheets...")
         studios = load_studios_from_sheet(token)
         if not studios:
-            print("  Sheet returned no studios — nothing to fetch.")
-            return {
-                "generated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"),
-                "date_range": {"start": start_date, "end": end_date},
-                "studios": [],
-                "errors": ["Could not load studio list from spreadsheet"],
-            }
+            print("  Sheet unavailable — falling back to hardcoded studio list.")
+            studios = _FALLBACK_STUDIOS
 
     studio_results = []
     errors = []
