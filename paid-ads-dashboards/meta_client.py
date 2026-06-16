@@ -235,14 +235,10 @@ class MetaClient:
 
 
 # ─── helpers para extraer "actions" ────────────────────────────────
-LEAD_ACTION_TYPES = {
-    "onsite_conversion.lead_grouped",    # native form (Meta instant forms)
-    "leadgen_grouped",                   # native form grouped
-    "leadgen.other",                     # other native form events
-    "offsite_conversion.fb_pixel_lead",  # pixel-tracked website lead
-    "lead",                              # generic lead (landing page / pixel)
-    "omni_lead",                         # omni-channel lead
-}
+LEAD_ACTION_TYPES = {"onsite_conversion.lead_grouped", "leadgen_grouped", "leadgen.other"}
+
+# Website/pixel leads — for campaigns optimized on landing-page conversions
+WEBSITE_LEAD_ACTION_TYPES = {"offsite_conversion.fb_pixel_lead"}
 PURCHASE_ACTION_TYPES = {"omni_purchase"}
 
 # Trials — SWEAT440 los trackea como OFFLINE CONVERSIONS (CRM → Meta CAPI).

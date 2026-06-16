@@ -96,10 +96,16 @@ campaigns:
     date_start:   "2026-04-15"
     date_end:     "2026-12-31"
     ad_account_id: "act_1553887681409034"   # misma cuenta corporate
-    campaign_ids:                            # 3 campanas bajo Free Class (uses "Results" from Meta)
+    campaign_ids:                            # 3 campanas bajo Free Class
       - "120243103413640249"                 # Free Class - Native Forms
       - "120249459170510249"                 # Free Class - Landing Pages - No Conversion
       - "120250407271150249"                 # Free Class - Landing Pages
+    # Tipo de lead por campaign_id (Results column de Meta):
+    # Native Forms → native form events; Landing Pages → pixel lead event
+    campaign_lead_types:
+      "120243103413640249": [onsite_conversion.lead_grouped, leadgen_grouped, leadgen.other]
+      "120249459170510249": [offsite_conversion.fb_pixel_lead]
+      "120250407271150249": [offsite_conversion.fb_pixel_lead]
 
     audience_tokens:
       DINKS: ["DINKS"]
