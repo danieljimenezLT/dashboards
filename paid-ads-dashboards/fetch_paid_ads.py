@@ -71,6 +71,7 @@ def match_pillar(name: str, tokens_by_pillar: dict[str, list[str]]) -> str | Non
 _STOPWORDS = {
     "V1", "V2", "V3", "V4", "V5", "A", "B", "C", "TEST", "VER", "VERSION",
     "WAFM", "WIN", "FREE", "MONTH", "CLASS", "OPEN", "STUDIOS", "STUDIO",
+    "WINMONTH", "OPENSTUDIOS", "OPENSTUDIOS", "FREEMONTH",
     "PROMO", "AD", "ADS", "COPY", "CREATIVE",
     "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
     "ENE", "ABR", "AGO", "DIC",
@@ -243,11 +244,16 @@ def safe_float(x, default=0.0):
 def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
     log.info(f"── Campaign: {c['display_name']} ({c['period_label']}) [{campaign_key}]")
 
-    ad_sets = meta.list_ad_sets(c["campaign_id"])
-    log.info(f"  {len(ad_sets)} ad sets")
+    campaign_ids_list = c.get("campaign_ids") or [c["campaign_id"]]
+    ad_sets = []
+    for _cid in campaign_ids_list:
+        ad_sets.extend(meta.list_ad_sets(_cid))
+    log.info(f"  {len(ad_sets)} ad sets (across {len(campaign_ids_list)} campaign(s))")
     adset_by_id = {a["id"]: a for a in ad_sets}
 
-    ads = meta.list_ads(c["campaign_id"])
+    ads = []
+    for _cid in campaign_ids_list:
+        ads.extend(meta.list_ads(_cid))
     log.info(f"  {len(ads)} ads")
 
     # Recolectar creative_ids únicos y traerlos en batch desde Meta.
@@ -295,11 +301,16 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
             log.warning(f"  ad set {adset.get('name','?')} ({adset['id']}) failed: {e}")
     log.info(f"  {len(ad_insights)} ad-level insight rows")
 
-    daily = meta.get_daily_insights(
-        c["campaign_id"],
-        date_start=c["date_start"],
-        date_end=c["date_end"],
-    )
+    daily = []
+    for _cid in campaign_ids_list:
+        try:
+            daily.extend(meta.get_daily_insights(
+                _cid,
+                date_start=c["date_start"],
+                date_end=c["date_end"],
+            ))
+        except Exception as _e:
+            log.warning(f"  get_daily_insights for {_cid} failed: {_e}")
     log.info(f"  {len(daily)} daily rows")
 
     studios_cfg = c["studios"]

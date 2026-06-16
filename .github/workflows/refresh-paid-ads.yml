@@ -49,8 +49,8 @@ jobs:
         run: |
           cd paid-ads-dashboards
           python fetch_paid_ads.py
-          # Sync a daniel-paid-ads-data.json (leído por paid-ads.html)
-          cp paid-ads-data.json daniel-paid-ads-data.json
+          # Merge fresh data into daniel-paid-ads-data.json (preserva campaigns en cache)
+          python merge_data.py
           # También mantener copia en root para otros dashboards (index.html, etc.)
           cp paid-ads-data.json ../paid-ads-data.json
 
