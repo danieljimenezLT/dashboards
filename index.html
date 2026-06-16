@@ -1717,13 +1717,47 @@ const _orgCharts = {};
 // Social data is matched by studio name directly (case-insensitive).
 // SOC_CODE_MAP removed — no longer needed.
 
-// GA4 landing-page paths per studio
+// GA4 landing-page paths per studio (prefix-matched against landing_page dimension)
 const GA4_PATHS = {
-  'Herriman':              ['/gyms/utah-herriman','/nso-2026-herriman','/secure-founders-rate-herriman','/opening-herriman'],
-  'Dallas - Prestonwood':  ['/gyms/locations-texas-prestonwood','/nso-2026-prestonwood','/opening-prestonwood','/secure-founders-rate-prestonwood','/events-prestonwood'],
-  'Naples - Mercato':      ['/nso-2026-naples','/locations-florida-naples','/naples-secure-founders-rate','/opening-naples'],
-  'Pinecrest - Palmetto Bay': ['/gyms/locations-florida-pinecrest','/nso-2026-pinecrest','/opening-pinecrest','/secure-founders-rate-pinecrest','/nso-pinecrest'],
-  'Reston':                ['/gyms/locations-virginia-reston','/nso-2026-reston','/opening-reston','/secure-founders-rate-reston']
+  // ── Florida ────────────────────────────────────────────────────────────
+  'Miami Beach':                ['/gyms/miami-beach','/locations-florida-miami-beach'],
+  'Miami - Brickell':           ['/gyms/miami-brickell','/locations-florida-brickell'],
+  'Coral Gables':               ['/gyms/coral-gables','/locations-florida-coral-gables'],
+  'Doral':                      ['/gyms/doral','/locations-florida-doral'],
+  'Miami Lakes':                ['/gyms/miami-lakes','/locations-florida-miami-lakes'],
+  'Deerfield Beach':            ['/gyms/deerfield-beach','/locations-florida-deerfield-beach'],
+  'Miami - Upper East Side':    ['/gyms/upper-east-side','/locations-florida-upper-east-side'],
+  'Coral Springs':              ['/gyms/coral-springs','/locations-florida-coral-springs'],
+  'South Miami':                ['/gyms/south-miami','/locations-florida-south-miami'],
+  'Miami - Midtown':            ['/gyms/midtown','/locations-florida-midtown'],
+  'Miami - Coconut Grove':      ['/gyms/coconut-grove','/locations-florida-coconut-grove'],
+  'Miramar':                    ['/gyms/miramar','/locations-florida-miramar'],
+  'Fort Lauderdale - Las Olas': ['/gyms/las-olas','/locations-florida-las-olas'],
+  'Pembroke Pines':             ['/gyms/pembroke-pines','/locations-florida-pembroke-pines'],
+  'West Palm Beach':            ['/gyms/west-palm-beach','/locations-florida-west-palm-beach'],
+  'Boca Raton':                 ['/gyms/boca-raton','/locations-florida-boca-raton'],
+  'Pinecrest - Palmetto Bay':   ['/gyms/locations-florida-pinecrest','/nso-2026-pinecrest','/opening-pinecrest','/secure-founders-rate-pinecrest','/nso-pinecrest'],
+  'Naples - Mercato':           ['/nso-2026-naples','/locations-florida-naples','/naples-secure-founders-rate','/opening-naples'],
+  // ── New Jersey ─────────────────────────────────────────────────────────
+  'Toms River':                 ['/gyms/toms-river','/locations-new-jersey-toms-river'],
+  'Ocean Township':             ['/gyms/ocean-township','/locations-new-jersey-ocean-township'],
+  'Wall Township':              ['/gyms/wall-township','/locations-new-jersey-wall-township'],
+  // ── New York ───────────────────────────────────────────────────────────
+  'NYC - Chelsea':              ['/gyms/nyc-chelsea','/locations-new-york-chelsea'],
+  'NYC - Park Slope':           ['/gyms/park-slope','/locations-new-york-park-slope'],
+  'Eastchester':                ['/gyms/eastchester','/locations-new-york-eastchester'],
+  // ── Texas ──────────────────────────────────────────────────────────────
+  'Austin - Zilker':            ['/gyms/austin-zilker','/locations-texas-zilker'],
+  'Austin - Highland':          ['/gyms/austin-highland','/locations-texas-highland'],
+  'Dallas - Prestonwood':       ['/gyms/locations-texas-prestonwood','/nso-2026-prestonwood','/opening-prestonwood','/secure-founders-rate-prestonwood','/events-prestonwood'],
+  // ── Tennessee ──────────────────────────────────────────────────────────
+  'Nashville - Capitol View':   ['/gyms/nashville','/locations-tennessee-nashville'],
+  // ── North Carolina ─────────────────────────────────────────────────────
+  'Charlotte - Noda':           ['/gyms/charlotte-noda','/locations-north-carolina-charlotte'],
+  // ── Virginia ───────────────────────────────────────────────────────────
+  'Reston':                     ['/gyms/locations-virginia-reston','/nso-2026-reston','/opening-reston','/secure-founders-rate-reston'],
+  // ── Utah ───────────────────────────────────────────────────────────────
+  'Herriman':                   ['/gyms/utah-herriman','/nso-2026-herriman','/secure-founders-rate-herriman','/opening-herriman'],
 };
 
 // Per-studio color palette for organic charts
@@ -1756,7 +1790,8 @@ function renderGBP() {
 
   // Live API data path
   if (GBP_RAW_ORG && (GBP_RAW_ORG.studios || []).length) {
-    const studios = (GBP_RAW_ORG.studios || []).filter(s => selStudios.includes(s.name.replace(/^SWEAT440\s+/, '')));
+    const selShort = new Set(selStudios.map(s => s.replace(/^SWEAT440\s+/i, '')));
+    const studios = (GBP_RAW_ORG.studios || []).filter(s => selShort.has(s.name.replace(/^SWEAT440\s+/, '')));
     if (!studios.length) { el.innerHTML = _orgEmpty('No studios selected or no GBP data for selected studios.'); return; }
     let h = '';
     studios.forEach(s => {
@@ -1808,11 +1843,12 @@ function renderGA4() {
   const from = document.getElementById('fFrom').value || null;
   const to   = document.getElementById('fTo').value   || null;
   const selStudios = getSelected('studioMenu');
+  const selShortGA4 = selStudios.map(s => s.replace(/^SWEAT440\s+/i, ''));
 
   // Only studios that have GA4 paths defined
-  const activeStudios = selStudios.filter(s => GA4_PATHS[s]);
+  const activeStudios = selShortGA4.filter(s => GA4_PATHS[s]);
   if (!activeStudios.length) {
-    el.innerHTML = _orgEmpty('No website data available for selected studios. GA4 data covers: Herriman, Dallas - Prestonwood, Naples, Pinecrest, Reston.');
+    el.innerHTML = _orgEmpty('No website data available for selected studios.');
     return;
   }
 
@@ -2012,7 +2048,7 @@ function renderInstagram() {
     return;
   }
 
-  const selLower = new Set(selStudios.map(s => s.toLowerCase()));
+  const selLower = new Set(selStudios.map(s => s.replace(/^SWEAT440\s+/i, '').toLowerCase()));
   const studios  = (SOCIAL_RAW.instagram || []).filter(s => selLower.has((s.studio || '').toLowerCase()));
 
   if (!studios.length) {

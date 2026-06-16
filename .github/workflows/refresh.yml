@@ -23,7 +23,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install snowflake-connector-python requests
+          pip install snowflake-connector-python requests python-dotenv
           pip install google-ads
 
       - name: Fetch Snowflake + Meta account-level data
@@ -55,11 +55,34 @@ jobs:
         run: python fetch_google_ads.py
         continue-on-error: true
 
+      - name: Fetch Instagram insights (all studios)
+        env:
+          META_ACCESS_TOKEN: ${{ secrets.META_TOKEN }}
+        run: |
+          python nso-dashboard/scripts/fetch_social_insights.py \
+            --days 90 \
+            --output nso-dashboard/social_insights.json
+        continue-on-error: true
+
+      - name: Fetch Google Business Profile data (all studios)
+        env:
+          GBP_CLIENT_ID:     ${{ secrets.GBP_CLIENT_ID }}
+          GBP_CLIENT_SECRET: ${{ secrets.GBP_CLIENT_SECRET }}
+          GBP_REFRESH_TOKEN: ${{ secrets.GBP_REFRESH_TOKEN }}
+        run: |
+          python nso-dashboard/scripts/fetch_gbp.py \
+            --start 2025-01-01 \
+            --output nso-dashboard/gbp_data.json
+        continue-on-error: true
+
       - name: Commit updated data files
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data.json meta-ads-data.json google-ads-data.json
+          git add nso-dashboard/social_insights.json
+          git add nso-dashboard/gbp_data.json
+          git add nso-dashboard/thumbnails/ 2>/dev/null || true
           git diff --cached --quiet || git commit -m "chore: refresh data $(date -u '+%Y-%m-%d %H:%M UTC')"
           git pull --rebase origin main
           git push
