@@ -32,15 +32,14 @@ const SRC_COLOR_MAP = {
 // -- Default exclusions (can be overridden per dashboard) -------------------
 const DEFAULT_EXCL_SOURCES = ['ClassPass / Platforms','Grassroots'];
 const DEFAULT_EXCL_STUDIOS = [
-  'SWEAT440 Aventura','SWEAT440 Dallas - Prestonwood','SWEAT440 Dallas - Uptown','SWEAT440 Herriman',
-  'SWEAT440 Middletown','SWEAT440 Naples - Mercato','SWEAT440 Nashville - Capitol View','SWEAT440 North Miami',
-  'SWEAT440 Old Bridge','SWEAT440 Orlando - Dr Phillips','SWEAT440 Pinecrest - Palmetto Bay','SWEAT440 Reston'
+  'Aventura','Dallas - Prestonwood','Dallas - Uptown','Herriman',
+  'Middletown','Naples - Mercato','Nashville - Capitol View','North Miami',
+  'Old Bridge','Orlando - Dr Phillips','Pinecrest - Palmetto Bay','Reston'
 ];
 const NSO_STUDIOS = [
-  'SWEAT440 Aventura','SWEAT440 Dallas - Uptown','SWEAT440 Herriman',
-  'SWEAT440 Middletown','SWEAT440 Naples - Mercato','SWEAT440 North Miami',
-  'SWEAT440 Old Bridge','SWEAT440 Orlando - Dr Phillips','SWEAT440 Pinecrest - Palmetto Bay',
-  'SWEAT440 Reston'
+  'Aventura','Dallas - Uptown','Herriman',
+  'Middletown','Naples - Mercato','North Miami',
+  'Old Bridge','Orlando - Dr Phillips','Pinecrest - Palmetto Bay','Reston'
 ];
 
 function localDateStr(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
