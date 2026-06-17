@@ -104,8 +104,8 @@ campaigns:
     # Native Forms → native form events; Landing Pages → pixel lead event
     campaign_lead_types:
       "120243103413640249": [onsite_conversion.lead_grouped, leadgen_grouped, leadgen.other]
-      "120249459170510249": [offsite_conversion.fb_pixel_lead]
-      "120250407271150249": [offsite_conversion.fb_pixel_lead]
+      "120249459170510249": [_pixel_custom]   # custom pixel conversion in conversions[]
+      "120250407271150249": [_pixel_custom]   # custom pixel conversion in conversions[]
 
     audience_tokens:
       DINKS: ["DINKS"]

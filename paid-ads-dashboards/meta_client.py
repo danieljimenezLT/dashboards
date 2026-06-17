@@ -236,9 +236,6 @@ class MetaClient:
 
 # ─── helpers para extraer "actions" ────────────────────────────────
 LEAD_ACTION_TYPES = {"onsite_conversion.lead_grouped", "leadgen_grouped", "leadgen.other"}
-
-# Website/pixel leads — for campaigns optimized on landing-page conversions
-WEBSITE_LEAD_ACTION_TYPES = {"offsite_conversion.fb_pixel_lead"}
 PURCHASE_ACTION_TYPES = {"omni_purchase"}
 
 # Trials — SWEAT440 los trackea como OFFLINE CONVERSIONS (CRM → Meta CAPI).
@@ -273,6 +270,31 @@ def leads_of(row: dict) -> int:
 
 def purchases_of(row: dict) -> int:
     return count_actions(row.get("actions"), PURCHASE_ACTION_TYPES)
+
+
+def pixel_custom_leads_of(row: dict) -> int:
+    """
+    Landing-page campaigns track leads as custom pixel conversions.
+    Meta aggregates them as 'offsite_conversion.fb_pixel_custom.Leads-*'
+    in conversions[] — this matches the Results column in Meta Ads Manager.
+    Falls back to summing per-studio 'Lead <Studio>' events.
+    """
+    convs = row.get("conversions") or []
+    for c in convs:
+        if c.get("action_type", "").startswith("offsite_conversion.fb_pixel_custom.Leads-"):
+            try:
+                return int(float(c.get("value", 0)))
+            except (TypeError, ValueError):
+                return 0
+    # Fallback: sum individual per-studio events
+    total = 0
+    for c in convs:
+        if c.get("action_type", "").startswith("offsite_conversion.fb_pixel_custom.Lead "):
+            try:
+                total += int(float(c.get("value", 0)))
+            except (TypeError, ValueError):
+                pass
+    return total
 
 
 def trials_of(row: dict) -> int:

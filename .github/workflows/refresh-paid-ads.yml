@@ -7,7 +7,7 @@ on:
     - cron: "15 8 * * *"
   workflow_dispatch: {}        # permite correrlo manual desde la UI
   push:
-    branches: [paid-ads-dashboard]
+    branches: [main]
     paths:
       - "paid-ads-dashboards/fetch_paid_ads.py"
       - "paid-ads-dashboards/meta_client.py"

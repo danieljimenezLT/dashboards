@@ -16,7 +16,7 @@ from pathlib import Path
 
 import yaml
 
-from meta_client import MetaClient, leads_of, purchases_of, trials_of, count_actions, LEAD_ACTION_TYPES
+from meta_client import MetaClient, leads_of, purchases_of, trials_of, count_actions, pixel_custom_leads_of, LEAD_ACTION_TYPES
 
 
 REPO_ROOT = Path(__file__).resolve().parent
@@ -399,7 +399,8 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
         clicks = int(safe_float(ins.get("clicks")))
         reach = int(safe_float(ins.get("reach")))
         _lead_types = adset_lead_types.get(ins.get("adset_id", ""), LEAD_ACTION_TYPES)
-        leads = count_actions(ins.get("actions"), _lead_types)
+        leads = (pixel_custom_leads_of(ins) if "_pixel_custom" in _lead_types
+                 else count_actions(ins.get("actions"), _lead_types))
         purchases = purchases_of(ins)
         trials = trials_of(ins)
 
@@ -627,7 +628,8 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
             b["impressions"] += int(safe_float(row.get("impressions")))
             b["clicks"]      += int(safe_float(row.get("clicks")))
             _lt = adset_lead_types.get(row.get("adset_id", ""), LEAD_ACTION_TYPES)
-            b["leads"]       += count_actions(row.get("actions"), _lt)
+            b["leads"]       += (pixel_custom_leads_of(row) if "_pixel_custom" in _lt
+                                 else count_actions(row.get("actions"), _lt))
             b["trials"]      += trials_of(row)
 
         for (d, sc, ad_id) in sorted(d_ad_studio.keys()):
@@ -681,7 +683,8 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
             cl = int(safe_float(row.get("clicks")))
             rc = int(safe_float(row.get("reach", 0)))
             _lt2 = adset_lead_types.get(row.get("adset_id", ""), LEAD_ACTION_TYPES)
-            le = count_actions(row.get("actions"), _lt2)
+            le = (pixel_custom_leads_of(row) if "_pixel_custom" in _lt2
+                  else count_actions(row.get("actions"), _lt2))
             tr = trials_of(row)
             pu = purchases_of(row)
 
