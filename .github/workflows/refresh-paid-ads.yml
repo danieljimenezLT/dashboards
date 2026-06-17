@@ -42,8 +42,9 @@ jobs:
 
       - name: Run ETL (Meta → paid-ads-dashboards/paid-ads-data.json + daniel-paid-ads-data.json)
         env:
-          # meta_client.py acepta META_TOKEN o META_ACCESS_TOKEN.
-          META_TOKEN:        ${{ secrets.META_TOKEN }}
+          # Usa META_ACCESS_TOKEN (mismo token que NSO dashboard — siempre actualizado).
+          # meta_client.py lo acepta como META_TOKEN o META_ACCESS_TOKEN.
+          META_TOKEN:        ${{ secrets.META_ACCESS_TOKEN }}
           META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
           META_API_VERSION:  ${{ secrets.META_API_VERSION }}
         run: |
