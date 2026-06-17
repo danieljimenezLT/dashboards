@@ -1701,9 +1701,8 @@ async function _loadOrganicData() {
     GA4_RAW_ORG = mkt.ga4_traffic || [];
   } catch(e) { console.warn('marketing_data.json unavailable:', e); GA4_RAW_ORG = []; }
 
-  // Re-render Website/GA4 tab if it's active
-  const activeTab2 = document.querySelector('.tab-content.active');
-  if (activeTab2 && activeTab2.id === 'tab-website') renderGA4();
+  // Always re-render so data is ready when user switches to the tab
+  renderGA4();
 }
 
 // Data loaded in loadData() alongside other sources
