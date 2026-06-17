@@ -33,8 +33,14 @@ const SRC_COLOR_MAP = {
 const DEFAULT_EXCL_SOURCES = ['ClassPass / Platforms','Grassroots'];
 const DEFAULT_EXCL_STUDIOS = [
   'SWEAT440 Aventura','SWEAT440 Dallas - Prestonwood','SWEAT440 Dallas - Uptown','SWEAT440 Herriman',
-  'SWEAT440 Naples - Mercato','SWEAT440 Nashville - Capitol View','SWEAT440 North Miami',
+  'SWEAT440 Middletown','SWEAT440 Naples - Mercato','SWEAT440 Nashville - Capitol View','SWEAT440 North Miami',
   'SWEAT440 Old Bridge','SWEAT440 Orlando - Dr Phillips','SWEAT440 Pinecrest - Palmetto Bay','SWEAT440 Reston'
+];
+const NSO_STUDIOS = [
+  'SWEAT440 Aventura','SWEAT440 Dallas - Uptown','SWEAT440 Herriman',
+  'SWEAT440 Middletown','SWEAT440 Naples - Mercato','SWEAT440 North Miami',
+  'SWEAT440 Old Bridge','SWEAT440 Orlando - Dr Phillips','SWEAT440 Pinecrest - Palmetto Bay',
+  'SWEAT440 Reston'
 ];
 
 function localDateStr(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -99,21 +105,36 @@ function buildSourceSelect(menuId, labelId, items, defaultExcluded) {
 
 function buildMultiSelect(menuId, labelId, items, defaultExcluded) {
   const menu = document.getElementById(menuId);
+  menu.innerHTML = '';
   const allDiv = document.createElement('div');
   allDiv.className = 'ms-item ms-select-all';
   allDiv.innerHTML = `<input type="checkbox" id="${menuId}_all"> <label for="${menuId}_all" style="cursor:pointer">Select all</label>`;
   menu.appendChild(allDiv);
   const div0 = document.createElement('div'); div0.className = 'ms-divider'; menu.appendChild(div0);
 
-  items.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'ms-item';
-    const checked = !defaultExcluded.includes(item);
-    const safeId = `ms_${menuId}_${item.replace(/[^a-z0-9]/gi,'_')}`;
-    div.innerHTML = `<input type="checkbox" id="${safeId}" value="${item}" ${checked?'checked':''}> <label for="${safeId}" style="cursor:pointer">${item}</label>`;
-    div.querySelector('input').addEventListener('change', () => { syncSelectAll(menuId); updateLabel(menuId, labelId, items); _applyFilters(); });
-    menu.appendChild(div);
-  });
+  const nsoItems = items.filter(i =>  NSO_STUDIOS.includes(i));
+  const osItems  = items.filter(i => !NSO_STUDIOS.includes(i));
+
+  function addItems(arr) {
+    arr.forEach(item => {
+      const div = document.createElement('div'); div.className = 'ms-item';
+      const checked = !defaultExcluded.includes(item);
+      const safeId = `ms_${menuId}_${item.replace(/[^a-z0-9]/gi,'_')}`;
+      div.innerHTML = `<input type="checkbox" id="${safeId}" value="${item}" ${checked?'checked':''}> <label for="${safeId}" style="cursor:pointer">${item}</label>`;
+      div.querySelector('input').addEventListener('change', () => { syncSelectAll(menuId); updateLabel(menuId, labelId, items); _applyFilters(); });
+      menu.appendChild(div);
+    });
+  }
+
+  const catOS = document.createElement('div');
+  catOS.className = 'ms-category'; catOS.textContent = 'Open Studios';
+  menu.appendChild(catOS);
+  addItems(osItems);
+
+  const catNSO = document.createElement('div');
+  catNSO.className = 'ms-category'; catNSO.textContent = 'NSO Studios';
+  menu.appendChild(catNSO);
+  addItems(nsoItems);
 
   const allChk = document.getElementById(menuId+'_all');
   syncSelectAll(menuId);
