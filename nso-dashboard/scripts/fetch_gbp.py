@@ -58,7 +58,6 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 
 TOKEN_URL = "https://oauth2.googleapis.com/token"
 PERFORMANCE_API = "https://businessprofileperformance.googleapis.com/v1"
-SHEETS_API = "https://sheets.googleapis.com/v4/spreadsheets"
 
 METRICS = [
     "BUSINESS_IMPRESSIONS_DESKTOP_MAPS",
@@ -69,10 +68,6 @@ METRICS = [
     "WEBSITE_CLICKS",
     "BUSINESS_DIRECTION_REQUESTS",
 ]
-
-# Spreadsheet that holds studio config including GBP_LINK column
-STUDIOS_SHEET_ID  = "1vnONe0LTxKsrJAbcH4CM1w5vzQ7PcADN7FncoPV3qL0"
-STUDIOS_SHEET_TAB = "General"
 
 # ---------------------------------------------------------------------------
 # Auth helpers
@@ -127,107 +122,88 @@ def _extract_location_id(raw: str) -> str:
     return ""
 
 
+
 # ---------------------------------------------------------------------------
-# Load studio list from Google Sheets
-# Falls back to empty list (caller must handle missing location IDs gracefully)
+# Complete studio list (OFFICIAL_NAME_MBO).
+# location_id is the GBP Performance API numeric ID — NOT a Google Maps CID.
+# Studios with only a short Maps URL cannot have their location_id resolved
+# automatically; they are left empty and skipped during the API fetch until
+# the ID is confirmed manually.
 # ---------------------------------------------------------------------------
 
-def load_studios_from_sheet(token: str) -> list:
-    """
-    Read the 'General' tab of the studios spreadsheet and return a list of
-    {"name": ..., "code": ..., "location_id": ...} dicts.
-
-    Expected columns (case-insensitive header match):
-        STUDIO_NAME  or  Name  or  Studio   → studio display name
-        STUDIO_CODE  or  Code               → short code (e.g. FL-001)
-        GBP_LINK                            → GBP profile URL or numeric ID
-
-    Returns [] on any error so callers can fall back to a hardcoded list.
-    """
-    url = f"{SHEETS_API}/{STUDIOS_SHEET_ID}/values/{STUDIOS_SHEET_TAB}"
-    try:
-        resp = requests.get(url, headers=_headers(token), timeout=30)
-        if resp.status_code == 403:
-            print("  WARNING: Sheets API 403 — token may lack spreadsheets.readonly scope.")
-            return []
-        resp.raise_for_status()
-        data = resp.json()
-    except Exception as exc:
-        print(f"  WARNING: Could not read studios spreadsheet: {exc}")
-        return []
-
-    try:
-        rows = data.get("values", [])
-        if not rows:
-            print("  WARNING: Studios spreadsheet is empty.")
-            return []
-
-        # Find column indices from the header row (case-insensitive)
-        header = [h.strip().upper() for h in rows[0]]
-
-        def _col(candidates):
-            for c in candidates:
-                try:
-                    return header.index(c.upper())
-                except ValueError:
-                    pass
-            return None
-
-        name_col = _col(["STUDIO_NAME", "NAME", "STUDIO", "LOCATION"])
-        code_col = _col(["STUDIO_CODE", "CODE", "ID"])
-        gbp_col  = _col(["GBP_LINK", "GBP_URL", "GBP"])
-
-        if gbp_col is None:
-            print(f"  WARNING: No GBP_LINK column found. Headers: {rows[0]}")
-            return []
-        if name_col is None:
-            print(f"  WARNING: No studio name column found. Headers: {rows[0]}")
-            return []
-
-        # Highest column index we need — used to pad short rows
-        max_col = max(c for c in [name_col, code_col, gbp_col] if c is not None)
-
-        studios = []
-        for row in rows[1:]:
-            # Pad row so indexing never raises IndexError
-            while len(row) <= max_col:
-                row.append("")
-
-            name    = row[name_col].strip()
-            code    = row[code_col].strip() if code_col is not None else ""
-            gbp_raw = row[gbp_col].strip()
-            loc_id  = _extract_location_id(gbp_raw)
-
-            if not name:
-                continue  # skip blank rows
-
-            if not name.upper().startswith("SWEAT440"):
-                name = "SWEAT440 " + name
-
-            studios.append({"name": name, "code": code, "location_id": loc_id})
-
-        found = sum(1 for s in studios if s["location_id"])
-        print(f"  Loaded {len(studios)} studios from sheet, {found} have a GBP location ID.")
-        return studios
-
-    except Exception as exc:
-        print(f"  WARNING: Error parsing studios spreadsheet: {exc}")
-        return []
-
-
-# Hardcoded fallback — used when the spreadsheet is unreachable.
-# Only studios with a confirmed location_id are included.
-_FALLBACK_STUDIOS = [
-    {"name": "SWEAT440 Pinecrest - Palmetto Bay", "code": "FL-017", "location_id": "13145255458617855723"},
-    {"name": "SWEAT440 Naples - Mercato",          "code": "FL-019", "location_id": "9241286551304249574"},
+ALL_STUDIOS = [
+    # -- Florida ---------------------------------------------------------------
+    {"name": "SWEAT440 Aventura",                  "code": "FL-018", "location_id": ""},
+    {"name": "SWEAT440 Boca Raton",                "code": "FL-016", "location_id": ""},
+    {"name": "SWEAT440 Coral Gables",              "code": "FL-003", "location_id": ""},
+    {"name": "SWEAT440 Coral Springs",             "code": "FL-008", "location_id": ""},
+    {"name": "SWEAT440 Deerfield Beach",           "code": "FL-006", "location_id": ""},
+    {"name": "SWEAT440 Doral",                     "code": "FL-004", "location_id": ""},
+    {"name": "SWEAT440 Fort Lauderdale - Las Olas","code": "FL-013", "location_id": ""},
+    {"name": "SWEAT440 Fort Myers",                "code": "FL-021", "location_id": ""},
+    {"name": "SWEAT440 Miami Beach",               "code": "FL-001", "location_id": ""},
+    {"name": "SWEAT440 Miami - Brickell",          "code": "FL-002", "location_id": ""},
+    {"name": "SWEAT440 Miami - Coconut Grove",     "code": "FL-011", "location_id": ""},
+    {"name": "SWEAT440 Miami Lakes",               "code": "FL-005", "location_id": ""},
+    {"name": "SWEAT440 Miami - Midtown",           "code": "FL-010", "location_id": ""},
+    {"name": "SWEAT440 Miami - Upper East Side",   "code": "FL-007", "location_id": ""},
+    {"name": "SWEAT440 Miramar",                   "code": "FL-012", "location_id": ""},
+    {"name": "SWEAT440 Naples Mercato",            "code": "FL-019", "location_id": "9241286551304249574"},
+    {"name": "SWEAT440 North Miami",               "code": "FL-020", "location_id": ""},
+    {"name": "SWEAT440 Orlando - Dr Phillips",     "code": "FL-022", "location_id": ""},
+    {"name": "SWEAT440 Pembroke Pines",            "code": "FL-014", "location_id": ""},
+    {"name": "SWEAT440 Pinecrest",                 "code": "FL-017", "location_id": "13145255458617855723"},
+    {"name": "SWEAT440 South Miami",               "code": "FL-009", "location_id": ""},
+    {"name": "SWEAT440 St. Petersburg",            "code": "FL-023", "location_id": ""},
+    {"name": "SWEAT440 West Palm Beach",           "code": "FL-015", "location_id": ""},
+    # -- New York --------------------------------------------------------------
+    {"name": "SWEAT440 NYC - Chelsea",             "code": "NY-002", "location_id": ""},
+    {"name": "SWEAT440 NYC - FiDi",                "code": "NY-005", "location_id": ""},
+    {"name": "SWEAT440 NYC - Park Slope",          "code": "NY-003", "location_id": ""},
+    {"name": "SWEAT440 Eastchester",               "code": "NY-004", "location_id": ""},
+    # -- New Jersey ------------------------------------------------------------
+    {"name": "SWEAT440 Middletown",                "code": "NJ-004", "location_id": ""},
+    {"name": "SWEAT440 Ocean Township",            "code": "NJ-002", "location_id": ""},
+    {"name": "SWEAT440 Old Bridge",                "code": "NJ-005", "location_id": ""},
+    {"name": "SWEAT440 Toms River",                "code": "NJ-001", "location_id": ""},
+    {"name": "SWEAT440 Wall Township",             "code": "NJ-003", "location_id": ""},
+    # -- Texas -----------------------------------------------------------------
+    {"name": "SWEAT440 Austin - Highland",         "code": "TX-002", "location_id": ""},
+    {"name": "SWEAT440 Austin - Zilker",           "code": "TX-001", "location_id": ""},
     {"name": "SWEAT440 Dallas - Prestonwood",      "code": "TX-003", "location_id": "11402535545027699120"},
+    {"name": "SWEAT440 Dallas - Uptown",           "code": "TX-004", "location_id": ""},
+    # -- Virginia --------------------------------------------------------------
     {"name": "SWEAT440 Reston",                    "code": "VA-001", "location_id": "10767130387921211013"},
+    # -- Utah ------------------------------------------------------------------
     {"name": "SWEAT440 Herriman",                  "code": "UT-001", "location_id": "4243744174605320602"},
+    # -- North Carolina --------------------------------------------------------
+    {"name": "SWEAT440 Charlotte - NoDa",          "code": "NC-001", "location_id": ""},
+    {"name": "SWEAT440 Charlotte #2",              "code": "NC-002", "location_id": ""},
+    # -- Tennessee -------------------------------------------------------------
+    {"name": "SWEAT440 Nashville - Capitol View",  "code": "TN-001", "location_id": ""},
+    {"name": "SWEAT440 Nashville - Music Row",     "code": "TN-002", "location_id": ""},
+    # -- Georgia ---------------------------------------------------------------
+    {"name": "SWEAT440 Dunwoody",                  "code": "GA-001", "location_id": ""},
+    {"name": "SWEAT440 Roswell",                   "code": "GA-002", "location_id": ""},
+    # -- Oklahoma --------------------------------------------------------------
+    {"name": "SWEAT440 OKC - Rose Creek",          "code": "OK-001", "location_id": ""},
+    # -- Arizona ---------------------------------------------------------------
+    {"name": "SWEAT440 Tucson",                    "code": "AZ-001", "location_id": ""},
+    # -- Alabama ---------------------------------------------------------------
+    {"name": "SWEAT440 Huntsville",                "code": "AL-001", "location_id": ""},
+    # -- Wisconsin -------------------------------------------------------------
+    {"name": "SWEAT440 Madison",                   "code": "WI-001", "location_id": ""},
+    # -- California ------------------------------------------------------------
+    {"name": "SWEAT440 Long Beach",                "code": "CA-001", "location_id": ""},
+    # -- Vermont ---------------------------------------------------------------
+    {"name": "SWEAT440 Burlington",                "code": "VT-001", "location_id": ""},
+    # -- Canada ----------------------------------------------------------------
+    {"name": "SWEAT440 Jean Talon",                "code": "CA-MTL-001", "location_id": ""},
 ]
 
-# Backwards-compatible aliases
-NSO_STUDIOS = _FALLBACK_STUDIOS
-ALL_STUDIOS  = _FALLBACK_STUDIOS
+# Backwards-compatible alias — only studios with a confirmed location_id
+NSO_STUDIOS = [s for s in ALL_STUDIOS if s["location_id"]]
+
 
 
 # ---------------------------------------------------------------------------
@@ -380,16 +356,15 @@ def fetch_all_studios(
     studios: list | None = None,
 ) -> dict:
     """
-    Fetch GBP data for all studios.
+    Fetch GBP data for all studios in ALL_STUDIOS (or an explicit override list).
 
-    Studio list is loaded dynamically from the Google Sheets config spreadsheet
-    (GBP_LINK column on the 'General' tab). Pass an explicit list via studios
-    to skip the sheet lookup (used by run_all.py / single-studio mode).
+    Only studios with a non-empty location_id are fetched; the rest are skipped
+    with a printed message.
 
     Args:
         start_date: ISO date string "YYYY-MM-DD"
         end_date:   ISO date string "YYYY-MM-DD"
-        studios:    Optional override list
+        studios:    Optional override list (defaults to ALL_STUDIOS)
 
     Returns:
         Output dict ready to be serialised to JSON.
@@ -397,11 +372,7 @@ def fetch_all_studios(
     token = _get_access_token()
 
     if studios is None:
-        print("\nLoading studio list from Google Sheets...")
-        studios = load_studios_from_sheet(token)
-        if not studios:
-            print("  Sheet unavailable — falling back to hardcoded studio list.")
-            studios = _FALLBACK_STUDIOS
+        studios = ALL_STUDIOS
 
     studio_results = []
     errors = []
