@@ -112,29 +112,14 @@ function buildMultiSelect(menuId, labelId, items, defaultExcluded) {
   menu.appendChild(allDiv);
   const div0 = document.createElement('div'); div0.className = 'ms-divider'; menu.appendChild(div0);
 
-  const nsoItems = items.filter(i =>  NSO_STUDIOS.includes(i));
-  const osItems  = items.filter(i => !NSO_STUDIOS.includes(i));
-
-  function addItems(arr) {
-    arr.forEach(item => {
-      const div = document.createElement('div'); div.className = 'ms-item';
-      const checked = !defaultExcluded.includes(item);
-      const safeId = `ms_${menuId}_${item.replace(/[^a-z0-9]/gi,'_')}`;
-      div.innerHTML = `<input type="checkbox" id="${safeId}" value="${item}" ${checked?'checked':''}> <label for="${safeId}" style="cursor:pointer">${item}</label>`;
-      div.querySelector('input').addEventListener('change', () => { syncSelectAll(menuId); updateLabel(menuId, labelId, items); _applyFilters(); });
-      menu.appendChild(div);
-    });
-  }
-
-  const catOS = document.createElement('div');
-  catOS.className = 'ms-category'; catOS.textContent = 'Open Studios';
-  menu.appendChild(catOS);
-  addItems(osItems);
-
-  const catNSO = document.createElement('div');
-  catNSO.className = 'ms-category'; catNSO.textContent = 'NSO Studios';
-  menu.appendChild(catNSO);
-  addItems(nsoItems);
+  items.forEach(item => {
+    const div = document.createElement('div'); div.className = 'ms-item';
+    const checked = !defaultExcluded.includes(item);
+    const safeId = `ms_${menuId}_${item.replace(/[^a-z0-9]/gi,'_')}`;
+    div.innerHTML = `<input type="checkbox" id="${safeId}" value="${item}" ${checked?'checked':''}> <label for="${safeId}" style="cursor:pointer">${item}</label>`;
+    div.querySelector('input').addEventListener('change', () => { syncSelectAll(menuId); updateLabel(menuId, labelId, items); _applyFilters(); });
+    menu.appendChild(div);
+  });
 
   const allChk = document.getElementById(menuId+'_all');
   syncSelectAll(menuId);

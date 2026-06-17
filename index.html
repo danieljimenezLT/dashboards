@@ -104,9 +104,9 @@
           <button class="tog-btn on" data-ds="2" onclick="toggleDs(this,2)" style="border-color:#DDFF00;background:#DDFF00;color:#000"><span class="dot" style="background:#000"></span>New Members</button>
         </div>
         <div class="gran-group">
-          <button class="gran-btn" id="granDaily"   onclick="setGran('daily')">Daily</button>
+          <button class="gran-btn active" id="granDaily"   onclick="setGran('daily')">Daily</button>
           <button class="gran-btn" id="granWeekly"  onclick="setGran('weekly')">Weekly</button>
-          <button class="gran-btn active" id="granMonthly" onclick="setGran('monthly')">Monthly</button>
+          <button class="gran-btn" id="granMonthly" onclick="setGran('monthly')">Monthly</button>
         </div>
       </div>
       <div style="position:relative;width:100%;height:260px">
@@ -122,8 +122,8 @@
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
         <div class="chart-card-title" style="margin-bottom:0">Leads over time  by source</div>
         <div class="gran-group" id="gran-leadsAreaChart">
-          <button class="gran-btn"        id="gran-daily-leadsAreaChart"  onclick="setAreaGran('leadsAreaChart','daily')">Daily</button>
-          <button class="gran-btn active" id="gran-weekly-leadsAreaChart" onclick="setAreaGran('leadsAreaChart','weekly')">Weekly</button>
+          <button class="gran-btn active" id="gran-daily-leadsAreaChart"  onclick="setAreaGran('leadsAreaChart','daily')">Daily</button>
+          <button class="gran-btn"        id="gran-weekly-leadsAreaChart" onclick="setAreaGran('leadsAreaChart','weekly')">Weekly</button>
           <button class="gran-btn"        id="gran-monthly-leadsAreaChart"onclick="setAreaGran('leadsAreaChart','monthly')">Monthly</button>
         </div>
       </div>
@@ -157,8 +157,8 @@
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
         <div class="chart-card-title" style="margin-bottom:0">First timers over time  by source</div>
         <div class="gran-group" id="gran-ftAreaChart">
-          <button class="gran-btn"        id="gran-daily-ftAreaChart"  onclick="setAreaGran('ftAreaChart','daily')">Daily</button>
-          <button class="gran-btn active" id="gran-weekly-ftAreaChart" onclick="setAreaGran('ftAreaChart','weekly')">Weekly</button>
+          <button class="gran-btn active" id="gran-daily-ftAreaChart"  onclick="setAreaGran('ftAreaChart','daily')">Daily</button>
+          <button class="gran-btn"        id="gran-weekly-ftAreaChart" onclick="setAreaGran('ftAreaChart','weekly')">Weekly</button>
           <button class="gran-btn"        id="gran-monthly-ftAreaChart"onclick="setAreaGran('ftAreaChart','monthly')">Monthly</button>
         </div>
       </div>
@@ -192,8 +192,8 @@
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
         <div class="chart-card-title" style="margin-bottom:0">New members over time  by source</div>
         <div class="gran-group" id="gran-memAreaChart">
-          <button class="gran-btn"        id="gran-daily-memAreaChart"  onclick="setAreaGran('memAreaChart','daily')">Daily</button>
-          <button class="gran-btn active" id="gran-weekly-memAreaChart" onclick="setAreaGran('memAreaChart','weekly')">Weekly</button>
+          <button class="gran-btn active" id="gran-daily-memAreaChart"  onclick="setAreaGran('memAreaChart','daily')">Daily</button>
+          <button class="gran-btn"        id="gran-weekly-memAreaChart" onclick="setAreaGran('memAreaChart','weekly')">Weekly</button>
           <button class="gran-btn"        id="gran-monthly-memAreaChart"onclick="setAreaGran('memAreaChart','monthly')">Monthly</button>
         </div>
       </div>
@@ -242,9 +242,9 @@
           <button class="tog-btn on" data-ds="2" onclick="toggleCPRds(this,2)" style="border-color:#DDFF00;background:#DDFF00;color:#000"><span class="dot" style="background:#000"></span>Blended CPA</button>
         </div>
         <div class="gran-group">
-          <button class="gran-btn" id="cprGranDaily"   onclick="setCPRGran('daily')">Daily</button>
+          <button class="gran-btn active" id="cprGranDaily"   onclick="setCPRGran('daily')">Daily</button>
           <button class="gran-btn" id="cprGranWeekly"  onclick="setCPRGran('weekly')">Weekly</button>
-          <button class="gran-btn active" id="cprGranMonthly" onclick="setCPRGran('monthly')">Monthly</button>
+          <button class="gran-btn" id="cprGranMonthly" onclick="setCPRGran('monthly')">Monthly</button>
         </div>
       </div>
       <div style="position:relative;width:100%;height:260px"><canvas id="cprChart" role="img" aria-label="Line chart of cost per result over time"></canvas></div>
@@ -370,9 +370,9 @@
 // -- Dashboard state -------------------------------------------------------
 let RAW = null;
 let trendChart = null;
-let GRAN = 'weekly';
+let GRAN = 'daily';
 const COLORS = ['#00A3E0','#00FFC2','#DDFF00']; // Leads, First Timers, New Members
-const AREA_GRAN = {leadsAreaChart:'weekly', ftAreaChart:'weekly', memAreaChart:'weekly'};
+const AREA_GRAN = {leadsAreaChart:'daily', ftAreaChart:'daily', memAreaChart:'daily'};
 
 function switchTab(id, btn) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -446,16 +446,17 @@ async function loadData() {
 
   // Organic channel data — load in background, does NOT block main dashboard
   _loadOrganicData();
-  // Set default date range: year to date
+  // Set default date range: last month
   const _today = new Date();
-  const _jan1  = new Date(_today.getFullYear(), 0, 1);
-  document.getElementById('fFrom').value = localDateStr(_jan1);
-  document.getElementById('fTo').value   = localDateStr(_today);
+  const _firstOfLastMonth = new Date(_today.getFullYear(), _today.getMonth() - 1, 1);
+  const _lastOfLastMonth  = new Date(_today.getFullYear(), _today.getMonth(), 0);
+  document.getElementById('fFrom').value = localDateStr(_firstOfLastMonth);
+  document.getElementById('fTo').value   = localDateStr(_lastOfLastMonth);
 
   if (_allowedStudios) RAW.studios = RAW.studios.filter(s => _allowedStudios.includes(s));
   buildMultiSelect('studioMenu', 'studioLabel', RAW.studios, DEFAULT_EXCL_STUDIOS);
   buildSourceSelect('sourceMenu', 'sourceLabel', RAW.sources, DEFAULT_EXCL_SOURCES);
-  setGran('weekly');
+  setGran('daily');
 
   // If default date range has no data, fall back to last available month in dataset
   const allRows = [...(RAW.daily_detail||[]), ...(RAW.monthly_detail||[])];
@@ -754,7 +755,7 @@ function setAreaGran(canvasId, gran) {
 
 const CPR_COSTS_ACTIVE={google:true,meta:true,leadteam:true};
 let cprChart=null;
-let CPR_GRAN='monthly';
+let CPR_GRAN='daily';
 
 
 function toggleCPRCost(btn){
