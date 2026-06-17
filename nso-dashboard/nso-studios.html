@@ -1487,24 +1487,78 @@ function renderGoogle(){
    GA4 TAB
    ══════════════════════════════════════════════════════════════════════════ */
 let GA4_RAW=null;
-const GA4_PATHS={
-  'SWEAT440 Herriman':['/gyms/utah-herriman','/nso-2026-herriman','/secure-founders-rate-herriman','/opening-herriman'],
-  'SWEAT440 Dallas - Prestonwood':['/gyms/locations-texas-prestonwood','/nso-2026-prestonwood','/opening-prestonwood','/secure-founders-rate-prestonwood','/events-prestonwood'],
-  'SWEAT440 Naples - Mercato':['/nso-2026-naples','/locations-florida-naples','/naples-secure-founders-rate','/opening-naples'],
-  'SWEAT440 Pinecrest - Palmetto Bay':['/gyms/locations-florida-pinecrest','/nso-2026-pinecrest','/opening-pinecrest','/secure-founders-rate-pinecrest','/nso-pinecrest'],
-  'SWEAT440 Reston':['/gyms/locations-virginia-reston','/nso-2026-reston','/opening-reston','/secure-founders-rate-reston']
-};
-const GA4_COLORS={'SWEAT440 Herriman':'#00A3E0','SWEAT440 Dallas - Prestonwood':'#4285F4','SWEAT440 Naples - Mercato':'#00C9A7','SWEAT440 Pinecrest - Palmetto Bay':'#f4a021','SWEAT440 Reston':'#e05a5a'};
 
-function ga4Filter(studio,from,to){
+// Maps OFFICIAL_NAME_MBO → URL slugs (lowercase, spaces→dashes).
+// Rule: landing_page contains any slug. Covers primary and alt short names.
+const GA4_SLUGS={
+  'SWEAT440 Aventura':                ['aventura'],
+  'SWEAT440 Boca Raton':              ['boca-raton'],
+  'SWEAT440 Miami - Brickell':        ['brickell'],
+  'SWEAT440 NYC - Chelsea':           ['chelsea'],
+  'SWEAT440 Miami - Coconut Grove':   ['coconut-grove','grove'],
+  'SWEAT440 Coral Gables':            ['coral-gables','gables'],
+  'SWEAT440 Coral Springs':           ['coral-springs'],
+  'SWEAT440 Dallas - Prestonwood':    ['prestonwood'],
+  'SWEAT440 Dallas - Uptown':         ['uptown'],
+  'SWEAT440 Deerfield Beach':         ['deerfield'],
+  'SWEAT440 Doral':                   ['doral'],
+  'SWEAT440 Dunwoody':                ['dunwoody'],
+  'SWEAT440 Eastchester':             ['eastchester'],
+  'SWEAT440 NYC - FiDi':              ['fidi'],
+  'SWEAT440 Fort Myers':              ['fort-myers'],
+  'SWEAT440 Herriman':                ['herriman'],
+  'SWEAT440 Austin - Highland':       ['highland'],
+  'SWEAT440 Fort Lauderdale - Las Olas':['las-olas'],
+  'SWEAT440 Madison':                 ['madison'],
+  'SWEAT440 Miami Beach':             ['miami-beach','sobe'],
+  'SWEAT440 Miami Lakes':             ['miami-lakes'],
+  'SWEAT440 Miami - Midtown':         ['midtown-miami','midtown'],
+  'SWEAT440 Middletown':              ['middletown'],
+  'SWEAT440 Miramar':                 ['miramar'],
+  'SWEAT440 Naples Mercato':          ['naples-mercato','naples'],
+  'SWEAT440 Naples - Mercato':        ['naples-mercato','naples'],
+  'SWEAT440 Charlotte - NoDa':        ['noda'],
+  'SWEAT440 North Miami':             ['north-miami'],
+  'SWEAT440 Ocean Township':          ['ocean-township'],
+  'SWEAT440 OKC - Rose Creek':        ['rose-creek'],
+  'SWEAT440 Old Bridge':              ['old-bridge'],
+  'SWEAT440 Orlando - Dr Phillips':   ['dr-phillips'],
+  'SWEAT440 NYC - Park Slope':        ['park-slope'],
+  'SWEAT440 Pembroke Pines':          ['pembroke-pines'],
+  'SWEAT440 Pinecrest':               ['pinecrest'],
+  'SWEAT440 Pinecrest - Palmetto Bay':['pinecrest'],
+  'SWEAT440 Reston':                  ['reston'],
+  'SWEAT440 Roswell':                 ['roswell'],
+  'SWEAT440 South Miami':             ['south-miami','somi'],
+  'SWEAT440 Toms River':              ['toms-river'],
+  'SWEAT440 Miami - Upper East Side': ['upper-east-side','ues'],
+  'SWEAT440 Wall Township':           ['wall-township'],
+  'SWEAT440 West Palm Beach':         ['west-palm-beach','wpb'],
+  'SWEAT440 Austin - Zilker':         ['zilker'],
+};
+
+const GA4_COLORS=['#00A3E0','#DDFF00','#00FFC2','#f4a021','#e05a5a','#a78bfa','#34d399','#fb923c','#4285F4','#0084B5'];
+
+function _ga4StudioRows(studio,from,to){
   if(!GA4_RAW)return[];
-  const paths=GA4_PATHS[studio]||[];
+  const slugs=GA4_SLUGS[studio]||[];
+  if(!slugs.length)return[];
   return GA4_RAW.filter(r=>{
-    if(!paths.some(p=>r.landing_page.startsWith(p)))return false;
+    if(!r.landing_page)return false;
+    const lp=r.landing_page.toLowerCase();
+    if(!slugs.some(s=>lp.includes(s)))return false;
     if(from&&r.date<from)return false;
     if(to&&r.date>to)return false;
     return true;
   });
+}
+
+function _ga4Sum(rows){
+  return{
+    sessions: rows.reduce((s,r)=>s+(r.sessions||0),0),
+    users:    rows.reduce((s,r)=>s+(r.total_users||0),0),
+    newUsers: rows.reduce((s,r)=>s+(r.new_users||0),0),
+  };
 }
 
 function renderGA4(){
@@ -1516,29 +1570,45 @@ function renderGA4(){
   const activeStudios=NSO.filter(s=>selStudios.includes(s));
   if(!activeStudios.length){el.innerHTML='<div style="padding:40px;text-align:center;color:#8aaabb;font-family:Oswald,sans-serif;font-style:italic">No studios selected.</div>';return;}
 
-  const studioTotals=activeStudios.map(studio=>{
-    const rows=ga4Filter(studio,from,to);
-    return{studio,sessions:rows.reduce((s,r)=>s+(r.sessions||0),0),users:rows.reduce((s,r)=>s+(r.total_users||0),0),newUsers:rows.reduce((s,r)=>s+(r.new_users||0),0)};
-  });
+  // Sitewide — all rows in date range, no studio filter
+  const siteRows=GA4_RAW.filter(r=>(!from||r.date>=from)&&(!to||r.date<=to));
+  const site=_ga4Sum(siteRows);
 
+  // Location pages — selected studios combined
+  const locRows=activeStudios.flatMap(s=>_ga4StudioRows(s,from,to));
+  const loc=_ga4Sum(locRows);
+
+  const fmt=v=>v.toLocaleString('en-US');
   let h='';
-  h+='<div class="chart-card"><div class="chart-card-title">Website Visits — NSO Studios</div>';
-  h+='<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));margin-bottom:0">';
-  studioTotals.forEach(({studio,sessions,users,newUsers})=>{
-    const name=studio.replace('SWEAT440 ','');const col=GA4_COLORS[studio]||'#00A3E0';
-    h+=`<div class="kpi-card"><div class="kpi-card-label" style="color:${col}">${name}</div><div class="kpi-card-val">${sessions.toLocaleString('en-US')}</div><div style="font-size:11px;color:#8aaabb;margin-top:2px">Sessions</div><div style="font-size:11px;color:#5a7a8a;margin-top:6px">${users.toLocaleString('en-US')} users &nbsp;·&nbsp; ${newUsers.toLocaleString('en-US')} new</div></div>`;
-  });
+
+  // ── Entire website KPIs ──────────────────────────────────────────────────
+  h+='<div class="chart-card">';
+  h+='<div class="chart-card-title" style="margin-bottom:16px">ENTIRE WEBSITE</div>';
+  h+='<div class="kpi-grid three">';
+  h+=`<div class="kpi-card"><div class="kpi-card-label">Sessions</div><div class="kpi-card-val">${fmt(site.sessions)}</div></div>`;
+  h+=`<div class="kpi-card"><div class="kpi-card-label">Users</div><div class="kpi-card-val">${fmt(site.users)}</div></div>`;
+  h+=`<div class="kpi-card"><div class="kpi-card-label">New Users</div><div class="kpi-card-val">${fmt(site.newUsers)}</div></div>`;
   h+='</div></div>';
 
-  h+='<div class="chart-card"><div class="chart-card-title">Sessions Over Time</div><div style="position:relative;width:100%;height:280px"><canvas id="ga4TrendChart"></canvas></div></div>';
+  // ── Location pages combined KPIs + trend chart ───────────────────────────
+  h+='<div class="chart-card">';
+  h+='<div class="chart-card-title" style="margin-bottom:16px">LOCATION PAGES — SELECTED STUDIOS</div>';
+  h+='<div class="kpi-grid three">';
+  h+=`<div class="kpi-card"><div class="kpi-card-label">Sessions</div><div class="kpi-card-val">${fmt(loc.sessions)}</div></div>`;
+  h+=`<div class="kpi-card"><div class="kpi-card-label">Users</div><div class="kpi-card-val">${fmt(loc.users)}</div></div>`;
+  h+=`<div class="kpi-card"><div class="kpi-card-label">New Users</div><div class="kpi-card-val">${fmt(loc.newUsers)}</div></div>`;
+  h+='</div>';
+  h+='<div style="position:relative;width:100%;height:260px;margin-top:20px"><canvas id="ga4TrendChart"></canvas></div>';
+  h+='</div>';
 
-  h+='<div class="chart-card"><div class="chart-card-title">Traffic Sources by Studio</div><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Studio</th><th>Source / Medium</th><th class="num">Sessions</th><th class="num">Users</th><th class="num">New Users</th></tr></thead><tbody>';
+  // ── Per-studio breakdown table ───────────────────────────────────────────
+  h+='<div class="chart-card"><div class="chart-card-title">By Studio</div>';
+  h+='<div style="overflow-x:auto"><table class="data-table"><thead><tr>';
+  h+='<th>Studio</th><th class="num">Sessions</th><th class="num">Users</th><th class="num">New Users</th>';
+  h+='</tr></thead><tbody>';
   activeStudios.forEach(studio=>{
-    const rows=ga4Filter(studio,from,to);
-    const bySrc={};
-    rows.forEach(r=>{const k=r.source+' / '+r.medium;if(!bySrc[k])bySrc[k]={s:0,u:0,n:0};bySrc[k].s+=r.sessions||0;bySrc[k].u+=r.total_users||0;bySrc[k].n+=r.new_users||0});
-    const sorted=Object.entries(bySrc).sort((a,b)=>b[1].s-a[1].s).slice(0,4);
-    sorted.forEach(([src,v],i)=>{h+=`<tr><td>${i===0?studio.replace('SWEAT440 ',''):''}</td><td>${src}</td><td class="num">${v.s.toLocaleString('en-US')}</td><td class="num">${v.u.toLocaleString('en-US')}</td><td class="num">${v.n.toLocaleString('en-US')}</td></tr>`});
+    const t=_ga4Sum(_ga4StudioRows(studio,from,to));
+    h+=`<tr><td>${studio.replace('SWEAT440 ','')}</td><td class="num">${fmt(t.sessions)}</td><td class="num">${fmt(t.users)}</td><td class="num">${fmt(t.newUsers)}</td></tr>`;
   });
   h+='</tbody></table></div></div>';
 
@@ -1549,14 +1619,14 @@ function renderGA4(){
 function drawGA4Trend(from,to,activeStudios){
   const ctx=document.getElementById('ga4TrendChart');if(!ctx)return;
   if(_ch.ga4){_ch.ga4.destroy();_ch.ga4=null;}
-  const datasets=activeStudios.map(studio=>{
-    const rows=ga4Filter(studio,from,to);
+  const datasets=activeStudios.map((studio,i)=>{
+    const rows=_ga4StudioRows(studio,from,to);
     const byDate={};rows.forEach(r=>{byDate[r.date]=(byDate[r.date]||0)+(r.sessions||0)});
-    return{studio,byDate};
+    return{studio,byDate,color:GA4_COLORS[i%GA4_COLORS.length]};
   });
   const allDates=[...new Set(datasets.flatMap(d=>Object.keys(d.byDate)))].sort();
   const isMob=window.innerWidth<=768;
-  _ch.ga4=new Chart(ctx,{type:'line',data:{labels:allDates.map(d=>fmDay(d)),datasets:datasets.map(({studio,byDate})=>({label:studio.replace('SWEAT440 ',''),data:allDates.map(d=>byDate[d]||0),borderColor:GA4_COLORS[studio]||'#aaa',borderWidth:2,pointRadius:0,tension:.4,fill:false}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Oswald',size:12,style:'italic'},usePointStyle:true,padding:14}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',autoSkip:true,maxTicksLimit:isMob?5:14,maxRotation:0}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'}}}}});
+  _ch.ga4=new Chart(ctx,{type:'line',data:{labels:allDates.map(d=>fmDay(d)),datasets:datasets.map(({studio,byDate,color})=>({label:studio.replace('SWEAT440 ',''),data:allDates.map(d=>byDate[d]||0),borderColor:color,borderWidth:2,pointRadius:0,tension:.4,fill:false}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Oswald',size:12,style:'italic'},usePointStyle:true,padding:14}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',autoSkip:true,maxTicksLimit:isMob?5:14,maxRotation:0}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'}}}}});
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
