@@ -1,20 +1,30 @@
-import json, pathlib
+import json, pathlib, yaml
 
 ROOT      = pathlib.Path(__file__).parent
 new_file  = ROOT / "paid-ads-data.json"        # freshly fetched campaign(s)
 base_file = ROOT / "daniel-paid-ads-data.json" # existing merged file
+cfg_file  = ROOT / "config.yaml"
 
 new_data  = json.loads(new_file.read_text(encoding="utf-8"))
 base_data = json.loads(base_file.read_text(encoding="utf-8"))
+cfg       = yaml.safe_load(cfg_file.read_text(encoding="utf-8"))
+
+# Only overwrite campaigns that were actually re-fetched from the API;
+# cached campaigns (not in campaigns_to_refresh) keep their existing data in
+# daniel-paid-ads-data.json — this preserves manually-rebuilt concept maps.
+refresh_set = set(cfg.get("campaigns_to_refresh", []))
 
 # campaigns is a dict keyed by campaign name
 base_camps = base_data.get("campaigns", {})
 new_camps  = new_data.get("campaigns", {})
 
-# Overwrite with fresh data for each campaign in new_data
+# Overwrite with fresh data only for refreshed campaigns
 for key, camp in new_camps.items():
-    base_camps[key] = camp
-    print(f"  Updated: {key}  ({len(camp.get('ads', []))} ads, {camp['totals']['leads']} leads)")
+    if key in refresh_set:
+        base_camps[key] = camp
+        print(f"  Updated: {key}  ({len(camp.get('ads', []))} ads, {camp['totals']['leads']} leads)")
+    else:
+        print(f"  Kept cached: {key}  (not in campaigns_to_refresh)")
 
 # daily_ad_studio is a top-level array used by the ETL internally;
 # the dashboard reads from campaign.daily_series instead, so we just
