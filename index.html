@@ -1785,44 +1785,55 @@ function renderGBP() {
   const from = document.getElementById('fFrom').value || null;
   const to   = document.getElementById('fTo').value   || null;
 
-  // Live API data path
+  const sec = t => `<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#5a7a8a;margin:16px 0 10px">${t}</div>`;
+
+  function _renderGBPAgg(studioRows) {
+    const agg = k => studioRows.reduce((a, r) => a + (r[k] || 0), 0);
+    const totalViews = agg('search_mobile') + agg('search_desktop') + agg('maps_mobile') + agg('maps_desktop');
+    let h = '';
+    h += '<div class="chart-card">';
+    h += sec('Profile Views');
+    h += `<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
+    h += _orgKpi('Total Views',       totalViews.toLocaleString(), '');
+    h += _orgKpi('Google Search',     (agg('search_mobile') + agg('search_desktop')).toLocaleString(), '🔍');
+    h += _orgKpi('Google Maps',       (agg('maps_mobile')   + agg('maps_desktop')).toLocaleString(),   '📍');
+    h += `</div>`;
+    h += sec('Search Detail');
+    h += `<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
+    h += _orgKpi('Search — Mobile',   agg('search_mobile').toLocaleString(),  '📱');
+    h += _orgKpi('Search — Desktop',  agg('search_desktop').toLocaleString(), '🖥️');
+    h += _orgKpi('Maps — Mobile',     agg('maps_mobile').toLocaleString(),    '📱');
+    h += _orgKpi('Maps — Desktop',    agg('maps_desktop').toLocaleString(),   '🖥️');
+    h += `</div>`;
+    h += sec('Customer Actions');
+    h += `<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
+    h += _orgKpi('Direction Requests', agg('direction_requests').toLocaleString(), '🧭');
+    h += _orgKpi('Website Clicks',     agg('website_clicks').toLocaleString(),     '🌐');
+    h += _orgKpi('Calls',              agg('calls').toLocaleString(),              '📞');
+    h += `</div>`;
+    h += '</div>';
+    h += '<div class="chart-card"><div class="chart-card-title">By Studio</div>';
+    h += '<div style="overflow-x:auto"><table class="data-table"><thead><tr>';
+    h += '<th>Studio</th><th class="num">Total Views</th><th class="num">Search</th><th class="num">Maps</th><th class="num">Directions</th><th class="num">Website Clicks</th><th class="num">Calls</th>';
+    h += '</tr></thead><tbody>';
+    studioRows.forEach(r => {
+      const tv = (r.search_mobile||0)+(r.search_desktop||0)+(r.maps_mobile||0)+(r.maps_desktop||0);
+      h += `<tr><td>${r.name}</td><td class="num">${tv.toLocaleString()}</td><td class="num">${((r.search_mobile||0)+(r.search_desktop||0)).toLocaleString()}</td><td class="num">${((r.maps_mobile||0)+(r.maps_desktop||0)).toLocaleString()}</td><td class="num">${(r.direction_requests||0).toLocaleString()}</td><td class="num">${(r.website_clicks||0).toLocaleString()}</td><td class="num">${(r.calls||0).toLocaleString()}</td></tr>`;
+    });
+    h += '</tbody></table></div></div>';
+    return h;
+  }
+
   if (GBP_RAW_ORG && (GBP_RAW_ORG.studios || []).length) {
-    const selShort = new Set(selStudios.map(s => s.replace(/^SWEAT440\s+/i, '')));
+    const selShort = new Set(selStudios);
     const studios = (GBP_RAW_ORG.studios || []).filter(s => selShort.has(s.name.replace(/^SWEAT440\s+/, '')));
     if (!studios.length) { el.innerHTML = _orgEmpty('No studios selected or no GBP data for selected studios.'); return; }
-    let h = '';
-    studios.forEach(s => {
+    const studioRows = studios.map(s => {
       const rows = (s.daily || []).filter(r => (!from || r.date >= from) && (!to || r.date <= to));
       const sum  = k => rows.reduce((a, r) => a + (r[k] || 0), 0);
-      const totalViews  = sum('total_views');
-      const searchViews = sum('desktop_search') + sum('mobile_search');
-      const mapsViews   = sum('desktop_maps') + sum('mobile_maps');
-      const periodLabel = rows.length ? (rows[0].date + ' - ' + rows[rows.length-1].date) : (from && to ? from + ' - ' + to : 'All time');
-      h += `<div class="chart-card" style="margin-bottom:20px">`;
-      h += `<div class="chart-card-title">${s.name} <span style="font-size:12px;font-weight:400;color:#5a7a8a;margin-left:8px">${periodLabel}</span></div>`;
-      h += `<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#5a7a8a;margin-bottom:10px">Profile Views</div>`;
-      h += `<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">`;
-      h += _orgKpi('Total Views',   totalViews.toLocaleString(), '');
-      h += _orgKpi('Google Search', searchViews.toLocaleString(), '🔍');
-      h += _orgKpi('Google Maps',   mapsViews.toLocaleString(),   '📍');
-      h += `</div>`;
-      h += `<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#5a7a8a;margin-bottom:10px">Search Detail</div>`;
-      h += `<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">`;
-      h += _orgKpi('Search - Mobile',  sum('mobile_search').toLocaleString(),  '📱');
-      h += _orgKpi('Search - Desktop', sum('desktop_search').toLocaleString(), '🖥️');
-      h += _orgKpi('Maps - Mobile',    sum('mobile_maps').toLocaleString(),    '📱');
-      h += _orgKpi('Maps - Desktop',   sum('desktop_maps').toLocaleString(),   '🖥️');
-      h += `</div>`;
-      h += `<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#5a7a8a;margin-bottom:10px">Customer Actions</div>`;
-      h += `<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:8px">`;
-      h += _orgKpi('Direction Requests', sum('direction_requests').toLocaleString(), '🧭');
-      h += _orgKpi('Website Clicks',     sum('website_clicks').toLocaleString(),     '🌐');
-      h += _orgKpi('Calls',              sum('calls').toLocaleString(),              '📞');
-      h += `</div>`;
-      h += `<div style="font-size:10px;color:#aab;margin-top:12px">Source: Google Business Profile API &middot; ${rows.length} daily data points</div>`;
-      h += `</div>`;
+      return { name: s.name.replace(/^SWEAT440\s+/, ''), search_mobile: sum('mobile_search'), search_desktop: sum('desktop_search'), maps_mobile: sum('mobile_maps'), maps_desktop: sum('desktop_maps'), direction_requests: sum('direction_requests'), website_clicks: sum('website_clicks'), calls: sum('calls') };
     });
-    el.innerHTML = h || _orgEmpty('No GBP data available.');
+    el.innerHTML = _renderGBPAgg(studioRows);
     return;
   }
 
