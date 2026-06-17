@@ -1721,81 +1721,69 @@ function renderGBP(){
   const from=document.getElementById('fFrom').value||null;
   const to=document.getElementById('fTo').value||null;
 
-  // Use live API data if available, else fall back to static GBP_DATA
+  const sec=t=>`<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#5a7a8a;margin:16px 0 10px">${t}</div>`;
+
+  function _renderAgg(studioRows){
+    // studioRows: [{name, search_mobile, search_desktop, maps_mobile, maps_desktop, direction_requests, website_clicks, calls}]
+    const agg=k=>studioRows.reduce((a,r)=>a+(r[k]||0),0);
+    const totalViews=agg('search_mobile')+agg('search_desktop')+agg('maps_mobile')+agg('maps_desktop');
+    let h='';
+    h+='<div class="chart-card">';
+    h+=sec('Profile Views');
+    h+=`<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
+    h+=gbpKpi('Total Views',totalViews,'');
+    h+=gbpKpi('Google Search',agg('search_mobile')+agg('search_desktop'),'🔍');
+    h+=gbpKpi('Google Maps',agg('maps_mobile')+agg('maps_desktop'),'📍');
+    h+=`</div>`;
+    h+=sec('Search Detail');
+    h+=`<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
+    h+=gbpKpi('Search — Mobile',agg('search_mobile'),'📱');
+    h+=gbpKpi('Search — Desktop',agg('search_desktop'),'🖥️');
+    h+=gbpKpi('Maps — Mobile',agg('maps_mobile'),'📱');
+    h+=gbpKpi('Maps — Desktop',agg('maps_desktop'),'🖥️');
+    h+=`</div>`;
+    h+=sec('Customer Actions');
+    h+=`<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
+    h+=gbpKpi('Direction Requests',agg('direction_requests'),'🧭');
+    h+=gbpKpi('Website Clicks',agg('website_clicks'),'🌐');
+    h+=gbpKpi('Calls',agg('calls'),'📞');
+    h+=`</div>`;
+    h+='</div>';
+
+    // By-studio breakdown table
+    h+='<div class="chart-card"><div class="chart-card-title">By Studio</div>';
+    h+='<div style="overflow-x:auto"><table class="data-table"><thead><tr>';
+    h+='<th>Studio</th><th class="num">Total Views</th><th class="num">Search</th><th class="num">Maps</th><th class="num">Directions</th><th class="num">Website Clicks</th><th class="num">Calls</th>';
+    h+='</tr></thead><tbody>';
+    studioRows.forEach(r=>{
+      const tv=(r.search_mobile||0)+(r.search_desktop||0)+(r.maps_mobile||0)+(r.maps_desktop||0);
+      const sv=(r.search_mobile||0)+(r.search_desktop||0);
+      const mv=(r.maps_mobile||0)+(r.maps_desktop||0);
+      const name=r.name.replace('SWEAT440 ','');
+      h+=`<tr><td>${name}</td><td class="num">${tv.toLocaleString()}</td><td class="num">${sv.toLocaleString()}</td><td class="num">${mv.toLocaleString()}</td><td class="num">${(r.direction_requests||0).toLocaleString()}</td><td class="num">${(r.website_clicks||0).toLocaleString()}</td><td class="num">${(r.calls||0).toLocaleString()}</td></tr>`;
+    });
+    h+='</tbody></table></div></div>';
+    return h;
+  }
+
+  // Live API data path
   if(GBP_RAW&&(GBP_RAW.studios||[]).length){
     const studios=(GBP_RAW.studios||[]).filter(s=>selStudios.includes(s.name));
     if(!studios.length){el.innerHTML='<div style="padding:40px;text-align:center;color:#8aaabb;font-family:Oswald,sans-serif;font-style:italic">No studios selected.</div>';return;}
-    let h='';
-    studios.forEach(s=>{
+    const studioRows=studios.map(s=>{
       const rows=(s.daily||[]).filter(r=>(!from||r.date>=from)&&(!to||r.date<=to));
       const sum=k=>rows.reduce((a,r)=>a+(r[k]||0),0);
-      const totalViews=sum('total_views');
-      const searchViews=sum('desktop_search')+sum('mobile_search');
-      const mapsViews=sum('desktop_maps')+sum('mobile_maps');
-      const periodLabel=rows.length?(rows[0].date+' – '+rows[rows.length-1].date):(from&&to?from+' – '+to:'All time');
-      h+=`<div class="chart-card" style="margin-bottom:20px">`;
-      h+=`<div class="chart-card-title">${s.name} <span style="font-size:12px;font-weight:400;color:#5a7a8a;margin-left:8px">${periodLabel}</span></div>`;
-      h+=`<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#5a7a8a;margin-bottom:10px">Profile Views</div>`;
-      h+=`<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">`;
-      h+=gbpKpi('Total Views',totalViews,'');
-      h+=gbpKpi('Google Search',searchViews,'🔍');
-      h+=gbpKpi('Google Maps',mapsViews,'📍');
-      h+=`</div>`;
-      h+=`<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#5a7a8a;margin-bottom:10px">Search Detail</div>`;
-      h+=`<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">`;
-      h+=gbpKpi('Search — Mobile',sum('mobile_search'),'📱');
-      h+=gbpKpi('Search — Desktop',sum('desktop_search'),'🖥️');
-      h+=gbpKpi('Maps — Mobile',sum('mobile_maps'),'📱');
-      h+=gbpKpi('Maps — Desktop',sum('desktop_maps'),'🖥️');
-      h+=`</div>`;
-      h+=`<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#5a7a8a;margin-bottom:10px">Customer Actions</div>`;
-      h+=`<div class="kpi-grid four" style="margin-bottom:8px">`;
-      h+=gbpKpi('Direction Requests',sum('direction_requests'),'🧭');
-      h+=gbpKpi('Website Clicks',sum('website_clicks'),'🌐');
-      h+=gbpKpi('Calls',sum('calls'),'📞');
-      h+=`</div>`;
-      h+=`<div style="font-size:10px;color:#aab;margin-top:12px">Source: Google Business Profile API · ${rows.length} daily data points</div>`;
-      h+=`</div>`;
+      return{name:s.name,search_mobile:sum('mobile_search'),search_desktop:sum('desktop_search'),maps_mobile:sum('mobile_maps'),maps_desktop:sum('desktop_maps'),direction_requests:sum('direction_requests'),website_clicks:sum('website_clicks'),calls:sum('calls')};
     });
-    el.innerHTML=h||'<p style="color:#8aaabb;padding:20px">No GBP data available.</p>';
+    el.innerHTML=_renderAgg(studioRows);
     return;
   }
 
   // Fallback: static GBP_DATA
   const filtered=GBP_DATA.filter(d=>selStudios.includes(d.studio));
   if(!filtered.length){el.innerHTML='<div style="padding:40px;text-align:center;color:#8aaabb;font-family:Oswald,sans-serif;font-style:italic">No studios selected.</div>';return;}
-  let h='';
-  filtered.forEach(d=>{
-    const totalViews=d.search_mobile+d.search_desktop+d.maps_mobile+d.maps_desktop;
-    const searchViews=d.search_mobile+d.search_desktop;
-    const mapsViews=d.maps_mobile+d.maps_desktop;
-    h+=`<div class="chart-card" style="margin-bottom:20px">`;
-    h+=`<div class="chart-card-title">${d.studio} <span style="font-size:12px;font-weight:400;color:#5a7a8a;margin-left:8px">${d.period}</span></div>`;
-    h+=`<div style="font-size:11px;color:#8aaabb;margin-bottom:16px">${d.address}</div>`;
-    h+=`<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#5a7a8a;margin-bottom:10px">Profile Views</div>`;
-    h+=`<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">`;
-    h+=gbpKpi('Total Views',totalViews,'');
-    h+=gbpKpi('Google Search',searchViews,'🔍');
-    h+=gbpKpi('Google Maps',mapsViews,'📍');
-    h+=`</div>`;
-    h+=`<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#5a7a8a;margin-bottom:10px">Search Detail</div>`;
-    h+=`<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">`;
-    h+=gbpKpi('Search — Mobile',d.search_mobile,'📱');
-    h+=gbpKpi('Search — Desktop',d.search_desktop,'🖥️');
-    h+=gbpKpi('Maps — Mobile',d.maps_mobile,'📱');
-    h+=gbpKpi('Maps — Desktop',d.maps_desktop,'🖥️');
-    h+=`</div>`;
-    h+=`<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#5a7a8a;margin-bottom:10px">Customer Actions</div>`;
-    h+=`<div class="kpi-grid four" style="margin-bottom:8px">`;
-    h+=gbpKpi('Direction Requests',d.directions,'🧭');
-    h+=gbpKpi('Website Clicks',d.website_clicks,'🌐');
-    h+=gbpKpi('Calls',d.calls,'📞');
-    h+=gbpKpi('Messages',d.messages,'💬');
-    h+=`</div>`;
-    h+=`<div style="font-size:10px;color:#aab;margin-top:12px">Source: Google Business Profile CSV export.</div>`;
-    h+=`</div>`;
-  });
-  el.innerHTML=h||'<p style="color:#8aaabb;padding:20px">No GBP data available.</p>';
+  const studioRows=filtered.map(d=>({name:d.studio,search_mobile:d.search_mobile,search_desktop:d.search_desktop,maps_mobile:d.maps_mobile,maps_desktop:d.maps_desktop,direction_requests:d.directions,website_clicks:d.website_clicks,calls:d.calls}));
+  el.innerHTML=_renderAgg(studioRows)+`<div style="font-size:10px;color:#aab;padding:0 20px 16px">Source: Google Business Profile CSV export.</div>`;
 }
 
 let SOCIAL_RAW=null;
