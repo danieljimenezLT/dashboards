@@ -7,7 +7,7 @@ on:
     - cron: "15 8 * * *"
   workflow_dispatch: {}        # permite correrlo manual desde la UI
   push:
-    branches: [paid-ads-dashboard]
+    branches: [main]
     paths:
       - "paid-ads-dashboards/fetch_paid_ads.py"
       - "paid-ads-dashboards/meta_client.py"
@@ -42,15 +42,14 @@ jobs:
 
       - name: Run ETL (Meta → paid-ads-dashboards/paid-ads-data.json + daniel-paid-ads-data.json)
         env:
-          # meta_client.py acepta META_TOKEN o META_ACCESS_TOKEN.
           META_TOKEN:        ${{ secrets.META_TOKEN }}
           META_ACCESS_TOKEN: ${{ secrets.META_TOKEN }}
           META_API_VERSION:  ${{ secrets.META_API_VERSION }}
         run: |
           cd paid-ads-dashboards
           python fetch_paid_ads.py
-          # Sync a daniel-paid-ads-data.json (leído por paid-ads.html)
-          cp paid-ads-data.json daniel-paid-ads-data.json
+          # Merge fresh data into daniel-paid-ads-data.json (preserva campaigns en cache)
+          python merge_data.py
           # También mantener copia en root para otros dashboards (index.html, etc.)
           cp paid-ads-data.json ../paid-ads-data.json
 

@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 
 <!-- Shared brand styles (repo-wide) -->
-<link rel="stylesheet" href="shared/style.css">
+<link rel="stylesheet" href="../shared/style.css">
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -515,6 +515,7 @@ let DATA = null;
 let currentKey = null;
 let studiosSort = { col: "spend", dir: "desc" };
 let charts = {};
+let creativeMap = {};
 
 let dateFilter = { type: "all", start: null, end: null };
 let studioFilter = null;
@@ -559,6 +560,12 @@ const fmtInt   = n => (Number(n) || 0).toLocaleString("en-US");
 const fmtPct   = n => (Number(n) || 0).toFixed(2) + "%";
 
 async function bootstrap() {
+  // Load creative map (non-blocking — silently ignored if file doesn't exist yet)
+  try {
+    const cmRes = await fetch("creative-map.json?t=" + Date.now(), { cache: "no-store" });
+    if (cmRes.ok) creativeMap = await cmRes.json();
+  } catch (_) {}
+
   try {
     const res = await fetch("daniel-paid-ads-data.json?t=" + Date.now(), { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
@@ -1288,6 +1295,13 @@ function renderTabPillars(c) {
   });
 }
 
+function conceptCreative(dim) {
+  const lower = dim.toLowerCase();
+  const matches = Object.keys(creativeMap).filter(k => lower.includes(k));
+  if (!matches.length) return null;
+  return creativeMap[matches.sort((a, b) => b.length - a.length)[0]];
+}
+
 function renderTabConcepts(c) {
   const allRows = (c.daily_series && c.daily_series.by_concept) || [];
   const filteredRows = adTypeFilter === "all"
@@ -1304,6 +1318,13 @@ function renderTabConcepts(c) {
     label: "Ad", titleBase: "Leads by Ad — Daily", topN: 12,
     extraColHeader: "Type",
     extraColValue: dim => adTypeBadge(detectAdType(dim)),
+    dimRenderer: dim => {
+      const creative = conceptCreative(dim);
+      if (!creative) return dim;
+      return `<a href="${creative.url}" target="_blank" ` +
+        `style="color:#3B82F6;text-decoration:none;font-weight:500;" ` +
+        `title="${creative.label}">${dim}</a>`;
+    },
   });
 }
 
@@ -1434,7 +1455,7 @@ function renderLineTab(opts) {
       </tr></thead>
       <tbody>
         ${ordered.map(o => `<tr>
-            <td>${o.dim}</td>
+            <td>${opts.dimRenderer ? opts.dimRenderer(o.dim) : o.dim}</td>
             ${extraColValue ? `<td>${extraColValue(o.dim)}</td>` : ""}
             <td class="num">${fmtMoney(o.spend)}</td>
             <td class="num">${fmtInt(o.leads)}</td>

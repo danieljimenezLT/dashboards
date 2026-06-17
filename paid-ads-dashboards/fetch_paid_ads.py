@@ -16,7 +16,7 @@ from pathlib import Path
 
 import yaml
 
-from meta_client import MetaClient, leads_of, purchases_of, trials_of
+from meta_client import MetaClient, leads_of, purchases_of, trials_of, count_actions, pixel_custom_leads_of, LEAD_ACTION_TYPES
 
 
 REPO_ROOT = Path(__file__).resolve().parent
@@ -71,6 +71,7 @@ def match_pillar(name: str, tokens_by_pillar: dict[str, list[str]]) -> str | Non
 _STOPWORDS = {
     "V1", "V2", "V3", "V4", "V5", "A", "B", "C", "TEST", "VER", "VERSION",
     "WAFM", "WIN", "FREE", "MONTH", "CLASS", "OPEN", "STUDIOS", "STUDIO",
+    "WINMONTH", "OPENSTUDIOS", "OPENSTUDIOS", "FREEMONTH",
     "PROMO", "AD", "ADS", "COPY", "CREATIVE",
     "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
     "ENE", "ABR", "AGO", "DIC",
@@ -243,11 +244,23 @@ def safe_float(x, default=0.0):
 def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
     log.info(f"── Campaign: {c['display_name']} ({c['period_label']}) [{campaign_key}]")
 
-    ad_sets = meta.list_ad_sets(c["campaign_id"])
-    log.info(f"  {len(ad_sets)} ad sets")
+    campaign_ids_list = c.get("campaign_ids") or [c["campaign_id"]]
+    ad_sets = []
+    for _cid in campaign_ids_list:
+        ad_sets.extend(meta.list_ad_sets(_cid))
+    log.info(f"  {len(ad_sets)} ad sets (across {len(campaign_ids_list)} campaign(s))")
     adset_by_id = {a["id"]: a for a in ad_sets}
 
-    ads = meta.list_ads(c["campaign_id"])
+    # Per-campaign lead action types (Results column in Meta varies by campaign type)
+    campaign_lead_types_cfg = c.get("campaign_lead_types") or {}
+    adset_lead_types: dict[str, set[str]] = {
+        a["id"]: set(campaign_lead_types_cfg.get(a.get("campaign_id", ""), LEAD_ACTION_TYPES))
+        for a in ad_sets
+    }
+
+    ads = []
+    for _cid in campaign_ids_list:
+        ads.extend(meta.list_ads(_cid))
     log.info(f"  {len(ads)} ads")
 
     # Recolectar creative_ids únicos y traerlos en batch desde Meta.
@@ -295,11 +308,16 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
             log.warning(f"  ad set {adset.get('name','?')} ({adset['id']}) failed: {e}")
     log.info(f"  {len(ad_insights)} ad-level insight rows")
 
-    daily = meta.get_daily_insights(
-        c["campaign_id"],
-        date_start=c["date_start"],
-        date_end=c["date_end"],
-    )
+    daily = []
+    for _cid in campaign_ids_list:
+        try:
+            daily.extend(meta.get_daily_insights(
+                _cid,
+                date_start=c["date_start"],
+                date_end=c["date_end"],
+            ))
+        except Exception as _e:
+            log.warning(f"  get_daily_insights for {_cid} failed: {_e}")
     log.info(f"  {len(daily)} daily rows")
 
     studios_cfg = c["studios"]
@@ -380,7 +398,9 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
         impressions = int(safe_float(ins.get("impressions")))
         clicks = int(safe_float(ins.get("clicks")))
         reach = int(safe_float(ins.get("reach")))
-        leads = leads_of(ins)
+        _lead_types = adset_lead_types.get(ins.get("adset_id", ""), LEAD_ACTION_TYPES)
+        leads = (pixel_custom_leads_of(ins) if "_pixel_custom" in _lead_types
+                 else count_actions(ins.get("actions"), _lead_types))
         purchases = purchases_of(ins)
         trials = trials_of(ins)
 
@@ -607,7 +627,9 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
             b["spend"]       += spend
             b["impressions"] += int(safe_float(row.get("impressions")))
             b["clicks"]      += int(safe_float(row.get("clicks")))
-            b["leads"]       += leads_of(row)
+            _lt = adset_lead_types.get(row.get("adset_id", ""), LEAD_ACTION_TYPES)
+            b["leads"]       += (pixel_custom_leads_of(row) if "_pixel_custom" in _lt
+                                 else count_actions(row.get("actions"), _lt))
             b["trials"]      += trials_of(row)
 
         for (d, sc, ad_id) in sorted(d_ad_studio.keys()):
@@ -660,7 +682,9 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
             im = int(safe_float(row.get("impressions")))
             cl = int(safe_float(row.get("clicks")))
             rc = int(safe_float(row.get("reach", 0)))
-            le = leads_of(row)
+            _lt2 = adset_lead_types.get(row.get("adset_id", ""), LEAD_ACTION_TYPES)
+            le = (pixel_custom_leads_of(row) if "_pixel_custom" in _lt2
+                  else count_actions(row.get("actions"), _lt2))
             tr = trials_of(row)
             pu = purchases_of(row)
 

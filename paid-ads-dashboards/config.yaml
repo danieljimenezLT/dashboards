@@ -8,7 +8,7 @@
 #     el ETL (python backend/meta_to_sheets.py). No se toca codigo.
 # ---------------------------------------------------------------------
 
-active_campaign: win_a_free_month_apr2026
+active_campaign: free_class_open_studios_2026
 
 # 'campaigns_to_track' son TODAS las campanas que el ETL va a extraer en
 # cada run, para que aparezcan en el dropdown del dashboard.
@@ -23,7 +23,7 @@ campaigns_to_track:
 # del JSON existente (cache), ahorrando tiempo y quota de API.
 # Para forzar el re-fetch de una campana completada, agregala aqui temporalmente.
 campaigns_to_refresh:
-  - buy_1_get_3_open_studios_2026
+  - free_class_open_studios_2026
 
 
 campaigns:
@@ -96,7 +96,16 @@ campaigns:
     date_start:   "2026-04-15"
     date_end:     "2026-12-31"
     ad_account_id: "act_1553887681409034"   # misma cuenta corporate
-    campaign_id:   "120243103413640249"     # 2026 - Open Studios - Free Class
+    campaign_ids:                            # 3 campanas bajo Free Class
+      - "120243103413640249"                 # Free Class - Native Forms
+      - "120249459170510249"                 # Free Class - Landing Pages - No Conversion
+      - "120250407271150249"                 # Free Class - Landing Pages
+    # Tipo de lead por campaign_id (Results column de Meta):
+    # Native Forms → native form events; Landing Pages → pixel lead event
+    campaign_lead_types:
+      "120243103413640249": [onsite_conversion.lead_grouped, leadgen_grouped, leadgen.other]
+      "120249459170510249": [_pixel_custom]   # custom pixel conversion in conversions[]
+      "120250407271150249": [_pixel_custom]   # custom pixel conversion in conversions[]
 
     audience_tokens:
       DINKS: ["DINKS"]
@@ -150,9 +159,9 @@ campaigns:
   # =================================================================
   buy_1_get_3_open_studios_2026:
     display_name: "Buy 1 Get 3"
-    period_label: "May 12, 2026 onwards"
+    period_label: "May 12–27, 2026"
     date_start:   "2026-05-12"
-    date_end:     "2026-12-31"
+    date_end:     "2026-05-27"
     ad_account_id: "act_1553887681409034"   # SWEAT440 - Corporate Studios
     campaign_id:   "120248073278490249"     # 2026 - Open Studios - Buy 1 Get 3
 

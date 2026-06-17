@@ -30,6 +30,12 @@ sorted_keys = sorted(all_keys,
     key=lambda k: base_camps[k].get("date_start", ""), reverse=True)
 default_key = sorted_keys[0]  # most recent campaign
 
+# Prefer the active_campaign set by the ETL/config; fall back to most-recent by date
+active_key = new_data.get("active_campaign", default_key)
+if active_key not in base_camps:
+    active_key = default_key
+print(f"  active campaign: {active_key}")
+
 campaigns_index = []
 for key in all_keys:
     c = base_camps[key]
@@ -41,14 +47,12 @@ for key in all_keys:
         "date_end":     c["date_end"],
         "leads":        c["totals"]["leads"],
         "spend":        c["totals"]["spend"],
-        "is_default":   key == default_key,
+        "is_default":   key == active_key,
     })
-
-print(f"  default campaign: {default_key}")
 
 result = {
     **base_data,
-    "active_campaign":  default_key,
+    "active_campaign":  active_key,
     "campaigns_index":  campaigns_index,
     "campaigns":        base_camps,
     "daily_ad_studio":  merged_das,
