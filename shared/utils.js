@@ -32,8 +32,9 @@ const SRC_COLOR_MAP = {
 // -- Default exclusions (can be overridden per dashboard) -------------------
 const DEFAULT_EXCL_SOURCES = ['ClassPass / Platforms','Grassroots'];
 const DEFAULT_EXCL_STUDIOS = [
-  'Dallas - Prestonwood','Herriman','Naples - Mercato',
-  'Nashville - Capitol View','Pinecrest - Palmetto Bay','Reston'
+  'Aventura','Dallas - Prestonwood','Dallas - Uptown','Herriman',
+  'Naples - Mercato','Nashville - Capitol View','North Miami',
+  'Old Bridge','Orlando - Dr Phillips','Pinecrest - Palmetto Bay','Reston'
 ];
 
 function localDateStr(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
