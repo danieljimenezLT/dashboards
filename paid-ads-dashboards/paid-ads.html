@@ -155,6 +155,83 @@
   }
   .tab-panel.hidden { display: none; }
 
+  /* ── AI Analysis tab ─────────────────────────────────────────────────── */
+  .ai-summary-bar { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .ai-count-badge { padding:8px 16px; border-radius:8px; font-weight:700; font-size:13px; }
+  .ai-filter-bar  { display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; align-items:center; }
+  .ai-filter-btn  {
+    padding:5px 12px; border:1px solid var(--border); border-radius:20px;
+    background:var(--card); color:var(--ink-soft); cursor:pointer; font-size:12px;
+    font-family:'Open Sans',sans-serif; white-space:nowrap;
+  }
+  .ai-filter-btn.active { background:var(--brand-blue); color:#fff; border-color:var(--brand-blue); }
+  .ai-filter-btn:hover:not(.active) { background:var(--bg); }
+  .ai-filter-group {
+    display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+    padding:4px 10px; border-radius:8px;
+  }
+  .ai-filter-group.grp-alert  { background:#FEF2F2; }
+  .ai-filter-group.grp-warn   { background:#FFFBEB; }
+  .ai-filter-group.grp-opp    { background:#F0FDF4; }
+  .ai-filter-group-label {
+    font-size:10px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.7px; white-space:nowrap; padding-right:2px;
+  }
+  .grp-alert .ai-filter-group-label  { color:#DC2626; }
+  .grp-warn  .ai-filter-group-label  { color:#D97706; }
+  .grp-opp   .ai-filter-group-label  { color:#16A34A; }
+
+  .finding-card {
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    padding:16px 18px; margin-bottom:10px; border-left:4px solid var(--border);
+  }
+  .finding-card.sev-high        { border-left-color:#DC2626; }
+  .finding-card.sev-medium      { border-left-color:#F59E0B; }
+  .finding-card.sev-opportunity { border-left-color:#16A34A; }
+  .finding-card.sev-info        { border-left-color:#3B82F6; }
+
+  .finding-header   { display:flex; align-items:flex-start; gap:10px; margin-bottom:6px; flex-wrap:wrap; }
+  .finding-badge    { padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700;
+                      text-transform:uppercase; letter-spacing:.5px; white-space:nowrap; }
+  .fbadge-high        { background:#FEE2E2; color:#DC2626; }
+  .fbadge-medium      { background:#FEF3C7; color:#D97706; }
+  .fbadge-opportunity { background:#DCFCE7; color:#16A34A; }
+  .fbadge-info        { background:#DBEAFE; color:#2563EB; }
+  .fbadge-type        { background:#F1F5F9; color:var(--ink-soft); }
+
+  .finding-headline   { font-weight:700; font-size:14px; flex:1; min-width:0; }
+  .finding-studio     { font-size:11px; color:var(--ink-soft); white-space:nowrap; }
+  .finding-detail     { color:var(--ink-soft); font-size:13px; margin-bottom:8px; }
+  .finding-rec-alert  { background:#FFF7ED; border:1px solid #FED7AA; border-radius:6px;
+                        padding:8px 12px; font-size:12px; color:#92400E; }
+  .finding-rec-good   { background:#F0FDF4; border:1px solid #BBF7D0; border-radius:6px;
+                        padding:8px 12px; font-size:12px; color:#166534; }
+  .finding-meta       { display:flex; gap:16px; margin-top:10px; font-size:12px;
+                        color:var(--ink-soft); flex-wrap:wrap; align-items:center; }
+  .finding-meta strong { color:var(--ink); }
+  .finding-link { font-size:12px; color:var(--brand-blue); text-decoration:none; margin-left:auto; }
+  .finding-link:hover { text-decoration:underline; }
+  .ai-show-more { text-align:center; padding:14px; color:var(--brand-blue);
+                  cursor:pointer; font-size:13px; font-weight:600; }
+  .ai-show-more:hover { text-decoration:underline; }
+  .ai-narrative { background:#F0F9FF; border:1px solid #BAE6FD; border-radius:10px;
+                  padding:16px 18px; margin-bottom:16px; font-size:13px; line-height:1.6; }
+
+  /* Run Analysis button (local-only, hidden on live site) */
+  #runAnalysisBtn {
+    display: none; /* shown via JS on localhost only */
+    align-items: center; gap: 6px;
+    padding: 7px 14px; font-family: inherit; font-size: 12px; font-weight: 600;
+    background: var(--brand-blue); color: #fff;
+    border: none; border-radius: 6px; cursor: pointer;
+    transition: background .2s, opacity .2s; white-space: nowrap;
+  }
+  #runAnalysisBtn:hover:not(:disabled) { background: var(--brand-blue-deep); }
+  #runAnalysisBtn:disabled { opacity: .65; cursor: not-allowed; }
+  #runAnalysisBtn.btn-success { background: var(--good); }
+  #runAnalysisBtn.btn-error   { background: var(--bad); }
+  /* ─────────────────────────────────────────────────────────────────────── */
+
   /* Granularity toggle */
   .gran-toggle {
     display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
@@ -334,6 +411,7 @@
     <button class="tab" data-tab="pillars">Pillars</button>
     <button class="tab" data-tab="concepts">Ads</button>
     <button class="tab" data-tab="mediatype">Static vs Video</button>
+    <button class="tab" data-tab="ai-analysis">&#128200; AI Analysis</button>
   </div>
 
   <!-- ── Overview tab ─────────────────────────────────────────── -->
@@ -508,10 +586,69 @@
       <div class="chart-wrap h-daily"><canvas id="conceptsLineChart"></canvas></div>
     </div>
   </div>
-</div>
+
+  <!-- ── AI Analysis tab ────────────────────────────────────────────────── -->
+  <div class="tab-panel hidden" id="panel-ai-analysis">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+    <div>
+      <h2 style="margin:0;font-size:20px">AI Analysis</h2>
+      <div style="font-size:12px;color:var(--ink-soft);margin-top:2px">Rule-based insights on ad performance — updated daily</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span id="aiGenAt" style="font-size:12px;color:var(--ink-soft)"></span>
+      <button id="runAnalysisBtn" title="Local only: downloads latest data from GitHub then runs analyze_ads.py">
+        &#128260; Run Analysis in Local
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary badges -->
+  <div class="ai-summary-bar">
+    <div class="ai-summary-section" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:12px 20px;min-width:140px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#DC2626;margin-bottom:4px">High Alerts</div>
+      <div class="ai-count-badge" id="aiHighBadge" style="font-size:22px;font-weight:700;color:#DC2626;padding:0"></div>
+    </div>
+    <div class="ai-summary-section" style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 20px;min-width:140px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#D97706;margin-bottom:4px">Warnings</div>
+      <div class="ai-count-badge" id="aiWarnBadge" style="font-size:22px;font-weight:700;color:#D97706;padding:0"></div>
+    </div>
+    <div class="ai-summary-section" style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:12px 20px;min-width:140px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#16A34A;margin-bottom:4px">Opportunities</div>
+      <div class="ai-count-badge" id="aiOppBadge" style="font-size:22px;font-weight:700;color:#16A34A;padding:0"></div>
+    </div>
+  </div>
+
+  <!-- Type filter chips -->
+  <div class="ai-filter-bar" id="aiFilterBar">
+    <button class="ai-filter-btn active" data-type="all">All</button>
+    <button class="ai-filter-btn" data-type="wasted_spend">&#128176; Wasted Spend</button>
+    <button class="ai-filter-btn" data-type="cpl_bad">&#128200; Bad CPL</button>
+    <button class="ai-filter-btn" data-type="low_ctr">&#128065; Low CTR</button>
+    <button class="ai-filter-btn" data-type="cpl_regular">&#128202; Regular CPL</button>
+    <button class="ai-filter-btn" data-type="low_impressions">&#128263; Low Impressions</button>
+    <button class="ai-filter-btn" data-type="scale_opportunity">&#128640; Scale</button>
+    <button class="ai-filter-btn" data-type="paused_high_spend">&#9208; Paused</button>
+  </div>
+
+  <!-- AI narrative (shown only when Anthropic API key is set) -->
+  <div id="aiNarrative" class="ai-narrative" style="display:none"></div>
+
+  <!-- Findings list -->
+  <div id="aiFindingsList"></div>
+
+  <div id="aiLoadingMsg" style="text-align:center;padding:40px;color:var(--ink-soft)">
+    Loading analysis data...
+  </div>
+  <div id="aiErrorMsg"   style="display:none;padding:20px;color:var(--bad)"></div>
+  </div>
+  <!-- ──────────────────────────────────────────────────────────────────────── -->
+
+</div><!-- /.container -->
 
 <script>
 let DATA = null;
+let ANALYSIS = null;
 let currentKey = null;
 let studiosSort = { col: "spend", dir: "desc" };
 let charts = {};
@@ -566,6 +703,12 @@ async function bootstrap() {
     if (cmRes.ok) creativeMap = await cmRes.json();
   } catch (_) {}
 
+  // Load AI analysis JSON (non-blocking — silently ignored if not generated yet)
+  try {
+    const aRes = await fetch("paid-ads-analysis.json?t=" + Date.now(), { cache: "no-store" });
+    if (aRes.ok) ANALYSIS = await aRes.json();
+  } catch (_) {}
+
   try {
     const res = await fetch("daniel-paid-ads-data.json?t=" + Date.now(), { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
@@ -592,7 +735,10 @@ async function bootstrap() {
   sel.addEventListener("change", () => {
     currentKey = sel.value;
     resetFilterToAll();
+    aiShowAll = false;
     render();
+    const activeTab = document.querySelector(".tab.active");
+    if (activeTab && activeTab.dataset.tab === "ai-analysis") renderAnalysis();
   });
   currentKey = sel.value || DATA.active_campaign;
 
@@ -601,6 +747,8 @@ async function bootstrap() {
   initMetricPicker();
   initGranToggle();
   initAdTypeFilter();
+  initAiFilters();
+  initRunAnalysisButton();
   populateStudioFilter();
   render();
 }
@@ -677,6 +825,7 @@ function initTabs() {
       const panel = document.getElementById("panel-" + target);
       if (panel) panel.classList.remove("hidden");
       Object.values(charts).forEach(ch => { if (ch) ch.resize(); });
+      if (target === "ai-analysis") renderAnalysis();
     });
   });
 }
@@ -1595,6 +1744,173 @@ function renderLineTab(opts) {
     },
   });
 }
+
+// ── AI Analysis ────────────────────────────────────────────────────────────
+let aiTypeFilter = "all";
+let aiShowAll    = false;
+let aiStudioMap  = {};   // code → "Name (ST)"
+const AI_PAGE_SIZE = 25;
+
+const AI_TYPE_LABELS = {
+  wasted_spend:      "Wasted Spend",
+  cpl_bad:           "Bad CPL",
+  low_ctr:           "Low CTR",
+  cpl_regular:       "Regular CPL",
+  low_impressions:   "Low Impressions",
+  scale_opportunity: "Scale",
+  paused_high_spend: "Paused",
+};
+
+function initAiFilters() {
+  document.querySelectorAll("#aiFilterBar .ai-filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("#aiFilterBar .ai-filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      aiTypeFilter = btn.dataset.type;
+      aiShowAll = false;
+      renderAnalysis();
+    });
+  });
+}
+
+function renderFindingCard(f) {
+  const sevClass = { high:"fbadge-high", medium:"fbadge-medium", opportunity:"fbadge-opportunity", info:"fbadge-info" }[f.severity] || "fbadge-info";
+  const sevLabel = { high:"High Alert", medium:"Warning", opportunity:"Opportunity", info:"Info" }[f.severity] || f.severity;
+  const typeLabel = AI_TYPE_LABELS[f.type] || f.type;
+  const recClass  = (f.severity === "opportunity" || f.severity === "info") ? "finding-rec-good" : "finding-rec-alert";
+
+  const meta = [];
+  if (f.spend)       meta.push(`Spend: <strong>${fmtMoney(f.spend)}</strong>`);
+  if (f.leads != null) meta.push(`Leads: <strong>${f.leads}</strong>`);
+  if (f.cpl)         meta.push(`CPL: <strong>${fmtMoney(f.cpl)}</strong>`);
+  if (f.ctr != null) meta.push(`CTR: <strong>${Number(f.ctr).toFixed(2)}%</strong>`);
+  if (f.impressions) meta.push(`Impressions: <strong>${fmtInt(f.impressions)}</strong>`);
+  if (f.campaign_avg_cpl) meta.push(`Camp. avg CPL: <strong>${fmtMoney(f.campaign_avg_cpl)}</strong>`);
+  if (f.last_date)   meta.push(`Last activity: <strong>${f.last_date}</strong>`);
+  return `<div class="finding-card sev-${f.severity}">
+    <div class="finding-header">
+      <span class="finding-badge ${sevClass}">${sevLabel}</span>
+      <span class="finding-badge fbadge-type">${typeLabel}</span>
+      <span class="finding-headline" style="flex:1;min-width:0;margin-left:4px">${f.ad_name || ""}</span>
+      <span class="finding-studio">${aiStudioMap[f.studio_code] || f.studio_code || ""}</span>
+    </div>
+    <div style="font-weight:600;font-size:13px;margin-bottom:4px">${f.headline || ""}</div>
+    <div class="finding-detail">${f.detail || ""}</div>
+    <div class="${recClass}"><strong>Action:</strong> ${f.recommendation || ""}</div>
+    <div class="finding-meta">
+      ${meta.map(m => `<span>${m}</span>`).join("")}
+    </div>
+  </div>`;
+}
+
+function renderAnalysis() {
+  const loadEl  = document.getElementById("aiLoadingMsg");
+  const errorEl = document.getElementById("aiErrorMsg");
+  const listEl  = document.getElementById("aiFindingsList");
+  const narEl   = document.getElementById("aiNarrative");
+
+  if (!ANALYSIS) {
+    loadEl.style.display  = "";
+    loadEl.textContent    = "Analysis file not found. Run analyze_ads.py to generate it.";
+    listEl.innerHTML      = "";
+    narEl.style.display   = "none";
+    errorEl.style.display = "none";
+    return;
+  }
+
+  loadEl.style.display = "none";
+  errorEl.style.display = "none";
+
+  // Build studio code → display name map from campaign data
+  const campRaw = DATA && DATA.campaigns && DATA.campaigns[currentKey];
+  aiStudioMap = {};
+  if (campRaw && campRaw.studios) {
+    campRaw.studios.forEach(s => { aiStudioMap[s.code] = s.name + " (" + s.state + ")"; });
+  }
+
+  const campData = ANALYSIS.campaigns && ANALYSIS.campaigns[currentKey];
+  if (!campData) {
+    listEl.innerHTML = "<div class='empty'>No analysis available for this campaign.</div>";
+    return;
+  }
+
+  // Header
+  const windowLabel = ANALYSIS.window_label ? " · " + ANALYSIS.window_label : "";
+  document.getElementById("aiGenAt").textContent =
+    "Generated " + new Date(ANALYSIS.generated_at).toLocaleString() + windowLabel;
+  document.getElementById("aiHighBadge").textContent = campData.high_count ?? campData.alerts_count;
+  document.getElementById("aiWarnBadge").textContent  = campData.medium_count ?? 0;
+  document.getElementById("aiOppBadge").textContent   = campData.opportunities_count;
+
+  // Narrative (Claude API)
+  if (campData.narrative) {
+    narEl.style.display = "";
+    narEl.innerHTML = `<strong style="font-size:13px">&#129302; AI Summary</strong><p style="margin:8px 0 0">${campData.narrative}</p>`;
+  } else {
+    narEl.style.display = "none";
+  }
+
+  // Filter + paginate
+  let findings = campData.findings || [];
+  if (aiTypeFilter !== "all") findings = findings.filter(f => f.type === aiTypeFilter);
+
+  if (!findings.length) {
+    listEl.innerHTML = "<div class='empty'>No findings match this filter.</div>";
+    return;
+  }
+
+  const visible  = aiShowAll ? findings : findings.slice(0, AI_PAGE_SIZE);
+  const showMore = !aiShowAll && findings.length > AI_PAGE_SIZE
+    ? `<div class="ai-show-more" id="aiShowMoreBtn">Show ${findings.length - AI_PAGE_SIZE} more findings...</div>`
+    : "";
+
+  listEl.innerHTML = visible.map(renderFindingCard).join("") + showMore;
+
+  const smBtn = document.getElementById("aiShowMoreBtn");
+  if (smBtn) smBtn.addEventListener("click", () => { aiShowAll = true; renderAnalysis(); });
+}
+// ── Run Analysis in Local ─────────────────────────────────────────────────
+function initRunAnalysisButton() {
+  const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  const btn = document.getElementById("runAnalysisBtn");
+  if (!isLocal || !btn) return;
+  btn.style.display = "flex";
+  btn.addEventListener("click", runLocalAnalysis);
+}
+
+async function runLocalAnalysis() {
+  const btn = document.getElementById("runAnalysisBtn");
+  const origHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = "&#9203; Running...";
+  btn.classList.remove("btn-success", "btn-error");
+
+  try {
+    const res  = await fetch("/api/run-analysis", { method: "POST" });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || "Server error " + res.status);
+
+    // Reload both JSON files without a full page reload
+    const [aRes, dRes] = await Promise.all([
+      fetch("paid-ads-analysis.json?t="      + Date.now(), { cache: "no-store" }),
+      fetch("daniel-paid-ads-data.json?t="   + Date.now(), { cache: "no-store" }),
+    ]);
+    if (aRes.ok) ANALYSIS = await aRes.json();
+    if (dRes.ok) DATA     = await dRes.json();
+
+    renderAnalysis();
+    btn.innerHTML = "&#10003; Done!";
+    btn.classList.add("btn-success");
+    setTimeout(() => { btn.disabled = false; btn.innerHTML = origHTML; btn.classList.remove("btn-success"); }, 3000);
+  } catch (err) {
+    btn.innerHTML = "&#10007; Error";
+    btn.classList.add("btn-error");
+    btn.disabled = false;
+    console.error("[run-analysis]", err);
+    setTimeout(() => { btn.innerHTML = origHTML; btn.classList.remove("btn-error"); }, 4000);
+  }
+}
+// ───────────────────────────────────────────────────────────────────────────
 
 bootstrap();
 </script>
