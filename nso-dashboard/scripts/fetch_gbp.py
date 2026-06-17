@@ -133,75 +133,74 @@ def _extract_location_id(raw: str) -> str:
 
 ALL_STUDIOS = [
     # -- Florida ---------------------------------------------------------------
-    {"name": "SWEAT440 Aventura",                  "code": "FL-018", "location_id": ""},
-    {"name": "SWEAT440 Boca Raton",                "code": "FL-016", "location_id": ""},
-    {"name": "SWEAT440 Coral Gables",              "code": "FL-003", "location_id": ""},
-    {"name": "SWEAT440 Coral Springs",             "code": "FL-008", "location_id": ""},
-    {"name": "SWEAT440 Deerfield Beach",           "code": "FL-006", "location_id": ""},
-    {"name": "SWEAT440 Doral",                     "code": "FL-004", "location_id": ""},
-    {"name": "SWEAT440 Fort Lauderdale - Las Olas","code": "FL-013", "location_id": ""},
-    {"name": "SWEAT440 Fort Myers",                "code": "FL-021", "location_id": ""},
-    {"name": "SWEAT440 Miami Beach",               "code": "FL-001", "location_id": ""},
-    {"name": "SWEAT440 Miami - Brickell",          "code": "FL-002", "location_id": ""},
-    {"name": "SWEAT440 Miami - Coconut Grove",     "code": "FL-011", "location_id": ""},
-    {"name": "SWEAT440 Miami Lakes",               "code": "FL-005", "location_id": ""},
-    {"name": "SWEAT440 Miami - Midtown",           "code": "FL-010", "location_id": ""},
-    {"name": "SWEAT440 Miami - Upper East Side",   "code": "FL-007", "location_id": ""},
-    {"name": "SWEAT440 Miramar",                   "code": "FL-012", "location_id": ""},
-    {"name": "SWEAT440 Naples Mercato",            "code": "FL-019", "location_id": "9241286551304249574"},
-    {"name": "SWEAT440 North Miami",               "code": "FL-020", "location_id": ""},
-    {"name": "SWEAT440 Orlando - Dr Phillips",     "code": "FL-022", "location_id": ""},
-    {"name": "SWEAT440 Pembroke Pines",            "code": "FL-014", "location_id": ""},
-    {"name": "SWEAT440 Pinecrest",                 "code": "FL-017", "location_id": "13145255458617855723"},
-    {"name": "SWEAT440 South Miami",               "code": "FL-009", "location_id": ""},
-    {"name": "SWEAT440 St. Petersburg",            "code": "FL-023", "location_id": ""},
-    {"name": "SWEAT440 West Palm Beach",           "code": "FL-015", "location_id": ""},
+    {"name": "SWEAT440 Aventura",                  "code": "",                  "location_id": ""},
+    {"name": "SWEAT440 Boca Raton",                "code": "S440-Boca",         "location_id": ""},
+    {"name": "SWEAT440 Coral Gables",              "code": "S440-Gables",       "location_id": ""},
+    {"name": "SWEAT440 Coral Springs",             "code": "S440-CoralSprings", "location_id": ""},
+    {"name": "SWEAT440 Deerfield Beach",           "code": "S440-Deerfield",    "location_id": ""},
+    {"name": "SWEAT440 Doral",                     "code": "S440-Doral",        "location_id": ""},
+    {"name": "SWEAT440 Fort Lauderdale - Las Olas","code": "S440-LasOlas",      "location_id": ""},
+    {"name": "SWEAT440 Fort Myers",                "code": "",                  "location_id": ""},
+    {"name": "SWEAT440 Miami Beach",               "code": "S440-SOBE",         "location_id": ""},
+    {"name": "SWEAT440 Miami - Brickell",          "code": "S440-Brickell",     "location_id": ""},
+    {"name": "SWEAT440 Miami - Coconut Grove",     "code": "S440-Grove",        "location_id": ""},
+    {"name": "SWEAT440 Miami Lakes",               "code": "S440-Lakes",        "location_id": ""},
+    {"name": "SWEAT440 Miami - Midtown",           "code": "S440-Midtown",      "location_id": ""},
+    {"name": "SWEAT440 Miami - Upper East Side",   "code": "S440-UES",          "location_id": ""},
+    {"name": "SWEAT440 Miramar",                   "code": "S440-Miramar",      "location_id": ""},
+    {"name": "SWEAT440 Naples Mercato",            "code": "09191048626309248608", "location_id": "09191048626309248608"},
+    {"name": "SWEAT440 North Miami",               "code": "",                  "location_id": ""},
+    {"name": "SWEAT440 Orlando - Dr Phillips",     "code": "10836500706031006265", "location_id": "10836500706031006265"},
+    {"name": "SWEAT440 Pembroke Pines",            "code": "S440-Pines",        "location_id": ""},
+    {"name": "SWEAT440 Pinecrest",                 "code": "S440-Pinecrest",    "location_id": ""},
+    {"name": "SWEAT440 South Miami",               "code": "S440-SouthMiami",   "location_id": ""},
+    {"name": "SWEAT440 St. Petersburg",            "code": "",                  "location_id": ""},
+    {"name": "SWEAT440 West Palm Beach",           "code": "S440-WPB",          "location_id": ""},
     # -- New York --------------------------------------------------------------
-    {"name": "SWEAT440 NYC - Chelsea",             "code": "NY-002", "location_id": ""},
-    {"name": "SWEAT440 NYC - FiDi",                "code": "NY-005", "location_id": ""},
-    {"name": "SWEAT440 NYC - Park Slope",          "code": "NY-003", "location_id": ""},
-    {"name": "SWEAT440 Eastchester",               "code": "NY-004", "location_id": ""},
+    {"name": "SWEAT440 NYC - Chelsea",             "code": "S440-Chelsea",      "location_id": ""},
+    {"name": "SWEAT440 NYC - FiDi",                "code": "S440-FIDI",         "location_id": ""},
+    {"name": "SWEAT440 NYC - Park Slope",          "code": "S440-ParkSlope",    "location_id": ""},
+    {"name": "SWEAT440 Eastchester",               "code": "S440-Eastchester",  "location_id": ""},
     # -- New Jersey ------------------------------------------------------------
-    {"name": "SWEAT440 Middletown",                "code": "NJ-004", "location_id": ""},
-    {"name": "SWEAT440 Ocean Township",            "code": "NJ-002", "location_id": ""},
-    {"name": "SWEAT440 Old Bridge",                "code": "NJ-005", "location_id": ""},
-    {"name": "SWEAT440 Toms River",                "code": "NJ-001", "location_id": ""},
-    {"name": "SWEAT440 Wall Township",             "code": "NJ-003", "location_id": ""},
+    {"name": "SWEAT440 Middletown",                "code": "",                  "location_id": ""},
+    {"name": "SWEAT440 Ocean Township",            "code": "S440-OceanTownship","location_id": ""},
+    {"name": "SWEAT440 Old Bridge",                "code": "",                  "location_id": ""},
+    {"name": "SWEAT440 Toms River",                "code": "S440-TomsRiver",    "location_id": ""},
+    {"name": "SWEAT440 Wall Township",             "code": "S440-WallTownship", "location_id": ""},
     # -- Texas -----------------------------------------------------------------
-    {"name": "SWEAT440 Austin - Highland",         "code": "TX-002", "location_id": ""},
-    {"name": "SWEAT440 Austin - Zilker",           "code": "TX-001", "location_id": ""},
-    {"name": "SWEAT440 Dallas - Prestonwood",      "code": "TX-003", "location_id": "11402535545027699120"},
-    {"name": "SWEAT440 Dallas - Uptown",           "code": "TX-004", "location_id": ""},
+    {"name": "SWEAT440 Austin - Highland",         "code": "S440-Highland",     "location_id": ""},
+    {"name": "SWEAT440 Austin - Zilker",           "code": "S440-Zilker",       "location_id": ""},
+    {"name": "SWEAT440 Dallas - Prestonwood",      "code": "S440-Prestonwood",  "location_id": ""},
+    {"name": "SWEAT440 Dallas - Uptown",           "code": "",                  "location_id": ""},
     # -- Virginia --------------------------------------------------------------
-    {"name": "SWEAT440 Reston",                    "code": "VA-001", "location_id": "10767130387921211013"},
+    {"name": "SWEAT440 Reston",                    "code": "S440-Reston",       "location_id": ""},
     # -- Utah ------------------------------------------------------------------
-    {"name": "SWEAT440 Herriman",                  "code": "UT-001", "location_id": "4243744174605320602"},
+    {"name": "SWEAT440 Herriman",                  "code": "01689314637450990290", "location_id": "01689314637450990290"},
     # -- North Carolina --------------------------------------------------------
-    {"name": "SWEAT440 Charlotte - NoDa",          "code": "NC-001", "location_id": ""},
-    {"name": "SWEAT440 Charlotte #2",              "code": "NC-002", "location_id": ""},
+    {"name": "SWEAT440 Charlotte - NoDa",          "code": "S440-NoDa",         "location_id": ""},
+    {"name": "SWEAT440 Charlotte #2",              "code": "",                  "location_id": ""},
     # -- Tennessee -------------------------------------------------------------
-    {"name": "SWEAT440 Nashville - Capitol View",  "code": "TN-001", "location_id": ""},
-    {"name": "SWEAT440 Nashville - Music Row",     "code": "TN-002", "location_id": ""},
+    {"name": "SWEAT440 Nashville - Capitol View",  "code": "S440-CapitolView",  "location_id": ""},
+    {"name": "SWEAT440 Nashville - Music Row",     "code": "",                  "location_id": ""},
     # -- Georgia ---------------------------------------------------------------
-    {"name": "SWEAT440 Dunwoody",                  "code": "GA-001", "location_id": ""},
-    {"name": "SWEAT440 Roswell",                   "code": "GA-002", "location_id": ""},
+    {"name": "SWEAT440 Dunwoody",                  "code": "",                  "location_id": ""},
+    {"name": "SWEAT440 Roswell",                   "code": "",                  "location_id": ""},
     # -- Oklahoma --------------------------------------------------------------
-    {"name": "SWEAT440 OKC - Rose Creek",          "code": "OK-001", "location_id": ""},
+    {"name": "SWEAT440 OKC - Rose Creek",          "code": "",                  "location_id": ""},
     # -- Arizona ---------------------------------------------------------------
-    {"name": "SWEAT440 Tucson",                    "code": "AZ-001", "location_id": ""},
+    {"name": "SWEAT440 Tucson",                    "code": "",                  "location_id": ""},
     # -- Alabama ---------------------------------------------------------------
-    {"name": "SWEAT440 Huntsville",                "code": "AL-001", "location_id": ""},
-    # -- Wisconsin -------------------------------------------------------------
-    {"name": "SWEAT440 Madison",                   "code": "WI-001", "location_id": ""},
+    {"name": "SWEAT440 Huntsville",                "code": "",                  "location_id": ""},
+    {"name": "SWEAT440 Madison",                   "code": "S440-Madison",      "location_id": ""},
     # -- California ------------------------------------------------------------
-    {"name": "SWEAT440 Long Beach",                "code": "CA-001", "location_id": ""},
+    {"name": "SWEAT440 Long Beach",                "code": "",                  "location_id": ""},
     # -- Vermont ---------------------------------------------------------------
-    {"name": "SWEAT440 Burlington",                "code": "VT-001", "location_id": ""},
+    {"name": "SWEAT440 Burlington",                "code": "",                  "location_id": ""},
     # -- Canada ----------------------------------------------------------------
-    {"name": "SWEAT440 Jean Talon",                "code": "CA-MTL-001", "location_id": ""},
+    {"name": "SWEAT440 Jean Talon",                "code": "",                  "location_id": ""},
 ]
 
-# Backwards-compatible alias — only studios with a confirmed location_id
+# Backwards-compatible alias -- only studios with a confirmed location_id
 NSO_STUDIOS = [s for s in ALL_STUDIOS if s["location_id"]]
 
 
