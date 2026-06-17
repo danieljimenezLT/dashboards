@@ -1864,23 +1864,14 @@ function renderGA4() {
   const selStudios = getSelected('studioMenu');
   const activeStudios = selStudios.filter(s => (GA4_SLUGS[s] || []).length);
 
-  if (!activeStudios.length) {
-    el.innerHTML = _orgEmpty('No website data available for selected studios.');
-    return;
-  }
-
-  // Sitewide — all rows in date range, no studio filter
+  // Sitewide — all rows in date range, no studio filter (always shown)
   const siteRows = GA4_RAW_ORG.filter(r => (!from || r.date >= from) && (!to || r.date <= to));
   const site = _ga4Sum(siteRows);
-
-  // Location pages — selected studios combined
-  const locRows = activeStudios.flatMap(s => _ga4StudioRows(s, from, to));
-  const loc = _ga4Sum(locRows);
 
   const fmt = v => v.toLocaleString('en-US');
   let h = '';
 
-  // ── Entire website KPIs
+  // ── Entire website KPIs (always visible)
   h += '<div class="chart-card">';
   h += '<div class="chart-card-title" style="margin-bottom:16px">ENTIRE WEBSITE</div>';
   h += '<div class="kpi-grid three">';
@@ -1889,27 +1880,33 @@ function renderGA4() {
   h += `<div class="kpi-card"><div class="kpi-card-label">New Users</div><div class="kpi-card-val">${fmt(site.newUsers)}</div></div>`;
   h += '</div></div>';
 
-  // ── Location pages KPIs + trend chart
-  h += '<div class="chart-card">';
-  h += '<div class="chart-card-title" style="margin-bottom:16px">LOCATION PAGES — SELECTED STUDIOS</div>';
-  h += '<div class="kpi-grid three">';
-  h += `<div class="kpi-card"><div class="kpi-card-label">Sessions</div><div class="kpi-card-val">${fmt(loc.sessions)}</div></div>`;
-  h += `<div class="kpi-card"><div class="kpi-card-label">Users</div><div class="kpi-card-val">${fmt(loc.users)}</div></div>`;
-  h += `<div class="kpi-card"><div class="kpi-card-label">New Users</div><div class="kpi-card-val">${fmt(loc.newUsers)}</div></div>`;
-  h += '</div>';
-  h += '<div style="position:relative;width:100%;height:260px;margin-top:20px"><canvas id="ga4TrendChart"></canvas></div>';
-  h += '</div>';
+  if (activeStudios.length) {
+    // Location pages — selected studios combined
+    const locRows = activeStudios.flatMap(s => _ga4StudioRows(s, from, to));
+    const loc = _ga4Sum(locRows);
 
-  // ── By-studio table
-  h += '<div class="chart-card"><div class="chart-card-title">By Studio</div>';
-  h += '<div style="overflow-x:auto"><table class="data-table"><thead><tr>';
-  h += '<th>Studio</th><th class="num">Sessions</th><th class="num">Users</th><th class="num">New Users</th>';
-  h += '</tr></thead><tbody>';
-  activeStudios.forEach(studio => {
-    const t = _ga4Sum(_ga4StudioRows(studio, from, to));
-    h += `<tr><td>${studio}</td><td class="num">${fmt(t.sessions)}</td><td class="num">${fmt(t.users)}</td><td class="num">${fmt(t.newUsers)}</td></tr>`;
-  });
-  h += '</tbody></table></div></div>';
+    // ── Location pages KPIs + trend chart
+    h += '<div class="chart-card">';
+    h += '<div class="chart-card-title" style="margin-bottom:16px">LOCATION PAGES — SELECTED STUDIOS</div>';
+    h += '<div class="kpi-grid three">';
+    h += `<div class="kpi-card"><div class="kpi-card-label">Sessions</div><div class="kpi-card-val">${fmt(loc.sessions)}</div></div>`;
+    h += `<div class="kpi-card"><div class="kpi-card-label">Users</div><div class="kpi-card-val">${fmt(loc.users)}</div></div>`;
+    h += `<div class="kpi-card"><div class="kpi-card-label">New Users</div><div class="kpi-card-val">${fmt(loc.newUsers)}</div></div>`;
+    h += '</div>';
+    h += '<div style="position:relative;width:100%;height:260px;margin-top:20px"><canvas id="ga4TrendChart"></canvas></div>';
+    h += '</div>';
+
+    // ── By-studio table
+    h += '<div class="chart-card"><div class="chart-card-title">By Studio</div>';
+    h += '<div style="overflow-x:auto"><table class="data-table"><thead><tr>';
+    h += '<th>Studio</th><th class="num">Sessions</th><th class="num">Users</th><th class="num">New Users</th>';
+    h += '</tr></thead><tbody>';
+    activeStudios.forEach(studio => {
+      const t = _ga4Sum(_ga4StudioRows(studio, from, to));
+      h += `<tr><td>${studio}</td><td class="num">${fmt(t.sessions)}</td><td class="num">${fmt(t.users)}</td><td class="num">${fmt(t.newUsers)}</td></tr>`;
+    });
+    h += '</tbody></table></div></div>';
+  }
 
   el.innerHTML = h;
   setTimeout(() => _drawGA4Trend(from, to, activeStudios), 50);
