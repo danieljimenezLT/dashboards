@@ -1717,58 +1717,55 @@ const _orgCharts = {};
 // Social data is matched by studio name directly (case-insensitive).
 // SOC_CODE_MAP removed — no longer needed.
 
-// GA4 landing-page paths per studio (prefix-matched against landing_page dimension)
-const GA4_PATHS = {
-  // ── Florida ────────────────────────────────────────────────────────────
-  'Miami Beach':                ['/gyms/miami-beach','/locations-florida-miami-beach'],
-  'Miami - Brickell':           ['/gyms/miami-brickell','/locations-florida-brickell'],
-  'Coral Gables':               ['/gyms/coral-gables','/locations-florida-coral-gables'],
-  'Doral':                      ['/gyms/doral','/locations-florida-doral'],
-  'Miami Lakes':                ['/gyms/miami-lakes','/locations-florida-miami-lakes'],
-  'Deerfield Beach':            ['/gyms/deerfield-beach','/locations-florida-deerfield-beach'],
-  'Miami - Upper East Side':    ['/gyms/upper-east-side','/locations-florida-upper-east-side'],
-  'Coral Springs':              ['/gyms/coral-springs','/locations-florida-coral-springs'],
-  'South Miami':                ['/gyms/south-miami','/locations-florida-south-miami'],
-  'Miami - Midtown':            ['/gyms/midtown','/locations-florida-midtown'],
-  'Miami - Coconut Grove':      ['/gyms/coconut-grove','/locations-florida-coconut-grove'],
-  'Miramar':                    ['/gyms/miramar','/locations-florida-miramar'],
-  'Fort Lauderdale - Las Olas': ['/gyms/las-olas','/locations-florida-las-olas'],
-  'Pembroke Pines':             ['/gyms/pembroke-pines','/locations-florida-pembroke-pines'],
-  'West Palm Beach':            ['/gyms/west-palm-beach','/locations-florida-west-palm-beach'],
-  'Boca Raton':                 ['/gyms/boca-raton','/locations-florida-boca-raton'],
-  'Pinecrest - Palmetto Bay':   ['/gyms/locations-florida-pinecrest','/nso-2026-pinecrest','/opening-pinecrest','/secure-founders-rate-pinecrest','/nso-pinecrest'],
-  'Naples - Mercato':           ['/nso-2026-naples','/locations-florida-naples','/naples-secure-founders-rate','/opening-naples'],
-  // ── New Jersey ─────────────────────────────────────────────────────────
-  'Toms River':                 ['/gyms/toms-river','/locations-new-jersey-toms-river'],
-  'Ocean Township':             ['/gyms/ocean-township','/locations-new-jersey-ocean-township'],
-  'Wall Township':              ['/gyms/wall-township','/locations-new-jersey-wall-township'],
-  // ── New York ───────────────────────────────────────────────────────────
-  'NYC - Chelsea':              ['/gyms/nyc-chelsea','/locations-new-york-chelsea'],
-  'NYC - Park Slope':           ['/gyms/park-slope','/locations-new-york-park-slope'],
-  'Eastchester':                ['/gyms/eastchester','/locations-new-york-eastchester'],
-  // ── Texas ──────────────────────────────────────────────────────────────
-  'Austin - Zilker':            ['/gyms/austin-zilker','/locations-texas-zilker'],
-  'Austin - Highland':          ['/gyms/austin-highland','/locations-texas-highland'],
-  'Dallas - Prestonwood':       ['/gyms/locations-texas-prestonwood','/nso-2026-prestonwood','/opening-prestonwood','/secure-founders-rate-prestonwood','/events-prestonwood'],
-  // ── Tennessee ──────────────────────────────────────────────────────────
-  'Nashville - Capitol View':   ['/gyms/nashville','/locations-tennessee-nashville'],
-  // ── North Carolina ─────────────────────────────────────────────────────
-  'Charlotte - Noda':           ['/gyms/charlotte-noda','/locations-north-carolina-charlotte'],
-  // ── Virginia ───────────────────────────────────────────────────────────
-  'Reston':                     ['/gyms/locations-virginia-reston','/nso-2026-reston','/opening-reston','/secure-founders-rate-reston'],
-  // ── Utah ───────────────────────────────────────────────────────────────
-  'Herriman':                   ['/gyms/utah-herriman','/nso-2026-herriman','/secure-founders-rate-herriman','/opening-herriman'],
+// GA4 URL slugs per studio (landing_page contains any slug)
+const GA4_SLUGS = {
+  'SWEAT440 Aventura':                ['aventura'],
+  'SWEAT440 Boca Raton':              ['boca-raton'],
+  'SWEAT440 Miami - Brickell':        ['brickell'],
+  'SWEAT440 NYC - Chelsea':           ['chelsea'],
+  'SWEAT440 Miami - Coconut Grove':   ['coconut-grove','grove'],
+  'SWEAT440 Coral Gables':            ['coral-gables','gables'],
+  'SWEAT440 Coral Springs':           ['coral-springs'],
+  'SWEAT440 Dallas - Prestonwood':    ['prestonwood'],
+  'SWEAT440 Dallas - Uptown':         ['uptown'],
+  'SWEAT440 Deerfield Beach':         ['deerfield'],
+  'SWEAT440 Doral':                   ['doral'],
+  'SWEAT440 Dunwoody':                ['dunwoody'],
+  'SWEAT440 Eastchester':             ['eastchester'],
+  'SWEAT440 NYC - FiDi':              ['fidi'],
+  'SWEAT440 Fort Myers':              ['fort-myers'],
+  'SWEAT440 Herriman':                ['herriman'],
+  'SWEAT440 Austin - Highland':       ['highland'],
+  'SWEAT440 Fort Lauderdale - Las Olas':['las-olas'],
+  'SWEAT440 Madison':                 ['madison'],
+  'SWEAT440 Miami Beach':             ['miami-beach','sobe'],
+  'SWEAT440 Miami Lakes':             ['miami-lakes'],
+  'SWEAT440 Miami - Midtown':         ['midtown-miami','midtown'],
+  'SWEAT440 Middletown':              ['middletown'],
+  'SWEAT440 Miramar':                 ['miramar'],
+  'SWEAT440 Naples Mercato':          ['naples-mercato','naples'],
+  'SWEAT440 Naples - Mercato':        ['naples-mercato','naples'],
+  'SWEAT440 Charlotte - NoDa':        ['noda'],
+  'SWEAT440 North Miami':             ['north-miami'],
+  'SWEAT440 Ocean Township':          ['ocean-township'],
+  'SWEAT440 OKC - Rose Creek':        ['rose-creek'],
+  'SWEAT440 Old Bridge':              ['old-bridge'],
+  'SWEAT440 Orlando - Dr Phillips':   ['dr-phillips'],
+  'SWEAT440 NYC - Park Slope':        ['park-slope'],
+  'SWEAT440 Pembroke Pines':          ['pembroke-pines'],
+  'SWEAT440 Pinecrest':               ['pinecrest'],
+  'SWEAT440 Pinecrest - Palmetto Bay':['pinecrest'],
+  'SWEAT440 Reston':                  ['reston'],
+  'SWEAT440 Roswell':                 ['roswell'],
+  'SWEAT440 South Miami':             ['south-miami','somi'],
+  'SWEAT440 Toms River':              ['toms-river'],
+  'SWEAT440 Miami - Upper East Side': ['upper-east-side','ues'],
+  'SWEAT440 Wall Township':           ['wall-township'],
+  'SWEAT440 West Palm Beach':         ['west-palm-beach','wpb'],
+  'SWEAT440 Austin - Zilker':         ['zilker'],
 };
 
-// Per-studio color palette for organic charts
-const ORG_COLORS = {
-  'Herriman':              '#00A3E0',
-  'Dallas - Prestonwood':  '#4285F4',
-  'Naples - Mercato':      '#00C9A7',
-  'Pinecrest - Palmetto Bay': '#f4a021',
-  'Reston':                '#e05a5a'
-};
-function _orgColor(studio) { return ORG_COLORS[studio] || '#8aaabb'; }
+const GA4_COLORS = ['#00A3E0','#DDFF00','#00FFC2','#f4a021','#e05a5a','#a78bfa','#34d399','#fb923c','#4285F4','#0084B5'];
 
 // Helper: no-data placeholder
 function _orgEmpty(msg) {
@@ -1833,6 +1830,28 @@ function renderGBP() {
 }
 
 // ---- GA4 / Website -------------------------------------------------------
+function _ga4StudioRows(studio, from, to) {
+  if (!GA4_RAW_ORG || !GA4_RAW_ORG.length) return [];
+  const slugs = GA4_SLUGS[studio] || [];
+  if (!slugs.length) return [];
+  return GA4_RAW_ORG.filter(r => {
+    if (!r.landing_page) return false;
+    const lp = r.landing_page.toLowerCase();
+    if (!slugs.some(s => lp.includes(s))) return false;
+    if (from && r.date < from) return false;
+    if (to   && r.date > to)   return false;
+    return true;
+  });
+}
+
+function _ga4Sum(rows) {
+  return {
+    sessions: rows.reduce((s, r) => s + (r.sessions || 0), 0),
+    users:    rows.reduce((s, r) => s + (r.total_users || 0), 0),
+    newUsers: rows.reduce((s, r) => s + (r.new_users || 0), 0),
+  };
+}
+
 function renderGA4() {
   const el = document.getElementById('ga4-content');
   if (!el) return;
@@ -1843,77 +1862,68 @@ function renderGA4() {
   const from = document.getElementById('fFrom').value || null;
   const to   = document.getElementById('fTo').value   || null;
   const selStudios = getSelected('studioMenu');
-  const selShortGA4 = selStudios.map(s => s.replace(/^SWEAT440\s+/i, ''));
+  const activeStudios = selStudios.filter(s => (GA4_SLUGS[s] || []).length);
 
-  // Only studios that have GA4 paths defined
-  const activeStudios = selShortGA4.filter(s => GA4_PATHS[s]);
   if (!activeStudios.length) {
     el.innerHTML = _orgEmpty('No website data available for selected studios.');
     return;
   }
 
-  function ga4Filter(studio) {
-    const paths = GA4_PATHS[studio] || [];
-    return GA4_RAW_ORG.filter(r => {
-      if (!paths.some(p => r.landing_page.startsWith(p))) return false;
-      if (from && r.date < from) return false;
-      if (to   && r.date > to)   return false;
-      return true;
-    });
-  }
+  // Sitewide — all rows in date range, no studio filter
+  const siteRows = GA4_RAW_ORG.filter(r => (!from || r.date >= from) && (!to || r.date <= to));
+  const site = _ga4Sum(siteRows);
 
-  const studioTotals = activeStudios.map(studio => {
-    const rows = ga4Filter(studio);
-    return {
-      studio,
-      sessions: rows.reduce((s, r) => s + (r.sessions || 0), 0),
-      users:    rows.reduce((s, r) => s + (r.total_users || 0), 0),
-      newUsers: rows.reduce((s, r) => s + (r.new_users || 0), 0)
-    };
-  });
+  // Location pages — selected studios combined
+  const locRows = activeStudios.flatMap(s => _ga4StudioRows(s, from, to));
+  const loc = _ga4Sum(locRows);
 
+  const fmt = v => v.toLocaleString('en-US');
   let h = '';
-  h += '<div class="chart-card"><div class="chart-card-title">Website Visits by Studio</div>';
-  h += '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));margin-bottom:0">';
-  studioTotals.forEach(({ studio, sessions, users, newUsers }) => {
-    const name = studio.replace('SWEAT440 ', '');
-    const col  = _orgColor(studio);
-    h += `<div class="kpi-card"><div class="kpi-card-label" style="color:${col}">${name}</div><div class="kpi-card-val">${sessions.toLocaleString()}</div><div style="font-size:11px;color:#8aaabb;margin-top:2px">Sessions</div><div style="font-size:11px;color:#5a7a8a;margin-top:6px">${users.toLocaleString()} users &nbsp;&middot;&nbsp; ${newUsers.toLocaleString()} new</div></div>`;
-  });
+
+  // ── Entire website KPIs
+  h += '<div class="chart-card">';
+  h += '<div class="chart-card-title" style="margin-bottom:16px">ENTIRE WEBSITE</div>';
+  h += '<div class="kpi-grid three">';
+  h += `<div class="kpi-card"><div class="kpi-card-label">Sessions</div><div class="kpi-card-val">${fmt(site.sessions)}</div></div>`;
+  h += `<div class="kpi-card"><div class="kpi-card-label">Users</div><div class="kpi-card-val">${fmt(site.users)}</div></div>`;
+  h += `<div class="kpi-card"><div class="kpi-card-label">New Users</div><div class="kpi-card-val">${fmt(site.newUsers)}</div></div>`;
   h += '</div></div>';
 
-  h += '<div class="chart-card"><div class="chart-card-title">Sessions Over Time</div><div style="position:relative;width:100%;height:280px"><canvas id="ga4TrendChart"></canvas></div></div>';
+  // ── Location pages KPIs + trend chart
+  h += '<div class="chart-card">';
+  h += '<div class="chart-card-title" style="margin-bottom:16px">LOCATION PAGES — SELECTED STUDIOS</div>';
+  h += '<div class="kpi-grid three">';
+  h += `<div class="kpi-card"><div class="kpi-card-label">Sessions</div><div class="kpi-card-val">${fmt(loc.sessions)}</div></div>`;
+  h += `<div class="kpi-card"><div class="kpi-card-label">Users</div><div class="kpi-card-val">${fmt(loc.users)}</div></div>`;
+  h += `<div class="kpi-card"><div class="kpi-card-label">New Users</div><div class="kpi-card-val">${fmt(loc.newUsers)}</div></div>`;
+  h += '</div>';
+  h += '<div style="position:relative;width:100%;height:260px;margin-top:20px"><canvas id="ga4TrendChart"></canvas></div>';
+  h += '</div>';
 
-  h += '<div class="chart-card"><div class="chart-card-title">Traffic Sources by Studio</div><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Studio</th><th>Source / Medium</th><th class="num">Sessions</th><th class="num">Users</th><th class="num">New Users</th></tr></thead><tbody>';
+  // ── By-studio table
+  h += '<div class="chart-card"><div class="chart-card-title">By Studio</div>';
+  h += '<div style="overflow-x:auto"><table class="data-table"><thead><tr>';
+  h += '<th>Studio</th><th class="num">Sessions</th><th class="num">Users</th><th class="num">New Users</th>';
+  h += '</tr></thead><tbody>';
   activeStudios.forEach(studio => {
-    const rows  = ga4Filter(studio);
-    const bySrc = {};
-    rows.forEach(r => {
-      const k = r.source + ' / ' + r.medium;
-      if (!bySrc[k]) bySrc[k] = { s: 0, u: 0, n: 0 };
-      bySrc[k].s += r.sessions || 0;
-      bySrc[k].u += r.total_users || 0;
-      bySrc[k].n += r.new_users || 0;
-    });
-    Object.entries(bySrc).sort((a, b) => b[1].s - a[1].s).slice(0, 5).forEach(([src, v], i) => {
-      h += `<tr><td>${i === 0 ? studio.replace('SWEAT440 ','') : ''}</td><td>${src}</td><td class="num">${v.s.toLocaleString()}</td><td class="num">${v.u.toLocaleString()}</td><td class="num">${v.n.toLocaleString()}</td></tr>`;
-    });
+    const t = _ga4Sum(_ga4StudioRows(studio, from, to));
+    h += `<tr><td>${studio.replace('SWEAT440 ', '')}</td><td class="num">${fmt(t.sessions)}</td><td class="num">${fmt(t.users)}</td><td class="num">${fmt(t.newUsers)}</td></tr>`;
   });
   h += '</tbody></table></div></div>';
 
   el.innerHTML = h;
-  setTimeout(() => _drawGA4Trend(from, to, activeStudios, ga4Filter), 50);
+  setTimeout(() => _drawGA4Trend(from, to, activeStudios), 50);
 }
 
-function _drawGA4Trend(from, to, activeStudios, ga4Filter) {
+function _drawGA4Trend(from, to, activeStudios) {
   const ctx = document.getElementById('ga4TrendChart');
   if (!ctx) return;
   if (_orgCharts.ga4) { _orgCharts.ga4.destroy(); _orgCharts.ga4 = null; }
-  const datasets = activeStudios.map(studio => {
-    const rows   = ga4Filter(studio);
+  const datasets = activeStudios.map((studio, i) => {
+    const rows   = _ga4StudioRows(studio, from, to);
     const byDate = {};
     rows.forEach(r => { byDate[r.date] = (byDate[r.date] || 0) + (r.sessions || 0); });
-    return { studio, byDate };
+    return { studio, byDate, color: GA4_COLORS[i % GA4_COLORS.length] };
   });
   const allDates = [...new Set(datasets.flatMap(d => Object.keys(d.byDate)))].sort();
   const isMob    = window.innerWidth <= 768;
@@ -1921,10 +1931,10 @@ function _drawGA4Trend(from, to, activeStudios, ga4Filter) {
     type: 'line',
     data: {
       labels: allDates.map(d => fmtDayLabel(d)),
-      datasets: datasets.map(({ studio, byDate }) => ({
+      datasets: datasets.map(({ studio, byDate, color }) => ({
         label:       studio.replace('SWEAT440 ', ''),
         data:        allDates.map(d => byDate[d] || 0),
-        borderColor: _orgColor(studio),
+        borderColor: color,
         borderWidth: 2,
         pointRadius: 0,
         tension: .4,
