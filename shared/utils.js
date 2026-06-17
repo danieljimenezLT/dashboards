@@ -111,7 +111,13 @@ function buildMultiSelect(menuId, labelId, items, defaultExcluded) {
   menu.appendChild(allDiv);
   const div0 = document.createElement('div'); div0.className = 'ms-divider'; menu.appendChild(div0);
 
-  items.forEach(item => {
+  // NSO studios sorted to the bottom
+  const sorted = [
+    ...items.filter(i => !NSO_STUDIOS.includes(i)),
+    ...items.filter(i =>  NSO_STUDIOS.includes(i)),
+  ];
+
+  sorted.forEach(item => {
     const div = document.createElement('div'); div.className = 'ms-item';
     const checked = !defaultExcluded.includes(item);
     const safeId = `ms_${menuId}_${item.replace(/[^a-z0-9]/gi,'_')}`;
