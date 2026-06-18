@@ -45,8 +45,8 @@ jobs:
         env:
           # Usa META_ACCESS_TOKEN (mismo token que NSO dashboard — siempre actualizado).
           # meta_client.py lo acepta como META_TOKEN o META_ACCESS_TOKEN.
-          META_TOKEN:        ${{ secrets.META_ACCESS_TOKEN }}
-          META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
+          META_TOKEN:        ${{ secrets.META_TOKEN }}
+          META_ACCESS_TOKEN: ${{ secrets.META_TOKEN }}
           META_API_VERSION:  ${{ secrets.META_API_VERSION }}
         run: |
           cd paid-ads-dashboards
@@ -57,6 +57,7 @@ jobs:
           cp paid-ads-data.json ../paid-ads-data.json
 
       - name: Run AI Analysis (paid-ads-analysis.json)
+        continue-on-error: true        # si falla, el ETL data igual se commitea
         run: |
           cd paid-ads-dashboards
           python analyze_ads.py
@@ -71,5 +72,6 @@ jobs:
             echo "No changes in data files"
           else
             git commit -m "chore(paid-ads): refresh data $(date -u +%Y-%m-%dT%H:%MZ)"
+            git pull --rebase origin main
             git push
           fi
