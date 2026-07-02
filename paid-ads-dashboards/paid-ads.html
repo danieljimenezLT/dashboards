@@ -1779,6 +1779,13 @@ function renderFindingCard(f) {
   const typeLabel = AI_TYPE_LABELS[f.type] || f.type;
   const recClass  = (f.severity === "opportunity" || f.severity === "info") ? "finding-rec-good" : "finding-rec-alert";
 
+  const creative = conceptCreative(f.ad_name || "");
+  const adNameHtml = creative
+    ? `<a href="${creative.url}" target="_blank" title="Ver creativo en Drive"
+         style="color:inherit;text-decoration:none;">${f.ad_name || ""}
+         <span style="margin-left:4px;font-size:11px;opacity:.7">🔗</span></a>`
+    : (f.ad_name || "");
+
   const meta = [];
   if (f.spend)       meta.push(`Spend: <strong>${fmtMoney(f.spend)}</strong>`);
   if (f.leads != null) meta.push(`Leads: <strong>${f.leads}</strong>`);
@@ -1791,7 +1798,7 @@ function renderFindingCard(f) {
     <div class="finding-header">
       <span class="finding-badge ${sevClass}">${sevLabel}</span>
       <span class="finding-badge fbadge-type">${typeLabel}</span>
-      <span class="finding-headline" style="flex:1;min-width:0;margin-left:4px">${f.ad_name || ""}</span>
+      <span class="finding-headline" style="flex:1;min-width:0;margin-left:4px">${adNameHtml}</span>
       <span class="finding-studio">${aiStudioMap[f.studio_code] || f.studio_code || ""}</span>
     </div>
     <div style="font-weight:600;font-size:13px;margin-bottom:4px">${f.headline || ""}</div>

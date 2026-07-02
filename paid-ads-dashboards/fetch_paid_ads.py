@@ -230,6 +230,11 @@ def detect_concept(
             if len(w) >= 3 and w[0].isupper():
                 return f"{primary} - {w}"
 
+    # Multi-word concept: include remaining words after primary
+    # e.g. "Coach Sun Glasses" or "Coach Hot Takes"
+    tail = [w for w in words_out[primary_idx + 1:] if len(w) >= 3]
+    if tail:
+        return " ".join([primary] + tail)
     return primary
 
 
