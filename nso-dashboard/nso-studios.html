@@ -292,7 +292,7 @@
 const NSO=['SWEAT440 Aventura','SWEAT440 Burlington','SWEAT440 Dallas - Uptown','SWEAT440 Dunwoody','SWEAT440 Fort Myers','SWEAT440 Herriman','SWEAT440 Middletown','SWEAT440 Naples - Mercato','SWEAT440 North Miami','SWEAT440 Old Bridge','SWEAT440 Orlando - Dr Phillips','SWEAT440 Reston'];
 const EXCL_SRC=['ClassPass / Platforms'];
 
-let RAW=null,SC=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},CH_RAW=null;const _ch={};let _chDupOnly=false,_chSource='all';
+let RAW=null,SC=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},CH_RAW=null;const _ch={};let _chDupOnly=false;
 let CUR_USER=null,_allowedStudios=null;const isAdminUser=()=>CUR_USER&&CUR_USER.role==='admin';
 let _sumView='cum',_sumStudio=null,_scStudio=null,_dataThruLabel='',_sumD7End=null;
 const TODAY=new Date(),fom=new Date(TODAY.getFullYear(),TODAY.getMonth(),1),lpm=new Date(fom.getTime()-864e5),fpm=new Date(lpm.getFullYear(),lpm.getMonth(),1);
@@ -2178,10 +2178,9 @@ function renderClientHistory(){
   if(typeVal==='sale')  records=records.filter(r=>r.type==='sale');
   if(typeVal==='cancel')records=records.filter(r=>r.type==='cancel');
 
-  // Source filter — snapshot before filtering so dropdown always shows all available options
-  const recordsBeforeSrc=records.slice();
-  const srcVal=document.getElementById('chSourceFilter')?.value||'all';
-  if(srcVal!=='all')records=records.filter(r=>(r.source||'N/A')===srcVal);
+  // Source filter — use global sourceMenu (same as other tabs)
+  const selSrc=_getSel('sourceMenu');
+  if(selSrc.length)records=records.filter(r=>selSrc.includes(r.source||''));
 
   // Sort
   const {col,asc}=_chSort;
@@ -2228,12 +2227,6 @@ function renderClientHistory(){
         <option value="sale"${typeVal==='sale'?' selected':''}>Sales</option>
         <option value="cancel"${typeVal==='cancel'?' selected':''}>Cancellations</option>
       </select>`;
-  const allSources=[...new Set(recordsBeforeSrc.map(r=>r.source||'N/A'))].sort();
-  h+=`<span style="font-family:Oswald,sans-serif;font-style:italic;font-weight:600;font-size:12px;text-transform:uppercase;color:#5a7a8a;margin-left:8px">Source</span>`;
-  h+=`<select id="chSourceFilter" onchange="_chSource=this.value;renderClientHistory()" style="background:#1a2a35;color:#e0eef5;border:1px solid #2a4a5a;border-radius:4px;padding:4px 8px;font-size:13px">`;
-  h+=`<option value="all">All</option>`;
-  allSources.forEach(s=>{h+=`<option value="${s}"${srcVal===s?' selected':''}>${s}</option>`;});
-  h+=`</select>`;
   h+=`<button onclick="_chDupOnly=!_chDupOnly;renderClientHistory()" style="padding:5px 14px;border-radius:4px;border:2px solid ${_chDupOnly?'#f4a021':'#2a4a5a'};background:${_chDupOnly?'#f4a021':'transparent'};color:${_chDupOnly?'#000':'#8aaabb'};font-family:Oswald,sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;cursor:pointer;letter-spacing:.5px">Dupes Only${dupCount?' ('+dupCount+')':''}</button>`;
   h+=`<div style="margin-left:auto;display:flex;gap:8px">`;
   h+=`<button onclick="chExportCSV()" style="background:#00A3E0;color:#000;border:none;border-radius:4px;padding:6px 14px;font-family:Oswald,sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;cursor:pointer">Export CSV</button>`;
