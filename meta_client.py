@@ -57,7 +57,7 @@ def _action_value(row: dict, action_types: list[str]) -> int:
 
 
 def leads_of(row: dict) -> int:
-    return _action_value(row, ["lead", "onsite_conversion.lead_grouped"])
+    return _action_value(row, ["lead"])
 
 
 def offsite_leads_of(row: dict) -> int:
