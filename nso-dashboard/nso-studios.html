@@ -292,7 +292,7 @@
 const NSO=['SWEAT440 Aventura','SWEAT440 Burlington','SWEAT440 Dallas - Uptown','SWEAT440 Dunwoody','SWEAT440 Fort Myers','SWEAT440 Herriman','SWEAT440 Middletown','SWEAT440 Naples - Mercato','SWEAT440 North Miami','SWEAT440 Old Bridge','SWEAT440 Orlando - Dr Phillips','SWEAT440 Reston'];
 const EXCL_SRC=['ClassPass / Platforms'];
 
-let RAW=null,SC=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},CH_RAW=null;const _ch={};let _chDupOnly=false;
+let RAW=null,SC=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},CH_RAW=null;const _ch={};let _chDupOnly=false,_chSource='all';
 let CUR_USER=null,_allowedStudios=null;const isAdminUser=()=>CUR_USER&&CUR_USER.role==='admin';
 let _sumView='cum',_sumStudio=null,_scStudio=null,_dataThruLabel='',_sumD7End=null;
 const TODAY=new Date(),fom=new Date(TODAY.getFullYear(),TODAY.getMonth(),1),lpm=new Date(fom.getTime()-864e5),fpm=new Date(lpm.getFullYear(),lpm.getMonth(),1);
@@ -2175,6 +2175,11 @@ function renderClientHistory(){
   if(typeVal==='sale')  records=records.filter(r=>r.type==='sale');
   if(typeVal==='cancel')records=records.filter(r=>r.type==='cancel');
 
+  // Source filter — snapshot before filtering so dropdown always shows all available options
+  const recordsBeforeSrc=records.slice();
+  const srcVal=document.getElementById('chSourceFilter')?.value||'all';
+  if(srcVal!=='all')records=records.filter(r=>(r.source||'N/A')===srcVal);
+
   // Sort
   const {col,asc}=_chSort;
   records.sort((a,b)=>{
@@ -2220,6 +2225,12 @@ function renderClientHistory(){
         <option value="sale"${typeVal==='sale'?' selected':''}>Sales</option>
         <option value="cancel"${typeVal==='cancel'?' selected':''}>Cancellations</option>
       </select>`;
+  const allSources=[...new Set(recordsBeforeSrc.map(r=>r.source||'N/A'))].sort();
+  h+=`<span style="font-family:Oswald,sans-serif;font-style:italic;font-weight:600;font-size:12px;text-transform:uppercase;color:#5a7a8a;margin-left:8px">Source</span>`;
+  h+=`<select id="chSourceFilter" onchange="_chSource=this.value;renderClientHistory()" style="background:#1a2a35;color:#e0eef5;border:1px solid #2a4a5a;border-radius:4px;padding:4px 8px;font-size:13px">`;
+  h+=`<option value="all">All</option>`;
+  allSources.forEach(s=>{h+=`<option value="${s}"${srcVal===s?' selected':''}>${s}</option>`;});
+  h+=`</select>`;
   h+=`<button onclick="_chDupOnly=!_chDupOnly;renderClientHistory()" style="padding:5px 14px;border-radius:4px;border:2px solid ${_chDupOnly?'#f4a021':'#2a4a5a'};background:${_chDupOnly?'#f4a021':'transparent'};color:${_chDupOnly?'#000':'#8aaabb'};font-family:Oswald,sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;cursor:pointer;letter-spacing:.5px">Dupes Only${dupCount?' ('+dupCount+')':''}</button>`;
   h+=`<div style="margin-left:auto;display:flex;gap:8px">`;
   h+=`<button onclick="chExportCSV()" style="background:#00A3E0;color:#000;border:none;border-radius:4px;padding:6px 14px;font-family:Oswald,sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;cursor:pointer">Export CSV</button>`;
@@ -2284,6 +2295,7 @@ function renderClientHistory(){
   h+=_thL('Email','email');
   h+=_thL('Phone','phone');
   h+=_thL('Studio','studio');
+  h+=_thL('Source','source');
   h+=_thL('Product','product');
   h+=_th('Date','date');
   h+=_th('Time (ET)','time');
@@ -2294,7 +2306,7 @@ function renderClientHistory(){
   h+=`</tr></thead><tbody>`;
 
   if(!records.length){
-    h+=`<tr><td colspan="11" style="text-align:center;color:#8aaabb;padding:24px">No records match the current filters.</td></tr>`;
+    h+=`<tr><td colspan="12" style="text-align:center;color:#8aaabb;padding:24px">No records match the current filters.</td></tr>`;
   } else {
     for(const r of records){
       const isDup=dupEmails.has(r.email);
@@ -2307,6 +2319,7 @@ function renderClientHistory(){
       h+=`<td><a href="mailto:${r.email}" style="color:${isDup?'#f4a021':'#00A3E0'};text-decoration:none">${r.email||'—'}</a>${dupBadge}</td>`;
       h+=`<td>${r.phone||'—'}</td>`;
       h+=`<td>${r.studio||'—'}</td>`;
+      h+=`<td>${r.source||'N/A'}</td>`;
       h+=`<td>${r.product||'—'}</td>`;
       h+=`<td class="num">${r.date||'—'}</td>`;
       h+=`<td class="num">${r.time||'—'}</td>`;
@@ -2332,9 +2345,9 @@ function chSortBy(col){
 
 function chExportCSV(){
   const recs=window._chRecords||[];
-  const hdr=['Name','Email','Phone','Studio','Product','Date','Time','Platform','Sold By','Amount','Type'];
+  const hdr=['Name','Email','Phone','Studio','Source','Product','Date','Time','Platform','Sold By','Amount','Type'];
   const rows=recs.map(r=>[
-    r.client_name,r.email,r.phone,r.studio,r.product,r.date,r.time,r.platform,r.sold_by,r.amount,r.type
+    r.client_name,r.email,r.phone,r.studio,r.source||'N/A',r.product,r.date,r.time,r.platform,r.sold_by,r.amount,r.type
   ].map(v=>{
     const s=String(v??'').replace(/"/g,'""');
     return /[",\n]/.test(s)?`"${s}"`:s;

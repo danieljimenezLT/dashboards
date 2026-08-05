@@ -57,6 +57,47 @@ NSO_STUDIOS = studios_registry.nso_studios_by_snowflake_id()
 ID_LIST = ",".join(str(i) for i in NSO_STUDIOS)
 
 # ---------------------------------------------------------------------------
+# Lead-source attribution CASE — mirrors fetch_nso_sales.py exactly
+# ---------------------------------------------------------------------------
+_SOURCE_CASE = """
+    CASE
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) = 'facebook lead ad'    THEN 'Meta Ads'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) = 'instagram'            THEN 'Meta Ads'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) LIKE '%facebook%'
+         AND LOWER(TRIM(l.LEAD_SOURCE)) LIKE '%lead%'            THEN 'Meta Ads'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) LIKE '%instagram%'       THEN 'Meta Ads'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) = 'meta ads'            THEN 'Meta Ads'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) = 'google ads'          THEN 'Google Ads'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) = 'tiktok ads'          THEN 'TikTok Ads'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) = 'local listings'      THEN 'Local Listings'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) = 'internet / ai search' THEN
+             IFF(CAST(c.SIGNEDUP_DATE AS DATE) < '2026-03-18'::DATE, 'Google Ads', 'Internet / AI Search')
+        WHEN LOWER(TRIM(c.REFERRED_BY)) = 'local event'         THEN 'Grassroots'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) = 'print ads / signs'   THEN 'Print Ads / Signs'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) = 'social media'        THEN 'Social Media Organic'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) = 'branded web app (bwa)'
+                                                                 THEN 'Website (unattributed)'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('branded mobile app (bma)','consumer mode')
+                                                                 THEN 'SWEAT440 App'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('business app','business mode')
+                                                                 THEN 'Business Mode / App'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('public api')        THEN 'Public API'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('mindbody app','mindbody web')
+                                                                 THEN 'MindBody App'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('another client','word of mouth')
+                                                                 THEN 'Word of Mouth'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('classpass','wellhub','wellness passport')
+                                                                 THEN 'ClassPass / Platforms'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('drive by','flyer','frederick',
+                                             'holly met outside of gym.','internet','n/a',
+                                             'newspaper','other','radio','tv / streaming')
+                                                                 THEN 'Other'
+        ELSE 'N/A'
+    END
+"""
+
+
+# ---------------------------------------------------------------------------
 # SOURCE_CHANNEL → human-readable "sold by" label
 # ---------------------------------------------------------------------------
 def _sold_by(source_channel: str | None, online_flag) -> str:
@@ -129,6 +170,45 @@ phones AS (
         COALESCE(NULLIF(TRIM(CELLPHONE),''), NULLIF(TRIM(HOMEPHONE),''), NULLIF(TRIM(WORKPHONE),'')) AS phone
     FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_CLIENTS
     WHERE STUDIO_ID IN ({ID_LIST})
+),
+leads_src AS (
+    SELECT
+        LOWER(TRIM(CLIENT_EMAIL)) AS email,
+        STUDIO_ID,
+        LEAD_SOURCE,
+        ROW_NUMBER() OVER (
+            PARTITION BY LOWER(TRIM(CLIENT_EMAIL)), STUDIO_ID
+            ORDER BY
+                CASE
+                    WHEN LOWER(TRIM(LEAD_SOURCE)) = 'facebook lead ad'              THEN 0
+                    WHEN LOWER(TRIM(LEAD_SOURCE)) LIKE '%instagram%'                THEN 0
+                    WHEN LOWER(TRIM(LEAD_SOURCE)) LIKE '%facebook%'
+                     AND LOWER(TRIM(LEAD_SOURCE)) LIKE '%lead%'                     THEN 0
+                    WHEN LOWER(TRIM(LEAD_SOURCE)) LIKE '%google%'                   THEN 0
+                    WHEN LEAD_SOURCE = 'public api'                                  THEN 3
+                    WHEN LEAD_SOURCE IS NULL                                          THEN 2
+                    ELSE 1
+                END,
+                STAGE_START ASC
+        ) AS rn
+    FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_LEADS_LOG
+    WHERE STUDIO_ID IN ({ID_LIST})
+),
+clients_src AS (
+    SELECT
+        LOWER(TRIM(EMAIL_ID)) AS email,
+        STUDIO_ID,
+        REFERRED_BY,
+        CAST(SIGNEDUP_DATE AS DATE) AS SIGNEDUP_DATE,
+        ROW_NUMBER() OVER (
+            PARTITION BY LOWER(TRIM(EMAIL_ID)), STUDIO_ID
+            ORDER BY SIGNEDUP_DATE ASC
+        ) AS rn
+    FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_CLIENTS
+    WHERE STUDIO_ID IN ({ID_LIST})
+      AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%sweat440%'
+      AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%leadteam%'
+      AND LOWER(TRIM(EMAIL_ID)) NOT LIKE 'test%'
 )
 SELECT
     f.STUDIO_ID,
@@ -141,9 +221,15 @@ SELECT
     f.ONLINE_FLAG,
     COALESCE(f.SOURCE_CHANNEL, '')                  AS source_channel,
     CASE WHEN f.QUANTITY = 1 AND f.IS_RETURN = 0 THEN 'sale' ELSE 'cancel' END AS txn_type,
-    f.amount
+    f.amount,
+    COALESCE({_SOURCE_CASE}, 'N/A')                 AS lead_source
 FROM filtered f
-LEFT JOIN phones p ON p.CLIENT_ID = f.CLIENT_ID AND p.STUDIO_ID = f.STUDIO_ID
+LEFT JOIN phones     p ON p.CLIENT_ID             = f.CLIENT_ID
+                      AND p.STUDIO_ID             = f.STUDIO_ID
+LEFT JOIN leads_src  l ON LOWER(TRIM(f.email))   = l.email
+                      AND f.STUDIO_ID             = l.STUDIO_ID AND l.rn = 1
+LEFT JOIN clients_src c ON LOWER(TRIM(f.email))  = c.email
+                      AND f.STUDIO_ID             = c.STUDIO_ID AND c.rn = 1
 ORDER BY f.STUDIO_ID, f.sale_date DESC, f.created_utc DESC
 """
 
@@ -189,6 +275,7 @@ def fetch_all() -> dict:
             "platform":    row["SOURCE_CHANNEL"] or "",
             "sold_by":     _sold_by(row["SOURCE_CHANNEL"], row["ONLINE_FLAG"]),
             "amount":      float(row["AMOUNT"] or 0),
+            "source":      row["LEAD_SOURCE"] or "N/A",
         })
 
     studios_out = []
