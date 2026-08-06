@@ -52,6 +52,12 @@
 
   /* Source note */
   .filter-note{font-size:11px;color:#8aaabb;font-style:italic;margin-bottom:12px}
+
+  /* Sortable table headers */
+  .data-table thead th{cursor:pointer;user-select:none;white-space:nowrap}
+  .data-table thead th:hover{background:rgba(0,163,224,.06)}
+  .data-table thead th .sort-ind{margin-left:4px;font-size:9px;opacity:.35;color:#00A3E0;transition:opacity .1s}
+  .data-table thead th[data-sort-dir] .sort-ind{opacity:1;color:#00A3E0}
 </style>
 </head>
 <body>
@@ -75,6 +81,7 @@
   <button class="tab-btn" onclick="showTab('sources',this)">Sources</button>
   <button class="tab-btn" onclick="showTab('segments',this)">Client Segments</button>
   <button class="tab-btn" onclick="showTab('email',this)">Email Metrics</button>
+  <button class="tab-btn" onclick="showTab('ads',this)">Ads Report</button>
 </nav>
 
 <!-- Studio filter -->
@@ -300,6 +307,55 @@
   </div>
 </div>
 
+<!-- ── TAB 6: ADS REPORT ──────────────────────────────────────────── -->
+<div class="tab-pane" id="tab-ads">
+  <p class="filter-note" id="adsNote">Meta Ads · promo period</p>
+  <div class="kpi-grid" id="adsKpiGrid"></div>
+  <div class="chart-card">
+    <div class="chart-card-title">Studios — Performance</div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr>
+          <th>Studio</th>
+          <th>State</th>
+          <th class="num">Spend</th>
+          <th class="num">Leads</th>
+          <th class="num">CPL</th>
+          <th class="num">Trials</th>
+          <th class="num">CPT</th>
+          <th class="num">Purch.</th>
+          <th class="num">CPP</th>
+          <th class="num">Impr.</th>
+          <th class="num">CTR%</th>
+        </tr></thead>
+        <tbody id="adsStudioBody"></tbody>
+        <tfoot id="adsStudioFoot"></tfoot>
+      </table>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-card-title">Ads Summary</div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr>
+          <th>Ad</th>
+          <th>Type</th>
+          <th class="num">Spend</th>
+          <th class="num">Leads</th>
+          <th class="num">CPL</th>
+          <th class="num">Trials</th>
+          <th class="num">CPT</th>
+          <th class="num">Purch.</th>
+          <th class="num">CPP</th>
+          <th class="num">Impr.</th>
+          <th class="num">CTR%</th>
+        </tr></thead>
+        <tbody id="adsAdBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 </div><!-- /.main -->
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -308,6 +364,7 @@
 // ── State ─────────────────────────────────────────────────────────────────
 let CAMP = null;
 let ALL_CAMPAIGNS = [];
+let PAID_ADS_DATA = null;     // daniel-paid-ads-data.json
 
 // ── Email Metrics Data (from BUY 1 GET 3.xlsx → Email Metrics sheet) ─────────
 // Per email: [sent, open_rate, opens, clicks, ctor, opt_out, unsub_rate]
@@ -404,6 +461,8 @@ function applyFilters() {
     renderProducts();
     renderStudioTables();
     renderEmailMetrics();
+    renderAdsReport();
+    initSortIndicators();
     const sel = getSelected('studioMenu');
     const isFiltered = sel && sel.length > 0 && sel.length < ALL_STUDIOS.length;
     const note = isFiltered
@@ -1144,6 +1203,157 @@ function renderEmailTable() {
     </tr>`;
 }
 
+// ── Ads Report ────────────────────────────────────────────────────────────
+// Finds the matching paid-ads campaign by date proximity
+function findPaidAdsCampaign() {
+  if (!PAID_ADS_DATA || !CAMP) return null;
+  const target = CAMP.date_from;
+  for (const [, c] of Object.entries(PAID_ADS_DATA.campaigns || {})) {
+    if (c.date_start && Math.abs(new Date(c.date_start) - new Date(target)) <= 2 * 86400000) {
+      return c;
+    }
+  }
+  return null;
+}
+
+function renderAdsReport() {
+  const pac = findPaidAdsCampaign();
+  if (!pac) return;
+
+  const sel = getSelected('studioMenu');
+  const allSelected = !sel || sel.length === 0 || sel.length === ALL_STUDIOS.length;
+
+  // Studios — filter if needed
+  const studioRows = (pac.studios || []).filter(s => allSelected || sel.includes(s.name));
+
+  // KPI totals (sum from filtered studios or use pre-computed totals)
+  let totSpend, totImpr, totClicks, totLeads, totReach;
+  if (allSelected) {
+    const t = pac.totals || {};
+    totSpend  = t.spend       || 0;
+    totImpr   = t.impressions || 0;
+    totClicks = t.clicks      || 0;
+    totLeads  = t.leads       || 0;
+    totReach  = t.reach       || 0;
+  } else {
+    totSpend  = studioRows.reduce((s, r) => s + (r.spend       || 0), 0);
+    totImpr   = studioRows.reduce((s, r) => s + (r.impressions || 0), 0);
+    totClicks = studioRows.reduce((s, r) => s + (r.clicks      || 0), 0);
+    totLeads  = studioRows.reduce((s, r) => s + (r.leads       || 0), 0);
+    totReach  = studioRows.reduce((s, r) => s + (r.reach       || 0), 0);
+  }
+  const cpl = totLeads > 0 ? totSpend / totLeads : 0;
+  const ctr = totImpr  > 0 ? totClicks / totImpr * 100 : 0;
+
+  document.getElementById('adsNote').textContent =
+    `Meta Ads · ${fmtDateStr(pac.date_start)} – ${fmtDateStr(pac.date_end)}`;
+
+  document.getElementById('adsKpiGrid').innerHTML = [
+    {label:'Total Spend',   val: fmtM(totSpend)},
+    {label:'Meta Leads',    val: fmtN(totLeads)},
+    {label:'Cost Per Lead', val: totLeads > 0 ? fmtM(cpl) : '—'},
+    {label:'Impressions',   val: fmtN(totImpr)},
+    {label:'Clicks',        val: fmtN(totClicks)},
+    {label:'CTR',           val: totImpr > 0 ? ctr.toFixed(2) + '%' : '—'},
+  ].map(c =>
+    `<div class="kpi-card">
+       <div class="kpi-card-label">${c.label}</div>
+       <div class="kpi-card-val">${c.val}</div>
+     </div>`
+  ).join('');
+
+  // Studios table
+  const sorted = studioRows.slice().sort((a, b) => b.spend - a.spend);
+  const maxSpend = Math.max(...sorted.map(r => r.spend), 1);
+
+  const totTrials    = studioRows.reduce((s, r) => s + (r.trials    || 0), 0);
+  const totPurchases = studioRows.reduce((s, r) => s + (r.purchases || 0), 0);
+
+  document.getElementById('adsStudioBody').innerHTML = sorted.map(r => {
+    const sCPL = r.leads     > 0 ? fmtM(r.spend / r.leads)     : '—';
+    const sCPT = (r.trials   || 0) > 0 ? fmtM(r.spend / r.trials)   : '—';
+    const sCPP = (r.purchases|| 0) > 0 ? fmtM(r.spend / r.purchases) : '—';
+    const sCTR = r.impressions > 0 ? (r.clicks / r.impressions * 100).toFixed(2) + '%' : '—';
+    return `<tr>
+      <td>${r.name}</td>
+      <td>${r.state || ''}</td>
+      <td class="num">${fmtM(r.spend)}${miniBar(r.spend / maxSpend * 100, '#00A3E0')}</td>
+      <td class="num">${fmtN(r.leads)}</td>
+      <td class="num">${sCPL}</td>
+      <td class="num" style="color:${(r.trials||0)>0?'#00A3E0':''}">${(r.trials||0)>0 ? fmtN(r.trials) : '—'}</td>
+      <td class="num">${sCPT}</td>
+      <td class="num" style="color:${(r.purchases||0)>0?'#F59E0B':''}">${(r.purchases||0)>0 ? fmtN(r.purchases) : '0'}</td>
+      <td class="num">${sCPP}</td>
+      <td class="num">${fmtN(r.impressions)}</td>
+      <td class="num">${sCTR}</td>
+    </tr>`;
+  }).join('');
+
+  const totCPL = totLeads     > 0 ? fmtM(totSpend / totLeads)     : '—';
+  const totCPT = totTrials    > 0 ? fmtM(totSpend / totTrials)    : '—';
+  const totCPP = totPurchases > 0 ? fmtM(totSpend / totPurchases) : '—';
+  document.getElementById('adsStudioFoot').innerHTML =
+    `<tr style="background:#e8f4fb;font-weight:700">
+       <td>TOTAL (${sorted.length} studios)</td>
+       <td></td>
+       <td class="num">${fmtM(totSpend)}</td>
+       <td class="num">${fmtN(totLeads)}</td>
+       <td class="num">${totCPL}</td>
+       <td class="num">${fmtN(totTrials)}</td>
+       <td class="num">${totCPT}</td>
+       <td class="num">${fmtN(totPurchases)}</td>
+       <td class="num">${totCPP}</td>
+       <td class="num">${fmtN(totImpr)}</td>
+       <td class="num">${ctr.toFixed(2)}%</td>
+     </tr>`;
+
+  // Build ad name → media_type lookup from pac.ads
+  const adTypeMap = {};
+  for (const a of (pac.ads || [])) {
+    if (a.name && a.media_type) adTypeMap[a.name] = a.media_type;
+  }
+
+  // Aggregate daily_series.by_concept → get clicks/trials/purchases per concept
+  const conceptDailyMap = {};
+  for (const r of ((pac.daily_series || {}).by_concept || [])) {
+    const k = r.concept;
+    if (!conceptDailyMap[k]) conceptDailyMap[k] = { clicks: 0, trials: 0, purchases: 0 };
+    conceptDailyMap[k].clicks    += r.clicks    || 0;
+    conceptDailyMap[k].trials    += r.trials    || 0;
+    conceptDailyMap[k].purchases += r.purchases || 0;
+  }
+
+  // Ads Summary — use pre-computed concepts (sorted by leads)
+  const concepts = (pac.concepts || []).slice().sort((a, b) => b.leads - a.leads || b.spend - a.spend);
+  const maxConSpend = Math.max(...concepts.map(c => c.spend), 1);
+
+  document.getElementById('adsAdBody').innerHTML = concepts.map(c => {
+    const extra = conceptDailyMap[c.concept] || { clicks: 0, trials: 0, purchases: 0 };
+    const aCPL = c.leads     > 0 ? fmtM(c.spend / c.leads)          : '—';
+    const aCPT = extra.trials > 0 ? fmtM(c.spend / extra.trials)    : '—';
+    const aCPP = extra.purchases > 0 ? fmtM(c.spend / extra.purchases) : '—';
+    const aCTR = c.impressions > 0 && extra.clicks > 0
+      ? (extra.clicks / c.impressions * 100).toFixed(2) + '%' : '—';
+    // Derive media type from first matching ad; "Other"/"Image" → "Static"
+    const rawType = (c.ads || []).map(n => adTypeMap[n]).find(t => t) || '—';
+    const adType = rawType === 'Video' ? 'Video' : rawType === '—' ? '—' : 'Static';
+    const typeColor = adType === 'Video' ? '#0084B5' : adType === 'Static' ? '#9aab00' : '#5a7a8a';
+    return `<tr>
+      <td>${c.concept}</td>
+      <td><span style="font-size:11px;font-weight:600;color:${typeColor}">${adType}</span></td>
+      <td class="num">${fmtM(c.spend)}${miniBar(c.spend / maxConSpend * 100, '#00A3E0')}</td>
+      <td class="num">${fmtN(c.leads)}</td>
+      <td class="num">${aCPL}</td>
+      <td class="num" style="color:${extra.trials > 0 ? '#00A3E0' : ''}">${extra.trials > 0 ? fmtN(extra.trials) : '—'}</td>
+      <td class="num">${aCPT}</td>
+      <td class="num" style="color:${extra.purchases > 0 ? '#F59E0B' : ''}">${extra.purchases > 0 ? fmtN(extra.purchases) : '0'}</td>
+      <td class="num">${aCPP}</td>
+      <td class="num">${fmtN(c.impressions)}</td>
+      <td class="num">${aCTR}</td>
+    </tr>`;
+  }).join('');
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────
 function applyCampaign(camp) {
   CAMP = camp;
@@ -1165,12 +1375,24 @@ function applyCampaign(camp) {
   renderProducts();
   renderStudioTables();
   renderEmailMetrics();
+  renderAdsReport();
+  initSortIndicators();
 }
 
 async function loadData() {
   try {
-    const res  = await fetch('campaign_data.json?_=' + Date.now());
-    const json = await res.json();
+    const ts = Date.now();
+    const [campRes, paidAdsRes] = await Promise.all([
+      fetch('campaign_data.json?_=' + ts),
+      fetch('../paid-ads-dashboards/daniel-paid-ads-data.json?_=' + ts).catch(() => null),
+    ]);
+
+    const json = await campRes.json();
+
+    if (paidAdsRes) {
+      PAID_ADS_DATA = await paidAdsRes.json().catch(() => null);
+    }
+
     ALL_CAMPAIGNS = json.campaigns || [json];
     const sel = document.getElementById('campSelector');
     sel.innerHTML = ALL_CAMPAIGNS.map((c, i) =>
@@ -1178,10 +1400,59 @@ async function loadData() {
     ).join('');
     if (ALL_CAMPAIGNS.length) applyCampaign(ALL_CAMPAIGNS[0]);
   } catch(e) {
-    console.error('Failed to load campaign_data.json:', e);
+    console.error('Failed to load campaign data:', e);
     document.getElementById('campSub').textContent = 'Error loading data — check console';
   }
 }
+
+// ── Sortable tables ──────────────────────────────────────────────────────────
+function initSortIndicators() {
+  document.querySelectorAll('.data-table thead th').forEach(th => {
+    if (!th.querySelector('.sort-ind')) {
+      const sp = document.createElement('span');
+      sp.className = 'sort-ind';
+      sp.textContent = '⇅';
+      th.appendChild(sp);
+    }
+  });
+}
+
+document.addEventListener('click', function(e) {
+  const th = e.target.closest('th');
+  if (!th) return;
+  const table = th.closest('.data-table');
+  if (!table) return;
+  const tbody = table.querySelector('tbody');
+  if (!tbody) return;
+
+  const headerRow = th.closest('tr');
+  const ths = Array.from(headerRow.cells);
+  const colIdx = ths.indexOf(th);
+  const asc = th.dataset.sortDir !== 'asc';
+
+  ths.forEach((t, i) => {
+    const ind = t.querySelector('.sort-ind');
+    if (i === colIdx) {
+      t.dataset.sortDir = asc ? 'asc' : 'desc';
+      if (ind) ind.textContent = asc ? '↑' : '↓';
+    } else {
+      delete t.dataset.sortDir;
+      if (ind) ind.textContent = '⇅';
+    }
+  });
+
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  rows.sort((a, b) => {
+    const aC = a.cells[colIdx], bC = b.cells[colIdx];
+    if (!aC || !bC) return 0;
+    const aRaw = aC.textContent.trim().replace(/[$,%]/g, '');
+    const bRaw = bC.textContent.trim().replace(/[$,%]/g, '');
+    const aNum = parseFloat(aRaw), bNum = parseFloat(bRaw);
+    if (!isNaN(aNum) && !isNaN(bNum)) return asc ? aNum - bNum : bNum - aNum;
+    return asc ? aRaw.localeCompare(bRaw) : bRaw.localeCompare(aRaw);
+  });
+  rows.forEach(r => tbody.appendChild(r));
+});
 
 loadData();
 </script>
