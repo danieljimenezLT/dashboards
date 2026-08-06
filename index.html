@@ -116,6 +116,24 @@
         <canvas id="trendChart" role="img" aria-label="Line chart of leads, first timers and new members over time">Monthly funnel trend data.</canvas>
       </div>
     </div>
+    <div class="chart-card">
+      <div class="chart-card-title">Conversion rates over time</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div class="toggle-group" id="conv-toggles" style="margin-bottom:0">
+          <button class="tog-btn on" data-ds="0" onclick="toggleConvDs(this,0)" style="border-color:#00A3E0;background:#00A3E0;color:#000"><span class="dot" style="background:#000"></span>Lead → First Timer</button>
+          <button class="tog-btn on" data-ds="1" onclick="toggleConvDs(this,1)" style="border-color:#00FFC2;background:#00FFC2;color:#000"><span class="dot" style="background:#000"></span>First Timer → Member</button>
+          <button class="tog-btn on" data-ds="2" onclick="toggleConvDs(this,2)" style="border-color:#DDFF00;background:#DDFF00;color:#000"><span class="dot" style="background:#000"></span>Lead → Member</button>
+        </div>
+        <div class="gran-group">
+          <button class="gran-btn active" id="convGranDaily"   onclick="setConvGran('daily')">Daily</button>
+          <button class="gran-btn" id="convGranWeekly"  onclick="setConvGran('weekly')">Weekly</button>
+          <button class="gran-btn" id="convGranMonthly" onclick="setConvGran('monthly')">Monthly</button>
+        </div>
+      </div>
+      <div style="position:relative;width:100%;height:260px">
+        <canvas id="convRateChart" role="img" aria-label="Line chart of lead to first timer, first timer to member, and lead to member conversion rates over time">Conversion rate trend data.</canvas>
+      </div>
+    </div>
   </div>
 
   <!-- LEADS TAB -->
@@ -507,6 +525,9 @@ let trendChart = null;
 let GRAN = 'daily';
 const COLORS = ['#00A3E0','#00FFC2','#DDFF00']; // Leads, First Timers, New Members
 const AREA_GRAN = {leadsAreaChart:'daily', ftAreaChart:'daily', memAreaChart:'daily'};
+let convRateChart = null;
+let CONV_GRAN = 'daily';
+const CONV_COLORS = ['#00A3E0','#00FFC2','#DDFF00']; // Lead→FT, FT→Member, Lead→Member
 
 function switchTab(id, btn) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -634,6 +655,7 @@ function applyFilters() {
   const from = fromStr ? new Date(fromStr+'T00:00:00Z') : new Date(RAW.monthly_detail[0]?.month+'T00:00:00Z');
   const to   = toStr   ? new Date(toStr+'T23:59:59Z')   : new Date();
   updateGranButtons(from, to);
+  updateConvGranButtons(from, to);
 
   // Partial period rules — applied universally to ALL cards in ALL tabs
   // Prev year: only show if range = complete calendar months
@@ -689,6 +711,11 @@ function applyFilters() {
           trendChart.data.datasets.forEach(ds => ds.data = []);
           trendChart.update();
         }
+        if (typeof convRateChart !== 'undefined' && convRateChart) {
+          convRateChart.data.labels = [];
+          convRateChart.data.datasets.forEach(ds => ds.data = []);
+          convRateChart.update();
+        }
         ['leads-kpis','ft-kpis','mem-kpis'].forEach(id => {
           const el = document.getElementById(id); if (el) el.innerHTML = '';
         });
@@ -709,6 +736,7 @@ function applyFilters() {
     buildFunnel(sumRows(curr.all), sumRows(pp.all), sumRows(py.all),
       `${fmtDate(ppFrom)} – ${fmtDate(ppTo)}`, `${fmtDate(pyFrom)} – ${fmtDate(pyTo)}`);
     buildTrend(toTimeSeries(curr.daily, curr.monthly));
+    buildConvRateTrend(curr.daily, curr.monthly);
   }
   // Always build all tabs  all are rendered (just hidden via opacity/height)
   if (typeof checkCPRWarning === 'function') checkCPRWarning();
@@ -807,6 +835,111 @@ function toggleDs(btn, i) {
   if (btn.classList.contains('on')) { btn.style.background=COLORS[i]; btn.style.borderColor=COLORS[i]; btn.style.color='#000'; btn.querySelector('.dot').style.background='#000'; }
   else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
   trendChart.update();
+}
+
+
+function _convRateSeries(dailyRows, monthlyRows, gran) {
+  const rows = gran === 'daily' ? dailyRows : [...dailyRows, ...monthlyRows];
+  const map = {};
+  rows.forEach(r => {
+    let key;
+    if (gran === 'daily') key = r.date;
+    else if (gran === 'weekly') {
+      const d = new Date((r.date||r.month)+'T00:00:00Z');
+      const ws = new Date(d); ws.setUTCDate(d.getUTCDate()-d.getUTCDay());
+      key = ws.toISOString().slice(0,10);
+    } else {
+      key = (r.date||r.month).slice(0,7)+'-01';
+    }
+    if (!map[key]) map[key] = {key, signups:0, first_visits:0, first_activations:0};
+    map[key].signups += r.signups||0;
+    map[key].first_visits += r.first_visits||0;
+    map[key].first_activations += r.first_activations||0;
+  });
+  return Object.values(map).sort((a,b)=>a.key.localeCompare(b.key)).map(m => ({
+    key: m.key,
+    label: gran === 'monthly' ? fmtMonthLabel(m.key) : fmtDayLabel(m.key),
+    ftRate:      m.signups      ? m.first_visits/m.signups*100           : null,
+    memRate:     m.first_visits ? m.first_activations/m.first_visits*100 : null,
+    leadMemRate: m.signups      ? m.first_activations/m.signups*100      : null,
+  }));
+}
+
+
+function buildConvRateTrend(dailyRows, monthlyRows) {
+  const isMobile = window.innerWidth <= 768;
+  const series = _convRateSeries(dailyRows, monthlyRows, CONV_GRAN);
+  const labels = series.map(m => m.label);
+  const ftD  = series.map(m => m.ftRate);
+  const memD = series.map(m => m.memRate);
+  const lmD  = series.map(m => m.leadMemRate);
+  if (convRateChart) {
+    const hidden = convRateChart.data.datasets.map(ds => ds.hidden);
+    convRateChart.data.labels = labels;
+    convRateChart.data.datasets[0].data = ftD;
+    convRateChart.data.datasets[1].data = memD;
+    convRateChart.data.datasets[2].data = lmD;
+    convRateChart.data.datasets.forEach((ds,i) => ds.hidden = hidden[i]);
+    convRateChart.update();
+    return;
+  }
+  const ctx = document.getElementById('convRateChart').getContext('2d');
+  convRateChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [
+      {label:'Lead → First Timer',   data:ftD,  borderColor:CONV_COLORS[0],borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.4,fill:false,spanGaps:true},
+      {label:'First Timer → Member', data:memD, borderColor:CONV_COLORS[1],borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.4,fill:false,spanGaps:true},
+      {label:'Lead → Member',        data:lmD,  borderColor:CONV_COLORS[2],borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.4,fill:false,spanGaps:true},
+    ]},
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{mode:'index',intersect:false,callbacks:{label:c=>c.dataset.label+': '+(c.parsed.y!=null?c.parsed.y.toFixed(1)+'%':'--')}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',autoSkip:true,maxTicksLimit:isMobile?5:12,maxRotation:0}},
+        y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',callback:v=>v+'%'}}
+      }
+    }
+  });
+}
+
+
+function toggleConvDs(btn, i) {
+  if (!convRateChart) return;
+  const ds = convRateChart.data.datasets[i];
+  ds.hidden = !ds.hidden;
+  btn.classList.toggle('on');
+  if (btn.classList.contains('on')) { btn.style.background=CONV_COLORS[i]; btn.style.borderColor=CONV_COLORS[i]; btn.style.color='#000'; btn.querySelector('.dot').style.background='#000'; }
+  else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
+  convRateChart.update();
+}
+
+
+function setConvGran(gran) {
+  const btn = document.getElementById('convGran'+gran.charAt(0).toUpperCase()+gran.slice(1));
+  if (btn && btn.disabled) return;
+  CONV_GRAN = gran;
+  ['daily','weekly','monthly'].forEach(g => {
+    const b = document.getElementById('convGran'+g.charAt(0).toUpperCase()+g.slice(1));
+    if (b) b.classList.toggle('active', g === gran);
+  });
+  if (window._lastCurrFiltered) buildConvRateTrend(window._lastCurrFiltered.daily, window._lastCurrFiltered.monthly);
+}
+
+
+function updateConvGranButtons(from, to) {
+  const { dailyFrom } = getQuarterBounds();
+  const hasDaily  = from >= dailyFrom;
+  const hasWeekly = from >= dailyFrom;
+  const daysDiff  = (to - from) / 86400000;
+  const btnD = document.getElementById('convGranDaily');
+  const btnW = document.getElementById('convGranWeekly');
+  if (btnD) btnD.disabled = !hasDaily;
+  if (btnW) btnW.disabled = !hasWeekly || daysDiff > 366;
+  if (CONV_GRAN === 'daily'  && btnD && btnD.disabled) { CONV_GRAN = 'weekly';  setConvGran('weekly'); }
+  if (CONV_GRAN === 'weekly' && btnW && btnW.disabled) { CONV_GRAN = 'monthly'; setConvGran('monthly'); }
 }
 
 
