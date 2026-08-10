@@ -383,7 +383,7 @@ function kpiCard(l,v,pp,py,fmt,info){const dpp=cD(v,pp),dpy=cD(v,py);const ppH=d
 
 /* ── KPI INFO MODAL ─────────────────────────────────────────────────────── */
 const GLOSSARY={
-  leads:{title:'Total Leads',desc:'Number of new MindBody client profiles created during the selected period, counted by account signup date. A lead is recorded when a prospect\'s account is first created in MindBody — regardless of whether they visit or purchase. This is the top of the funnel and corresponds to "New Accounts Created" in the company-wide reporting framework.'},
+  leads:{title:'Leads (New Accounts Created)',desc:'Number of new accounts created in the time frame selected for the selected studio; account defined as client profile created in MindBody — regardless of whether they visit or purchase.'},
   nso_new_sale:{title:'Total New Sales',desc:'Number of recurring membership purchases during the selected date range, counted by purchase date. This is a gross figure — it counts every sale transaction and does not subtract cancellations. A sale is recorded on the date the membership was sold.'},
   nso_sale:{title:'Total Net Sales',desc:'Number of people who purchased a recurring membership during the selected date range, counted by purchase date. This is a net figure: new sales minus any cancellations processed in the same period.'},
   nso_cancel:{title:'Total Cancellations',desc:'Number of presale membership cancellations processed during the selected date range, counted on the cancellation date. A cancellation is a separate transaction — it may relate to a sale from an earlier period. Fewer cancellations is better.'},
@@ -416,17 +416,17 @@ const GLOSSARY={
   gbp_five_star:{title:'GBP — 5-Star Reviews',desc:'Number of 5-star reviews across all selected studios with review data, plus the percentage they represent of total reviews.'},
 
   // ── Summary tab ───────────────────────────────────────────────────────────
-  sum_leads_7d:{title:'Leads — Last 7 Full Days',desc:'Number of new leads generated in the 7 most recent days with available data. The window ends at the latest date where data has been reported — typically 2 days before today — to ensure all sources have synced. The weekly goal is dynamic: remaining leads needed to hit the target divided by the number of weeks left until the Target C/O Date.'},
+  sum_leads_7d:{title:'Leads (New Accounts Created) — Last 7 Full Days',desc:'Number of new accounts created in the 7 most recent days with available data. The window ends at the latest date where data has been reported — typically 2 days before today — to ensure all sources have synced. The weekly goal is dynamic: remaining accounts needed to hit the target divided by the number of weeks left until the Target C/O Date.'},
   sum_presales_7d:{title:'Net Presales — Last 7 Full Days',desc:'Net new recurring memberships sold in the 7 most recent days with available data, counted by purchase date. The window ends at the latest date where data has been reported — typically 2 days before today — to ensure all sources have synced. Net = new sales minus cancellations processed in the same window. The weekly goal is dynamic: remaining presales needed to hit the target divided by the number of weeks left until the Target C/O Date.'},
   sum_cvr_7d:{title:'Conversion Rate — Last 7 Full Days',desc:'Percentage of leads in the 7 most recent days with available data who also purchased a membership in that same window. The window ends at the latest date where data has been reported — typically 2 days before today. Note: this compares two independent pools — some buyers may have come in as leads before this window, so the rate reflects recent activity patterns rather than a true cohort funnel.'},
-  sum_leads_total:{title:'Total Leads to Date',desc:'Cumulative count of all leads generated since Week 0. The benchmark marker shows where you should be at the current week if leads were acquired evenly across the pre-opening period (total target ÷ total weeks × current week).'},
+  sum_leads_total:{title:'Total Leads (New Accounts Created) to Date',desc:'Cumulative count of all new accounts created since Week 0. The benchmark marker shows where you should be at the current week if accounts were created evenly across the pre-opening period (total target ÷ total weeks × current week).'},
   sum_presales_total:{title:'Total Net Presales to Date',desc:'Cumulative net recurring memberships sold since Week 0, counted by purchase date. Net = new sales minus all cancellations to date. Pacing benchmark assumes an even distribution of the total presales target across all pre-opening weeks.'},
   sum_rmr:{title:'Estimated Day-1 RMR',desc:'Projected recurring monthly revenue on opening day, calculated by multiplying active presales by their tier price (Founders / Tier 1 / Tier 2 / Tier 3). Cancellations reduce the count. This estimate assumes all presales that have not cancelled remain active through opening.'},
   sum_spend:{title:'Marketing Spend (excl. LeadTeam Fee)',desc:'Cumulative marketing spend to date excluding the LeadTeam management fee. Includes Meta Ads, Google Ads, Grassroots, and other direct marketing costs. The pacing benchmark is the total budget pro-rated to the current week. The full budget is derived from the NSO Config targets.'},
   sum_goal_announce:{title:'Goal to Announce Opening',desc:'The minimum number of net presales required before an opening date can be announced publicly. Once reached, the studio has sufficient committed members to justify locking in a date and beginning operational ramp-up.'},
 
   // ── Scorecard tab — weekly ────────────────────────────────────────────────
-  sc_new_leads:{title:'New Leads (weekly)',desc:'Number of new leads created during this calendar week. The required pace is the total leads target divided by the total number of pre-opening weeks.'},
+  sc_new_leads:{title:'New Leads (New Accounts Created) — Weekly',desc:'Number of new accounts created during this calendar week. The required pace is the total accounts target divided by the total number of pre-opening weeks.'},
   sc_new_presales:{title:'New Presales (weekly)',desc:'Number of new recurring memberships sold during this calendar week, counted by purchase date. The required pace is the total presales target divided by the total number of pre-opening weeks.'},
   sc_cvr:{title:'Conversion Rate (weekly)',desc:'Percentage of new leads this week who also purchased a membership in the same week. Note: this compares independent weekly pools — some buyers may have entered as leads in a prior week, so it reflects current momentum rather than a strict cohort conversion. Benchmark is 35%.'},
   sc_cancellations:{title:'Cancellations (weekly)',desc:'Number of presale memberships cancelled during this calendar week. Cancellations reduce net presales and directly affect estimated Day-1 RMR. No weekly target is set; trend is monitored as a health signal.'},
@@ -445,7 +445,7 @@ const GLOSSARY={
   sc_ads_cpa:{title:'Ads CPA (weekly)',desc:'Digital ad spend (Meta + Google only) divided by net new digital presales for the week — presales attributed to Meta or Google ads, minus cancellations from those same clients. Isolates the cost efficiency of paid digital advertising per net new member acquired through digital channels.'},
 
   // ── Scorecard tab — cumulative ────────────────────────────────────────────
-  sc_total_leads:{title:'Total Leads (cumulative)',desc:'Running total of all leads generated since Week 0. The pacing benchmark is the total leads target pro-rated to the current week, assuming even distribution. The final column target is the overall goal for the full pre-opening period.'},
+  sc_total_leads:{title:'Total Leads (New Accounts Created) — Cumulative',desc:'Running total of all new accounts created since Week 0. The pacing benchmark is the total target pro-rated to the current week, assuming even distribution. The final column target is the overall goal for the full pre-opening period.'},
   sc_presales_gross:{title:'Presales — Gross (cumulative)',desc:'Running total of all memberships sold since Week 0, before subtracting cancellations. Counted by purchase date. Pacing benchmark assumes even weekly distribution toward the studio target.'},
   sc_net_presales:{title:'Net Presales (cumulative)',desc:'Running total of memberships sold minus all cancellations to date. This is the true active presales count — the number of people committed to a membership as of the current week. Pacing benchmark is pro-rated evenly to the current week toward the studio target.'},
   sc_cum_cvr:{title:'Conversion Rate (cumulative)',desc:'Cumulative presales (gross) divided by cumulative total leads. Reflects the overall lead-to-sale efficiency since Week 0. Note: this is not a strict cohort rate — some presales may have come from leads acquired before the tracked period. Benchmark is 35%.'},
@@ -466,7 +466,7 @@ function _infoBtnInline(key){const g=GLOSSARY[key];if(!g)return'';return`<button
 function renderDefinitionsTab(){
   const SECTIONS=[
     {title:'Core Funnel',items:[
-      {key:'leads',label:'Leads'},
+      {key:'leads',label:'Leads (New Accounts Created)'},
       {key:'nso_new_sale',label:'New Sales'},
       {key:'nso_sale',label:'Net Sales'},
       {key:'nso_cancel',label:'Cancellations'},
@@ -724,7 +724,7 @@ function renderSummary(){
   // Card A — Last 7 Full Days
   const last7Range=`${_fmtDate(d7ago)} – ${_fmtDate(d7end)}`;
   h+=`<div class="chart-card summary-card"><div class="summary-card-section">Last 7 Full Days</div><div style="font-size:10px;color:#8aaabb;margin-top:-10px;margin-bottom:10px">${last7Range}</div>`;
-  h+=skRow('Leads',lastLeads,wkLeadGoal,'#00A3E0',true,'sum_leads_7d',wkGoalLabel);
+  h+=skRow('Leads (New Accounts Created)',lastLeads,wkLeadGoal,'#00A3E0',true,'sum_leads_7d',wkGoalLabel);
   h+=skRow('Presales (net)',lastNetPresales,wkPresaleGoal,'#00C9A7',true,'sum_presales_7d',wkGoalLabel);
   const last7Cvr=lastLeads>0?Math.round(lastNetPresales/lastLeads*100):null;
   const goalCvr=_isReston?35:(tgt.presales_count&&tgt.total_leads?Math.round(tgt.presales_count/tgt.total_leads*100):null);
@@ -746,7 +746,7 @@ function renderSummary(){
 
   // Card B — Total to Date with progress bars
   h+=`<div class="chart-card summary-card"><div class="summary-card-section">Total to Date</div>${_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:-8px;margin-bottom:10px">${_dataThruLabel}</div>`:''}`;
-  h+=_progBar('Leads',cur.total_leads||0,annLeads||0,'#00A3E0',annLeads?Math.round(annLeads/paceWeeks*displayCw):null,'W'+displayCw+' Pace',null,null,'sum_leads_total');
+  h+=_progBar('Leads (New Accounts Created)',cur.total_leads||0,annLeads||0,'#00A3E0',annLeads?Math.round(annLeads/paceWeeks*displayCw):null,'W'+displayCw+' Pace',null,null,'sum_leads_total');
   h+=_progBar('Presales (net)',netPresales,annPres||0,'#00C9A7',annPres?Math.round(annPres/paceWeeks*displayCw):null,'W'+displayCw+' Pace',null,null,'sum_presales_total');
   if((cur.estimated_day1_rmr||0)>0){const _rmrA=cur.estimated_day1_rmr||0,_rmrT=tgt.estimated_day1_rmr||0,_rmrPct=_rmrT>0?Math.min(100,Math.round(_rmrA/_rmrT*100)):0;h+=`<div style="margin-bottom:18px;position:relative">${_infoBtn('sum_rmr')}<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><div style="font-size:11px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Est. Day-1 RMR</div><div style="text-align:right"><span style="font-size:20px;font-weight:700;color:#1a1a2e;font-family:'Oswald',sans-serif">$${_rmrA.toLocaleString('en-US')}</span><span style="font-size:10px;color:#8aaabb;margin-left:6px">/ $${_rmrT.toLocaleString('en-US')}</span></div></div><div style="position:relative;height:14px;background:#f0f6fa;border-radius:7px"><div style="position:absolute;left:0;top:0;height:100%;width:${_rmrPct}%;background:#f4a021;border-radius:7px;min-width:${_rmrPct>0?4:0}px"></div></div></div>`;}
   if(estTotalSpend>0||cumSpendNoLT>0){
@@ -1033,7 +1033,7 @@ function renderFunnel(){
   h+=`</div>`;
 
   // Funnel rows: Leads → New Sales → Cancellations
-  h+=fRow('Leads', cumLeads, tLeads, 100, '#00A3E0', leadsPct, null);
+  h+=fRow('Leads (New Accounts Created)', cumLeads, tLeads, 100, '#00A3E0', leadsPct, null);
   h+=fRow('New Sales', cumSales, tPres, salesW, '#00FFC2', salesPct, null);
   h+=fRow('Cancellations', cumCanc, null, cancW, '#ff6b6b', null, cumSales>0?`${(cumCanc/cumSales*100).toFixed(1)}% of sales`:null);
 
@@ -1067,8 +1067,8 @@ function applyFilters(){
   const cancByPeriod=_bucketByPeriod(sCurr,r=>r.cancellations||0);
   buildTrend(toTS(curr.daily,curr.monthly),newSalesByPeriod,cancByPeriod);
   const fkpi=document.getElementById('funnel-kpis');
-  if(fkpi)fkpi.innerHTML=kpiCard('Total Leads',cS.leads,pS.leads,yS.leads,null,GLOSSARY.leads)+kpiCard('Total New Sales',nsC,nsP||null,nsY||null,null,GLOSSARY.nso_new_sale)+kpiCard('Total Cancellations',cnC,cnP||null,cnY||null,null,GLOSSARY.nso_cancel)+kpiCard('Total Net Sales',smC,smP||null,smY||null,null,GLOSSARY.nso_sale);
-  document.getElementById('leads-kpis').innerHTML=kpiCard('Total Leads',cS.leads,pS.leads,yS.leads,null,GLOSSARY.leads);
+  if(fkpi)fkpi.innerHTML=kpiCard('Total Leads (New Accounts Created)',cS.leads,pS.leads,yS.leads,null,GLOSSARY.leads)+kpiCard('Total New Sales',nsC,nsP||null,nsY||null,null,GLOSSARY.nso_new_sale)+kpiCard('Total Cancellations',cnC,cnP||null,cnY||null,null,GLOSSARY.nso_cancel)+kpiCard('Total Net Sales',smC,smP||null,smY||null,null,GLOSSARY.nso_sale);
+  document.getElementById('leads-kpis').innerHTML=kpiCard('Total Leads (New Accounts Created)',cS.leads,pS.leads,yS.leads,null,GLOSSARY.leads);
   const leadsSeries=toSrcTSGran(curr.daily,curr.monthly);
   const activeSrcLeads=(sr||[]).filter(s=>leadsSeries.some(r=>r.source===s&&(r.signups||0)>0));
   buildArea('leadsChart','leads-toggles',leadsSeries,activeSrcLeads,'signups');
@@ -1243,7 +1243,7 @@ function renderScorecard(){
 
   const _ib=k=>_infoBtn(k);
   const weeklyDefs=[
-    {label:_ib('sc_new_leads')+'New Leads',           key:'nl',  req:reqLeads,   fmt:fInt, color:true},
+    {label:_ib('sc_new_leads')+'New Leads (Accts.)',    key:'nl',  req:reqLeads,   fmt:fInt, color:true},
     {label:_ib('sc_new_presales')+'New Presales',     key:'np',  req:reqPresales,fmt:fInt, color:true},
     {label:_ib('sc_cvr')+'Conversion Rate',           key:'cr',  req:.35,        fmt:fPct, color:true},
     {label:_ib('sc_cancellations')+'Cancellations',   key:'canc',req:null,       fmt:fInt, color:false},
@@ -1269,7 +1269,7 @@ function renderScorecard(){
   ];
 
   const cumDefs=[
-    {label:_ib('sc_total_leads')+'Total Leads',         key:'tl',  fmt:fInt, color:true,
+    {label:_ib('sc_total_leads')+'Total Leads (Accts.)', key:'tl',  fmt:fInt, color:true,
      cumReqFn:wk=>tgt.total_leads&&scPaceWeeks?Math.round(tgt.total_leads/scPaceWeeks*wk.w):null,
      cumReqDisplay:tgt.total_leads||null},
     {label:_ib('sc_presales_gross')+'Presales (gross)', key:'pc',  fmt:fInt, color:true,
@@ -1652,7 +1652,7 @@ function renderMeta(){
   // Summary KPI cards — Snowflake-attributed leads, matches the Funnel tab
   h+=`<div class="kpi-grid three">`;
   h+=kpiCard('Spend',totalSpend,null,null,f$,GLOSSARY.meta_spend);
-  h+=kpiCard('Leads',snowLeads,null,null,v=>v,GLOSSARY.leads);
+  h+=kpiCard('Leads (New Accounts Created)',snowLeads,null,null,v=>v,GLOSSARY.leads);
   h+=kpiCard('Cost / Lead',snowCpl,null,null,f$2,GLOSSARY.meta_blended_cpl);
   h+=`</div>`;
 
@@ -1896,7 +1896,7 @@ function renderGoogle(){
   // Summary KPI cards — Snowflake-attributed leads, matches the Funnel tab
   h+=`<div class="kpi-grid three">`;
   h+=kpiCard('Spend',totalSpend,null,null,f$,GLOSSARY.google_spend);
-  h+=kpiCard('Leads',snowLeads,null,null,fN,GLOSSARY.leads);
+  h+=kpiCard('Leads (New Accounts Created)',snowLeads,null,null,fN,GLOSSARY.leads);
   h+=kpiCard('Cost / Lead',snowCpl,null,null,f$2,GLOSSARY.google_blended_cpl);
   h+=`</div>`;
 
