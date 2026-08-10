@@ -1,0 +1,49 @@
+# SWEAT440 Brand Safety Audit — Weekly Auto-Refresh (Level 2 automation)
+#
+# STATUS: TEMPLATE — requires two repo secrets before enabling:
+#   BUFFER_API_TOKEN   → from Buffer account settings (needs read access to posts)
+#   ANTHROPIC_API_KEY  → from the org's Anthropic account (API usage is billed)
+#
+# Until secrets are configured, the audit runs via Level 1:
+# generate data/latest.json in Claude and commit it manually.
+#
+# Schedule: every Monday 8:00 AM ET (12:00 UTC)
+
+name: Weekly Brand Safety Audit
+
+on:
+  schedule:
+    - cron: "0 12 * * 1"
+  workflow_dispatch: {}   # allows manual trigger from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r brand-safety-audit/requirements.txt
+
+      - name: Run audit
+        env:
+          BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python brand-safety-audit/scripts/run_audit.py
+
+      - name: Commit updated data
+        run: |
+          git config user.name "audit-bot"
+          git config user.email "audit-bot@users.noreply.github.com"
+          git add brand-safety-audit/data/
+          git diff --staged --quiet || git commit -m "Weekly audit refresh $(date +%F)"
+          git push
