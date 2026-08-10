@@ -172,7 +172,8 @@ function prBodyForAdd(studio) {
 }
 
 function prBodyForUpdate(existing, merged) {
-  const before = new Map(fieldRows(existing));
+  const before = new Map();
+  for (const [label, val] of fieldRows(existing)) before.set(label, val);
   const after = fieldRows(merged);
   const changed = after.filter(([label, val]) => JSON.stringify(before.get(label)) !== JSON.stringify(val));
 
