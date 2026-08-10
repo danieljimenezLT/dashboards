@@ -86,8 +86,15 @@ def evaluate_post(post, asset):
     return json.loads(text_block.text)
 
 
-def analyze(posts):
-    """Group posts by account, evaluate each, and assemble the audit JSON."""
+def analyze(posts, start_date, end_date):
+    """Group posts by account, evaluate each, and assemble the audit JSON.
+
+    `start_date`/`end_date` ("YYYY-MM-DD") are the range actually queried —
+    same coverage/cycle-naming convention as handleExportBrandAuditPosts in
+    refresh-proxy/worker.js: cycle/period key off the END of the range, not
+    "today", and `coverage` records the range so the dashboard can show
+    "reviewed through X" and avoid re-pulling already-covered dates.
+    """
     by_channel = {}
     for post in posts:
         by_channel.setdefault(post["channelId"], []).append(post)
@@ -129,11 +136,12 @@ def analyze(posts):
             }
         )
 
-    today = datetime.date.today()
+    coverage_end = datetime.date.fromisoformat(end_date)
     return {
-        "cycle": today.strftime("%Y-%m"),
-        "period": today.strftime("%B %Y"),
-        "generated": today.isoformat(),
+        "cycle": coverage_end.strftime("%Y-%m"),
+        "period": coverage_end.strftime("%B %Y"),
+        "generated": datetime.date.today().isoformat(),
+        "coverage": {"from": start_date, "to": end_date},
         "source": "Buffer (automated GraphQL pull)",
         "postsReviewed": total_reviewed,
         "accounts": accounts,
@@ -150,6 +158,13 @@ def write_output(audit):
 
 
 if __name__ == "__main__":
-    posts = pull_posts(BUFFER_TOKEN)
-    audit = analyze(posts)
+    import sys
+
+    # Optional: python run_audit.py 2026-08-01 2026-08-10 — defaults to the
+    # last 7 days if omitted.
+    cli_start = sys.argv[1] if len(sys.argv) > 1 else None
+    cli_end = sys.argv[2] if len(sys.argv) > 2 else None
+
+    posts, start_date, end_date = pull_posts(BUFFER_TOKEN, cli_start, cli_end)
+    audit = analyze(posts, start_date, end_date)
     write_output(audit)
