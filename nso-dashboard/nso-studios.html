@@ -710,7 +710,7 @@ function renderSummary(){
   const presalesGap=Math.max(0,annPres-netPresales);
   const wkLeadGoal=weeksLeft>0?Math.round(leadsGap/weeksLeft):leadsGap;
   const wkPresaleGoal=weeksLeft>0?Math.round(presalesGap/weeksLeft):presalesGap;
-  const wkGoalLabel=weeksLeft>0?'Goal/wk':'Still needed';
+  const wkGoalLabel='Goal';
   const cumSpend=w.slice(0,displayCw+1).reduce((s,x)=>s+(x.total_marketing_spend||0),0);
   const cumSpendNoLT=w.slice(0,displayCw+1).reduce((s,x)=>s+(x.meta_spend||0)+(x.google_spend||0)+(x.grassroots_spend||0)+(x.other_spend||0),0);
   const estTotalSpend=displayCw>0?Math.round(cumSpendNoLT/displayCw*paceWeeks):0;

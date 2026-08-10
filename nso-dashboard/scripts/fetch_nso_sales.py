@@ -83,18 +83,18 @@ _SOURCE_CASE = """
                                                                  THEN 'SWEAT440 App'
         WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('business app','business mode')
                                                                  THEN 'Business Mode / App'
-        WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('public api')        THEN 'Public API'
         WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('mindbody app','mindbody web')
                                                                  THEN 'MindBody App'
-        -- Word of mouth / platforms / catch-all
+        -- Word of mouth / catch-all (REFERRED_BY) before Public API fallback
         WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('another client','word of mouth')
                                                                  THEN 'Word of Mouth'
-        WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('classpass','wellhub','wellness passport')
-                                                                 THEN 'ClassPass / Platforms'
         WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('drive by','flyer','frederick',
                                              'holly met outside of gym.','internet','n/a',
                                              'newspaper','other','radio','tv / streaming')
                                                                  THEN 'Other'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('public api')        THEN 'Public API'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('classpass','wellhub','wellness passport')
+                                                                 THEN 'ClassPass / Platforms'
         ELSE 'N/A'
     END
 """
