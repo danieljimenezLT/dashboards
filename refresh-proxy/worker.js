@@ -338,6 +338,245 @@ async function handleUpdateStudio(body, env, headers) {
   return jsonResponse({ ok: true, prUrl: result.prUrl }, 200, headers);
 }
 
+// ─── SWEAT440 Brand Safety Audit — Buffer export + cycle publish ───────────
+// Two actions, both scoped to brand-safety-audit/data/*.json in this repo:
+//   - export_brand_audit_posts   → live-pulls Buffer (BUFFER_API_TOKEN secret,
+//     never sent to the browser) and returns a clean per-post export.
+//   - publish_brand_audit_cycle  → receives Claude's analysis JSON from the
+//     browser and commits it straight to data/latest.json + a dated archive
+//     copy (direct to main — this is routine data, not code, same as the
+//     scheduled refresh workflows).
+
+const BUFFER_ORG_ID = '651eb8e1f9dfd3e786474267'; // LeadTeam
+
+const BRAND_AUDIT_CHANNELS = {
+  '65392ba23b0f09002f9e6a89': 'sweat440coralsprings',
+  '65392c0c3b0f09002fa24a51': 'sweat440tomsriver',
+  '65392d203b0f09002fad128b': 'sweat440doral',
+  '65411a93f8d09f1c5e0a8cb3': 'sweat440gables',
+  '654a51b47a6cf4d23fe20515': 'sweat440midtownmiami',
+  '65411a93f8d09f1c5e0a8c27': 'sweat440southmiami',
+  '65411a93f8d09f1c5e0a8c34': 'sweat440miamilakes',
+  '65411a93f8d09f1c5e0a8c7e': 'sweat440deerfield',
+  '65411a93f8d09f1c5e0a8c88': 'sweat440noda',
+};
+
+const BRAND_AUDIT_DISPLAY_NAMES = {
+  sweat440coralsprings: 'Coral Springs',
+  sweat440tomsriver: 'Toms River',
+  sweat440doral: 'Doral',
+  sweat440gables: 'Coral Gables',
+  sweat440midtownmiami: 'Midtown Miami',
+  sweat440southmiami: 'South Miami',
+  sweat440miamilakes: 'Miami Lakes',
+  sweat440deerfield: 'Deerfield Beach',
+  sweat440noda: 'NoDa Charlotte',
+};
+
+// Repo-root-relative — brand-safety-audit/ sits alongside nso-dashboard/,
+// admin-reports/, etc. in dev-leadteam/dashboards, not nested under pkg/
+// (that's only a local staging path in the working copy this was built in).
+const BRAND_AUDIT_DATA_DIR = 'brand-safety-audit/data';
+
+// Field/type names and the startDate+endDate requirement confirmed against
+// developers.buffer.com and this org's real data — see
+// brand-safety-audit/scripts/buffer_client.py for the Python equivalent and
+// full notes (this Worker and that script must be kept in sync manually).
+const BUFFER_POSTS_QUERY = `
+query GetSentPosts(
+  $organizationId: OrganizationId!
+  $channelIds: [ChannelId!]
+  $startDate: DateTime!
+  $endDate: DateTime!
+  $first: Int!
+  $after: String
+) {
+  posts(
+    first: $first
+    after: $after
+    input: {
+      organizationId: $organizationId
+      filter: { status: [sent], channelIds: $channelIds, startDate: $startDate, endDate: $endDate }
+      sort: [{ field: dueAt, direction: desc }]
+    }
+  ) {
+    edges {
+      node {
+        id
+        text
+        channelId
+        dueAt
+        sentAt
+        externalLink
+        metadata {
+          ... on InstagramPostMetadata {
+            type
+          }
+        }
+        assets {
+          id
+          type
+          mimeType
+          source
+          thumbnail
+        }
+      }
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+  }
+}
+`;
+
+async function pullBufferPosts(env, days = 7) {
+  const now = new Date();
+  const start = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+  const fmt = (d) => d.toISOString().replace(/\.\d{3}Z$/, 'Z');
+
+  const posts = [];
+  let after = null;
+  for (let page = 0; page < 10; page++) { // safety cap — 9 channels/7 days never needs this many pages
+    const res = await fetch('https://api.buffer.com', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.BUFFER_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: BUFFER_POSTS_QUERY,
+        variables: {
+          organizationId: BUFFER_ORG_ID,
+          channelIds: Object.keys(BRAND_AUDIT_CHANNELS),
+          startDate: fmt(start),
+          endDate: fmt(now),
+          first: 50,
+          after,
+        },
+      }),
+    });
+    const data = await res.json();
+    if (data.errors) throw new Error('Buffer API errors: ' + JSON.stringify(data.errors));
+
+    const page_ = data.data.posts;
+    posts.push(...page_.edges.map((e) => e.node));
+    if (!page_.pageInfo.hasNextPage) break;
+    after = page_.pageInfo.endCursor;
+  }
+  return posts;
+}
+
+// Allow-list, not block-list: only metadata.type === "post" (a permanent
+// Instagram feed post) is evaluated. Reels AND Stories both slip through a
+// Reel-only exclusion — Stories have an image asset and no caption but are
+// gone in 24h, so any permalink is dead by the time a weekly review happens.
+function postTypeAndAsset(post) {
+  const metadata = post.metadata || {};
+  if (metadata.type !== 'post') return [null, null];
+
+  const imageAssets = (post.assets || []).filter((a) => (a.mimeType || '').startsWith('image/'));
+  if (!imageAssets.length) return [null, null];
+
+  const postType = imageAssets.length > 1 ? 'Carousel' : 'Static';
+  return [postType, imageAssets[0]];
+}
+
+function buildBrandAuditExport(posts) {
+  const byChannel = {};
+  for (const post of posts) {
+    (byChannel[post.channelId] = byChannel[post.channelId] || []).push(post);
+  }
+
+  const accounts = [];
+  let skipped = 0;
+  for (const [channelId, handle] of Object.entries(BRAND_AUDIT_CHANNELS)) {
+    const channelPosts = byChannel[channelId] || [];
+    const postsForReview = [];
+    for (const post of channelPosts) {
+      const [postType, asset] = postTypeAndAsset(post);
+      if (!asset) { skipped++; continue; }
+      postsForReview.push({
+        id: String(post.id),
+        date: post.sentAt || post.dueAt || '',
+        postType,
+        caption: post.text || '',
+        imageUrl: asset.source,
+        link: post.externalLink || '',
+      });
+    }
+    accounts.push({
+      name: BRAND_AUDIT_DISPLAY_NAMES[handle] || handle,
+      handle,
+      posts: postsForReview,
+    });
+  }
+
+  const today = new Date();
+  return {
+    cycle: today.toISOString().slice(0, 7),
+    period: today.toLocaleString('en-US', { month: 'long', year: 'numeric' }),
+    generated: today.toISOString().slice(0, 10),
+    note: `${skipped} Reel(s)/Story post(s) excluded — video and 24h-ephemeral content aren't in scope yet.`,
+    accounts,
+  };
+}
+
+async function handleExportBrandAuditPosts(env, headers) {
+  const posts = await pullBufferPosts(env);
+  const exportData = buildBrandAuditExport(posts);
+  return jsonResponse({ ok: true, export: exportData }, 200, headers);
+}
+
+function validateBrandAuditPayload(payload) {
+  if (!payload || !Array.isArray(payload.accounts)) return 'Missing "accounts" array.';
+  for (const a of payload.accounts) {
+    if (typeof a.handle !== 'string' || !Array.isArray(a.flags)) {
+      return `Account "${a.name || '?'}" is missing "handle" or "flags".`;
+    }
+  }
+  return null;
+}
+
+async function getRepoFileSha(env, path) {
+  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}?ref=main`, {
+    headers: ghHeaders(env),
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`Failed to read ${path} (${res.status})`);
+  const json = await res.json();
+  return json.sha;
+}
+
+async function putRepoFile(env, path, content, message) {
+  const sha = await getRepoFileSha(env, path);
+  const body = { message, content: b64EncodeUnicode(content), branch: 'main' };
+  if (sha) body.sha = sha;
+  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
+    method: 'PUT',
+    headers: ghHeaders(env),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`Failed to write ${path} (${res.status}): ${errText}`);
+  }
+}
+
+async function handlePublishBrandAuditCycle(body, env, headers) {
+  const payload = body.payload;
+  const problem = validateBrandAuditPayload(payload);
+  if (problem) return jsonResponse({ ok: false, error: problem }, 400, headers);
+
+  const cycle = payload.cycle || new Date().toISOString().slice(0, 7);
+  const content = JSON.stringify(payload, null, 2) + '\n';
+
+  await putRepoFile(env, `${BRAND_AUDIT_DATA_DIR}/latest.json`, content, `Publish brand safety audit cycle ${cycle}`);
+  await putRepoFile(env, `${BRAND_AUDIT_DATA_DIR}/${cycle}.json`, content, `Archive brand safety audit cycle ${cycle}`);
+
+  return jsonResponse({ ok: true }, 200, headers);
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
@@ -360,6 +599,22 @@ export default {
     if (body.action === 'add_studio' || body.action === 'update_studio') {
       try {
         return await (body.action === 'add_studio' ? handleAddStudio(body, env, headers) : handleUpdateStudio(body, env, headers));
+      } catch (e) {
+        return jsonResponse({ ok: false, error: `Unexpected error: ${e.message}` }, 500, headers);
+      }
+    }
+
+    if (body.action === 'export_brand_audit_posts') {
+      try {
+        return await handleExportBrandAuditPosts(env, headers);
+      } catch (e) {
+        return jsonResponse({ ok: false, error: `Unexpected error: ${e.message}` }, 500, headers);
+      }
+    }
+
+    if (body.action === 'publish_brand_audit_cycle') {
+      try {
+        return await handlePublishBrandAuditCycle(body, env, headers);
       } catch (e) {
         return jsonResponse({ ok: false, error: `Unexpected error: ${e.message}` }, 500, headers);
       }

@@ -1,0 +1,79 @@
+{
+  "cycle": "2026-06",
+  "period": "June 2026",
+  "generated": "2026-07-13",
+  "source": "Buffer (live MCP pull)",
+  "postsReviewed": 100,
+  "accounts": [
+    {
+      "name": "Midtown Miami",
+      "handle": "sweat440midtownmiami",
+      "posts": 14,
+      "status": "flagged",
+      "flags": [
+        {
+          "id": "2026-06-mm-jous",
+          "level": "medium",
+          "category": "Loose brand adherence",
+          "confidence": "MEDIUM",
+          "date": "Jun 25, 2026",
+          "postType": "Static",
+          "visualReviewed": true,
+          "caption": "Jous Drink Pop-Up at SWEAT440 — Join us at the studio for a refreshing pop-up with Jous Drink! Stop by before or after class to enjoy their natural, refreshing beverages.",
+          "why": "Caption: external beverage brand promoted through an in-studio pop-up, no evidence of approved-partner status. Visual analysis: the official SWEAT440 shield logo appears printed on the Jous can itself — direct co-branding of the mark on a third-party product. Product confirmed non-alcoholic (hydrating fruit drink). Visual finding reinforces the urgency of partner verification.",
+          "action": "Verify whether Jous Drink is on the approved partners list. If not, request franchisee to document the approval process before any future co-promotions.",
+          "link": "https://www.instagram.com/p/DZ-hmHdK_1x/"
+        }
+      ]
+    },
+    {
+      "name": "Coral Springs",
+      "handle": "sweat440coralsprings",
+      "posts": 8,
+      "status": "flagged",
+      "flags": [
+        {
+          "id": "2026-06-cs-b12",
+          "level": "medium",
+          "category": "Loose brand adherence",
+          "confidence": "MEDIUM",
+          "date": "Jun 25, 2026",
+          "postType": "Static",
+          "visualReviewed": true,
+          "caption": "FREE B12 SHOTS + Exclusive Wellness Offers! — We're excited to welcome Patriot IV & Pro Health to SWEAT440 for an incredible wellness pop-up offering IV therapy and B12 injections.",
+          "why": "Caption: medical services provider (IV therapy, B12 injections, peptide therapies, weight-loss consultations) operating inside the studio. Visual analysis: the provider's logo (eagle, star, blood-drop medical imagery) visually dominates the creative and is larger than the SWEAT440 lockup. Regulated medical services promoted under the brand roof with third-party visual prominence. Escalated from LOW to MEDIUM after image review.",
+          "action": "Verify Patriot IV & Pro Health is on the approved partners list. Low urgency on content policy, but a latent reputational risk if the provider has any issues.",
+          "link": "https://www.instagram.com/p/DaAvXuCxkiU/"
+        }
+      ]
+    },
+    {
+      "name": "Toms River",
+      "handle": "sweat440tomsriver",
+      "posts": 12,
+      "status": "flagged",
+      "flags": [
+        {
+          "id": "2026-06-tr-pride",
+          "level": "low",
+          "category": "Political or religious messaging",
+          "confidence": "LOW",
+          "date": "Jun 20, 2026",
+          "postType": "Static",
+          "visualReviewed": true,
+          "caption": "Love is love, and at SWEAT440, strength training is for everyone. We're celebrating Pride with a community class that honors exactly who you are.",
+          "why": "Caption: Pride-themed community class. Visual analysis: entire creative dedicated to the theme (rainbow border, rainbow typography, LOVE IS LOVE dominant) — active positioning, not passing acknowledgment. Design is clean and on-brand: official SWEAT440 | Toms River lockup correctly applied. No additional visual violations. Remains a judgment call given franchisee and market diversity.",
+          "action": "Review with leadership. If officially sanctioned network event, document as context. If solo studio initiative, evaluate against brand voice uniformity policy.",
+          "link": "https://www.instagram.com/p/DZznZPkk_Vq/"
+        }
+      ]
+    },
+    { "name": "HQ", "handle": "sweat440", "posts": 11, "status": "clean", "flags": [] },
+    { "name": "Coral Gables", "handle": "sweat440gables", "posts": 10, "status": "clean", "flags": [] },
+    { "name": "Doral", "handle": "sweat440doral", "posts": 11, "status": "clean", "flags": [] },
+    { "name": "South Miami", "handle": "sweat440southmiami", "posts": 9, "status": "clean", "flags": [] },
+    { "name": "Miami Lakes", "handle": "sweat440miamilakes", "posts": 8, "status": "clean", "flags": [] },
+    { "name": "Deerfield Beach", "handle": "sweat440deerfield", "posts": 10, "status": "clean", "flags": [] },
+    { "name": "NoDa Charlotte", "handle": "sweat440noda", "posts": 7, "status": "clean", "flags": [] }
+  ]
+}
