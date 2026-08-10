@@ -124,8 +124,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 
   <div class="publish-box" id="publishBox">
     <div class="publish-row">
-      <span class="publish-label">1. Get this week's posts:</span>
-      <button class="status-btn st-ops" id="downloadBtn" onclick="downloadPosts()">Download this week's posts</button>
+      <span class="publish-label" id="coverageLabel">Data reviewed through: —</span>
+    </div>
+    <div class="publish-row">
+      <span class="publish-label">1. Get posts from:</span>
+      <input type="date" id="downloadFrom">
+      <span style="font-size:12px;color:var(--text-3)">to</span>
+      <input type="date" id="downloadTo">
+      <button class="status-btn st-ops" id="downloadBtn" onclick="downloadPosts()">Download posts</button>
       <span class="publish-msg" id="downloadMsg"></span>
     </div>
     <div class="publish-row">
@@ -338,6 +344,31 @@ function refreshHeader(){
   document.getElementById("topbarMeta").textContent="Brand Safety Audit · "+AUDIT.accounts.length+" accounts · "+AUDIT.period+" · "+AUDIT.postsReviewed+" posts reviewed";
   document.getElementById("pageSubtitle").textContent="SWEAT440 network · "+AUDIT.period+" · "+AUDIT.postsReviewed+" posts pulled live from Buffer · Caption + visual creative analysis — human review required on all flagged items";
   document.getElementById("footerLeft").textContent="SWEAT440 · Brand Safety Audit · "+AUDIT.period+" · Data pulled live from Buffer · Confidential — Internal Use Only";
+  updateCoverageUI();
+}
+
+// Shows the published cycle's coverage end date, and pre-fills the download
+// date pickers to start right after it — so re-downloading never re-pulls
+// (and re-analyzes) posts that already went through a review cycle.
+function updateCoverageUI(){
+  const coverage=AUDIT&&AUDIT.coverage;
+  const label=document.getElementById("coverageLabel");
+  const fromInput=document.getElementById("downloadFrom");
+  const toInput=document.getElementById("downloadTo");
+  const todayStr=new Date().toISOString().slice(0,10);
+  toInput.value=todayStr;
+
+  if(coverage&&coverage.to){
+    label.textContent="Data reviewed through: "+coverage.to;
+    const next=new Date(coverage.to+"T00:00:00Z");
+    next.setUTCDate(next.getUTCDate()+1);
+    fromInput.value=next.toISOString().slice(0,10);
+  }else{
+    label.textContent="Data reviewed through: unknown (older cycle — no coverage recorded)";
+    const weekAgo=new Date();
+    weekAgo.setDate(weekAgo.getDate()-7);
+    fromInput.value=weekAgo.toISOString().slice(0,10);
+  }
 }
 
 // Validate the bare minimum shape before accepting a file — catches a
@@ -359,26 +390,31 @@ async function callProxy(payload){
   return data;
 }
 
-// Pulls this week's Static/Carousel posts live from Buffer (via the Worker —
-// the Buffer token never reaches this page) and downloads them as a file
-// ready to upload to a Claude.ai chat/Project for analysis.
+// Pulls Static/Carousel posts for the selected date range live from Buffer
+// (via the Worker — the Buffer token never reaches this page) and downloads
+// them as a file ready to upload to a Claude.ai chat/Project for analysis.
 async function downloadPosts(){
   const btn=document.getElementById("downloadBtn");
   const msg=document.getElementById("downloadMsg");
+  const fromVal=document.getElementById("downloadFrom").value;
+  const toVal=document.getElementById("downloadTo").value;
+  if(!fromVal||!toVal){msg.textContent="Pick both dates first.";return;}
+  if(fromVal>toVal){msg.textContent='"From" must not be after "To".';return;}
+
   btn.disabled=true;btn.textContent="Downloading…";msg.textContent="";
   try{
-    const data=await callProxy({action:"export_brand_audit_posts"});
+    const data=await callProxy({action:"export_brand_audit_posts",startDate:fromVal,endDate:toVal});
     const blob=new Blob([JSON.stringify(data.export,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
-    a.href=url;a.download=data.export.cycle+"-posts.json";
+    a.href=url;a.download=fromVal+"_to_"+toVal+"-posts.json";
     document.body.appendChild(a);a.click();a.remove();
     URL.revokeObjectURL(url);
     msg.textContent="Downloaded ("+data.export.note+")";
   }catch(e){
     msg.textContent="Download failed — "+e.message;
   }finally{
-    btn.disabled=false;btn.textContent="Download this week's posts";
+    btn.disabled=false;btn.textContent="Download posts";
   }
 }
 
