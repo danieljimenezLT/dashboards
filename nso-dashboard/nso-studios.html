@@ -706,8 +706,11 @@ function renderSummary(){
   const netPresales=_sumCurTier?(_sumCurTier.t0||0)+(_sumCurTier.t1||0)+(_sumCurTier.t2||0)+(_sumCurTier.t3||0):Math.max(0,(cur.presales_count||0)-(cur.cancellations_count||0));
   // Dynamic weekly goal: remaining target ÷ weeks left until C/O
   const weeksLeft=Math.max(0,paceWeeks-displayCw);
-  const wkLeadGoal=weeksLeft>0?Math.round(Math.max(0,annLeads-(cur.total_leads||0))/weeksLeft):0;
-  const wkPresaleGoal=weeksLeft>0?Math.round(Math.max(0,annPres-netPresales)/weeksLeft):0;
+  const leadsGap=Math.max(0,annLeads-(cur.total_leads||0));
+  const presalesGap=Math.max(0,annPres-netPresales);
+  const wkLeadGoal=weeksLeft>0?Math.round(leadsGap/weeksLeft):leadsGap;
+  const wkPresaleGoal=weeksLeft>0?Math.round(presalesGap/weeksLeft):presalesGap;
+  const wkGoalLabel=weeksLeft>0?'Goal/wk':'Still needed';
   const cumSpend=w.slice(0,displayCw+1).reduce((s,x)=>s+(x.total_marketing_spend||0),0);
   const cumSpendNoLT=w.slice(0,displayCw+1).reduce((s,x)=>s+(x.meta_spend||0)+(x.google_spend||0)+(x.grassroots_spend||0)+(x.other_spend||0),0);
   const estTotalSpend=displayCw>0?Math.round(cumSpendNoLT/displayCw*paceWeeks):0;
@@ -721,8 +724,8 @@ function renderSummary(){
   // Card A — Last 7 Full Days
   const last7Range=`${_fmtDate(d7ago)} – ${_fmtDate(d7end)}`;
   h+=`<div class="chart-card summary-card"><div class="summary-card-section">Last 7 Full Days</div><div style="font-size:10px;color:#8aaabb;margin-top:-10px;margin-bottom:10px">${last7Range}</div>`;
-  h+=skRow('Leads',lastLeads,wkLeadGoal,'#00A3E0',true,'sum_leads_7d');
-  h+=skRow('Presales (net)',lastNetPresales,wkPresaleGoal,'#00C9A7',true,'sum_presales_7d');
+  h+=skRow('Leads',lastLeads,wkLeadGoal,'#00A3E0',true,'sum_leads_7d',wkGoalLabel);
+  h+=skRow('Presales (net)',lastNetPresales,wkPresaleGoal,'#00C9A7',true,'sum_presales_7d',wkGoalLabel);
   const last7Cvr=lastLeads>0?Math.round(lastNetPresales/lastLeads*100):null;
   const goalCvr=_isReston?35:(tgt.presales_count&&tgt.total_leads?Math.round(tgt.presales_count/tgt.total_leads*100):null);
   if(last7Cvr!==null){
@@ -768,7 +771,7 @@ function renderSummary(){
   setTimeout(()=>{drawCumChart(studio);drawSumSourceChart(studio,'leads')},50);
 }
 
-function skRow(label,actual,goal,color,noCheck,infoKey){
+function skRow(label,actual,goal,color,noCheck,infoKey,goalLabel){
   const numActual=typeof actual==='string'?actual:actual.toLocaleString('en-US');
   const numGoal=goal!=null?(typeof goal==='string'?goal:goal.toLocaleString('en-US')):null;
   const met=!noCheck&&typeof actual==='number'&&typeof goal==='number'&&actual>=goal;
@@ -777,7 +780,7 @@ function skRow(label,actual,goal,color,noCheck,infoKey){
   let h=`<div class="sk-row"><div><div class="sk-label">${label}${infoHtml}</div></div><div class="sk-vals"><div class="sk-actual">${numActual}`;
   if(met)h+=`<span class="sk-check">✓</span>`;
   h+=`</div>`;
-  if(numGoal!=null)h+=`<div class="sk-goal">Goal: ${numGoal}</div>`;
+  if(numGoal!=null)h+=`<div class="sk-goal">${goalLabel||'Goal'}: ${numGoal}</div>`;
   h+=`</div></div>`;
   if(typeof actual==='number'&&typeof goal==='number'&&goal>0){
     const ratio=actual/goal;
