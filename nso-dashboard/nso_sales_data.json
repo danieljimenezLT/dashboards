@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-10T17:27:19.435192",
+  "generated_at": "2026-08-10T18:04:47.720342",
   "date_range": {
     "start": "2026-01-01",
     "end": "2026-08-08"
@@ -1990,10 +1990,17 @@
         },
         {
           "date": "2026-06-10",
-          "source": "Other",
-          "presales": 3,
+          "source": "N/A",
+          "presales": 1,
           "cancellations": 0,
-          "gross_revenue": 297.0
+          "gross_revenue": 99.0
+        },
+        {
+          "date": "2026-06-10",
+          "source": "Other",
+          "presales": 2,
+          "cancellations": 0,
+          "gross_revenue": 198.0
         },
         {
           "date": "2026-06-11",
@@ -5235,7 +5242,7 @@
         },
         {
           "date": "2026-05-22",
-          "source": "Public API",
+          "source": "Other",
           "presales": 1,
           "cancellations": 0,
           "gross_revenue": 99.0
@@ -6850,17 +6857,17 @@
         },
         {
           "date": "2026-07-26",
-          "source": "Grassroots",
-          "presales": 1,
-          "cancellations": 0,
-          "gross_revenue": 129.0
-        },
-        {
-          "date": "2026-07-26",
           "source": "Other",
           "presales": 2,
           "cancellations": 0,
           "gross_revenue": 258.0
+        },
+        {
+          "date": "2026-07-26",
+          "source": "SWEAT440 App",
+          "presales": 1,
+          "cancellations": 0,
+          "gross_revenue": 129.0
         },
         {
           "date": "2026-07-27",
