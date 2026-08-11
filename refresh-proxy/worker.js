@@ -172,7 +172,8 @@ function prBodyForAdd(studio) {
 }
 
 function prBodyForUpdate(existing, merged) {
-  const before = new Map(fieldRows(existing));
+  const before = new Map();
+  for (const [label, val] of fieldRows(existing)) before.set(label, val);
   const after = fieldRows(merged);
   const changed = after.filter(([label, val]) => JSON.stringify(before.get(label)) !== JSON.stringify(val));
 
@@ -430,11 +431,10 @@ query GetSentPosts(
 }
 `;
 
-async function pullBufferPosts(env, days = 7) {
-  const now = new Date();
-  const start = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-  const fmt = (d) => d.toISOString().replace(/\.\d{3}Z$/, 'Z');
-
+// Both args are full ISO datetimes (see resolveDateRange). Buffer's filter
+// silently returns zero posts if startDate is sent without endDate — see
+// scripts/buffer_client.py for the confirmed-against-real-data note.
+async function pullBufferPosts(env, startDate, endDate) {
   const posts = [];
   let after = null;
   for (let page = 0; page < 10; page++) { // safety cap — 9 channels/7 days never needs this many pages
@@ -449,8 +449,8 @@ async function pullBufferPosts(env, days = 7) {
         variables: {
           organizationId: BUFFER_ORG_ID,
           channelIds: Object.keys(BRAND_AUDIT_CHANNELS),
-          startDate: fmt(start),
-          endDate: fmt(now),
+          startDate,
+          endDate,
           first: 50,
           after,
         },
@@ -482,7 +482,12 @@ function postTypeAndAsset(post) {
   return [postType, imageAssets[0]];
 }
 
-function buildBrandAuditExport(posts) {
+// `startDate`/`endDate` are the plain "YYYY-MM-DD" strings the request was
+// resolved to (see resolveDateRange) — not the full ISO datetimes sent to
+// Buffer. `cycle`/`period` key off the END of the range, not "today": a
+// review of an older date range should file under the month it covers, not
+// the month it happened to be run in.
+function buildBrandAuditExport(posts, startDate, endDate) {
   const byChannel = {};
   for (const post of posts) {
     (byChannel[post.channelId] = byChannel[post.channelId] || []).push(post);
@@ -512,19 +517,50 @@ function buildBrandAuditExport(posts) {
     });
   }
 
-  const today = new Date();
+  const coverageEnd = new Date(endDate + 'T00:00:00Z');
   return {
-    cycle: today.toISOString().slice(0, 7),
-    period: today.toLocaleString('en-US', { month: 'long', year: 'numeric' }),
-    generated: today.toISOString().slice(0, 10),
+    cycle: coverageEnd.toISOString().slice(0, 7),
+    period: coverageEnd.toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }),
+    generated: new Date().toISOString().slice(0, 10),
+    coverage: { from: startDate, to: endDate },
     note: `${skipped} Reel(s)/Story post(s) excluded — video and 24h-ephemeral content aren't in scope yet.`,
     accounts,
   };
 }
 
-async function handleExportBrandAuditPosts(env, headers) {
-  const posts = await pullBufferPosts(env);
-  const exportData = buildBrandAuditExport(posts);
+// Defaults to the last 7 days when the request doesn't specify a range.
+// Accepts plain "YYYY-MM-DD" dates (what a browser <input type="date"> sends)
+// and returns both the plain dates (for display/cycle-naming) and the full
+// ISO datetimes Buffer's API requires (start of day / end of day, UTC).
+function resolveDateRange(body) {
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const weekAgoStr = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+  const startDate = (body && body.startDate) || weekAgoStr;
+  const endDate = (body && body.endDate) || todayStr;
+
+  if (new Date(startDate) > new Date(endDate)) {
+    throw new Error('startDate must not be after endDate');
+  }
+
+  return {
+    startDate,
+    endDate,
+    startDateTime: `${startDate}T00:00:00Z`,
+    endDateTime: `${endDate}T23:59:59Z`,
+  };
+}
+
+async function handleExportBrandAuditPosts(body, env, headers) {
+  let range;
+  try {
+    range = resolveDateRange(body);
+  } catch (e) {
+    return jsonResponse({ ok: false, error: e.message }, 400, headers);
+  }
+  const posts = await pullBufferPosts(env, range.startDateTime, range.endDateTime);
+  const exportData = buildBrandAuditExport(posts, range.startDate, range.endDate);
   return jsonResponse({ ok: true, export: exportData }, 200, headers);
 }
 
@@ -606,7 +642,7 @@ export default {
 
     if (body.action === 'export_brand_audit_posts') {
       try {
-        return await handleExportBrandAuditPosts(env, headers);
+        return await handleExportBrandAuditPosts(body, env, headers);
       } catch (e) {
         return jsonResponse({ ok: false, error: `Unexpected error: ${e.message}` }, 500, headers);
       }

@@ -37,11 +37,16 @@ BUFFER_TOKEN = os.environ["BUFFER_API_TOKEN"]
 EXPORTS_DIR = pathlib.Path(__file__).parent.parent / "exports"
 
 
-def build_export(posts):
+def build_export(posts, start_date, end_date):
     """Group posts by account into the export shape Claude needs — everything
     it needs to judge each post, and everything the dashboard needs per flag,
     so Claude's output can be pasted straight into data/latest.json without
-    any post-processing merge step."""
+    any post-processing merge step.
+
+    `coverage` records the range actually queried (see MANUAL_BATCH_INSTRUCTIONS
+    — Claude is asked to copy cycle/period/generated/coverage through
+    unchanged), so the dashboard can show "reviewed through X" and pre-fill
+    the next download's start date, avoiding re-analysis of the same posts."""
     by_channel = {}
     for post in posts:
         by_channel.setdefault(post["channelId"], []).append(post)
@@ -74,11 +79,12 @@ def build_export(posts):
             }
         )
 
-    today = datetime.date.today()
+    coverage_end = datetime.date.fromisoformat(end_date)
     return {
-        "cycle": today.strftime("%Y-%m"),
-        "period": today.strftime("%B %Y"),
-        "generated": today.isoformat(),
+        "cycle": coverage_end.strftime("%Y-%m"),
+        "period": coverage_end.strftime("%B %Y"),
+        "generated": datetime.date.today().isoformat(),
+        "coverage": {"from": start_date, "to": end_date},
         "note": f"{skipped} Reel(s)/Story post(s) excluded — video and 24h-ephemeral content aren't in scope yet.",
         "accounts": accounts,
     }
@@ -86,8 +92,7 @@ def build_export(posts):
 
 def write_export(export):
     EXPORTS_DIR.mkdir(exist_ok=True)
-    today = datetime.date.today().isoformat()
-    out_path = EXPORTS_DIR / f"{today}-posts.json"
+    out_path = EXPORTS_DIR / f"{export['coverage']['from']}_to_{export['coverage']['to']}-posts.json"
     out_path.write_text(json.dumps(export, indent=2))
 
     prompt_path = EXPORTS_DIR / "eval-prompt-for-claude.txt"
@@ -103,6 +108,13 @@ def write_export(export):
 
 
 if __name__ == "__main__":
-    posts = pull_posts(BUFFER_TOKEN)
-    export = build_export(posts)
+    import sys
+
+    # Optional: python export_posts.py 2026-08-01 2026-08-10 — defaults to
+    # the last 7 days if omitted.
+    cli_start = sys.argv[1] if len(sys.argv) > 1 else None
+    cli_end = sys.argv[2] if len(sys.argv) > 2 else None
+
+    posts, start_date, end_date = pull_posts(BUFFER_TOKEN, cli_start, cli_end)
+    export = build_export(posts, start_date, end_date)
     write_export(export)

@@ -104,16 +104,18 @@ FLAG_OUTPUT_SCHEMA = {
 # than one FLAG_OUTPUT_SCHEMA verdict per post — this is the instruction
 # appended after the exported posts data in that flow. Keep it aligned with
 # analyze()'s assembly logic in run_audit.py (same fields per flag).
-MANUAL_BATCH_INSTRUCTIONS = """Attached is a JSON export of this week's SWEAT440 Instagram posts \
-(Static and Carousel only — Reels are excluded, see the "postType" already \
-set per post). Evaluate every post using the SWEAT440 Brand Safety Audit \
-framework above, one post at a time, then return a SINGLE JSON object with \
-this exact shape (matching the dashboard's data file):
+MANUAL_BATCH_INSTRUCTIONS = """Attached is a JSON export of SWEAT440 Instagram posts for a specific \
+date range (Static and Carousel only — Reels and Stories are excluded, see \
+the "postType" already set per post). Evaluate every post using the \
+SWEAT440 Brand Safety Audit framework above, one post at a time, then \
+return a SINGLE JSON object with this exact shape (matching the dashboard's \
+data file):
 
 {
-  "cycle": "YYYY-MM",
-  "period": "Month YYYY",
-  "generated": "YYYY-MM-DD",
+  "cycle": "<copy verbatim from the export's \"cycle\" field>",
+  "period": "<copy verbatim from the export's \"period\" field>",
+  "generated": "<copy verbatim from the export's \"generated\" field>",
+  "coverage": <copy the export's \"coverage\" object verbatim, unchanged>,
   "source": "Buffer (manual Claude.ai review)",
   "postsReviewed": <int — total posts you evaluated, flagged or not>,
   "accounts": [

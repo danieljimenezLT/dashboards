@@ -97,8 +97,14 @@ query GetSentPosts(
 """
 
 
-def pull_posts(buffer_token, days=7):
-    """Pull sent posts from the last `days` days from Buffer's GraphQL API.
+def pull_posts(buffer_token, start_date=None, end_date=None, days=7):
+    """Pull sent posts from Buffer's GraphQL API for a date range.
+
+    `start_date`/`end_date` take plain "YYYY-MM-DD" strings. If omitted,
+    defaults to the last `days` days (today inclusive). Kept in sync with
+    the same date-range behavior in refresh-proxy/worker.js — that Worker is
+    what the dashboard's "Download posts" button actually calls; this
+    function is the Level 1.5/2 (manual/API) equivalent.
 
     Get an API key from Buffer under Settings → API (scopes needed: at least
     `posts:read`).
@@ -108,9 +114,11 @@ def pull_posts(buffer_token, days=7):
     `endDate`) silently returns zero posts, even with a start date years in
     the past. Not documented; just how Buffer's filter behaves.
     """
-    now = datetime.datetime.now(datetime.timezone.utc)
-    start_date = (now - datetime.timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:%SZ")
-    end_date = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+    today = datetime.date.today()
+    start_date = start_date or (today - datetime.timedelta(days=days)).isoformat()
+    end_date = end_date or today.isoformat()
+    start_datetime = f"{start_date}T00:00:00Z"
+    end_datetime = f"{end_date}T23:59:59Z"
 
     posts = []
     after = None
@@ -122,8 +130,8 @@ def pull_posts(buffer_token, days=7):
                 "variables": {
                     "organizationId": ORG_ID,
                     "channelIds": list(CHANNELS.keys()),
-                    "startDate": start_date,
-                    "endDate": end_date,
+                    "startDate": start_datetime,
+                    "endDate": end_datetime,
                     "first": 50,
                     "after": after,
                 },
@@ -146,7 +154,7 @@ def pull_posts(buffer_token, days=7):
             break
         after = page["pageInfo"]["endCursor"]
 
-    return posts
+    return posts, start_date, end_date
 
 
 def post_type_and_asset(post):

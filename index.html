@@ -48,6 +48,8 @@
       </div>
     </div>
 
+    <button class="nav-tab" id="navTabGlossary" onclick="switchTab('glossary',this)">Glossary<span class="nav-badge alpha">Alpha</span></button>
+
   </div>
   <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Toggle navigation">
     <span></span><span></span><span></span>
@@ -416,6 +418,9 @@
     <div id="instagram-content"></div>
   </div>
 
+  <div class="tab-content" id="tab-glossary">
+    <div id="glossaryContent"></div>
+  </div>
 
 </div>
 
@@ -519,6 +524,88 @@ function _infoBtn(key) {
   return '<button class="kpi-info-btn" onclick="showKpiInfo(this,event)" data-title="'+_esc(g.title)+'" data-desc="'+_esc(g.desc)+'" data-date="'+_esc(g.date||'')+'">i</button>';
 }
 
+// -- Glossary tab (Alpha, admin-only) --------------------------------------
+// Metadata for every entry in GLOSSARY above: which tab/category it belongs
+// to, how it's displayed, and how it's evaluated. Descriptions come straight
+// from GLOSSARY so the glossary tab and the "i" tooltips never drift apart.
+const GLOSSARY_META = {
+  leads:               { cat:'Funnel',                fmt:'Count'},
+  ft:                  { cat:'Funnel',                fmt:'Count'},
+  mem:                 { cat:'Funnel',                fmt:'Count'},
+  conv_l_ft:           { cat:'Funnel',                fmt:'Percentage'},
+  conv_ft_mem:         { cat:'Funnel',                fmt:'Percentage'},
+  conv_l_mem:          { cat:'Funnel',                fmt:'Percentage'},
+  spend:               { cat:'Marketing Spend & CPR', fmt:'Currency (USD)'},
+  google:              { cat:'Marketing Spend & CPR', fmt:'Currency (USD)'},
+  meta:                { cat:'Marketing Spend & CPR', fmt:'Currency (USD)'},
+  leadteam:            { cat:'Marketing Spend & CPR', fmt:'Currency (USD)'},
+  cpl:                 { cat:'Marketing Spend & CPR', fmt:'Currency (USD)'},
+  cpft:                { cat:'Marketing Spend & CPR', fmt:'Currency (USD)'},
+  cpa:                 { cat:'Marketing Spend & CPR', fmt:'Currency (USD)'},
+  meta_blended_cpl:    { cat:'Marketing Spend & CPR', fmt:'Currency (USD)'},
+  google_blended_cpl:  { cat:'Marketing Spend & CPR', fmt:'Currency (USD)'},
+  meta_impressions:    { cat:'Meta Ads',              fmt:'Count'},
+  meta_clicks:         { cat:'Meta Ads',              fmt:'Count'},
+  meta_ctr:            { cat:'Meta Ads',              fmt:'Percentage'},
+  meta_trials:         { cat:'Meta Ads',              fmt:'Count'},
+  meta_cpl:            { cat:'Meta Ads',              fmt:'Currency (USD)'},
+  google_spend_kpi:    { cat:'Google Ads',            fmt:'Currency (USD)'},
+  google_opp:          { cat:'Google Ads',            fmt:'Count'},
+  google_cpo:          { cat:'Google Ads',            fmt:'Currency (USD)'},
+  google_leads:        { cat:'Google Ads',            fmt:'Count'},
+  google_calls:        { cat:'Google Ads',            fmt:'Count'},
+  google_directions:   { cat:'Google Ads',            fmt:'Count'},
+  ga4_sessions:        { cat:'Website (GA4)',         fmt:'Count'},
+  ga4_users:           { cat:'Website (GA4)',         fmt:'Count'},
+  ga4_new_users:       { cat:'Website (GA4)',         fmt:'Count'},
+  gbp_total_views:     { cat:'Google Business Profile', fmt:'Count'},
+  gbp_search_views:    { cat:'Google Business Profile', fmt:'Count'},
+  gbp_maps_views:      { cat:'Google Business Profile', fmt:'Count'},
+  gbp_directions:      { cat:'Google Business Profile', fmt:'Count'},
+  gbp_website_clicks:  { cat:'Google Business Profile', fmt:'Count'},
+  gbp_calls:           { cat:'Google Business Profile', fmt:'Count'},
+  ig_followers:        { cat:'Instagram',             fmt:'Count'},
+  ig_total_reach:      { cat:'Instagram',             fmt:'Count'},
+  ig_avg_daily_reach:  { cat:'Instagram',             fmt:'Count'},
+  ig_median_reach:     { cat:'Instagram',             fmt:'Count'},
+  ig_median_likes:     { cat:'Instagram',             fmt:'Count'},
+  ig_posts:            { cat:'Instagram',             fmt:'Count'},
+};
+const GLOSSARY_CATEGORY_ORDER = ['Funnel','Marketing Spend & CPR','Meta Ads','Google Ads','Website (GA4)','Google Business Profile','Instagram'];
+const GLOSSARY_CAT_SLUG = {'Funnel':'funnel','Marketing Spend & CPR':'spend','Meta Ads':'meta','Google Ads':'google','Website (GA4)':'ga4','Google Business Profile':'gbp','Instagram':'ig'};
+
+function renderGlossaryTab() {
+  const rowsByCat = {};
+  Object.keys(GLOSSARY_META).forEach(key => {
+    const meta = GLOSSARY_META[key], g = GLOSSARY[key];
+    if (!g) return;
+    (rowsByCat[meta.cat] = rowsByCat[meta.cat] || []).push({ meta, g });
+  });
+  let h = '<div class="chart-card" style="margin-bottom:20px">'
+    + '<div class="chart-card-title">Metric Glossary</div>'
+    + '<p style="margin:0;color:#5a7a8a;font-size:13px;line-height:1.6">Definitions for every metric shown across this dashboard\'s tabs — Summary, Funnel, Leads, First Timers, New Members, Blended CPR, Meta Ads, Google Ads, Website, Google Business Profile and Instagram.</p></div>';
+  h += '<div class="glossary-table-wrap"><table class="glossary-table">'
+    + '<thead><tr><th>Metric</th><th>Category</th><th>Display Format</th><th>Description</th></tr></thead><tbody>';
+  GLOSSARY_CATEGORY_ORDER.forEach(cat => {
+    const rows = rowsByCat[cat];
+    if (!rows || !rows.length) return;
+    const slug = GLOSSARY_CAT_SLUG[cat] || 'funnel';
+    h += '<tr class="glossary-section-row"><td colspan="4">' + _esc(cat) + '</td></tr>';
+    rows.forEach(({ meta, g }) => {
+      const desc = _esc(g.desc).split('\n\n').join('<br><br>').split('\n').join('<br>');
+      h += '<tr>'
+        + '<td class="glossary-metric">' + _esc(g.title) + '</td>'
+        + '<td><span class="glossary-pill cat-' + slug + '">' + _esc(cat) + '</span></td>'
+        + '<td><span class="glossary-pill fmt">' + _esc(meta.fmt) + '</span></td>'
+        + '<td class="glossary-desc">' + desc + '</td>'
+        + '</tr>';
+    });
+  });
+  h += '</tbody></table></div>';
+  document.getElementById('glossaryContent').innerHTML = h;
+}
+renderGlossaryTab();
+
 // -- Dashboard state -------------------------------------------------------
 let RAW = null;
 let trendChart = null;
@@ -586,6 +673,10 @@ async function loadData() {
   }
   CUR_USER = _authUser;
   renderAuthNav(_authUser);
+  if (!isAdminUser()) {
+    const _glossaryTab = document.getElementById('navTabGlossary');
+    if (_glossaryTab) _glossaryTab.remove();
+  }
   const _allowedStudios = getAuthStudios(_authUser);
 
   // Main dashboard data — load in parallel (blocks initial render)
