@@ -85,14 +85,22 @@ _SOURCE_CASE = """
                                                                  THEN 'Business Mode / App'
         WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('mindbody app','mindbody web')
                                                                  THEN 'MindBody App'
-        -- Word of mouth / catch-all (REFERRED_BY) before Public API fallback
+        -- Public API + "Other" REFERRED_BY → Website (unattributed)
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) = 'public api'
+         AND LOWER(TRIM(c.REFERRED_BY)) IN ('drive by','flyer','frederick',
+                                             'holly met outside of gym.','internet','n/a',
+                                             'newspaper','other','radio','tv / streaming')
+                                                                 THEN 'Website (unattributed)'
+        -- Word of mouth
         WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('another client','word of mouth')
                                                                  THEN 'Word of Mouth'
+        -- Other bucket
         WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('drive by','flyer','frederick',
                                              'holly met outside of gym.','internet','n/a',
                                              'newspaper','other','radio','tv / streaming')
                                                                  THEN 'Other'
-        WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('public api')        THEN 'Public API'
+        -- Public API fallback
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) = 'public api'           THEN 'Public API'
         WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('classpass','wellhub','wellness passport')
                                                                  THEN 'ClassPass / Platforms'
         ELSE 'N/A'
