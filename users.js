@@ -120,6 +120,13 @@ const USERS = {
 
   // ── Franchisees ───────────────────────────────────────────────────────────
 
+  'digitalmarketing@sweat440.com': {
+    passwordHash: '88082350dadbc545b5677894efbd991700073bf79eb7d78c3c583692124a7e96',
+    name: 'Marketing',
+    studios: null,
+    role: 'franchisee'
+  },
+
   'alex@sweat440.com': {
     passwordHash: '6148189bed46eac08ab1de3198b5b8fe4bc106155e9cc48db03f7c065ccf9112',
     name: 'Alex Avila',
