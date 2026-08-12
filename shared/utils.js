@@ -689,7 +689,7 @@ function netAvgHtml(actual, avgPerStudio, netNonZeroCount, selNonZeroCount, selC
 
   const avgLabel = scale ? 'Network avg (' + selCount + ' studio' + (selCount===1?'':'s') + ')' : 'Network avg';
   const avgHtml = '<div class="kpi-card-delta neu">'+warnHtml+avgLabel+': '+f(projected)+'</div>';
-  return '<div class="kpi-netavg">'+avgHtml+deltaHtml+'</div>';
+  return avgHtml+deltaHtml;
 }
 
 function getMock() {

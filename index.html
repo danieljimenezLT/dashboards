@@ -1389,13 +1389,14 @@ function buildSummaryTab() {
   const ftNet    = _netAdditiveStats(ftMap,    NET_STUDIOS, selStudios);
   const memNet   = _netAdditiveStats(memMap,   NET_STUDIOS, selStudios);
 
+  const fCount = v => Math.round(v).toLocaleString();
   funnelEl.innerHTML = summaryDisclaimer +
     kpiCard('Leads (New Accounts Created)',             curr.leads, pp.leads||null, py.leads||null, null, GLOSSARY.leads,
-      netAvgHtml(curr.leads, leadsNet.avgPerStudio, leadsNet.netNonZeroCount, leadsNet.selNonZeroCount, leadsNet.selCount, null, false, true)) +
+      netAvgHtml(curr.leads, leadsNet.avgPerStudio, leadsNet.netNonZeroCount, leadsNet.selNonZeroCount, leadsNet.selCount, fCount, false, true)) +
     kpiCard('First Timers (First Studio Visits)',       curr.ft,    pp.ft||null,    py.ft||null,    null, GLOSSARY.ft,
-      netAvgHtml(curr.ft, ftNet.avgPerStudio, ftNet.netNonZeroCount, ftNet.selNonZeroCount, ftNet.selCount, null, false, true))    +
+      netAvgHtml(curr.ft, ftNet.avgPerStudio, ftNet.netNonZeroCount, ftNet.selNonZeroCount, ftNet.selCount, fCount, false, true))    +
     kpiCard('New Members (First Memberships Activated)',curr.mem,   pp.mem||null,   py.mem||null,   null, GLOSSARY.mem,
-      netAvgHtml(curr.mem, memNet.avgPerStudio, memNet.netNonZeroCount, memNet.selNonZeroCount, memNet.selCount, null, false, true));
+      netAvgHtml(curr.mem, memNet.avgPerStudio, memNet.netNonZeroCount, memNet.selNonZeroCount, memNet.selCount, fCount, false, true));
 
   if (!spendEl) return;
   if (!from || !to) return;
