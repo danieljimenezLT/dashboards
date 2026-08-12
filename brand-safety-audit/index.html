@@ -44,6 +44,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .studio-header{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.25rem;cursor:pointer;user-select:none;gap:12px}
 .studio-left{display:flex;align-items:center;gap:10px}
 .avatar{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Inter Tight',sans-serif;font-weight:700;font-size:12px;flex-shrink:0}
+.av-high{background:var(--red-pale);color:var(--red)}
 .av-medium{background:var(--amber-pale);color:var(--amber)}
 .av-low{background:var(--sky-pale);color:var(--sky)}
 .av-clean{background:var(--green-pale);color:var(--green)}
@@ -51,6 +52,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .studio-sub{font-size:12px;color:var(--text-3);margin-top:1px}
 .studio-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px}
+.badge-high{background:var(--red-pale);color:var(--red)}
 .badge-medium{background:var(--amber-pale);color:var(--amber)}
 .badge-low{background:var(--sky-pale);color:var(--sky)}
 .badge-clean{background:var(--green-pale);color:var(--green)}
@@ -103,8 +105,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .publish-row+.publish-row{margin-top:8px}
 .publish-label{font-size:12px;font-weight:600;color:var(--text-2);min-width:170px}
 .publish-msg{font-size:11px;color:var(--text-3)}
-.cycle-picker{display:flex;align-items:center;gap:8px;margin-bottom:1rem}
-.cycle-picker select{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}
+.cycle-picker{display:flex;align-items:center;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.cycle-picker select,.cycle-picker input[type=date]{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}
+.cycle-picker .sep{color:var(--text-3);font-size:12px}
 .footer{margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text-3);flex-wrap:wrap;gap:8px}
 .empty{text-align:center;padding:3rem 1rem;color:var(--text-3);font-size:13px}
 @media(max-width:640px){.metrics{grid-template-columns:repeat(2,1fr)}.topbar-meta{display:none}}
@@ -154,8 +157,17 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <span class="filter-label">Viewing cycle:</span>
       <select id="cycleSelect" onchange="onCycleChange()"><option value="">Loading…</option></select>
     </div>
+    <div class="cycle-picker">
+      <span class="filter-label">Filter by post date:</span>
+      <input type="date" id="postDateFrom">
+      <span class="sep">to</span>
+      <input type="date" id="postDateTo">
+      <button class="filter-btn" onclick="applyPostDateFilter()">Apply</button>
+      <button class="filter-btn" id="clearDateFilterBtn" style="display:none" onclick="clearPostDateFilter()">Clear</button>
+      <span class="publish-msg" id="dateFilterMsg"></span>
+    </div>
     <div class="metrics" id="metricsRow"></div>
-    <div class="filter-bar">
+    <div class="filter-bar" id="filterBar">
       <span class="filter-label">Show:</span>
       <button class="filter-btn fb-all" data-f="all" onclick="setFilter('all',this)">All accounts</button>
       <button class="filter-btn" data-f="medium" onclick="setFilter('medium',this)">MEDIUM</button>
@@ -218,7 +230,7 @@ const STATUS_FLOW=["pending","ops","cleared"];
 const STATUS_LABEL={pending:"⏳ Pending review",ops:"📤 Reported to Ops",cleared:"✓ Cleared"};
 const STATUS_CLASS={pending:"st-pending",ops:"st-ops",cleared:"st-cleared"};
 
-let AUDIT=null,LATEST_AUDIT=null,AVAILABLE_CYCLES=[],statuses={},currentFilter="all",expanded=null;
+let AUDIT=null,LATEST_AUDIT=null,AVAILABLE_CYCLES=[],statuses={},currentFilter="all",expanded=null,dateFilterActive=false;
 
 async function loadStatuses(){
   if(SHEET_ENDPOINT){
@@ -281,6 +293,7 @@ function renderMetrics(){
 
 function render(){
   if(!AUDIT)return;
+  if(dateFilterActive){renderDateFilteredList();return;}
   const list=document.getElementById("studioList");
   const items=AUDIT.accounts.filter(a=>{
     const lvl=topLevel(a);
@@ -334,6 +347,88 @@ function render(){
         +'</div>'
       +'</div>'
       +'<div class="detail-panel">'+detail+'</div>'
+    +'</div>';
+  }).join("");
+}
+
+// Flattens every account's postLog (all posts reviewed, flagged or clean)
+// into one list for the currently viewed cycle. Older cycles (published
+// before this field existed) simply won't have postLog on their accounts —
+// callers treat an empty result as "no per-post date data for this cycle".
+function collectPostLog(){
+  const out=[];
+  for(const a of AUDIT.accounts){
+    if(!Array.isArray(a.postLog))continue;
+    for(const p of a.postLog)out.push(Object.assign({accountName:a.name,accountHandle:a.handle},p));
+  }
+  return out;
+}
+
+function resetDateFilterState(){
+  dateFilterActive=false;
+  document.getElementById("postDateFrom").value="";
+  document.getElementById("postDateTo").value="";
+  document.getElementById("clearDateFilterBtn").style.display="none";
+  document.getElementById("dateFilterMsg").textContent="";
+  document.getElementById("filterBar").style.display="";
+}
+
+function clearPostDateFilter(){
+  resetDateFilterState();
+  render();
+}
+
+function applyPostDateFilter(){
+  const msg=document.getElementById("dateFilterMsg");
+  const fromVal=document.getElementById("postDateFrom").value;
+  const toVal=document.getElementById("postDateTo").value;
+  if(!fromVal||!toVal){msg.textContent="Pick both dates first.";return;}
+  if(fromVal>toVal){msg.textContent='"From" must not be after "To".';return;}
+  msg.textContent="";
+  dateFilterActive=true;
+  document.getElementById("clearDateFilterBtn").style.display="";
+  document.getElementById("filterBar").style.display="none";
+  render();
+}
+
+// Filters by the post's OWN publish date (sentAt/dueAt, carried through
+// verbatim from Buffer) — not the date the audit was run. Renders a flat
+// list across all accounts instead of the by-account card view, since a
+// date range can span multiple studios.
+function renderDateFilteredList(){
+  const list=document.getElementById("studioList");
+  const posts=collectPostLog();
+  if(!posts.length){
+    list.innerHTML='<div class="empty">This cycle has no per-post date data — the post-date filter only works for cycles published after this feature shipped (this cycle predates it).</div>';
+    return;
+  }
+  const fromVal=document.getElementById("postDateFrom").value;
+  const toVal=document.getElementById("postDateTo").value;
+  const from=new Date(fromVal+"T00:00:00Z");
+  const to=new Date(toVal+"T23:59:59Z");
+  const filtered=posts.filter(p=>{
+    const d=new Date(p.date);
+    return !isNaN(d.getTime())&&d>=from&&d<=to;
+  }).sort((x,y)=>new Date(x.date)-new Date(y.date));
+  if(!filtered.length){
+    list.innerHTML='<div class="empty">No posts in that date range.</div>';
+    return;
+  }
+  list.innerHTML=filtered.map(p=>{
+    const lvl=p.flagged?p.level:"clean";
+    const badgeLabel=p.flagged?p.category:"Clean";
+    return '<div class="studio-card">'
+      +'<div class="studio-header" style="cursor:default">'
+        +'<div class="studio-left">'
+          +'<div class="avatar av-'+lvl+'">'+ini(p.accountName)+'</div>'
+          +'<div><div class="studio-name">'+p.accountName+'</div><div class="studio-sub">@'+p.accountHandle+' · '+p.date+' · '+p.postType+'</div></div>'
+        +'</div>'
+        +'<div class="studio-right">'
+          +'<span class="badge badge-'+lvl+'">'+badgeLabel+'</span>'
+          +(p.link?'<a class="ig-link" href="'+p.link+'" target="_blank" rel="noopener">'+IG_ICON+' View</a>':"")
+        +'</div>'
+      +'</div>'
+      +(p.caption?'<div class="detail-panel" style="display:block"><div class="flag-caption">&ldquo;'+p.caption+'&rdquo;</div></div>':"")
     +'</div>';
   }).join("");
 }
@@ -425,6 +520,7 @@ async function onCycleChange(){
     if(!r.ok)throw new Error("HTTP "+r.status);
     AUDIT=await r.json();
     expanded=null;
+    resetDateFilterState();
     refreshHeader();
     renderMetrics();
     render();
@@ -506,6 +602,7 @@ async function publishCycle(){
 
   AUDIT=payload;
   LATEST_AUDIT=payload;
+  resetDateFilterState();
   refreshHeader();
   updateCoverageUI();
   await populateCyclePicker(AUDIT.cycle);
