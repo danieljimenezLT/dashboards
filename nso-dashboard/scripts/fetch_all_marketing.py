@@ -236,11 +236,24 @@ def fetch_google_ads(start_date, end_date):
         print(f"  ERROR listing accounts: {e}")
         return []
 
-    # Now query each account for campaign performance
+    # Lead classification + Opportunities formula, matching the Open Studio
+    # dashboard's fetch_google_ads.py so both dashboards report the same way.
+    LEAD_KEYWORDS = ["lead", "form", "submit", "signup", "sign up", "contact",
+                     "prospect", "inquiry", "enquiry", "registration", "register"]
+    EXCLUDE_KEYWORDS = ["call", "direction", "store visit", "visit", "purchase"]
+
+    def _is_lead_action(name):
+        n = (name or "").lower()
+        return any(k in n for k in LEAD_KEYWORDS) and not any(k in n for k in EXCLUDE_KEYWORDS)
+
+    def _opportunities(leads, calls, directions):
+        return leads + 0.3 * directions + 0.4 * calls
+
+    # Now query each account for campaign performance + calls + directions + leads
     all_rows = []
     for acct in accounts:
         cid = acct["id"]
-        query = f"""
+        perf_query = f"""
             SELECT
                 segments.date,
                 campaign.name,
@@ -253,41 +266,105 @@ def fetch_google_ads(start_date, end_date):
                 metrics.ctr,
                 metrics.average_cpc,
                 metrics.conversions,
-                metrics.cost_per_conversion
+                metrics.cost_per_conversion,
+                metrics.phone_calls
             FROM campaign
             WHERE segments.date BETWEEN '{start_date}' AND '{end_date}'
                 AND campaign.status != 'REMOVED'
             ORDER BY segments.date DESC
         """
-        try:
-            response = ga_service.search_stream(customer_id=cid, query=query)
-            count = 0
-            for batch in response:
-                for row in batch.results:
-                    spend = row.metrics.cost_micros / 1_000_000
-                    avg_cpc = row.metrics.average_cpc / 1_000_000 if row.metrics.average_cpc else 0
-                    cost_per_conv = row.metrics.cost_per_conversion / 1_000_000 if row.metrics.cost_per_conversion else 0
+        # "Get Directions" clicks on the ad / Maps listing
+        direction_query = f"""
+            SELECT
+                segments.date,
+                campaign.id,
+                segments.click_type,
+                metrics.clicks
+            FROM campaign
+            WHERE segments.date BETWEEN '{start_date}' AND '{end_date}'
+                AND segments.click_type = 'GET_DIRECTIONS'
+                AND campaign.status != 'REMOVED'
+        """
+        # Form-submission / lead-style conversion actions (leads counted
+        # separately from calls and directions, per the Opportunities formula)
+        lead_query = f"""
+            SELECT
+                segments.date,
+                campaign.id,
+                segments.conversion_action_name,
+                metrics.conversions
+            FROM campaign
+            WHERE segments.date BETWEEN '{start_date}' AND '{end_date}'
+                AND campaign.status != 'REMOVED'
+        """
 
-                    all_rows.append({
-                        "date": row.segments.date,
-                        "account_name": row.customer.descriptive_name,
-                        "account_id": cid,
-                        "campaign_name": row.campaign.name,
-                        "campaign_id": str(row.campaign.id),
-                        "status": row.campaign.status.name,
-                        "spend": round(spend, 2),
-                        "impressions": row.metrics.impressions,
-                        "clicks": row.metrics.clicks,
-                        "ctr": round(row.metrics.ctr * 100, 2),
-                        "avg_cpc": round(avg_cpc, 2),
-                        "conversions": round(row.metrics.conversions, 1),
-                        "cost_per_conversion": round(cost_per_conv, 2),
-                    })
-                    count += 1
-            if count > 0:
-                print(f"  OK {acct['name']}: {count} rows")
+        perf_rows = []
+        try:
+            response = ga_service.search_stream(customer_id=cid, query=perf_query)
+            for batch in response:
+                perf_rows.extend(batch.results)
         except Exception as e:
             print(f"  SKIP {acct['name']} ({cid}): {e}")
+            continue
+        if not perf_rows:
+            continue
+
+        directions_map = {}
+        try:
+            response = ga_service.search_stream(customer_id=cid, query=direction_query)
+            for batch in response:
+                for row in batch.results:
+                    key = (row.segments.date, str(row.campaign.id))
+                    directions_map[key] = directions_map.get(key, 0) + int(row.metrics.clicks)
+        except Exception as e:
+            print(f"  WARNING directions query failed for {acct['name']}: {e}")
+
+        leads_map = {}
+        try:
+            response = ga_service.search_stream(customer_id=cid, query=lead_query)
+            for batch in response:
+                for row in batch.results:
+                    if not _is_lead_action(row.segments.conversion_action_name):
+                        continue
+                    key = (row.segments.date, str(row.campaign.id))
+                    leads_map[key] = leads_map.get(key, 0) + int(float(row.metrics.conversions))
+        except Exception as e:
+            print(f"  WARNING lead-conversion query failed for {acct['name']}: {e}")
+
+        count = 0
+        for row in perf_rows:
+            spend = row.metrics.cost_micros / 1_000_000
+            avg_cpc = row.metrics.average_cpc / 1_000_000 if row.metrics.average_cpc else 0
+            cost_per_conv = row.metrics.cost_per_conversion / 1_000_000 if row.metrics.cost_per_conversion else 0
+            key = (row.segments.date, str(row.campaign.id))
+            calls = int(row.metrics.phone_calls)
+            directions = directions_map.get(key, 0)
+            leads = leads_map.get(key, 0)
+            opportunities = round(_opportunities(leads, calls, directions), 2)
+
+            all_rows.append({
+                "date": row.segments.date,
+                "account_name": row.customer.descriptive_name,
+                "account_id": cid,
+                "campaign_name": row.campaign.name,
+                "campaign_id": str(row.campaign.id),
+                "status": row.campaign.status.name,
+                "spend": round(spend, 2),
+                "impressions": row.metrics.impressions,
+                "clicks": row.metrics.clicks,
+                "ctr": round(row.metrics.ctr * 100, 2),
+                "avg_cpc": round(avg_cpc, 2),
+                "conversions": round(row.metrics.conversions, 1),
+                "cost_per_conversion": round(cost_per_conv, 2),
+                "leads": leads,
+                "calls": calls,
+                "directions": directions,
+                "opportunities": opportunities,
+                "cost_per_opp": round(spend / opportunities, 2) if opportunities > 0 else 0,
+            })
+            count += 1
+        if count > 0:
+            print(f"  OK {acct['name']}: {count} rows")
 
     print(f"  Total: {len(all_rows)} Google Ads rows")
     return all_rows
