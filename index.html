@@ -1292,25 +1292,34 @@ function spendByStudio(f, t) {
   return map;
 }
 
-// Additive metrics (Leads, FT, Members, spend totals): network average is
-// per-studio average across NON-ZERO network studios only (a studio not
-// running Google Ads shouldn't drag down the Google Ads average).
-function _netAdditiveStats(valueMap, netStudios, selStudios) {
-  const netNonZero = netStudios.map(s => valueMap[s] || 0).filter(v => v > 0);
-  const avgPerStudio = netNonZero.length ? netNonZero.reduce((a,b)=>a+b,0) / netNonZero.length : 0;
-  const selNonZeroCount = selStudios.filter(s => (valueMap[s]||0) > 0).length;
-  return {avgPerStudio, netNonZeroCount: netNonZero.length, selNonZeroCount, selCount: selStudios.length};
+// Volume metrics (Leads, FT, Members): network average is the per-studio
+// average across ALL open network studios, zeros included — a studio that
+// sold 0 memberships is still part of the average, not excluded from it.
+function _netVolumeAvg(valueMap, netStudios) {
+  const vals = netStudios.map(s => valueMap[s] || 0);
+  const avgPerStudio = vals.length ? vals.reduce((a,b)=>a+b,0) / vals.length : 0;
+  return {avgPerStudio, netCount: vals.length};
 }
 
-// Ratio metrics (CPL/CPFT/CPA): blended network ratio = sum(spend) / sum(denominator)
-// across network studios that have a non-zero denominator (e.g. leads>0 for CPL).
-function _netRatioStats(spendMap, denomMap, netStudios, selStudios) {
-  const qualifying = netStudios.filter(s => (denomMap[s]||0) > 0);
+// Cost-related metrics (Google/Meta/Leadteam/Total spend, CPL/CPFT/CPA):
+// only count network studios that actually ran ads (spend > 0 in Google OR
+// Meta) during the period — a studio not advertising shouldn't count as a
+// $0 data point and drag the average down. Same qualifying set is shared
+// across all cost cards so they're comparable to each other.
+function _netCostQualifying(googleMap, metaMap, netStudios) {
+  return netStudios.filter(s => (googleMap[s]||0) > 0 || (metaMap[s]||0) > 0);
+}
+function _netCostAvg(valueMap, qualifying) {
+  const vals = qualifying.map(s => valueMap[s] || 0);
+  const avgPerStudio = vals.length ? vals.reduce((a,b)=>a+b,0) / vals.length : 0;
+  return {avgPerStudio, netCount: vals.length};
+}
+// Blended ratio (e.g. CPL) across the qualifying studios: sum(spend) / sum(denominator).
+function _netCostRatioAvg(spendMap, denomMap, qualifying) {
   const sumSpend = qualifying.reduce((a,s) => a + (spendMap[s]||0), 0);
   const sumDenom = qualifying.reduce((a,s) => a + (denomMap[s]||0), 0);
   const avgPerStudio = sumDenom > 0 ? sumSpend / sumDenom : 0;
-  const selNonZeroCount = selStudios.filter(s => (denomMap[s]||0) > 0).length;
-  return {avgPerStudio, netNonZeroCount: qualifying.length, selNonZeroCount, selCount: selStudios.length};
+  return {avgPerStudio, netCount: qualifying.length};
 }
 
 function buildSummaryTab() {
@@ -1385,18 +1394,19 @@ function buildSummaryTab() {
     ftMap[s]    = netFunnelMap[s].ft;
     memMap[s]   = netFunnelMap[s].mem;
   });
-  const leadsNet = _netAdditiveStats(leadsMap, NET_STUDIOS, selStudios);
-  const ftNet    = _netAdditiveStats(ftMap,    NET_STUDIOS, selStudios);
-  const memNet   = _netAdditiveStats(memMap,   NET_STUDIOS, selStudios);
+  const leadsNet = _netVolumeAvg(leadsMap, NET_STUDIOS);
+  const ftNet    = _netVolumeAvg(ftMap,    NET_STUDIOS);
+  const memNet   = _netVolumeAvg(memMap,   NET_STUDIOS);
+  const selCount = selStudios.length;
 
   const fCount = v => Math.round(v).toLocaleString();
   funnelEl.innerHTML = summaryDisclaimer +
     kpiCard('Leads (New Accounts Created)',             curr.leads, pp.leads||null, py.leads||null, null, GLOSSARY.leads,
-      netAvgHtml(curr.leads, leadsNet.avgPerStudio, leadsNet.netNonZeroCount, leadsNet.selNonZeroCount, leadsNet.selCount, fCount, false, true)) +
+      netAvgHtml(curr.leads, leadsNet.avgPerStudio, leadsNet.netCount, selCount, fCount, false, true)) +
     kpiCard('First Timers (First Studio Visits)',       curr.ft,    pp.ft||null,    py.ft||null,    null, GLOSSARY.ft,
-      netAvgHtml(curr.ft, ftNet.avgPerStudio, ftNet.netNonZeroCount, ftNet.selNonZeroCount, ftNet.selCount, fCount, false, true))    +
+      netAvgHtml(curr.ft, ftNet.avgPerStudio, ftNet.netCount, selCount, fCount, false, true))    +
     kpiCard('New Members (First Memberships Activated)',curr.mem,   pp.mem||null,   py.mem||null,   null, GLOSSARY.mem,
-      netAvgHtml(curr.mem, memNet.avgPerStudio, memNet.netNonZeroCount, memNet.selNonZeroCount, memNet.selCount, fCount, false, true));
+      netAvgHtml(curr.mem, memNet.avgPerStudio, memNet.netCount, selCount, fCount, false, true));
 
   if (!spendEl) return;
   if (!from || !to) return;
@@ -1432,14 +1442,17 @@ function buildSummaryTab() {
   const _ltDays = Math.round((to.getTime()-from.getTime())/86400000);
   const ltPerStudio = LTFEE*(_ltDays/30.4375);
   const ltMap = {}, totalMap = {};
-  NET_STUDIOS.concat(selStudios).forEach(s => {
+  NET_STUDIOS.forEach(s => {
     ltMap[s]    = ltPerStudio;
     totalMap[s] = (googleMap[s]||0) + (metaMap[s]||0) + ltPerStudio;
   });
-  const googleNet = _netAdditiveStats(googleMap, NET_STUDIOS, selStudios);
-  const metaNet   = _netAdditiveStats(metaMap,   NET_STUDIOS, selStudios);
-  const ltNet     = _netAdditiveStats(ltMap,     NET_STUDIOS, selStudios);
-  const totalNet  = _netAdditiveStats(totalMap,  NET_STUDIOS, selStudios);
+  // Same qualifying set (studios that ran ads in Google or Meta) drives every
+  // cost-related card's network average, so they're comparable to each other.
+  const costQualifying = _netCostQualifying(googleMap, metaMap, NET_STUDIOS);
+  const googleNet = _netCostAvg(googleMap, costQualifying);
+  const metaNet   = _netCostAvg(metaMap,   costQualifying);
+  const ltNet     = _netCostAvg(ltMap,     costQualifying);
+  const totalNet  = _netCostAvg(totalMap,  costQualifying);
 
   const f$  = v => '$'+Math.round(v).toLocaleString('en-US');
   const f$2 = v => '$'+Number(v).toFixed(2);
@@ -1454,10 +1467,10 @@ function buildSummaryTab() {
   const dppT = tPp>0 ? (tCurr-tPp)/tPp*100 : null;
   const dpyT = tPy>0 ? (tCurr-tPy)/tPy*100 : null;
   const ppTH = _partialPeriod.pp
-    ? '<div class="kpi-card-delta neu">&#9651; partial period</div>'
+    ? _partialPeriodWarn('period')
     : (dppT!=null ? '<div class="kpi-card-delta '+(dppT>=0?'pos':'neg')+'">'+(dppT>=0?'&#9650;':'&#9660;')+' '+Math.abs(dppT).toFixed(1)+'% prev period</div>' : '');
   const pyTH = _partialPeriod.py
-    ? '<div class="kpi-card-delta neu">&#9651; partial period</div>'
+    ? _partialPeriodWarn('year')
     : (dpyT!=null ? '<div class="kpi-card-delta '+(dpyT>=0?'pos':'neg')+'">'+(dpyT>=0?'&#9650;':'&#9660;')+' '+Math.abs(dpyT).toFixed(1)+'% prev year</div>' : '');
 
   const G=GLOSSARY;
@@ -1469,16 +1482,16 @@ function buildSummaryTab() {
     '<div class="kpi-card-label">Total Mkt Spend</div>' +
     '<div class="kpi-card-val">' + f$(tCurr) + '</div>' +
     breakdown + ppTH + pyTH +
-    netAvgHtml(tCurr, totalNet.avgPerStudio, totalNet.netNonZeroCount, totalNet.selNonZeroCount, totalNet.selCount, f$, false, true) +
+    netAvgHtml(tCurr, totalNet.avgPerStudio, totalNet.netCount, selCount, f$, false, true) +
     '</div>';
 
   spendEl.innerHTML = totalCard +
     kpiCard('Google Ads',   gCurr, gPp||null, gPy||null, f$, G.google,
-      netAvgHtml(gCurr, googleNet.avgPerStudio, googleNet.netNonZeroCount, googleNet.selNonZeroCount, googleNet.selCount, f$, false, true)) +
+      netAvgHtml(gCurr, googleNet.avgPerStudio, googleNet.netCount, selCount, f$, false, true)) +
     kpiCard('Meta Ads',     mCurr, mPp||null, mPy||null, f$, G.meta,
-      netAvgHtml(mCurr, metaNet.avgPerStudio, metaNet.netNonZeroCount, metaNet.selNonZeroCount, metaNet.selCount, f$, false, true)) +
+      netAvgHtml(mCurr, metaNet.avgPerStudio, metaNet.netCount, selCount, f$, false, true)) +
     kpiCard('Leadteam Fee', lCurr, lPp||null, lPy||null, f$, G.leadteam,
-      netAvgHtml(lCurr, ltNet.avgPerStudio, ltNet.netNonZeroCount, ltNet.selNonZeroCount, ltNet.selCount, f$, false, true));
+      netAvgHtml(lCurr, ltNet.avgPerStudio, ltNet.netCount, selCount, f$, false, true));
 
   if (!cprEl) return;
   const cpl_curr  = curr.leads>0 ? tCurr/curr.leads : 0;
@@ -1491,17 +1504,17 @@ function buildSummaryTab() {
   const cpa_pp    = pp.mem>0     ? tPp/pp.mem       : null;
   const cpa_py    = py.mem>0     ? tPy/py.mem       : null;
 
-  const cplNet  = _netRatioStats(totalMap, leadsMap, NET_STUDIOS, selStudios);
-  const cpftNet = _netRatioStats(totalMap, ftMap,    NET_STUDIOS, selStudios);
-  const cpaNet  = _netRatioStats(totalMap, memMap,   NET_STUDIOS, selStudios);
+  const cplNet  = _netCostRatioAvg(totalMap, leadsMap, costQualifying);
+  const cpftNet = _netCostRatioAvg(totalMap, ftMap,    costQualifying);
+  const cpaNet  = _netCostRatioAvg(totalMap, memMap,   costQualifying);
 
   cprEl.innerHTML =
     cprKpiCard('Blended CPL',  cpl_curr,  cpl_pp,  cpl_py,  f$2, GLOSSARY.cpl,
-      netAvgHtml(cpl_curr, cplNet.avgPerStudio, cplNet.netNonZeroCount, cplNet.selNonZeroCount, cplNet.selCount, f$2, true, false)) +
+      netAvgHtml(cpl_curr, cplNet.avgPerStudio, cplNet.netCount, selCount, f$2, true, false)) +
     cprKpiCard('Blended CPFT', cpft_curr, cpft_pp, cpft_py, f$2, GLOSSARY.cpft,
-      netAvgHtml(cpft_curr, cpftNet.avgPerStudio, cpftNet.netNonZeroCount, cpftNet.selNonZeroCount, cpftNet.selCount, f$2, true, false)) +
+      netAvgHtml(cpft_curr, cpftNet.avgPerStudio, cpftNet.netCount, selCount, f$2, true, false)) +
     cprKpiCard('Blended CPA',  cpa_curr,  cpa_pp,  cpa_py,  f$2, GLOSSARY.cpa,
-      netAvgHtml(cpa_curr, cpaNet.avgPerStudio, cpaNet.netNonZeroCount, cpaNet.selNonZeroCount, cpaNet.selCount, f$2, true, false));
+      netAvgHtml(cpa_curr, cpaNet.avgPerStudio, cpaNet.netCount, selCount, f$2, true, false));
 }
 
 function buildCPRTab() {
