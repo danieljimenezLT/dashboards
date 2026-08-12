@@ -601,14 +601,24 @@ function _isFullMonths(from, to) {
   return firstOfMonth && lastOfMonth;
 }
 
-// Partial-period warning line, shared by kpiCard/cprKpiCard. `kind` is
-// 'period' or 'year' — controls the label text and the popup copy.
-function _partialPeriodWarn(kind) {
+// Partial-period warning line. `kind` is 'period' or 'year' — controls the
+// label text and the popup copy. `tag`/`cls` let callers reuse this for
+// either kpi-card divs or the funnel bars' <span class="delta"> markup.
+function _partialPeriodInfoBtn(kind) {
   const label = kind === 'year' ? 'prev year' : 'prev period';
-  const title = 'Partial Period';
   const desc  = 'This range doesn\'t cover complete calendar months, so the '+label+' comparison can\'t be shown reliably. Select a date range from the 1st through the last day of the month(s) to see it.';
-  const infoBtn = '<button class="kpi-info-btn kpi-info-inline" onclick="showKpiInfo(this,event)" data-title="'+_esc(title)+'" data-desc="'+_esc(desc)+'" data-date="">i</button>';
-  return '<div class="kpi-card-delta neu">&#9888; '+label+' - partial period'+infoBtn+'</div>';
+  return {
+    label,
+    btn: '<button class="kpi-info-btn kpi-info-inline" onclick="showKpiInfo(this,event)" data-title="Partial Period" data-desc="'+_esc(desc)+'" data-date="">i</button>'
+  };
+}
+function _partialPeriodWarn(kind) {
+  const {label, btn} = _partialPeriodInfoBtn(kind);
+  return '<div class="kpi-card-delta neu">&#9888; '+label+' - partial period'+btn+'</div>';
+}
+function _partialPeriodWarnSpan(kind) {
+  const {label, btn} = _partialPeriodInfoBtn(kind);
+  return '<span class="delta neu">&#9888; '+label+' - partial period'+btn+'</span>';
 }
 
 function kpiCard(label,val,pp,py,fmt,info,extraHtml){
@@ -681,33 +691,50 @@ function cprKpiCard(label,val,pp,py,fmt,info,extraHtml){
 //                                 (all cost cards) rather than every open
 //                                 network studio (volume cards)
 //                    ratioDesc  — for scale=false only, e.g. 'total spend ÷ total leads'
-function netAvgHtml(actual, avgPerStudio, netCount, selCount, fmt, invert, scale, info) {
-  if (!netCount || selCount <= 0) return '';
-  const f = fmt || (v => Number.isFinite(v) ? v.toLocaleString() : v);
+function _netAvgCore(actual, avgPerStudio, netCount, selCount, scale, invert) {
+  if (!netCount || selCount <= 0) return null;
   const projected = scale ? avgPerStudio * selCount : avgPerStudio;
-  if (!(projected > 0)) return '';
+  if (!(projected > 0)) return null;
   const delta = (actual - projected) / projected * 100;
   const cls   = invert ? (delta <= 0 ? 'pos' : 'neg') : (delta >= 0 ? 'pos' : 'neg');
   const arrow = invert ? (delta <= 0 ? '&#9660;' : '&#9650;') : (delta >= 0 ? '&#9650;' : '&#9660;');
+  return {projected, delta, cls, arrow};
+}
 
-  const label      = (info && info.label) || 'value';
-  const studioWord = netCount === 1 ? 'studio' : 'studios';
+function _netAvgInfoBtn(avgPerStudio, netCount, selCount, projected, scale, fmt, info) {
+  const f = fmt || (v => Number.isFinite(v) ? v.toLocaleString() : v);
+  const label       = (info && info.label) || 'value';
+  const studioWord  = netCount === 1 ? 'studio' : 'studios';
   const spendPhrase = ' with real digital ads spend during this period';
 
+  const population = (info && info.costBased) ? (netCount+' '+studioWord+spendPhrase) : (netCount+' '+studioWord);
   let desc;
   if (scale) {
-    const population = (info && info.costBased) ? (netCount+' '+studioWord+spendPhrase) : (netCount+' '+studioWord);
     desc = 'Network average '+label+' is calculated across '+population+': '+f(avgPerStudio)+' per studio.';
     if (selCount > 1) {
       desc += '\nFor your '+selCount+' selected studios, the expected value is '+f(projected)+'.';
     }
   } else {
     const ratioDesc = (info && info.ratioDesc) || 'total ÷ total';
-    desc = 'Network average '+label+' is calculated as a blended ratio ('+ratioDesc+') across '+netCount+' '+studioWord+spendPhrase+': '+f(avgPerStudio)+'.';
+    desc = 'Network average '+label+' is calculated as a blended ratio ('+ratioDesc+') across '+population+': '+f(avgPerStudio)+'.';
   }
-  const infoBtn = '<button class="kpi-info-btn kpi-info-inline" onclick="showKpiInfo(this,event)" data-title="Network Average" data-desc="'+_esc(desc)+'" data-date="">i</button>';
+  return '<button class="kpi-info-btn kpi-info-inline" onclick="showKpiInfo(this,event)" data-title="Network Average" data-desc="'+_esc(desc)+'" data-date="">i</button>';
+}
 
-  return '<div class="kpi-card-delta '+cls+'">'+arrow+' '+Math.abs(delta).toFixed(1)+'% vs network avg'+infoBtn+'</div>';
+function netAvgHtml(actual, avgPerStudio, netCount, selCount, fmt, invert, scale, info) {
+  const core = _netAvgCore(actual, avgPerStudio, netCount, selCount, scale, invert);
+  if (!core) return '';
+  const infoBtn = _netAvgInfoBtn(avgPerStudio, netCount, selCount, core.projected, scale, fmt, info);
+  return '<div class="kpi-card-delta '+core.cls+'">'+core.arrow+' '+Math.abs(core.delta).toFixed(1)+'% vs network avg'+infoBtn+'</div>';
+}
+
+// Same as netAvgHtml, but rendered as <span class="delta"> for the funnel
+// bars, which use a flex-column of <span> deltas instead of kpi-card divs.
+function netAvgSpan(actual, avgPerStudio, netCount, selCount, fmt, invert, scale, info) {
+  const core = _netAvgCore(actual, avgPerStudio, netCount, selCount, scale, invert);
+  if (!core) return '';
+  const infoBtn = _netAvgInfoBtn(avgPerStudio, netCount, selCount, core.projected, scale, fmt, info);
+  return '<span class="delta '+core.cls+'">'+core.arrow+' '+Math.abs(core.delta).toFixed(1)+'% vs network avg'+infoBtn+'</span>';
 }
 
 function getMock() {
