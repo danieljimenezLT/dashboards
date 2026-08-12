@@ -601,20 +601,38 @@ function _isFullMonths(from, to) {
   return firstOfMonth && lastOfMonth;
 }
 
-function kpiCard(label,val,pp,py,fmt,info){
+// Partial-period warning line. `kind` is 'period' or 'year' — controls the
+// label text and the popup copy. `tag`/`cls` let callers reuse this for
+// either kpi-card divs or the funnel bars' <span class="delta"> markup.
+function _partialPeriodInfoBtn(kind) {
+  const label = kind === 'year' ? 'prev year' : 'prev period';
+  const desc  = 'This range doesn\'t cover complete calendar months, so the '+label+' comparison can\'t be shown reliably. Select a date range from the 1st through the last day of the month(s) to see it.';
+  return {
+    label,
+    btn: '<button class="kpi-info-btn kpi-info-inline" onclick="showKpiInfo(this,event)" data-title="Partial Period" data-desc="'+_esc(desc)+'" data-date="">i</button>'
+  };
+}
+function _partialPeriodWarn(kind) {
+  const {label, btn} = _partialPeriodInfoBtn(kind);
+  return '<div class="kpi-card-delta neu">&#9888; '+label+' - partial period'+btn+'</div>';
+}
+function _partialPeriodWarnSpan(kind) {
+  const {label, btn} = _partialPeriodInfoBtn(kind);
+  return '<span class="delta neu">&#9888; '+label+' - partial period'+btn+'</span>';
+}
+
+function kpiCard(label,val,pp,py,fmt,info,extraHtml){
   const f=fmt||(v=>Number.isFinite(v)?v.toLocaleString():v);
   const dpp=pp!=null&&pp!==0?(val-pp)/pp*100:null;
   const dpy=py!=null&&py!==0?(val-py)/py*100:null;
-  const warnPP='<div class="kpi-card-delta neu" title="Select complete calendar months for period comparisons">⚠ partial period</div>';
-  const warnPY='<div class="kpi-card-delta neu" title="Select complete calendar months for year-over-year comparisons">⚠ partial period</div>';
   const ppH = _partialPeriod.pp
-    ? (dpp!=null ? warnPP : '')
+    ? (dpp!=null ? _partialPeriodWarn('period') : '')
     : (dpp!=null?'<div class="kpi-card-delta '+(dpp>=0?'pos':'neg')+'">'+(dpp>=0?'&#9650;':'&#9660;')+' '+Math.abs(dpp).toFixed(1)+'% prev period</div>':'');
   const pyH = _partialPeriod.py
-    ? (dpy!=null ? warnPY : '')
+    ? (dpy!=null ? _partialPeriodWarn('year') : '')
     : (dpy!=null?'<div class="kpi-card-delta '+(dpy>=0?'pos':'neg')+'">'+(dpy>=0?'&#9650;':'&#9660;')+' '+Math.abs(dpy).toFixed(1)+'% prev year</div>':'');
   const infoBtn = info ? '<button class="kpi-info-btn" onclick="showKpiInfo(this,event)" data-title="'+_esc(info.title||label)+'" data-desc="'+_esc(info.desc)+'" data-date="'+_esc(info.date||'')+'">i</button>' : '';
-  return '<div class="kpi-card">'+infoBtn+'<div class="kpi-card-label">'+label+'</div><div class="kpi-card-val">'+f(val)+'</div>'+ppH+pyH+'</div>';
+  return '<div class="kpi-card">'+infoBtn+'<div class="kpi-card-label">'+label+'</div><div class="kpi-card-val">'+f(val)+'</div>'+ppH+pyH+(extraHtml||'')+'</div>';
 }
 function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
@@ -634,20 +652,89 @@ function toSourceTimeSeries(dailyRows,monthlyRows,gran){
   return Object.values(map).sort((a,b)=>a.key.localeCompare(b.key));
 }
 
-function cprKpiCard(label,val,pp,py,fmt,info){
+function cprKpiCard(label,val,pp,py,fmt,info,extraHtml){
   const f=fmt||(v=>Number.isFinite(v)?v.toLocaleString():v);
   const dpp=pp!=null&&pp!==0?(val-pp)/pp*100:null;
   const dpy=py!=null&&py!==0?(val-py)/py*100:null;
-  const warnPP='<div class="kpi-card-delta neu" title="Select complete calendar months for period comparisons">⚠ partial period</div>';
-  const warnPY='<div class="kpi-card-delta neu" title="Select complete calendar months for year-over-year comparisons">⚠ partial period</div>';
   const ppH=_partialPeriod.pp
-    ? (dpp!=null ? warnPP : '')
+    ? (dpp!=null ? _partialPeriodWarn('period') : '')
     : (dpp!=null?'<div class="kpi-card-delta '+(dpp<=0?'pos':'neg')+'">'+(dpp<=0?'&#9660;':'&#9650;')+' '+Math.abs(dpp).toFixed(1)+'% prev period</div>':'');
   const pyH=_partialPeriod.py
-    ? (dpy!=null ? warnPY : '')
+    ? (dpy!=null ? _partialPeriodWarn('year') : '')
     : (dpy!=null?'<div class="kpi-card-delta '+(dpy<=0?'pos':'neg')+'">'+(dpy<=0?'&#9660;':'&#9650;')+' '+Math.abs(dpy).toFixed(1)+'% prev year</div>':'');
   const infoBtn = info ? '<button class="kpi-info-btn" onclick="showKpiInfo(this,event)" data-title="'+_esc(info.title||label)+'" data-desc="'+_esc(info.desc)+'" data-date="'+_esc(info.date||'')+'">i</button>' : '';
-  return '<div class="kpi-card">'+infoBtn+'<div class="kpi-card-label">'+label+'</div><div class="kpi-card-val">'+f(val)+'</div>'+ppH+pyH+'</div>';
+  return '<div class="kpi-card">'+infoBtn+'<div class="kpi-card-label">'+label+'</div><div class="kpi-card-val">'+f(val)+'</div>'+ppH+pyH+(extraHtml||'')+'</div>';
+}
+
+// -- Network average comparison -----------------------------------------
+// Renders a single "vs network average" delta line appended to a kpi-card,
+// with an (i) button explaining how the average was calculated. The network
+// average itself is computed by the caller (per-studio maps live in each
+// dashboard's data, not in utils.js) and passed in as avgPerStudio.
+//   actual       — the card's current value for the selected studios
+//   avgPerStudio — average value per network studio (population and
+//                  zero-handling are the caller's call — see index.html)
+//   netCount     — how many studios avgPerStudio was averaged across
+//   selCount     — how many studios are currently selected
+//   fmt          — value formatter (same as kpiCard's fmt)
+//   invert       — true when lower is better (CPL/CPFT/CPA), matching
+//                  cprKpiCard's color logic
+//   scale        — true to project avgPerStudio * selCount (additive
+//                  metrics like Leads/Spend); false to use avgPerStudio
+//                  as-is (blended ratio metrics like CPL, which don't
+//                  scale with studio count)
+//   info         — {label, costBased, ratioDesc} describing the metric for
+//                  the (i) popup copy:
+//                    label      — metric name, e.g. 'leads', 'Meta Ads Spend', 'CPL'
+//                    costBased  — true if the population is "studios with
+//                                 real digital ads spend during this period"
+//                                 (all cost cards) rather than every open
+//                                 network studio (volume cards)
+//                    ratioDesc  — for scale=false only, e.g. 'total spend ÷ total leads'
+function _netAvgCore(actual, avgPerStudio, netCount, selCount, scale, invert) {
+  if (!netCount || selCount <= 0) return null;
+  const projected = scale ? avgPerStudio * selCount : avgPerStudio;
+  if (!(projected > 0)) return null;
+  const delta = (actual - projected) / projected * 100;
+  const cls   = invert ? (delta <= 0 ? 'pos' : 'neg') : (delta >= 0 ? 'pos' : 'neg');
+  const arrow = invert ? (delta <= 0 ? '&#9660;' : '&#9650;') : (delta >= 0 ? '&#9650;' : '&#9660;');
+  return {projected, delta, cls, arrow};
+}
+
+function _netAvgInfoBtn(avgPerStudio, netCount, selCount, projected, scale, fmt, info) {
+  const f = fmt || (v => Number.isFinite(v) ? v.toLocaleString() : v);
+  const label       = (info && info.label) || 'value';
+  const studioWord  = netCount === 1 ? 'studio' : 'studios';
+  const spendPhrase = ' with real digital ads spend during this period';
+
+  const population = (info && info.costBased) ? (netCount+' '+studioWord+spendPhrase) : (netCount+' '+studioWord);
+  let desc;
+  if (scale) {
+    desc = 'Network average '+label+' is calculated across '+population+': '+f(avgPerStudio)+' per studio.';
+    if (selCount > 1) {
+      desc += '\nFor your '+selCount+' selected studios, the expected value is '+f(projected)+'.';
+    }
+  } else {
+    const ratioDesc = (info && info.ratioDesc) || 'total ÷ total';
+    desc = 'Network average '+label+' is calculated as a blended ratio ('+ratioDesc+') across '+population+': '+f(avgPerStudio)+'.';
+  }
+  return '<button class="kpi-info-btn kpi-info-inline" onclick="showKpiInfo(this,event)" data-title="Network Average" data-desc="'+_esc(desc)+'" data-date="">i</button>';
+}
+
+function netAvgHtml(actual, avgPerStudio, netCount, selCount, fmt, invert, scale, info) {
+  const core = _netAvgCore(actual, avgPerStudio, netCount, selCount, scale, invert);
+  if (!core) return '';
+  const infoBtn = _netAvgInfoBtn(avgPerStudio, netCount, selCount, core.projected, scale, fmt, info);
+  return '<div class="kpi-card-delta '+core.cls+'">'+core.arrow+' '+Math.abs(core.delta).toFixed(1)+'% vs network avg'+infoBtn+'</div>';
+}
+
+// Same as netAvgHtml, but rendered as <span class="delta"> for the funnel
+// bars, which use a flex-column of <span> deltas instead of kpi-card divs.
+function netAvgSpan(actual, avgPerStudio, netCount, selCount, fmt, invert, scale, info) {
+  const core = _netAvgCore(actual, avgPerStudio, netCount, selCount, scale, invert);
+  if (!core) return '';
+  const infoBtn = _netAvgInfoBtn(avgPerStudio, netCount, selCount, core.projected, scale, fmt, info);
+  return '<span class="delta '+core.cls+'">'+core.arrow+' '+Math.abs(core.delta).toFixed(1)+'% vs network avg'+infoBtn+'</span>';
 }
 
 function getMock() {
