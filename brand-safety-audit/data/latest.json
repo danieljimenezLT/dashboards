@@ -1,79 +1,126 @@
 {
-  "cycle": "2026-06",
-  "period": "June 2026",
-  "generated": "2026-07-13",
-  "source": "Buffer (live MCP pull)",
-  "postsReviewed": 100,
+  "cycle": "2026-08",
+  "period": "August 5–12, 2026",
+  "generated": "2026-08-12",
+  "source": "Buffer (post metadata) + Instagram (visual review via browser)",
+  "coverage": {
+    "from": "2026-08-05",
+    "to": "2026-08-12"
+  },
+  "scope": "Static + Carousel cover frames only. 177 Reels/Stories excluded — video and 24h-ephemeral content not in scope yet.",
+  "postsReviewed": 18,
+  "postsVisuallyReviewed": 15,
+  "postsUnavailable": 3,
+  "notes": [
+    "PATTERN — Third consecutive cycle with in-studio third-party activations lacking documented partner approval: June (Jous Drink, Patriot IV), July (Pure Green, Ebkinis Swimwear, Lela's), August (Juiced Today). Six activations across five studios with no verifiable approvals. Recommend escalating as a policy gap rather than per-studio flags.",
+    "AUDIT INTEGRITY — 3 of 4 Coral Gables posts were deleted between the Buffer pull and the visual review. Confirmed as genuine deletions (retested after an 18-second delay, still unavailable), not rate-limiting. Supports auditing closer to publication date.",
+    "COLORS & TYPOGRAPHY — Network-wide application is strong. Approved blue #00A3E0, mint #00FFC2 and condensed italic caps are used consistently. NoDa 'AUGUST EVENTS' and Midtown '250 CLUB' are exemplary. Doral is the only creative with off-brand type and background."
+  ],
   "accounts": [
     {
-      "name": "Midtown Miami",
-      "handle": "sweat440midtownmiami",
-      "posts": 14,
+      "name": "Doral",
+      "handle": "sweat440doral",
+      "posts": 1,
       "status": "flagged",
       "flags": [
         {
-          "id": "2026-06-mm-jous",
+          "id": "2026-08-dor-bootybootcamp",
           "level": "medium",
           "category": "Loose brand adherence",
           "confidence": "MEDIUM",
-          "date": "Jun 25, 2026",
+          "date": "Aug 10, 2026",
           "postType": "Static",
           "visualReviewed": true,
-          "caption": "Jous Drink Pop-Up at SWEAT440 — Join us at the studio for a refreshing pop-up with Jous Drink! Stop by before or after class to enjoy their natural, refreshing beverages.",
-          "why": "Caption: external beverage brand promoted through an in-studio pop-up, no evidence of approved-partner status. Visual analysis: the official SWEAT440 shield logo appears printed on the Jous can itself — direct co-branding of the mark on a third-party product. Product confirmed non-alcoholic (hydrating fruit drink). Visual finding reinforces the urgency of partner verification.",
-          "action": "Verify whether Jous Drink is on the approved partners list. If not, request franchisee to document the approval process before any future co-promotions.",
-          "link": "https://www.instagram.com/p/DZ-hmHdK_1x/"
+          "caption": "BOOTY BOOTCAMP WITH COACH MELANIE — It's that time of month again!!! This weekend, August 15 at 1:00–1:45 PM.",
+          "why": "Four issues compound in one creative. (1) Brand voice: 'BOOTY' as the dominant headline centers a body part rather than the training, departing from the approved energetic/encouraging/motivational tone with a 60–75% female audience. (2) Unintended double entendre: 'It's that time of month again!!!' is a common menstruation euphemism and reads crudely next to 'BOOTY BOOTCAMP'. (3) Typography: that line uses a serif/slab face that is not Oswald, Open Sans or Prohibition — no other fonts are permitted. (4) Background: dominant black, while the guide specifies white or primary blue backgrounds, with dark neutrals reserved for body text and small UI. Compliant elements: blue banner #00A3E0, mint chevrons #00FFC2, headline set in approved condensed italic.",
+          "action": "Review headline wording with the studio and reissue with approved typography and background. Confirm whether this class name is used network-wide — if so, escalate as a naming decision rather than a single-studio correction.",
+          "link": "https://www.instagram.com/p/Db3bjgmRBei/"
+        }
+      ]
+    },
+    {
+      "name": "NoDa Charlotte",
+      "handle": "sweat440noda",
+      "posts": 5,
+      "status": "flagged",
+      "flags": [
+        {
+          "id": "2026-08-noda-juicedtoday",
+          "level": "medium",
+          "category": "Loose brand adherence",
+          "confidence": "MEDIUM",
+          "date": "Aug 10, 2026",
+          "postType": "Static",
+          "visualReviewed": true,
+          "caption": "JUICED TODAY — POST WORKOUT JUICE SAMPLES. In studio, Tuesday August 11, 4:30PM–7:00PM. Collab post with @juicedtodaywithtreva.",
+          "why": "Third-party co-branding: the Juiced Today logo sits in a white box directly alongside the SWEAT440 lockup, promoting an in-studio sampling activation, published as an Instagram collab with the vendor's account. No evidence the vendor is on the approved partners list. The creative itself is fully on-brand — approved blue #00A3E0, mint #00FFC2 accents, correct condensed italic typography — so this is a partner-policy flag, not a design flag.",
+          "action": "Verify whether Juiced Today is an approved partner. If not, document the local partnership approval process with the franchisee. See cycle note on the recurring pattern.",
+          "link": "https://www.instagram.com/p/Db3C1oQvx5R/"
+        }
+      ]
+    },
+    {
+      "name": "Coral Gables",
+      "handle": "sweat440gables",
+      "posts": 4,
+      "status": "clean",
+      "flags": []
+    },
+    {
+      "name": "Deerfield Beach",
+      "handle": "sweat440deerfield",
+      "posts": 3,
+      "status": "flagged",
+      "flags": [
+        {
+          "id": "2026-08-dee-noexcuses",
+          "level": "low",
+          "category": "Loose brand adherence",
+          "confidence": "MEDIUM",
+          "date": "Aug 7, 2026",
+          "postType": "Carousel",
+          "visualReviewed": true,
+          "caption": "OFFICIALLY IN THE 100 CLUB! No shortcuts. No excuses. Just showing up, one class at a time.",
+          "why": "Caption finding, surfaced outside this cycle's visual-only scope. 'No excuses' appears on the brand guide's prohibited language list as shame-based phrasing that conflicts with the approved encouraging tone. The creative itself is clean and on-brand: member holding the 100 CLUB tee against the blue shield wall.",
+          "action": "Share the prohibited-language list with the studio. Low urgency — single instance, positive intent.",
+          "link": "https://www.instagram.com/p/DbvgWdkkWU-/"
         }
       ]
     },
     {
       "name": "Coral Springs",
       "handle": "sweat440coralsprings",
-      "posts": 8,
-      "status": "flagged",
-      "flags": [
-        {
-          "id": "2026-06-cs-b12",
-          "level": "medium",
-          "category": "Loose brand adherence",
-          "confidence": "MEDIUM",
-          "date": "Jun 25, 2026",
-          "postType": "Static",
-          "visualReviewed": true,
-          "caption": "FREE B12 SHOTS + Exclusive Wellness Offers! — We're excited to welcome Patriot IV & Pro Health to SWEAT440 for an incredible wellness pop-up offering IV therapy and B12 injections.",
-          "why": "Caption: medical services provider (IV therapy, B12 injections, peptide therapies, weight-loss consultations) operating inside the studio. Visual analysis: the provider's logo (eagle, star, blood-drop medical imagery) visually dominates the creative and is larger than the SWEAT440 lockup. Regulated medical services promoted under the brand roof with third-party visual prominence. Escalated from LOW to MEDIUM after image review.",
-          "action": "Verify Patriot IV & Pro Health is on the approved partners list. Low urgency on content policy, but a latent reputational risk if the provider has any issues.",
-          "link": "https://www.instagram.com/p/DaAvXuCxkiU/"
-        }
-      ]
+      "posts": 1,
+      "status": "clean",
+      "flags": []
     },
     {
       "name": "Toms River",
       "handle": "sweat440tomsriver",
-      "posts": 12,
-      "status": "flagged",
-      "flags": [
-        {
-          "id": "2026-06-tr-pride",
-          "level": "low",
-          "category": "Political or religious messaging",
-          "confidence": "LOW",
-          "date": "Jun 20, 2026",
-          "postType": "Static",
-          "visualReviewed": true,
-          "caption": "Love is love, and at SWEAT440, strength training is for everyone. We're celebrating Pride with a community class that honors exactly who you are.",
-          "why": "Caption: Pride-themed community class. Visual analysis: entire creative dedicated to the theme (rainbow border, rainbow typography, LOVE IS LOVE dominant) — active positioning, not passing acknowledgment. Design is clean and on-brand: official SWEAT440 | Toms River lockup correctly applied. No additional visual violations. Remains a judgment call given franchisee and market diversity.",
-          "action": "Review with leadership. If officially sanctioned network event, document as context. If solo studio initiative, evaluate against brand voice uniformity policy.",
-          "link": "https://www.instagram.com/p/DZznZPkk_Vq/"
-        }
-      ]
+      "posts": 1,
+      "status": "clean",
+      "flags": []
     },
-    { "name": "HQ", "handle": "sweat440", "posts": 11, "status": "clean", "flags": [] },
-    { "name": "Coral Gables", "handle": "sweat440gables", "posts": 10, "status": "clean", "flags": [] },
-    { "name": "Doral", "handle": "sweat440doral", "posts": 11, "status": "clean", "flags": [] },
-    { "name": "South Miami", "handle": "sweat440southmiami", "posts": 9, "status": "clean", "flags": [] },
-    { "name": "Miami Lakes", "handle": "sweat440miamilakes", "posts": 8, "status": "clean", "flags": [] },
-    { "name": "Deerfield Beach", "handle": "sweat440deerfield", "posts": 10, "status": "clean", "flags": [] },
-    { "name": "NoDa Charlotte", "handle": "sweat440noda", "posts": 7, "status": "clean", "flags": [] }
+    {
+      "name": "Midtown Miami",
+      "handle": "sweat440midtownmiami",
+      "posts": 2,
+      "status": "clean",
+      "flags": []
+    },
+    {
+      "name": "South Miami",
+      "handle": "sweat440southmiami",
+      "posts": 1,
+      "status": "clean",
+      "flags": []
+    },
+    {
+      "name": "Miami Lakes",
+      "handle": "sweat440miamilakes",
+      "posts": 0,
+      "status": "clean",
+      "flags": []
+    }
   ]
 }
