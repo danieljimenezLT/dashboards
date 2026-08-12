@@ -574,28 +574,61 @@ function validateBrandAuditPayload(payload) {
   return null;
 }
 
-async function getRepoFileSha(env, path) {
-  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}?ref=main`, {
-    headers: ghHeaders(env),
-  });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`Failed to read ${path} (${res.status})`);
-  const json = await res.json();
-  return json.sha;
-}
+// Commits multiple files in ONE atomic commit via the Git Data API (blobs →
+// tree → commit → move the branch ref) — NOT one `contents` PUT per file.
+// Publishing writes both data/latest.json and data/<cycle>.json; two separate
+// PUTs are two separate commits, and two commits landing seconds apart each
+// trigger their own `deploy.yml` run — those two runs then race to push the
+// gh-pages branch and the loser fails with "rejected (fetch first)".
+// Confirmed in production (run 31644338645). One commit → one deploy trigger,
+// and it's the semantically correct shape for "one logical change" anyway.
+async function putRepoFiles(env, files, message) {
+  const gh = ghHeaders(env);
 
-async function putRepoFile(env, path, content, message) {
-  const sha = await getRepoFileSha(env, path);
-  const body = { message, content: b64EncodeUnicode(content), branch: 'main' };
-  if (sha) body.sha = sha;
-  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
-    method: 'PUT',
-    headers: ghHeaders(env),
-    body: JSON.stringify(body),
+  const refRes = await fetch(`https://api.github.com/repos/${REPO}/git/ref/heads/main`, { headers: gh });
+  if (!refRes.ok) throw new Error(`Failed to read main ref (${refRes.status})`);
+  const parentSha = (await refRes.json()).object.sha;
+
+  const parentCommitRes = await fetch(`https://api.github.com/repos/${REPO}/git/commits/${parentSha}`, { headers: gh });
+  if (!parentCommitRes.ok) throw new Error(`Failed to read parent commit (${parentCommitRes.status})`);
+  const baseTreeSha = (await parentCommitRes.json()).tree.sha;
+
+  const treeItems = [];
+  for (const file of files) {
+    const blobRes = await fetch(`https://api.github.com/repos/${REPO}/git/blobs`, {
+      method: 'POST',
+      headers: gh,
+      body: JSON.stringify({ content: file.content, encoding: 'utf-8' }),
+    });
+    if (!blobRes.ok) throw new Error(`Failed to create blob for ${file.path} (${blobRes.status})`);
+    const blobSha = (await blobRes.json()).sha;
+    treeItems.push({ path: file.path, mode: '100644', type: 'blob', sha: blobSha });
+  }
+
+  const treeRes = await fetch(`https://api.github.com/repos/${REPO}/git/trees`, {
+    method: 'POST',
+    headers: gh,
+    body: JSON.stringify({ base_tree: baseTreeSha, tree: treeItems }),
   });
-  if (!res.ok) {
-    const errText = await res.text().catch(() => '');
-    throw new Error(`Failed to write ${path} (${res.status}): ${errText}`);
+  if (!treeRes.ok) throw new Error(`Failed to create tree (${treeRes.status})`);
+  const newTreeSha = (await treeRes.json()).sha;
+
+  const commitRes = await fetch(`https://api.github.com/repos/${REPO}/git/commits`, {
+    method: 'POST',
+    headers: gh,
+    body: JSON.stringify({ message, tree: newTreeSha, parents: [parentSha] }),
+  });
+  if (!commitRes.ok) throw new Error(`Failed to create commit (${commitRes.status})`);
+  const newCommitSha = (await commitRes.json()).sha;
+
+  const updateRefRes = await fetch(`https://api.github.com/repos/${REPO}/git/refs/heads/main`, {
+    method: 'PATCH',
+    headers: gh,
+    body: JSON.stringify({ sha: newCommitSha }),
+  });
+  if (!updateRefRes.ok) {
+    const errText = await updateRefRes.text().catch(() => '');
+    throw new Error(`Failed to update main ref (${updateRefRes.status}): ${errText}`);
   }
 }
 
@@ -607,8 +640,14 @@ async function handlePublishBrandAuditCycle(body, env, headers) {
   const cycle = payload.cycle || new Date().toISOString().slice(0, 7);
   const content = JSON.stringify(payload, null, 2) + '\n';
 
-  await putRepoFile(env, `${BRAND_AUDIT_DATA_DIR}/latest.json`, content, `Publish brand safety audit cycle ${cycle}`);
-  await putRepoFile(env, `${BRAND_AUDIT_DATA_DIR}/${cycle}.json`, content, `Archive brand safety audit cycle ${cycle}`);
+  await putRepoFiles(
+    env,
+    [
+      { path: `${BRAND_AUDIT_DATA_DIR}/latest.json`, content },
+      { path: `${BRAND_AUDIT_DATA_DIR}/${cycle}.json`, content },
+    ],
+    `Publish brand safety audit cycle ${cycle}`
+  );
 
   return jsonResponse({ ok: true }, 200, headers);
 }
