@@ -103,6 +103,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .publish-row+.publish-row{margin-top:8px}
 .publish-label{font-size:12px;font-weight:600;color:var(--text-2);min-width:170px}
 .publish-msg{font-size:11px;color:var(--text-3)}
+.cycle-picker{display:flex;align-items:center;gap:8px;margin-bottom:1rem}
+.cycle-picker select{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}
 .footer{margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text-3);flex-wrap:wrap;gap:8px}
 .empty{text-align:center;padding:3rem 1rem;color:var(--text-3);font-size:13px}
 @media(max-width:640px){.metrics{grid-template-columns:repeat(2,1fr)}.topbar-meta{display:none}}
@@ -148,6 +150,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   </div>
 
   <div class="tab-panel active" id="tab-audit">
+    <div class="cycle-picker">
+      <span class="filter-label">Viewing cycle:</span>
+      <select id="cycleSelect" onchange="onCycleChange()"><option value="">Loading…</option></select>
+    </div>
     <div class="metrics" id="metricsRow"></div>
     <div class="filter-bar">
       <span class="filter-label">Show:</span>
@@ -212,7 +218,7 @@ const STATUS_FLOW=["pending","ops","cleared"];
 const STATUS_LABEL={pending:"⏳ Pending review",ops:"📤 Reported to Ops",cleared:"✓ Cleared"};
 const STATUS_CLASS={pending:"st-pending",ops:"st-ops",cleared:"st-cleared"};
 
-let AUDIT=null,statuses={},currentFilter="all",expanded=null;
+let AUDIT=null,LATEST_AUDIT=null,AVAILABLE_CYCLES=[],statuses={},currentFilter="all",expanded=null;
 
 async function loadStatuses(){
   if(SHEET_ENDPOINT){
@@ -344,14 +350,14 @@ function refreshHeader(){
   document.getElementById("topbarMeta").textContent="Brand Safety Audit · "+AUDIT.accounts.length+" accounts · "+AUDIT.period+" · "+AUDIT.postsReviewed+" posts reviewed";
   document.getElementById("pageSubtitle").textContent="SWEAT440 network · "+AUDIT.period+" · "+AUDIT.postsReviewed+" posts pulled live from Buffer · Caption + visual creative analysis — human review required on all flagged items";
   document.getElementById("footerLeft").textContent="SWEAT440 · Brand Safety Audit · "+AUDIT.period+" · Data pulled live from Buffer · Confidential — Internal Use Only";
-  updateCoverageUI();
 }
 
-// Shows the published cycle's coverage end date, and pre-fills the download
-// date pickers to start right after it — so re-downloading never re-pulls
-// (and re-analyzes) posts that already went through a review cycle.
+// Always keyed off LATEST_AUDIT (the true latest published cycle), never off
+// whatever cycle is currently being browsed via the cycle picker — otherwise
+// browsing an old month would corrupt the "reviewed through" date and cause
+// the next Download to re-pull/re-analyze already-reviewed posts.
 function updateCoverageUI(){
-  const coverage=AUDIT&&AUDIT.coverage;
+  const coverage=LATEST_AUDIT&&LATEST_AUDIT.coverage;
   const label=document.getElementById("coverageLabel");
   const fromInput=document.getElementById("downloadFrom");
   const toInput=document.getElementById("downloadTo");
@@ -368,6 +374,62 @@ function updateCoverageUI(){
     const weekAgo=new Date();
     weekAgo.setDate(weekAgo.getDate()-7);
     fromInput.value=weekAgo.toISOString().slice(0,10);
+  }
+}
+
+// Lists archived cycle files (data/2026-06.json, data/2026-08.json, ...)
+// straight from GitHub so past runs can be browsed. Read-only, public repo —
+// no token needed, works directly from the browser.
+async function listCycles(){
+  try{
+    const res=await fetch("https://api.github.com/repos/dev-leadteam/dashboards/contents/brand-safety-audit/data");
+    if(!res.ok)return[];
+    const files=await res.json();
+    return files
+      .filter(f=>/^\d{4}-\d{2}\.json$/.test(f.name))
+      .map(f=>f.name.replace(".json",""))
+      .sort()
+      .reverse();
+  }catch(e){
+    return[];
+  }
+}
+
+function cycleLabel(cycleId){
+  const parts=cycleId.split("-");
+  const d=new Date(Date.UTC(Number(parts[0]),Number(parts[1])-1,1));
+  return d.toLocaleDateString("en-US",{month:"long",year:"numeric",timeZone:"UTC"});
+}
+
+async function populateCyclePicker(selectCycle){
+  const select=document.getElementById("cycleSelect");
+  AVAILABLE_CYCLES=await listCycles();
+  if(!AVAILABLE_CYCLES.length){
+    select.innerHTML='<option value="">'+(selectCycle||"Current")+'</option>';
+    return;
+  }
+  select.innerHTML=AVAILABLE_CYCLES.map(c=>'<option value="'+c+'">'+cycleLabel(c)+'</option>').join("");
+  if(selectCycle&&AVAILABLE_CYCLES.includes(selectCycle))select.value=selectCycle;
+}
+
+// Loads a past cycle's data for viewing only. Deliberately does NOT touch
+// LATEST_AUDIT/updateCoverageUI() — the Download/Publish flow must stay
+// anchored to the real latest cycle no matter which month is on screen.
+async function onCycleChange(){
+  const select=document.getElementById("cycleSelect");
+  const cycle=select.value;
+  if(!cycle)return;
+  document.getElementById("studioList").innerHTML='<div class="empty">Loading…</div>';
+  try{
+    const r=await fetch("data/"+cycle+".json?cb="+Date.now());
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    AUDIT=await r.json();
+    expanded=null;
+    refreshHeader();
+    renderMetrics();
+    render();
+  }catch(e){
+    document.getElementById("studioList").innerHTML='<div class="empty">Could not load that cycle.</div>';
   }
 }
 
@@ -443,7 +505,10 @@ async function publishCycle(){
   }
 
   AUDIT=payload;
+  LATEST_AUDIT=payload;
   refreshHeader();
+  updateCoverageUI();
+  await populateCyclePicker(AUDIT.cycle);
   renderMetrics();
   render();
   input.value="";
@@ -455,11 +520,14 @@ async function publishCycle(){
 async function init(){
   try{
     AUDIT=await loadAudit();
+    LATEST_AUDIT=AUDIT;
   }catch(e){
     document.getElementById("studioList").innerHTML='<div class="empty">Could not load audit data — check data/latest.json.</div>';
     return;
   }
   refreshHeader();
+  updateCoverageUI();
+  populateCyclePicker(AUDIT.cycle);
   await loadStatuses();
   renderMetrics();
   render();
