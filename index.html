@@ -667,7 +667,8 @@ async function loadData() {
   // Auth check — redirects to login.html if no valid session
   const _authUser = checkAuth();
   if (!_authUser) return;
-  if (_authUser.role !== 'admin' && _authUser.role !== 'corporate') {
+  const _allowedRoles = ['admin', 'corporate', 'franchisee', 'manager'];
+  if (!_allowedRoles.includes(_authUser.role)) {
     location.replace('home.html');
     return;
   }
