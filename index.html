@@ -1245,6 +1245,74 @@ function _buildFunnelRankTable(tableId, rows, valueKey) {
   );
 }
 
+// Per-studio breakdown of leads/first-timers/new-members for a date range +
+// source filter, WITHOUT filtering by studio — used as the population for
+// network-average comparisons. Missing studios (no rows) implicitly = 0.
+function perStudioFunnelTotals(from, to, sources) {
+  if (!RAW) return {};
+  const rows = [
+    ...filterRows(RAW.daily_detail   || [], from, to, null, sources),
+    ...filterRows(RAW.monthly_detail || [], from, to, null, sources),
+  ];
+  const map = {};
+  rows.forEach(r => {
+    if (!map[r.studio]) map[r.studio] = {leads:0, ft:0, mem:0};
+    map[r.studio].leads += r.signups           || 0;
+    map[r.studio].ft    += r.first_visits      || 0;
+    map[r.studio].mem   += r.first_activations || 0;
+  });
+  return map;
+}
+
+// Per-studio Google/Meta spend for a date range, no studio filter — mirrors
+// spendFor()'s daily/monthly de-dup logic but grouped by studio.
+function spendByStudio(f, t) {
+  if (!f || !t || !SPEND_RAW) return {};
+  const fT = f.getTime(), tT = t.getTime();
+  const map = {};
+  const dailyCovered = new Set();
+  for (const r of (SPEND_RAW.daily || [])) {
+    const d = new Date(r.date + 'T00:00:00Z').getTime();
+    if (d < fT || d > tT) continue;
+    const nm = META_CODE_TO_STUDIO[r.studio_code] || r.studio_code;
+    if (!map[nm]) map[nm] = {meta:0, google:0};
+    map[nm].meta   += r.meta_spend   || 0;
+    map[nm].google += r.google_spend || 0;
+    dailyCovered.add(r.studio_code + '|' + r.date.slice(0,7));
+  }
+  for (const r of (SPEND_RAW.monthly || [])) {
+    const d = new Date(r.month + 'T00:00:00Z').getTime();
+    if (d < fT || d > tT) continue;
+    if (dailyCovered.has(r.studio_code + '|' + r.month.slice(0,7))) continue;
+    const nm = META_CODE_TO_STUDIO[r.studio_code] || r.studio_code;
+    if (!map[nm]) map[nm] = {meta:0, google:0};
+    map[nm].meta   += r.meta_spend   || 0;
+    map[nm].google += r.google_spend || 0;
+  }
+  return map;
+}
+
+// Additive metrics (Leads, FT, Members, spend totals): network average is
+// per-studio average across NON-ZERO network studios only (a studio not
+// running Google Ads shouldn't drag down the Google Ads average).
+function _netAdditiveStats(valueMap, netStudios, selStudios) {
+  const netNonZero = netStudios.map(s => valueMap[s] || 0).filter(v => v > 0);
+  const avgPerStudio = netNonZero.length ? netNonZero.reduce((a,b)=>a+b,0) / netNonZero.length : 0;
+  const selNonZeroCount = selStudios.filter(s => (valueMap[s]||0) > 0).length;
+  return {avgPerStudio, netNonZeroCount: netNonZero.length, selNonZeroCount, selCount: selStudios.length};
+}
+
+// Ratio metrics (CPL/CPFT/CPA): blended network ratio = sum(spend) / sum(denominator)
+// across network studios that have a non-zero denominator (e.g. leads>0 for CPL).
+function _netRatioStats(spendMap, denomMap, netStudios, selStudios) {
+  const qualifying = netStudios.filter(s => (denomMap[s]||0) > 0);
+  const sumSpend = qualifying.reduce((a,s) => a + (spendMap[s]||0), 0);
+  const sumDenom = qualifying.reduce((a,s) => a + (denomMap[s]||0), 0);
+  const avgPerStudio = sumDenom > 0 ? sumSpend / sumDenom : 0;
+  const selNonZeroCount = selStudios.filter(s => (denomMap[s]||0) > 0).length;
+  return {avgPerStudio, netNonZeroCount: qualifying.length, selNonZeroCount, selCount: selStudios.length};
+}
+
 function buildSummaryTab() {
   const funnelEl = document.getElementById('summary-kpis');
   const spendEl  = document.getElementById('summary-spend-kpis');
@@ -1255,6 +1323,16 @@ function buildSummaryTab() {
   const funnelPp   = window._cprPp   || null;
   const funnelPy   = window._cprPy   || null;
   if (!funnelCurr) return;
+
+  const from   = window._metaFrom   || null;
+  const to     = window._metaTo     || null;
+  const ppFrom = window._metaPpFrom || null;
+  const ppTo   = window._metaPpTo   || null;
+  const pyFrom = window._metaPyFrom || null;
+  const pyTo   = window._metaPyTo   || null;
+  const selStudios = window._cprStudios || [];
+  const NET_STUDIOS = (RAW.studios || []).filter(s => !DEFAULT_EXCL_STUDIOS.includes(s));
+  const selSources  = getSelected('sourceMenu') || [];
 
   // Pre-2026 complete-month enforcement
   const _sfFrom = document.getElementById('fFrom')?.value || '';
@@ -1298,19 +1376,28 @@ function buildSummaryTab() {
   }
   const curr = fsum(funnelCurr), pp = fsum(funnelPp), py = fsum(funnelPy);
 
+  // Network-average population for leads/FT/members — every studio's totals
+  // for the current period + source filter, unfiltered by studio selection.
+  const netFunnelMap = (from && to) ? perStudioFunnelTotals(from, to, selSources) : {};
+  const leadsMap = {}, ftMap = {}, memMap = {};
+  Object.keys(netFunnelMap).forEach(s => {
+    leadsMap[s] = netFunnelMap[s].leads;
+    ftMap[s]    = netFunnelMap[s].ft;
+    memMap[s]   = netFunnelMap[s].mem;
+  });
+  const leadsNet = _netAdditiveStats(leadsMap, NET_STUDIOS, selStudios);
+  const ftNet    = _netAdditiveStats(ftMap,    NET_STUDIOS, selStudios);
+  const memNet   = _netAdditiveStats(memMap,   NET_STUDIOS, selStudios);
+
   funnelEl.innerHTML = summaryDisclaimer +
-    kpiCard('Leads (New Accounts Created)',             curr.leads, pp.leads||null, py.leads||null, null, GLOSSARY.leads) +
-    kpiCard('First Timers (First Studio Visits)',       curr.ft,    pp.ft||null,    py.ft||null,    null, GLOSSARY.ft)    +
-    kpiCard('New Members (First Memberships Activated)',curr.mem,   pp.mem||null,   py.mem||null,   null, GLOSSARY.mem);
+    kpiCard('Leads (New Accounts Created)',             curr.leads, pp.leads||null, py.leads||null, null, GLOSSARY.leads,
+      netAvgHtml(curr.leads, leadsNet.avgPerStudio, leadsNet.netNonZeroCount, leadsNet.selNonZeroCount, leadsNet.selCount, null, false, true)) +
+    kpiCard('First Timers (First Studio Visits)',       curr.ft,    pp.ft||null,    py.ft||null,    null, GLOSSARY.ft,
+      netAvgHtml(curr.ft, ftNet.avgPerStudio, ftNet.netNonZeroCount, ftNet.selNonZeroCount, ftNet.selCount, null, false, true))    +
+    kpiCard('New Members (First Memberships Activated)',curr.mem,   pp.mem||null,   py.mem||null,   null, GLOSSARY.mem,
+      netAvgHtml(curr.mem, memNet.avgPerStudio, memNet.netNonZeroCount, memNet.selNonZeroCount, memNet.selCount, null, false, true));
 
   if (!spendEl) return;
-  const from   = window._metaFrom   || null;
-  const to     = window._metaTo     || null;
-  const ppFrom = window._metaPpFrom || null;
-  const ppTo   = window._metaPpTo   || null;
-  const pyFrom = window._metaPyFrom || null;
-  const pyTo   = window._metaPyTo   || null;
-  const selStudios = window._cprStudios || [];
   if (!from || !to) return;
 
   const allStudios  = selStudios.length > 0 ? selStudios : (RAW ? RAW.studios : []);
@@ -1335,6 +1422,23 @@ function buildSummaryTab() {
   const lPp=ltFor(ppFrom?new Date(ppFrom):null,ppTo?new Date(ppTo):null);
   const lPy=ltFor(pyFrom?new Date(pyFrom):null,pyTo?new Date(pyTo):null);
   const tCurr=gCurr+mCurr+lCurr, tPp=gPp+mPp+lPp, tPy=gPy+mPy+lPy;
+
+  // Network-average population for spend cards — per-studio Google/Meta spend
+  // (unfiltered by studio selection) + the flat per-studio LeadTeam fee.
+  const netSpendMap = spendByStudio(from, to);
+  const googleMap = {}, metaMap = {};
+  Object.keys(netSpendMap).forEach(s => { googleMap[s] = netSpendMap[s].google; metaMap[s] = netSpendMap[s].meta; });
+  const _ltDays = Math.round((to.getTime()-from.getTime())/86400000);
+  const ltPerStudio = LTFEE*(_ltDays/30.4375);
+  const ltMap = {}, totalMap = {};
+  NET_STUDIOS.concat(selStudios).forEach(s => {
+    ltMap[s]    = ltPerStudio;
+    totalMap[s] = (googleMap[s]||0) + (metaMap[s]||0) + ltPerStudio;
+  });
+  const googleNet = _netAdditiveStats(googleMap, NET_STUDIOS, selStudios);
+  const metaNet   = _netAdditiveStats(metaMap,   NET_STUDIOS, selStudios);
+  const ltNet     = _netAdditiveStats(ltMap,     NET_STUDIOS, selStudios);
+  const totalNet  = _netAdditiveStats(totalMap,  NET_STUDIOS, selStudios);
 
   const f$  = v => '$'+Math.round(v).toLocaleString('en-US');
   const f$2 = v => '$'+Number(v).toFixed(2);
@@ -1364,12 +1468,16 @@ function buildSummaryTab() {
     '<div class="kpi-card-label">Total Mkt Spend</div>' +
     '<div class="kpi-card-val">' + f$(tCurr) + '</div>' +
     breakdown + ppTH + pyTH +
+    netAvgHtml(tCurr, totalNet.avgPerStudio, totalNet.netNonZeroCount, totalNet.selNonZeroCount, totalNet.selCount, f$, false, true) +
     '</div>';
 
   spendEl.innerHTML = totalCard +
-    kpiCard('Google Ads',   gCurr, gPp||null, gPy||null, f$, G.google) +
-    kpiCard('Meta Ads',     mCurr, mPp||null, mPy||null, f$, G.meta) +
-    kpiCard('Leadteam Fee', lCurr, lPp||null, lPy||null, f$, G.leadteam);
+    kpiCard('Google Ads',   gCurr, gPp||null, gPy||null, f$, G.google,
+      netAvgHtml(gCurr, googleNet.avgPerStudio, googleNet.netNonZeroCount, googleNet.selNonZeroCount, googleNet.selCount, f$, false, true)) +
+    kpiCard('Meta Ads',     mCurr, mPp||null, mPy||null, f$, G.meta,
+      netAvgHtml(mCurr, metaNet.avgPerStudio, metaNet.netNonZeroCount, metaNet.selNonZeroCount, metaNet.selCount, f$, false, true)) +
+    kpiCard('Leadteam Fee', lCurr, lPp||null, lPy||null, f$, G.leadteam,
+      netAvgHtml(lCurr, ltNet.avgPerStudio, ltNet.netNonZeroCount, ltNet.selNonZeroCount, ltNet.selCount, f$, false, true));
 
   if (!cprEl) return;
   const cpl_curr  = curr.leads>0 ? tCurr/curr.leads : 0;
@@ -1382,10 +1490,17 @@ function buildSummaryTab() {
   const cpa_pp    = pp.mem>0     ? tPp/pp.mem       : null;
   const cpa_py    = py.mem>0     ? tPy/py.mem       : null;
 
+  const cplNet  = _netRatioStats(totalMap, leadsMap, NET_STUDIOS, selStudios);
+  const cpftNet = _netRatioStats(totalMap, ftMap,    NET_STUDIOS, selStudios);
+  const cpaNet  = _netRatioStats(totalMap, memMap,   NET_STUDIOS, selStudios);
+
   cprEl.innerHTML =
-    cprKpiCard('Blended CPL',  cpl_curr,  cpl_pp,  cpl_py,  f$2, GLOSSARY.cpl) +
-    cprKpiCard('Blended CPFT', cpft_curr, cpft_pp, cpft_py, f$2, GLOSSARY.cpft) +
-    cprKpiCard('Blended CPA',  cpa_curr,  cpa_pp,  cpa_py,  f$2, GLOSSARY.cpa);
+    cprKpiCard('Blended CPL',  cpl_curr,  cpl_pp,  cpl_py,  f$2, GLOSSARY.cpl,
+      netAvgHtml(cpl_curr, cplNet.avgPerStudio, cplNet.netNonZeroCount, cplNet.selNonZeroCount, cplNet.selCount, f$2, true, false)) +
+    cprKpiCard('Blended CPFT', cpft_curr, cpft_pp, cpft_py, f$2, GLOSSARY.cpft,
+      netAvgHtml(cpft_curr, cpftNet.avgPerStudio, cpftNet.netNonZeroCount, cpftNet.selNonZeroCount, cpftNet.selCount, f$2, true, false)) +
+    cprKpiCard('Blended CPA',  cpa_curr,  cpa_pp,  cpa_py,  f$2, GLOSSARY.cpa,
+      netAvgHtml(cpa_curr, cpaNet.avgPerStudio, cpaNet.netNonZeroCount, cpaNet.selNonZeroCount, cpaNet.selCount, f$2, true, false));
 }
 
 function buildCPRTab() {

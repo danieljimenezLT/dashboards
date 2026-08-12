@@ -90,10 +90,16 @@
   .kpi-card-delta.neg{color:#d32f2f}
   .kpi-card-delta.neu{color:#5a7a8a}
 
+  /* Network average block — right-aligned, separated from pp/py deltas */
+  .kpi-netavg{margin-top:8px;padding-top:8px;border-top:1px dashed #dde8ef;text-align:right}
+  .kpi-netavg .kpi-card-delta{margin-top:2px}
+
   /* KPI info button & tooltip */
   .kpi-info-btn{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;border:1.5px solid #99DAF3;background:transparent;color:#00A3E0;font-size:11px;font-weight:700;font-family:Georgia,serif;font-style:italic;line-height:1;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s;z-index:1}
   .kpi-info-btn:hover{background:#00A3E0;color:#fff;border-color:#00A3E0}
   .kpi-info-btn.kpi-info-inline{position:static;display:inline-flex;vertical-align:middle;width:15px;height:15px;font-size:9px;margin-left:5px;flex-shrink:0}
+  .kpi-info-btn.kpi-warn-btn{position:static;display:inline-flex;vertical-align:middle;width:15px;height:15px;font-size:10px;margin-right:5px;flex-shrink:0;border-color:#f0b429;color:#b8860b;font-family:inherit;font-style:normal}
+  .kpi-info-btn.kpi-warn-btn:hover{background:#f0b429;color:#fff;border-color:#f0b429}
   .kpi-info-overlay{display:none;position:fixed;inset:0;z-index:1998;background:rgba(0,0,0,.35)}
   .kpi-info-overlay.active{display:block}
   .kpi-info-box{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1999;background:#fff;border-radius:12px;padding:24px 24px 20px;max-width:440px;width:calc(100% - 40px);box-shadow:0 8px 40px rgba(0,0,0,.2)}
