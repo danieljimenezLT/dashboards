@@ -570,6 +570,11 @@ function validateBrandAuditPayload(payload) {
     if (typeof a.handle !== 'string' || !Array.isArray(a.flags)) {
       return `Account "${a.name || '?'}" is missing "handle" or "flags".`;
     }
+    // postLog is optional (older cycles won't have it) — but if present it
+    // must be an array, since it's what drives the dashboard's post-date filter.
+    if (a.postLog !== undefined && !Array.isArray(a.postLog)) {
+      return `Account "${a.name || '?'}" has a "postLog" that isn't an array.`;
+    }
   }
   return null;
 }
