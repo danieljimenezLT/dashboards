@@ -118,6 +118,7 @@
         <canvas id="trendChart" role="img" aria-label="Line chart of leads, first timers and new members over time">Monthly funnel trend data.</canvas>
       </div>
     </div>
+    <div id="funnel-conv-kpis" class="kpi-grid three"></div>
     <div class="chart-card">
       <div class="chart-card-title">Conversion rates over time</div>
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
@@ -881,6 +882,18 @@ function applyFilters() {
 }
 
 
+// Conversion-rate KPI card — shared by the Funnel tab's totals row and the
+// Leads/First Timers/New Members stage tabs.
+function convCard(label, curr, ppRate, pyRate, info, extraHtml) {
+  if (curr === null) return kpiCard(label, '--', null, null, v=>v, info);
+  const dpp = ppRate != null ? (curr - ppRate) / ppRate * 100 : null;
+  const dpy = pyRate != null ? (curr - pyRate) / pyRate * 100 : null;
+  const ppH = _partialPeriod.pp ? (dpp!=null ? _partialPeriodWarn('period') : '') : (dpp!=null ? '<div class="kpi-card-delta '+(dpp>=0?'pos':'neg')+'">'+(dpp>=0?'&#9650;':'&#9660;')+' '+Math.abs(dpp).toFixed(1)+'% prev period</div>' : '');
+  const pyH = _partialPeriod.py ? (dpy!=null ? _partialPeriodWarn('year') : '') : (dpy!=null ? '<div class="kpi-card-delta '+(dpy>=0?'pos':'neg')+'">'+(dpy>=0?'&#9650;':'&#9660;')+' '+Math.abs(dpy).toFixed(1)+'% prev year</div>' : '');
+  const infoBtn = info ? '<button class="kpi-info-btn" onclick="showKpiInfo(this,event)" data-title="'+_esc(info.title||label)+'" data-desc="'+_esc(info.desc)+'" data-date="'+_esc(info.date||'')+'">i</button>' : '';
+  return '<div class="kpi-card">'+infoBtn+'<div class="kpi-card-label">'+label+'</div><div class="kpi-card-val">'+curr.toFixed(1)+'%</div>'+ppH+pyH+(extraHtml||'')+'</div>';
+}
+
 function buildFunnel(curr, prev, pyear, ppLabel, pyLabel) {
   const netStudios = window._netStudios || [];
   const selCount   = (window._cprStudios || []).length;
@@ -909,6 +922,30 @@ function buildFunnel(curr, prev, pyear, ppLabel, pyLabel) {
     const infoBtn = g ? '<button class="kpi-info-btn kpi-info-inline" onclick="showKpiInfo(this,event)" data-title="'+_esc(g.title)+'" data-desc="'+_esc(g.desc)+'" data-date="'+_esc(g.date||'')+'">i</button>' : '';
     return `<div><div class="funnel-stage-label">${s.label}${infoBtn}</div><div class="funnel-row"><div class="funnel-bar-track"><div class="funnel-bar-fill" style="width:${w}%;background:${s.color}"></div></div><div class="funnel-num">${s.curr.toLocaleString()}</div><div class="funnel-deltas">${ppHTML}${pyHTML}${netHTML}</div></div></div>`;
   }).join('');
+
+  // Conversion-rate totals row, between the funnel-over-time and
+  // conversion-rates-over-time charts.
+  const convEl = document.getElementById('funnel-conv-kpis');
+  if (convEl) {
+    const currConvFT  = curr.leads  ? curr.ft /curr.leads *100 : null;
+    const currConvMem = curr.ft     ? curr.mem/curr.ft    *100 : null;
+    const currConvMemLead = curr.leads ? curr.mem/curr.leads*100 : null;
+    const ppConvFT  = prev.leads ? prev.ft /prev.leads*100 : null;
+    const ppConvMem = prev.ft    ? prev.mem/prev.ft   *100 : null;
+    const pyConvFT  = pyear.leads ? pyear.ft /pyear.leads*100 : null;
+    const pyConvMem = pyear.ft    ? pyear.mem/pyear.ft   *100 : null;
+    const fPct = v => Number(v).toFixed(1)+'%';
+    const convLFtNet   = _netVolumeRatioAvg(netMaps.ft,  netMaps.leads, netStudios);
+    const convFtMemNet = _netVolumeRatioAvg(netMaps.mem, netMaps.ft,    netStudios);
+    const convLMemNet  = _netVolumeRatioAvg(netMaps.mem, netMaps.leads, netStudios);
+    convEl.innerHTML =
+      convCard('Lead → First Timer', currConvFT, ppConvFT, pyConvFT, GLOSSARY.conv_l_ft,
+        netAvgHtml(currConvFT, convLFtNet.avgPerStudio, convLFtNet.netCount, selCount, fPct, false, false, {label:'Lead → First Timer conversion', ratioDesc:'total first timers ÷ total leads'})) +
+      convCard('First Timer → Member', currConvMem, ppConvMem, pyConvMem, GLOSSARY.conv_ft_mem,
+        netAvgHtml(currConvMem, convFtMemNet.avgPerStudio, convFtMemNet.netCount, selCount, fPct, false, false, {label:'First Timer → Member conversion', ratioDesc:'total members ÷ total first timers'})) +
+      convCard('Lead → Member', currConvMemLead, ppConvFT!=null&&ppConvMem!=null?ppConvFT*ppConvMem/100:null, pyConvFT!=null&&pyConvMem!=null?pyConvFT*pyConvMem/100:null, GLOSSARY.conv_l_mem,
+        netAvgHtml(currConvMemLead, convLMemNet.avgPerStudio, convLMemNet.netCount, selCount, fPct, false, false, {label:'Lead → Member conversion', ratioDesc:'total members ÷ total leads'}));
+  }
 }
 
 
@@ -1105,16 +1142,6 @@ function buildStageTabs(currFiltered, ppFiltered, pyFiltered, ppLabel, pyLabel){
   const currConvFT  = leadsTotal ? ftTotal /leadsTotal*100 : null;
   const currConvMem = ftTotal    ? memTotal/ftTotal  *100  : null;
   const currConvMemLead = leadsTotal ? memTotal/leadsTotal*100 : null;
-  function convCard(label, curr, ppRate, pyRate, info, extraHtml) {
-    if (curr === null) return kpiCard(label, '--', null, null, v=>v, info);
-    const fmt = v => typeof v==='number' ? v.toFixed(1)+'%' : v;
-    const dpp = ppRate != null ? (curr - ppRate) / ppRate * 100 : null;
-    const dpy = pyRate != null ? (curr - pyRate) / pyRate * 100 : null;
-    const ppH = _partialPeriod.pp ? (dpp!=null ? _partialPeriodWarn('period') : '') : (dpp!=null ? '<div class="kpi-card-delta '+(dpp>=0?'pos':'neg')+'">'+(dpp>=0?'&#9650;':'&#9660;')+' '+Math.abs(dpp).toFixed(1)+'% prev period</div>' : '');
-    const pyH = _partialPeriod.py ? (dpy!=null ? _partialPeriodWarn('year') : '') : (dpy!=null ? '<div class="kpi-card-delta '+(dpy>=0?'pos':'neg')+'">'+(dpy>=0?'&#9650;':'&#9660;')+' '+Math.abs(dpy).toFixed(1)+'% prev year</div>' : '');
-    const infoBtn = info ? '<button class="kpi-info-btn" onclick="showKpiInfo(this,event)" data-title="'+_esc(info.title||label)+'" data-desc="'+_esc(info.desc)+'" data-date="'+_esc(info.date||'')+'">i</button>' : '';
-    return '<div class="kpi-card">'+infoBtn+'<div class="kpi-card-label">'+label+'</div><div class="kpi-card-val">'+curr.toFixed(1)+'%</div>'+ppH+pyH+(extraHtml||'')+'</div>';
-  }
 
   // Network-average population, shared with the Summary tab and Funnel bars.
   const netStudios = window._netStudios || [];
