@@ -162,6 +162,17 @@ const USERS = {
     role: 'franchisee'
   },
 
+  'yadishajorge@gmail.com': {
+    passwordHash: '6b284133ae4c9a984ad216884cc78b27595cf9c5153d3015be92486b9dc4d077',
+    name: 'Yadisha Jorge',
+    studios: [
+      'Miami Lakes',
+      'Miramar',
+      'Pembroke Pines',
+    ],
+    role: 'franchisee'
+  },
+
   'chelsie@localfavorite.com': {
     passwordHash: 'f763b08be9b8e5a877afb329b53ca528133150f34b199be51b1cdd123473f148',
     name: 'Chelsie DiPaolo',
@@ -190,6 +201,15 @@ const USERS = {
     role: 'franchisee'
   },
 
+  'christopherzimeri@gmail.com': {
+    passwordHash: '6f1e512fa61c2645395bd1fc475ebcfc82f604f459449aa3d6596ce008e57310',
+    name: 'Christopher Zimeri',
+    studios: [
+      'Dallas - Prestonwood',
+    ],
+    role: 'franchisee'
+  },
+
   'jmarcoventures@gmail.com': {
     passwordHash: '48b90caf00185b81e5efe47eb32b640e859a141ecdef1a1c9fe5c395cfa29cd9',
     name: 'Jeff Marco',
@@ -202,6 +222,15 @@ const USERS = {
   'jimmy@purefitnessmiami.com': {
     passwordHash: '813e908ad6a0fe2ee6fdab5c6e39b81c13dfc44bc281594093b1223fc25129cc',
     name: 'Jimmy Kassis',
+    studios: [
+      'Pinecrest - Palmetto Bay',
+    ],
+    role: 'franchisee'
+  },
+
+  'sandra@purefitnessmiami.com': {
+    passwordHash: '8bc26096bcd9a8c8bd1bdaa0ee412e7d2a6200e52477bca1ef4d666493da1b13',
+    name: 'Sandra Kassis',
     studios: [
       'Pinecrest - Palmetto Bay',
     ],
@@ -238,6 +267,15 @@ const USERS = {
   'kristen@sweat440eastchester.com': {
     passwordHash: '77164796aba3b5172f5aaee9fa1ca7ac8320dea1dbf358598851446983b754b0',
     name: 'Kristen Albert',
+    studios: [
+      'Eastchester',
+    ],
+    role: 'franchisee'
+  },
+
+  'jamie@sweat440eastchester.com': {
+    passwordHash: '10b3805986c4370fb866c98ed16dfded4c9e0442fd33c6fd235ad34013e9bb6d',
+    name: 'Jamie Albert',
     studios: [
       'Eastchester',
     ],
@@ -335,30 +373,50 @@ const USERS = {
     role: 'franchisee'
   },
 
+  'fraser@catalyst-hp.com': {
+    passwordHash: 'b3c5b192f9ad4aa4af20d8d16d96d123deb1195615c211a08b5a70aa95fd21d2',
+    name: 'Fraser Quarterman',
+    studios: [
+      'Austin - Highland',
+      'Austin - Zilker',
+    ],
+    role: 'franchisee'
+  },
+
+  'mraygoza@catalyst-hp.com': {
+    passwordHash: '7cfbbe1ee8d4dd865d4c7af147a4be6d0f8eacb8712c9d00f54e046129fbc906',
+    name: 'Michael R',
+    studios: [
+      'Austin - Highland',
+      'Austin - Zilker',
+    ],
+    role: 'franchisee'
+  },
+
   // ── Additional franchisee partners ───────────────────────────────────────
 
   'christina@solarisft.com': {
     passwordHash: '77fcf61dda7d1c1b9520361c7a06e5acda4bd793cc97358badac00622f7f10c3',
     name: 'Christina',
-    studios: ['Aventura', 'North Miami'],
+    studios: ['Aventura', 'North Miami', 'NYC - Chelsea', 'NYC - Park Slope', 'Boca Raton', 'West Palm Beach', 'NYC - FiDi'],
     role: 'franchisee'
   },
   'mmasco@marcoregion.com': {
     passwordHash: '3a8b51f8f75d41ddbeea76cca9abebd6290fa3a4f2cfc820bc4defba360378a8',
     name: 'Mike Masco',
-    studios: ['Reston', 'Old Bridge', 'Middletown'],
+    studios: ['Reston', 'Old Bridge', 'Middletown', 'Wall Township', 'Ocean Township', 'Toms River'],
     role: 'franchisee'
   },
   'dbogota@marcoregion.com': {
     passwordHash: 'b3a6e169a58615d33a8cd5131534c5e71babb9c6372ab06f22bd4f611810d230',
     name: 'Danny Bogota',
-    studios: ['Reston', 'Old Bridge', 'Middletown'],
+    studios: ['Reston', 'Old Bridge', 'Middletown', 'Wall Township', 'Ocean Township', 'Toms River'],
     role: 'franchisee'
   },
   'jjankowski@marcoregion.com': {
     passwordHash: '6d40df3b8d087027aa4a13fb0b8fd59cda4197bb0fc46d8d797f9ad7c8e7595d',
     name: 'Joe Jankowski',
-    studios: ['Reston', 'Old Bridge', 'Middletown'],
+    studios: ['Reston', 'Old Bridge', 'Middletown', 'Wall Township', 'Ocean Township', 'Toms River'],
     role: 'franchisee'
   },
   'sunny@s440dfw.com': {
