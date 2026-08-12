@@ -101,7 +101,7 @@
   .kpi-info-box-close{position:absolute;top:12px;right:14px;background:none;border:none;font-size:22px;color:#5a7a8a;cursor:pointer;line-height:1;padding:0}
   .kpi-info-box-close:hover{color:#1a1a2e}
   .kpi-info-box-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#00A3E0;margin-bottom:12px;padding-right:24px}
-  .kpi-info-box-desc{font-family:'Open Sans',sans-serif;font-size:13px;color:#1a1a2e;line-height:1.65;margin-bottom:14px}
+  .kpi-info-box-desc{font-family:'Open Sans',sans-serif;font-size:13px;color:#1a1a2e;line-height:1.65;margin-bottom:14px;white-space:pre-line}
   .kpi-info-box-date-label{font-family:'Oswald',sans-serif;font-style:italic;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#5a7a8a;margin-bottom:4px}
   .kpi-info-box-date{font-family:'Open Sans',sans-serif;font-size:12px;color:#5a7a8a;line-height:1.55}
 

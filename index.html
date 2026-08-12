@@ -1402,11 +1402,11 @@ function buildSummaryTab() {
   const fCount = v => Math.round(v).toLocaleString();
   funnelEl.innerHTML = summaryDisclaimer +
     kpiCard('Leads (New Accounts Created)',             curr.leads, pp.leads||null, py.leads||null, null, GLOSSARY.leads,
-      netAvgHtml(curr.leads, leadsNet.avgPerStudio, leadsNet.netCount, selCount, fCount, false, true)) +
+      netAvgHtml(curr.leads, leadsNet.avgPerStudio, leadsNet.netCount, selCount, fCount, false, true, {label:'leads'})) +
     kpiCard('First Timers (First Studio Visits)',       curr.ft,    pp.ft||null,    py.ft||null,    null, GLOSSARY.ft,
-      netAvgHtml(curr.ft, ftNet.avgPerStudio, ftNet.netCount, selCount, fCount, false, true))    +
+      netAvgHtml(curr.ft, ftNet.avgPerStudio, ftNet.netCount, selCount, fCount, false, true, {label:'first timers'}))    +
     kpiCard('New Members (First Memberships Activated)',curr.mem,   pp.mem||null,   py.mem||null,   null, GLOSSARY.mem,
-      netAvgHtml(curr.mem, memNet.avgPerStudio, memNet.netCount, selCount, fCount, false, true));
+      netAvgHtml(curr.mem, memNet.avgPerStudio, memNet.netCount, selCount, fCount, false, true, {label:'new members'}));
 
   if (!spendEl) return;
   if (!from || !to) return;
@@ -1482,16 +1482,16 @@ function buildSummaryTab() {
     '<div class="kpi-card-label">Total Mkt Spend</div>' +
     '<div class="kpi-card-val">' + f$(tCurr) + '</div>' +
     breakdown + ppTH + pyTH +
-    netAvgHtml(tCurr, totalNet.avgPerStudio, totalNet.netCount, selCount, f$, false, true) +
+    netAvgHtml(tCurr, totalNet.avgPerStudio, totalNet.netCount, selCount, f$, false, true, {label:'Total Mkt Spend', costBased:true}) +
     '</div>';
 
   spendEl.innerHTML = totalCard +
     kpiCard('Google Ads',   gCurr, gPp||null, gPy||null, f$, G.google,
-      netAvgHtml(gCurr, googleNet.avgPerStudio, googleNet.netCount, selCount, f$, false, true)) +
+      netAvgHtml(gCurr, googleNet.avgPerStudio, googleNet.netCount, selCount, f$, false, true, {label:'Google Ads Spend', costBased:true})) +
     kpiCard('Meta Ads',     mCurr, mPp||null, mPy||null, f$, G.meta,
-      netAvgHtml(mCurr, metaNet.avgPerStudio, metaNet.netCount, selCount, f$, false, true)) +
+      netAvgHtml(mCurr, metaNet.avgPerStudio, metaNet.netCount, selCount, f$, false, true, {label:'Meta Ads Spend', costBased:true})) +
     kpiCard('Leadteam Fee', lCurr, lPp||null, lPy||null, f$, G.leadteam,
-      netAvgHtml(lCurr, ltNet.avgPerStudio, ltNet.netCount, selCount, f$, false, true));
+      netAvgHtml(lCurr, ltNet.avgPerStudio, ltNet.netCount, selCount, f$, false, true, {label:'Leadteam Fee', costBased:true}));
 
   if (!cprEl) return;
   const cpl_curr  = curr.leads>0 ? tCurr/curr.leads : 0;
@@ -1510,11 +1510,11 @@ function buildSummaryTab() {
 
   cprEl.innerHTML =
     cprKpiCard('Blended CPL',  cpl_curr,  cpl_pp,  cpl_py,  f$2, GLOSSARY.cpl,
-      netAvgHtml(cpl_curr, cplNet.avgPerStudio, cplNet.netCount, selCount, f$2, true, false)) +
+      netAvgHtml(cpl_curr, cplNet.avgPerStudio, cplNet.netCount, selCount, f$2, true, false, {label:'CPL', ratioDesc:'total spend ÷ total leads'})) +
     cprKpiCard('Blended CPFT', cpft_curr, cpft_pp, cpft_py, f$2, GLOSSARY.cpft,
-      netAvgHtml(cpft_curr, cpftNet.avgPerStudio, cpftNet.netCount, selCount, f$2, true, false)) +
+      netAvgHtml(cpft_curr, cpftNet.avgPerStudio, cpftNet.netCount, selCount, f$2, true, false, {label:'CPFT', ratioDesc:'total spend ÷ total first timers'})) +
     cprKpiCard('Blended CPA',  cpa_curr,  cpa_pp,  cpa_py,  f$2, GLOSSARY.cpa,
-      netAvgHtml(cpa_curr, cpaNet.avgPerStudio, cpaNet.netCount, selCount, f$2, true, false));
+      netAvgHtml(cpa_curr, cpaNet.avgPerStudio, cpaNet.netCount, selCount, f$2, true, false, {label:'CPA', ratioDesc:'total spend ÷ total new members'}));
 }
 
 function buildCPRTab() {

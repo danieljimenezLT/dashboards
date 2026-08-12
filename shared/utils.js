@@ -673,7 +673,15 @@ function cprKpiCard(label,val,pp,py,fmt,info,extraHtml){
 //                  metrics like Leads/Spend); false to use avgPerStudio
 //                  as-is (blended ratio metrics like CPL, which don't
 //                  scale with studio count)
-function netAvgHtml(actual, avgPerStudio, netCount, selCount, fmt, invert, scale) {
+//   info         — {label, costBased, ratioDesc} describing the metric for
+//                  the (i) popup copy:
+//                    label      — metric name, e.g. 'leads', 'Meta Ads Spend', 'CPL'
+//                    costBased  — true if the population is "studios with
+//                                 real digital ads spend during this period"
+//                                 (all cost cards) rather than every open
+//                                 network studio (volume cards)
+//                    ratioDesc  — for scale=false only, e.g. 'total spend ÷ total leads'
+function netAvgHtml(actual, avgPerStudio, netCount, selCount, fmt, invert, scale, info) {
   if (!netCount || selCount <= 0) return '';
   const f = fmt || (v => Number.isFinite(v) ? v.toLocaleString() : v);
   const projected = scale ? avgPerStudio * selCount : avgPerStudio;
@@ -682,13 +690,22 @@ function netAvgHtml(actual, avgPerStudio, netCount, selCount, fmt, invert, scale
   const cls   = invert ? (delta <= 0 ? 'pos' : 'neg') : (delta >= 0 ? 'pos' : 'neg');
   const arrow = invert ? (delta <= 0 ? '&#9660;' : '&#9650;') : (delta >= 0 ? '&#9650;' : '&#9660;');
 
-  const title = 'Network Average';
-  const desc = scale
-    ? 'Calculated across '+netCount+' network studio'+(netCount===1?'':'s')+', averaging '+f(avgPerStudio)+' per studio. '+
-      'For your '+selCount+' selected studio'+(selCount===1?'':'s')+', the expected value is '+f(projected)+'.'
-    : 'Calculated as a blended ratio (total ÷ total) across '+netCount+' network studio'+(netCount===1?'':'s')+': '+f(avgPerStudio)+'. '+
-      'This doesn\'t scale with studio count, so it\'s compared directly against your selection\'s value.';
-  const infoBtn = '<button class="kpi-info-btn kpi-info-inline" onclick="showKpiInfo(this,event)" data-title="'+_esc(title)+'" data-desc="'+_esc(desc)+'" data-date="">i</button>';
+  const label      = (info && info.label) || 'value';
+  const studioWord = netCount === 1 ? 'studio' : 'studios';
+  const spendPhrase = ' with real digital ads spend during this period';
+
+  let desc;
+  if (scale) {
+    const population = (info && info.costBased) ? (netCount+' '+studioWord+spendPhrase) : (netCount+' '+studioWord);
+    desc = 'Network average '+label+' is calculated across '+population+': '+f(avgPerStudio)+' per studio.';
+    if (selCount > 1) {
+      desc += '\nFor your '+selCount+' selected studios, the expected value is '+f(projected)+'.';
+    }
+  } else {
+    const ratioDesc = (info && info.ratioDesc) || 'total ÷ total';
+    desc = 'Network average '+label+' is calculated as a blended ratio ('+ratioDesc+') across '+netCount+' '+studioWord+spendPhrase+': '+f(avgPerStudio)+'.';
+  }
+  const infoBtn = '<button class="kpi-info-btn kpi-info-inline" onclick="showKpiInfo(this,event)" data-title="Network Average" data-desc="'+_esc(desc)+'" data-date="">i</button>';
 
   return '<div class="kpi-card-delta '+cls+'">'+arrow+' '+Math.abs(delta).toFixed(1)+'% vs network avg'+infoBtn+'</div>';
 }
