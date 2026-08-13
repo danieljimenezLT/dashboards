@@ -1,0 +1,684 @@
+{
+  "generated_at": "2026-08-12T17:51:26.267709",
+  "source_sheet": "https://docs.google.com/spreadsheets/d/1KhXfeofzltGyllmrfIm9UN2xqLUgBtjAxPhT-E0SQmk",
+  "studios": {
+    "FL-019": {
+      "name": "Naples - Mercato",
+      "full_name": "SWEAT440 Naples - Mercato",
+      "week_0_start": null,
+      "week_1_start": "2026-02-08",
+      "pre_weeks": []
+    },
+    "VA-001": {
+      "name": "Reston",
+      "full_name": "SWEAT440 Reston",
+      "week_0_start": "2025-11-10",
+      "week_1_start": "2025-11-17",
+      "pre_weeks": []
+    },
+    "UT-001": {
+      "name": "Herriman",
+      "full_name": "SWEAT440 Herriman",
+      "week_0_start": "2026-05-31",
+      "week_1_start": "2026-06-07",
+      "pre_weeks": [
+        {
+          "week_num": -12,
+          "week": "WEEK -12",
+          "date_start": "2026-03-10",
+          "date_end": "2026-03-14",
+          "new_leads": 5,
+          "total_leads": 5
+        },
+        {
+          "week_num": -11,
+          "week": "WEEK -11",
+          "date_start": "2026-03-15",
+          "date_end": "2026-03-21",
+          "new_leads": 2,
+          "total_leads": 7
+        },
+        {
+          "week_num": -10,
+          "week": "WEEK -10",
+          "date_start": "2026-03-22",
+          "date_end": "2026-03-28",
+          "new_leads": 11,
+          "total_leads": 18
+        },
+        {
+          "week_num": -9,
+          "week": "WEEK -9",
+          "date_start": "2026-03-29",
+          "date_end": "2026-04-04",
+          "new_leads": 9,
+          "total_leads": 27
+        },
+        {
+          "week_num": -8,
+          "week": "WEEK -8",
+          "date_start": "2026-04-05",
+          "date_end": "2026-04-11",
+          "new_leads": 41,
+          "total_leads": 68
+        },
+        {
+          "week_num": -7,
+          "week": "WEEK -7",
+          "date_start": "2026-04-12",
+          "date_end": "2026-04-18",
+          "new_leads": 8,
+          "total_leads": 76
+        },
+        {
+          "week_num": -6,
+          "week": "WEEK -6",
+          "date_start": "2026-04-19",
+          "date_end": "2026-04-25",
+          "new_leads": 17,
+          "total_leads": 93
+        },
+        {
+          "week_num": -5,
+          "week": "WEEK -5",
+          "date_start": "2026-04-26",
+          "date_end": "2026-05-02",
+          "new_leads": 31,
+          "total_leads": 124
+        },
+        {
+          "week_num": -4,
+          "week": "WEEK -4",
+          "date_start": "2026-05-03",
+          "date_end": "2026-05-09",
+          "new_leads": 30,
+          "total_leads": 154
+        },
+        {
+          "week_num": -3,
+          "week": "WEEK -3",
+          "date_start": "2026-05-10",
+          "date_end": "2026-05-16",
+          "new_leads": 48,
+          "total_leads": 202
+        },
+        {
+          "week_num": -2,
+          "week": "WEEK -2",
+          "date_start": "2026-05-17",
+          "date_end": "2026-05-23",
+          "new_leads": 24,
+          "total_leads": 226
+        },
+        {
+          "week_num": -1,
+          "week": "WEEK -1",
+          "date_start": "2026-05-24",
+          "date_end": "2026-05-30",
+          "new_leads": 38,
+          "total_leads": 264
+        }
+      ]
+    },
+    "NJ-004": {
+      "name": "Old Bridge",
+      "full_name": "SWEAT440 Old Bridge",
+      "week_0_start": "2026-07-19",
+      "week_1_start": "2026-07-26",
+      "pre_weeks": [
+        {
+          "week_num": -11,
+          "week": "WEEK -11",
+          "date_start": "2026-05-08",
+          "date_end": "2026-05-09",
+          "new_leads": 4,
+          "total_leads": 4
+        },
+        {
+          "week_num": -10,
+          "week": "WEEK -10",
+          "date_start": "2026-05-10",
+          "date_end": "2026-05-16",
+          "new_leads": 2,
+          "total_leads": 6
+        },
+        {
+          "week_num": -9,
+          "week": "WEEK -9",
+          "date_start": "2026-05-17",
+          "date_end": "2026-05-23",
+          "new_leads": 2,
+          "total_leads": 8
+        },
+        {
+          "week_num": -8,
+          "week": "WEEK -8",
+          "date_start": "2026-05-24",
+          "date_end": "2026-05-30",
+          "new_leads": 2,
+          "total_leads": 10
+        },
+        {
+          "week_num": -7,
+          "week": "WEEK -7",
+          "date_start": "2026-05-31",
+          "date_end": "2026-06-06",
+          "new_leads": 3,
+          "total_leads": 13
+        },
+        {
+          "week_num": -6,
+          "week": "WEEK -6",
+          "date_start": "2026-06-07",
+          "date_end": "2026-06-13",
+          "new_leads": 0,
+          "total_leads": 13
+        },
+        {
+          "week_num": -5,
+          "week": "WEEK -5",
+          "date_start": "2026-06-14",
+          "date_end": "2026-06-20",
+          "new_leads": 0,
+          "total_leads": 13
+        },
+        {
+          "week_num": -4,
+          "week": "WEEK -4",
+          "date_start": "2026-06-21",
+          "date_end": "2026-06-27",
+          "new_leads": 3,
+          "total_leads": 16
+        },
+        {
+          "week_num": -3,
+          "week": "WEEK -3",
+          "date_start": "2026-06-28",
+          "date_end": "2026-07-04",
+          "new_leads": 29,
+          "total_leads": 45
+        },
+        {
+          "week_num": -2,
+          "week": "WEEK -2",
+          "date_start": "2026-07-05",
+          "date_end": "2026-07-11",
+          "new_leads": 49,
+          "total_leads": 94
+        },
+        {
+          "week_num": -1,
+          "week": "WEEK -1",
+          "date_start": "2026-07-12",
+          "date_end": "2026-07-18",
+          "new_leads": 47,
+          "total_leads": 141
+        }
+      ]
+    },
+    "FL-020": {
+      "name": "Dr Phillips",
+      "full_name": "SWEAT440 Dr Phillips",
+      "week_0_start": "2026-05-17",
+      "week_1_start": "2026-05-24",
+      "pre_weeks": [
+        {
+          "week_num": -2,
+          "week": "WEEK -2",
+          "date_start": "2026-05-06",
+          "date_end": "2026-05-09",
+          "new_leads": 2,
+          "total_leads": 2
+        },
+        {
+          "week_num": -1,
+          "week": "WEEK -1",
+          "date_start": "2026-05-10",
+          "date_end": "2026-05-16",
+          "new_leads": 0,
+          "total_leads": 2
+        }
+      ]
+    },
+    "FL-018": {
+      "name": "Aventura",
+      "full_name": "SWEAT440 Aventura",
+      "week_0_start": "2026-05-17",
+      "week_1_start": "2026-05-24",
+      "pre_weeks": [
+        {
+          "week_num": -1,
+          "week": "WEEK -1",
+          "date_start": "2026-05-13",
+          "date_end": "2026-05-16",
+          "new_leads": 3,
+          "total_leads": 3
+        }
+      ]
+    },
+    "FL-021": {
+      "name": "North Miami",
+      "full_name": "SWEAT440 North Miami",
+      "week_0_start": "2026-05-17",
+      "week_1_start": "2026-05-24",
+      "pre_weeks": [
+        {
+          "week_num": -1,
+          "week": "WEEK -1",
+          "date_start": "2026-05-15",
+          "date_end": "2026-05-16",
+          "new_leads": 2,
+          "total_leads": 2
+        }
+      ]
+    },
+    "TX-004": {
+      "name": "Dallas - Uptown",
+      "full_name": "SWEAT440 Dallas - Uptown",
+      "week_0_start": "2026-05-31",
+      "week_1_start": "2026-06-07",
+      "pre_weeks": [
+        {
+          "week_num": -5,
+          "week": "WEEK -5",
+          "date_start": "2026-04-28",
+          "date_end": "2026-05-02",
+          "new_leads": 2,
+          "total_leads": 2
+        },
+        {
+          "week_num": -4,
+          "week": "WEEK -4",
+          "date_start": "2026-05-03",
+          "date_end": "2026-05-09",
+          "new_leads": 0,
+          "total_leads": 2
+        },
+        {
+          "week_num": -3,
+          "week": "WEEK -3",
+          "date_start": "2026-05-10",
+          "date_end": "2026-05-16",
+          "new_leads": 4,
+          "total_leads": 6
+        },
+        {
+          "week_num": -2,
+          "week": "WEEK -2",
+          "date_start": "2026-05-17",
+          "date_end": "2026-05-23",
+          "new_leads": 24,
+          "total_leads": 30
+        },
+        {
+          "week_num": -1,
+          "week": "WEEK -1",
+          "date_start": "2026-05-24",
+          "date_end": "2026-05-30",
+          "new_leads": 38,
+          "total_leads": 68
+        }
+      ]
+    },
+    "FL-022": {
+      "name": "Fort Myers",
+      "full_name": "SWEAT440 Fort Myers",
+      "week_0_start": "2026-09-27",
+      "week_1_start": "2026-10-04",
+      "pre_weeks": [
+        {
+          "week_num": -14,
+          "week": "WEEK -14",
+          "date_start": "2026-06-26",
+          "date_end": "2026-06-27",
+          "new_leads": 1,
+          "total_leads": 1
+        },
+        {
+          "week_num": -13,
+          "week": "WEEK -13",
+          "date_start": "2026-06-28",
+          "date_end": "2026-07-04",
+          "new_leads": 8,
+          "total_leads": 9
+        },
+        {
+          "week_num": -12,
+          "week": "WEEK -12",
+          "date_start": "2026-07-05",
+          "date_end": "2026-07-11",
+          "new_leads": 3,
+          "total_leads": 12
+        },
+        {
+          "week_num": -11,
+          "week": "WEEK -11",
+          "date_start": "2026-07-12",
+          "date_end": "2026-07-18",
+          "new_leads": 10,
+          "total_leads": 22
+        },
+        {
+          "week_num": -10,
+          "week": "WEEK -10",
+          "date_start": "2026-07-19",
+          "date_end": "2026-07-25",
+          "new_leads": 41,
+          "total_leads": 63
+        },
+        {
+          "week_num": -9,
+          "week": "WEEK -9",
+          "date_start": "2026-07-26",
+          "date_end": "2026-08-01",
+          "new_leads": 83,
+          "total_leads": 146
+        },
+        {
+          "week_num": -8,
+          "week": "WEEK -8",
+          "date_start": "2026-08-02",
+          "date_end": "2026-08-08",
+          "new_leads": 17,
+          "total_leads": 163
+        },
+        {
+          "week_num": -7,
+          "week": "WEEK -7",
+          "date_start": "2026-08-09",
+          "date_end": "2026-08-15",
+          "new_leads": 1,
+          "total_leads": 164
+        },
+        {
+          "week_num": -6,
+          "week": "WEEK -6",
+          "date_start": "2026-08-16",
+          "date_end": "2026-08-22",
+          "new_leads": 0,
+          "total_leads": 164
+        },
+        {
+          "week_num": -5,
+          "week": "WEEK -5",
+          "date_start": "2026-08-23",
+          "date_end": "2026-08-29",
+          "new_leads": 0,
+          "total_leads": 164
+        },
+        {
+          "week_num": -4,
+          "week": "WEEK -4",
+          "date_start": "2026-08-30",
+          "date_end": "2026-09-05",
+          "new_leads": 0,
+          "total_leads": 164
+        },
+        {
+          "week_num": -3,
+          "week": "WEEK -3",
+          "date_start": "2026-09-06",
+          "date_end": "2026-09-12",
+          "new_leads": 0,
+          "total_leads": 164
+        },
+        {
+          "week_num": -2,
+          "week": "WEEK -2",
+          "date_start": "2026-09-13",
+          "date_end": "2026-09-19",
+          "new_leads": 0,
+          "total_leads": 164
+        },
+        {
+          "week_num": -1,
+          "week": "WEEK -1",
+          "date_start": "2026-09-20",
+          "date_end": "2026-09-26",
+          "new_leads": 0,
+          "total_leads": 164
+        }
+      ]
+    },
+    "GA-001": {
+      "name": "Dunwoody",
+      "full_name": "SWEAT440 Dunwoody",
+      "week_0_start": "2026-07-19",
+      "week_1_start": "2026-07-26",
+      "pre_weeks": [
+        {
+          "week_num": -5,
+          "week": "WEEK -5",
+          "date_start": "2026-06-19",
+          "date_end": "2026-06-20",
+          "new_leads": 4,
+          "total_leads": 4
+        },
+        {
+          "week_num": -4,
+          "week": "WEEK -4",
+          "date_start": "2026-06-21",
+          "date_end": "2026-06-27",
+          "new_leads": 12,
+          "total_leads": 16
+        },
+        {
+          "week_num": -3,
+          "week": "WEEK -3",
+          "date_start": "2026-06-28",
+          "date_end": "2026-07-04",
+          "new_leads": 29,
+          "total_leads": 45
+        },
+        {
+          "week_num": -2,
+          "week": "WEEK -2",
+          "date_start": "2026-07-05",
+          "date_end": "2026-07-11",
+          "new_leads": 38,
+          "total_leads": 83
+        },
+        {
+          "week_num": -1,
+          "week": "WEEK -1",
+          "date_start": "2026-07-12",
+          "date_end": "2026-07-18",
+          "new_leads": 27,
+          "total_leads": 110
+        }
+      ]
+    },
+    "NJ-005": {
+      "name": "Middletown",
+      "full_name": "SWEAT440 Middletown",
+      "week_0_start": "2026-07-19",
+      "week_1_start": "2026-07-26",
+      "pre_weeks": [
+        {
+          "week_num": -9,
+          "week": "WEEK -9",
+          "date_start": "2026-05-20",
+          "date_end": "2026-05-23",
+          "new_leads": 1,
+          "total_leads": 1
+        },
+        {
+          "week_num": -8,
+          "week": "WEEK -8",
+          "date_start": "2026-05-24",
+          "date_end": "2026-05-30",
+          "new_leads": 0,
+          "total_leads": 1
+        },
+        {
+          "week_num": -7,
+          "week": "WEEK -7",
+          "date_start": "2026-05-31",
+          "date_end": "2026-06-06",
+          "new_leads": 3,
+          "total_leads": 4
+        },
+        {
+          "week_num": -6,
+          "week": "WEEK -6",
+          "date_start": "2026-06-07",
+          "date_end": "2026-06-13",
+          "new_leads": 2,
+          "total_leads": 6
+        },
+        {
+          "week_num": -5,
+          "week": "WEEK -5",
+          "date_start": "2026-06-14",
+          "date_end": "2026-06-20",
+          "new_leads": 1,
+          "total_leads": 7
+        },
+        {
+          "week_num": -4,
+          "week": "WEEK -4",
+          "date_start": "2026-06-21",
+          "date_end": "2026-06-27",
+          "new_leads": 1,
+          "total_leads": 8
+        },
+        {
+          "week_num": -3,
+          "week": "WEEK -3",
+          "date_start": "2026-06-28",
+          "date_end": "2026-07-04",
+          "new_leads": 34,
+          "total_leads": 42
+        },
+        {
+          "week_num": -2,
+          "week": "WEEK -2",
+          "date_start": "2026-07-05",
+          "date_end": "2026-07-11",
+          "new_leads": 39,
+          "total_leads": 81
+        },
+        {
+          "week_num": -1,
+          "week": "WEEK -1",
+          "date_start": "2026-07-12",
+          "date_end": "2026-07-18",
+          "new_leads": 30,
+          "total_leads": 111
+        }
+      ]
+    },
+    "MA-001": {
+      "name": "Burlington",
+      "full_name": "SWEAT440 Burlington",
+      "week_0_start": "2026-10-11",
+      "week_1_start": "2026-10-18",
+      "pre_weeks": [
+        {
+          "week_num": -13,
+          "week": "WEEK -13",
+          "date_start": "2026-07-15",
+          "date_end": "2026-07-18",
+          "new_leads": 1,
+          "total_leads": 1
+        },
+        {
+          "week_num": -12,
+          "week": "WEEK -12",
+          "date_start": "2026-07-19",
+          "date_end": "2026-07-25",
+          "new_leads": 1,
+          "total_leads": 2
+        },
+        {
+          "week_num": -11,
+          "week": "WEEK -11",
+          "date_start": "2026-07-26",
+          "date_end": "2026-08-01",
+          "new_leads": 5,
+          "total_leads": 7
+        },
+        {
+          "week_num": -10,
+          "week": "WEEK -10",
+          "date_start": "2026-08-02",
+          "date_end": "2026-08-08",
+          "new_leads": 1,
+          "total_leads": 8
+        },
+        {
+          "week_num": -9,
+          "week": "WEEK -9",
+          "date_start": "2026-08-09",
+          "date_end": "2026-08-15",
+          "new_leads": 0,
+          "total_leads": 8
+        },
+        {
+          "week_num": -8,
+          "week": "WEEK -8",
+          "date_start": "2026-08-16",
+          "date_end": "2026-08-22",
+          "new_leads": 0,
+          "total_leads": 8
+        },
+        {
+          "week_num": -7,
+          "week": "WEEK -7",
+          "date_start": "2026-08-23",
+          "date_end": "2026-08-29",
+          "new_leads": 0,
+          "total_leads": 8
+        },
+        {
+          "week_num": -6,
+          "week": "WEEK -6",
+          "date_start": "2026-08-30",
+          "date_end": "2026-09-05",
+          "new_leads": 0,
+          "total_leads": 8
+        },
+        {
+          "week_num": -5,
+          "week": "WEEK -5",
+          "date_start": "2026-09-06",
+          "date_end": "2026-09-12",
+          "new_leads": 0,
+          "total_leads": 8
+        },
+        {
+          "week_num": -4,
+          "week": "WEEK -4",
+          "date_start": "2026-09-13",
+          "date_end": "2026-09-19",
+          "new_leads": 0,
+          "total_leads": 8
+        },
+        {
+          "week_num": -3,
+          "week": "WEEK -3",
+          "date_start": "2026-09-20",
+          "date_end": "2026-09-26",
+          "new_leads": 0,
+          "total_leads": 8
+        },
+        {
+          "week_num": -2,
+          "week": "WEEK -2",
+          "date_start": "2026-09-27",
+          "date_end": "2026-10-03",
+          "new_leads": 0,
+          "total_leads": 8
+        },
+        {
+          "week_num": -1,
+          "week": "WEEK -1",
+          "date_start": "2026-10-04",
+          "date_end": "2026-10-10",
+          "new_leads": 0,
+          "total_leads": 8
+        }
+      ]
+    }
+  }
+}

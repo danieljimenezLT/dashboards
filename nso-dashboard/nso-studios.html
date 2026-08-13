@@ -90,6 +90,7 @@
   <a class="nav-logo" href="../home.html"><img src="../logo.png" alt="SWEAT440"/></a>
   <div class="nav-tabs" id="navTabs">
     <button class="nav-tab active" onclick="switchTab('summary',this)">Summary</button>
+    <button class="nav-tab" onclick="switchTab('summary2',this)">Summary (Test)</button>
     <button class="nav-tab" onclick="switchTab('scorecard',this)">Scorecard</button>
     <button class="nav-tab" id="navClientHistory" onclick="switchTab('clienthistory',this)">Client History</button>
     <div class="nav-group">
@@ -153,6 +154,11 @@
   <!-- SUMMARY TAB -->
   <div class="tab-content active" id="tab-summary">
     <div id="summaryContent"></div>
+  </div>
+
+  <!-- SUMMARY TEST TAB (extended pre-weeks timeline) -->
+  <div class="tab-content" id="tab-summary2">
+    <div id="summary2Content"></div>
   </div>
 
   <!-- CLIENT HISTORY TAB -->
@@ -292,7 +298,7 @@
 const NSO=['SWEAT440 Aventura','SWEAT440 Burlington','SWEAT440 Dallas - Uptown','SWEAT440 Dunwoody','SWEAT440 Fort Myers','SWEAT440 Herriman','SWEAT440 Middletown','SWEAT440 Naples - Mercato','SWEAT440 North Miami','SWEAT440 Old Bridge','SWEAT440 Orlando - Dr Phillips','SWEAT440 Reston'];
 const EXCL_SRC=['ClassPass / Platforms'];
 
-let RAW=null,SC=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},CH_RAW=null;const _ch={};let _chDupOnly=false;
+let RAW=null,SC=null,PRE_WEEKS=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},CH_RAW=null;const _ch={};let _chDupOnly=false;
 let CUR_USER=null,_allowedStudios=null;const isAdminUser=()=>CUR_USER&&CUR_USER.role==='admin';
 let _sumView='cum',_sumStudio=null,_scStudio=null,_dataThruLabel='',_sumD7End=null;
 const TODAY=new Date(),fom=new Date(TODAY.getFullYear(),TODAY.getMonth(),1),lpm=new Date(fom.getTime()-864e5),fpm=new Date(lpm.getFullYear(),lpm.getMonth(),1);
@@ -314,8 +320,9 @@ function switchTab(id,btn){
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
   document.getElementById('navTabs').classList.remove('open');
-  document.querySelector('.controls-bar').style.display=(id==='summary'||id==='scorecard')?'none':'';
+  document.querySelector('.controls-bar').style.display=(id==='summary'||id==='scorecard'||id==='summary2')?'none':'';
   if(id==='summary'){if(_scStudio)_sumStudio=_scStudio;renderSummary();}
+  else if(id==='summary2'){if(_scStudio)_sumStudio=_scStudio;renderSummary2();}
   else if(id==='scorecard'){if(_sumStudio)_scStudio=_sumStudio;renderScorecard();}
   else if(id==='gbp')renderGBP();
   else if(id==='ga4')renderGA4();
@@ -509,6 +516,160 @@ function toggleDs(btn,i){if(!trendChart)return;const ds=trendChart.data.datasets
 /* ══════════════════════════════════════════════════════════════════════════
    SUMMARY TAB
    ══════════════════════════════════════════════════════════════════════════ */
+function renderSummary2(){
+  if(!SC||!SC.studios||!SC.studios.length)return;
+  const _scVis=(_allowedStudios
+    ?(SC.studios||[]).filter(s=>_allowedStudios.includes((s.data_name||s.full_name||s.name||'').replace(/^SWEAT440\s+/,'')))
+    :(SC.studios||[])).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  if(_sumStudio&&_allowedStudios&&!_scVis.find(s=>s.code===_sumStudio.code))_sumStudio=null;
+  const studio=_sumStudio||_scVis[0];
+  if(!studio){document.getElementById('summary2Content').innerHTML='';return;}
+  if(!_sumStudio)_sumStudio=studio;
+
+  const pwData=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[studio.code];
+  const preWeeks=(pwData&&pwData.pre_weeks)||[];
+  const _fmtShort=iso=>iso?new Date(iso+'T00:00:00Z').toLocaleDateString('en-US',{month:'numeric',day:'numeric',timeZone:'UTC'}):'';
+
+  let h='';
+
+  // Studio switcher (inline onclick to stay in Summary2, not redirect to Summary)
+  h+=`<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">`;
+  _scVis.forEach(s=>{
+    const active=s.code===studio.code;
+    h+=`<button onclick="var _sc=SC.studios.find(x=>x.code==='${s.code}');if(_sc){_sumStudio=_sc;renderSummary2();}" style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;padding:6px 16px;border-radius:4px;border:2px solid ${active?'#00A3E0':'#c0d4df'};background:${active?'#00A3E0':'transparent'};color:${active?'#fff':'#5a7a8a'};cursor:pointer;letter-spacing:.5px">${s.name}</button>`;
+  });
+  h+=`</div>`;
+
+  // Info note
+  h+=`<div style="background:#f0f7fb;border-left:4px solid #00A3E0;padding:10px 14px;border-radius:4px;margin-bottom:16px;font-size:12px;color:#5a7a8a;font-family:'Open Sans',sans-serif">`;
+  h+=`<strong style="color:#0084B5">Extended Timeline (Test)</strong> — Shows organic lead gen weeks before Week 0 (VIP presales). Week 0 new leads are adjusted to exclude pre-week leads. Data from Snowflake via data.json.`;
+  h+=`</div>`;
+
+  if(preWeeks.length===0){
+    h+=`<div style="padding:40px;text-align:center;color:#8aaabb;font-family:Oswald,sans-serif;font-style:italic;letter-spacing:.5px">No pre-Week 0 lead data for ${studio.name}.</div>`;
+    document.getElementById('summary2Content').innerHTML=h;
+    return;
+  }
+
+  const totalPreLeads=preWeeks[preWeeks.length-1]?.total_leads||0;
+  const firstDate=preWeeks[0]?.date_start||'';
+  const lastDate=preWeeks[preWeeks.length-1]?.date_end||'';
+
+  // KPI cards
+  h+=`<div class="kpi-grid three" style="margin-bottom:16px">`;
+  h+=`<div class="kpi-card"><div class="kpi-card-label">Pre-Week Period</div><div class="kpi-card-val" style="font-size:18px">${_fmtShort(firstDate)} – ${_fmtShort(lastDate)}</div></div>`;
+  h+=`<div class="kpi-card"><div class="kpi-card-label">Pre-Week Weeks</div><div class="kpi-card-val">${preWeeks.length}</div></div>`;
+  h+=`<div class="kpi-card"><div class="kpi-card-label">Pre-Week Leads</div><div class="kpi-card-val">${totalPreLeads.toLocaleString()}</div></div>`;
+  h+=`</div>`;
+
+  // Chart card
+  h+=`<div class="chart-card" style="margin-bottom:20px">`;
+  h+=`<div class="chart-card-title">Extended Lead Timeline — ${studio.name}</div>`;
+  h+=`<div style="font-size:11px;color:#8aaabb;margin:-4px 0 14px;font-family:'Open Sans',sans-serif">`;
+  h+=`<span style="display:inline-block;width:12px;height:10px;background:#99DAF3;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Pre-Week 0 &nbsp;`;
+  h+=`<span style="display:inline-block;width:12px;height:10px;background:#00A3E0;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Scorecard weeks &nbsp;`;
+  h+=`<span style="display:inline-block;width:20px;height:3px;background:#DDFF00;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Cumulative`;
+  h+=`</div>`;
+  h+=`<div style="position:relative;height:320px"><canvas id="pw2Canvas"></canvas></div>`;
+  h+=`</div>`;
+
+  // Pre-weeks detail table
+  h+=`<div class="chart-card">`;
+  h+=`<div class="chart-card-title">Pre-Week Breakdown</div>`;
+  h+=`<div style="overflow-x:auto">`;
+  h+=`<table class="data-table"><thead><tr><th>Week</th><th>Dates</th><th class="num">New Leads</th><th class="num">Cumulative</th></tr></thead><tbody>`;
+  preWeeks.forEach(pw=>{
+    h+=`<tr><td style="font-family:Oswald,sans-serif;font-weight:600;letter-spacing:.3px">${pw.week}</td><td style="font-size:12px;color:#5a7a8a">${_fmtShort(pw.date_start)} – ${_fmtShort(pw.date_end)}</td><td class="num">${(pw.new_leads||0).toLocaleString()}</td><td class="num">${(pw.total_leads||0).toLocaleString()}</td></tr>`;
+  });
+  h+=`</tbody></table></div></div>`;
+
+  document.getElementById('summary2Content').innerHTML=h;
+  requestAnimationFrame(()=>drawPreWeeksChart(studio,preWeeks));
+}
+
+function drawPreWeeksChart(studio,preWeeks){
+  const w=studio.weeks||[];
+  const todayStr=new Date().toISOString().slice(0,10);
+  const preTotal=preWeeks.length?(preWeeks[preWeeks.length-1].total_leads||0):0;
+
+  const preLabels=preWeeks.map(pw=>`W${pw.week_num}`);
+  const preNew=preWeeks.map(pw=>pw.new_leads||0);
+  const preCum=preWeeks.map(pw=>pw.total_leads||0);
+
+  const scLabels=[],scNew=[],scCum=[];
+  for(const wk of w){
+    if(wk.date_start&&wk.date_start>todayStr)break;
+    const label=wk.week==='Week 0'?'W0':('W'+(parseInt(String(wk.week).replace(/[^0-9]/g,''))||0));
+    scLabels.push(label);
+    scCum.push(wk.total_leads||0);
+    // Week 0 scorecard total_leads sweeps ALL pre-week leads too; subtract to show VIP-only new leads
+    scNew.push(wk.week==='Week 0'&&preWeeks.length>0
+      ?Math.max(0,(wk.total_leads||0)-preTotal)
+      :(wk.new_leads||0));
+  }
+
+  const allLabels=[...preLabels,...scLabels];
+  const allNew=[...preNew,...scNew];
+  const allCum=[...preCum,...scCum];
+  const splitIdx=preLabels.length;
+
+  const el=document.getElementById('pw2Canvas');
+  if(!el)return;
+  const ctx=el.getContext('2d');
+  if(window._pw2Chart){window._pw2Chart.destroy();window._pw2Chart=null;}
+
+  window._pw2Chart=new Chart(ctx,{
+    data:{
+      labels:allLabels,
+      datasets:[
+        {
+          type:'bar',
+          label:'New Leads',
+          data:allNew,
+          backgroundColor:allLabels.map((_,i)=>i<splitIdx?'rgba(153,218,243,0.75)':'rgba(0,163,224,0.75)'),
+          borderColor:allLabels.map((_,i)=>i<splitIdx?'#99DAF3':'#0084B5'),
+          borderWidth:1,
+          yAxisID:'y',
+          order:2,
+        },
+        {
+          type:'line',
+          label:'Cumulative Leads',
+          data:allCum,
+          borderColor:'#DDFF00',
+          backgroundColor:'transparent',
+          pointRadius:allLabels.map((_,i)=>i===splitIdx-1||i===splitIdx?6:3),
+          pointBackgroundColor:allLabels.map((_,i)=>i<splitIdx?'#5a9ab5':'#DDFF00'),
+          borderWidth:2,
+          tension:0.25,
+          yAxisID:'y2',
+          order:1,
+        }
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{mode:'index',intersect:false,callbacks:{
+          title:items=>items[0]?.label||'',
+          label:item=>{
+            const isPreWeek=item.dataIndex<splitIdx;
+            const prefix=isPreWeek?'[Pre-W0] ':'';
+            return ` ${prefix}${item.dataset.label}: ${(item.parsed.y||0).toLocaleString()}`;
+          }
+        }}
+      },
+      scales:{
+        x:{ticks:{color:'#5a7a8a',maxRotation:50,font:{size:9,family:'Open Sans'}},grid:{color:'rgba(0,0,0,0.04)'}},
+        y:{position:'left',ticks:{color:'#5a7a8a',font:{size:10}},title:{display:true,text:'New Leads / Week',color:'#5a7a8a',font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}},
+        y2:{position:'right',ticks:{color:'#b8a800',font:{size:10}},title:{display:true,text:'Cumulative',color:'#b8a800',font:{size:10}},grid:{drawOnChartArea:false}}
+      }
+    }
+  });
+}
+
 function switchSumStudio(code){
   const sc=SC&&SC.studios&&SC.studios.find(s=>s.code===code);
   if(!sc)return;
@@ -2901,7 +3062,7 @@ async function init(){
   }
 
   // Load all data files
-  const [dataRes,scRes,mktRes,dashRes,gadsRes,socialRes,salesRes,gbpRes,adMetaRes,chRes]=await Promise.allSettled([
+  const [dataRes,scRes,mktRes,dashRes,gadsRes,socialRes,salesRes,gbpRes,adMetaRes,chRes,pwRes]=await Promise.allSettled([
     fetch('../data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('nso_scorecard_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('marketing_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
@@ -2912,6 +3073,7 @@ async function init(){
     fetch('gbp_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('nso_ad_meta.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('nso_client_history.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
+    fetch('nso_pre_weeks_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
   ]);
 
   if(dataRes.status==='fulfilled'){RAW=dataRes.value;if(!RAW.daily_detail)RAW.daily_detail=[];if(!RAW.monthly_detail)RAW.monthly_detail=[]
@@ -2960,6 +3122,9 @@ async function init(){
 
   if(chRes.status==='fulfilled'){CH_RAW=chRes.value}
   else{console.warn('nso_client_history.json not found')}
+
+  if(pwRes.status==='fulfilled'){PRE_WEEKS=pwRes.value}
+  else{console.warn('nso_pre_weeks_data.json not found');PRE_WEEKS=null}
 
   renderFreshnessNote('dataFreshnessNote', [
     {raw: dataRes.status==='fulfilled'   ? dataRes.value   : null, lagDays: 2},
