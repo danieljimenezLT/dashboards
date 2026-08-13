@@ -1,10 +1,20 @@
-// Cloudflare Worker — proxies GitHub Actions workflow_dispatch calls and the
-// Add Studio admin widget so the GitHub token never ships to the browser.
-// Secrets (GITHUB_TOKEN, APP_SECRET) are configured via `wrangler secret put`,
-// never committed here.
+// Cloudflare Worker — proxies GitHub Actions workflow_dispatch calls, the
+// Add Studio admin widget, the Brand Safety Audit's Buffer export, and the
+// on-demand Snowflake lead-detail export, so none of those tokens ship to
+// the browser. Secrets (GITHUB_TOKEN, APP_SECRET, BUFFER_API_TOKEN, SF_TOKEN)
+// are configured via `wrangler secret put`, never committed here.
 
 const REPO = 'dev-leadteam/dashboards';
-const ALLOWED_ORIGIN = 'https://reports.sweat440.com';
+// Production origin, plus local dev servers matching this repo's own
+// documented test setup (CLAUDE.md's `python3 -m http.server 8080`) and
+// VS Code's Live Server default port, so features can be tested before merge.
+const ALLOWED_ORIGINS = [
+  'https://reports.sweat440.com',
+  'http://localhost:8080',
+  'http://127.0.0.1:8080',
+  'http://localhost:5500',
+  'http://127.0.0.1:5500',
+];
 
 const WORKFLOW_SETS = {
   all:       ['nso_daily_refresh.yml', 'refresh.yml', 'refresh-paid-ads.yml'],
@@ -14,7 +24,7 @@ const WORKFLOW_SETS = {
 
 function corsHeaders(origin) {
   return {
-    'Access-Control-Allow-Origin':  origin === ALLOWED_ORIGIN ? origin : 'null',
+    'Access-Control-Allow-Origin':  ALLOWED_ORIGINS.includes(origin) ? origin : 'null',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, X-App-Secret',
   };
@@ -652,13 +662,170 @@ async function handlePublishBrandAuditCycle(body, env, headers) {
   return jsonResponse({ ok: true }, 200, headers);
 }
 
+// ─── Lead detail on-demand export (LEADS_LIST) ─────────────────────────────
+// Live-queries Snowflake's SQL REST API using the same Programmatic Access
+// Token (PAT) fetch_data.py uses — never written to git, unlike data.json's
+// scheduled aggregate refresh. The PAT is a Wrangler secret (env.SF_TOKEN);
+// account/role/warehouse/db/schema mirror fetch_data.py's non-secret defaults.
+//
+// LEADS_LIST is one row per lead (wide format — CELLPHONE, EMAIL_ID,
+// SIGNUP_DATE, FIRST_VISIT_DATE, FIRST_MEMBERSHIP_ACTIVATION_DATE,
+// FIRST_SALE_DATE, SOURCE, STUDIO_ID, STUDIO_NAME — confirmed against the
+// real view, no EVENT_DATE like the aggregate LEADS view has). The date
+// filter uses SIGNUP_DATE, matching "Leads (New Accounts Created)" — the
+// same definition the Funnel tab's lead count uses.
+//
+// Columns are named explicitly (not SELECT *) so the four DATE columns can
+// be formatted as YYYY-MM-DD strings — Snowflake's SQL API otherwise returns
+// DATE columns as raw internal day-count integers, not human-readable dates.
+
+const SF_ACCOUNT   = 'MINDBODYORG-PLAYLIST_DATA_MART_SWEAT440';
+const SF_ROLE      = 'SYSADMIN';
+const SF_WAREHOUSE = 'COMPUTE_WH';
+const SF_DATABASE  = 'MARKETING_REPORTS';
+const SF_SCHEMA    = 'PUBLIC';
+
+const LEADS_EXPORT_DEFAULT_CAP = 50000;
+const LEADS_EXPORT_MAX_CAP = 100000;
+
+function snowflakeHeaders(env, extra) {
+  return {
+    Authorization: `Bearer ${env.SF_TOKEN}`,
+    'X-Snowflake-Authorization-Token-Type': 'PROGRAMMATIC_ACCESS_TOKEN',
+    'User-Agent': 'sweat440-refresh-proxy',
+    Accept: 'application/json',
+    ...extra,
+  };
+}
+
+// Defaults to the last 30 days when the request doesn't specify a range.
+// studios/sources are optional IN-list filters; cap bounds the row count so
+// a wide-open request can't hang the Worker or return an unbounded file.
+function resolveLeadsExportParams(body) {
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const monthAgoStr = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+  const dateFrom = (body && body.dateFrom) || monthAgoStr;
+  const dateTo   = (body && body.dateTo)   || todayStr;
+  if (new Date(dateFrom) > new Date(dateTo)) {
+    throw new Error('dateFrom must not be after dateTo');
+  }
+
+  const cleanList = (arr) => Array.isArray(arr) ? arr.filter(s => typeof s === 'string' && s.trim()) : [];
+  const studios = cleanList(body && body.studios);
+  const sources = cleanList(body && body.sources);
+
+  const requestedCap = Number(body && body.cap);
+  const cap = Number.isFinite(requestedCap) && requestedCap > 0
+    ? Math.min(requestedCap, LEADS_EXPORT_MAX_CAP)
+    : LEADS_EXPORT_DEFAULT_CAP;
+
+  return { dateFrom, dateTo, studios, sources, cap };
+}
+
+// Studio names arrive stripped of the "SWEAT440 " brand prefix (same
+// canonical short form used across data.json/paid-ads-data.json — see
+// fetch_data.py's strip_brand) — re-add it to match STUDIO_NAME in Snowflake.
+function fullStudioName(name) {
+  return name.startsWith('SWEAT440 ') ? name : `SWEAT440 ${name}`;
+}
+
+function buildLeadsQuery(params) {
+  const conditions = ['SIGNUP_DATE >= ?', 'SIGNUP_DATE <= ?'];
+  const bindings = {
+    '1': { type: 'TEXT', value: params.dateFrom },
+    '2': { type: 'TEXT', value: params.dateTo },
+  };
+  let n = 3;
+  if (params.studios.length) {
+    conditions.push(`STUDIO_NAME IN (${params.studios.map(() => '?').join(', ')})`);
+    for (const s of params.studios) bindings[String(n++)] = { type: 'TEXT', value: fullStudioName(s) };
+  }
+  if (params.sources.length) {
+    conditions.push(`SOURCE IN (${params.sources.map(() => '?').join(', ')})`);
+    for (const s of params.sources) bindings[String(n++)] = { type: 'TEXT', value: s };
+  }
+
+  const statement =
+    `SELECT STUDIO_ID, STUDIO_NAME, EMAIL_ID, CELLPHONE, ` +
+    `TO_VARCHAR(SIGNUP_DATE, 'YYYY-MM-DD') AS SIGNUP_DATE, ` +
+    `TO_VARCHAR(FIRST_VISIT_DATE, 'YYYY-MM-DD') AS FIRST_VISIT_DATE, ` +
+    `TO_VARCHAR(FIRST_MEMBERSHIP_ACTIVATION_DATE, 'YYYY-MM-DD') AS FIRST_MEMBERSHIP_ACTIVATION_DATE, ` +
+    `TO_VARCHAR(FIRST_SALE_DATE, 'YYYY-MM-DD') AS FIRST_SALE_DATE, ` +
+    `SOURCE ` +
+    `FROM ${SF_DATABASE}.${SF_SCHEMA}.LEADS_LIST ` +
+    `WHERE ${conditions.join(' AND ')} ` +
+    `ORDER BY SIGNUP_DATE LIMIT ${params.cap + 1}`;
+
+  return { statement, bindings };
+}
+
+// Fetches the query result, following any additional result partitions the
+// Snowflake SQL API reports (large results are split — the first partition
+// comes back inline with the statement response, the rest need follow-up GETs).
+async function pullLeadsDetail(env, params) {
+  const { statement, bindings } = buildLeadsQuery(params);
+  const res = await fetch(`https://${SF_ACCOUNT}.snowflakecomputing.com/api/v2/statements`, {
+    method: 'POST',
+    headers: snowflakeHeaders(env, { 'Content-Type': 'application/json' }),
+    body: JSON.stringify({
+      statement,
+      bindings,
+      warehouse: SF_WAREHOUSE,
+      role: SF_ROLE,
+      database: SF_DATABASE,
+      schema: SF_SCHEMA,
+      timeout: 60,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(`Snowflake query failed (${res.status}): ${data.message || JSON.stringify(data)}`);
+  }
+
+  const columns = (data.resultSetMetaData && data.resultSetMetaData.rowType || []).map(c => c.name);
+  let rows = data.data || [];
+
+  const totalPartitions = (data.resultSetMetaData && data.resultSetMetaData.partitionInfo || []).length || 1;
+  for (let p = 1; p < totalPartitions && rows.length <= params.cap; p++) {
+    const partRes = await fetch(
+      `https://${SF_ACCOUNT}.snowflakecomputing.com/api/v2/statements/${data.statementHandle}?partition=${p}`,
+      { headers: snowflakeHeaders(env) }
+    );
+    const partData = await partRes.json();
+    if (!partRes.ok) throw new Error(`Snowflake partition fetch failed (${partRes.status})`);
+    rows = rows.concat(partData.data || []);
+  }
+
+  return { columns, rows };
+}
+
+function buildLeadsExport(result, cap) {
+  const truncated = result.rows.length > cap;
+  const rows = truncated ? result.rows.slice(0, cap) : result.rows;
+  return { columns: result.columns, rows, rowCount: rows.length, truncated };
+}
+
+async function handleExportLeadsDetail(body, env, headers) {
+  let params;
+  try {
+    params = resolveLeadsExportParams(body);
+  } catch (e) {
+    return jsonResponse({ ok: false, error: e.message }, 400, headers);
+  }
+  const result = await pullLeadsDetail(env, params);
+  const exportData = buildLeadsExport(result, params.cap);
+  return jsonResponse({ ok: true, export: exportData }, 200, headers);
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
     const headers = corsHeaders(origin);
 
     if (request.method === 'OPTIONS') return new Response(null, { headers });
-    if (origin !== ALLOWED_ORIGIN) return new Response('Forbidden origin', { status: 403, headers });
+    if (!ALLOWED_ORIGINS.includes(origin)) return new Response('Forbidden origin', { status: 403, headers });
     if (request.method !== 'POST') return new Response('Method not allowed', { status: 405, headers });
     if (request.headers.get('X-App-Secret') !== env.APP_SECRET) {
       return new Response('Unauthorized', { status: 401, headers });
@@ -690,6 +857,14 @@ export default {
     if (body.action === 'publish_brand_audit_cycle') {
       try {
         return await handlePublishBrandAuditCycle(body, env, headers);
+      } catch (e) {
+        return jsonResponse({ ok: false, error: `Unexpected error: ${e.message}` }, 500, headers);
+      }
+    }
+
+    if (body.action === 'export_leads_detail') {
+      try {
+        return await handleExportLeadsDetail(body, env, headers);
       } catch (e) {
         return jsonResponse({ ok: false, error: `Unexpected error: ${e.message}` }, 500, headers);
       }
