@@ -2049,7 +2049,7 @@ function renderScorecard2(){
 
   let defs=_scView2==='weekly'?weeklyDefs:cumDefs;
   if(!isAdminUser())defs=defs.filter(d=>d.key!=='ig'&&d.key!=='cumIg');
-  const pastWeeks=weeks.filter(w=>w.w>0);
+  const pastWeeks=weeks.filter(w=>w.w>=0);
   function _fmtD(iso){if(!iso)return'?';const[y,m,d]=iso.split('-');return`${+m}/${+d}`+(y!=='2026'?`<br><span style="font-size:8px;color:#c07000">${y}</span>`:'')}
 
   // ── RMR Tier Breakdown ─────────────────────────────────────────────────
