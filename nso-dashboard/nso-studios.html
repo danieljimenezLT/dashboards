@@ -1973,6 +1973,24 @@ function renderScorecard2(){
       grs:grsW,cumGrs:Math.round(_cumGrsPre*100)/100};
   });
 
+  // Align W1 to Sunday start and derive W0's date range from adjusted W1.
+  // The scorecard data has W1 starting on Monday (day after Week 0 Pre ends on Sunday).
+  // We shift W1 back 1 day to Sunday and give W0 the full preceding Sun-Sat week.
+  {
+    const _w1=weeks.find(w=>w.w===1);
+    const _w0=weeks.find(w=>w.w===0);
+    if(_w1&&_w1.ds&&new Date(_w1.ds+'T00:00:00Z').getUTCDay()===1){
+      const _off=(iso,days)=>{const d=new Date(iso+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);};
+      _w1.ds=_off(_w1.ds,-1);         // Monday → Sunday
+      if(_w0){
+        _w0.de=_off(_w1.ds,-1);       // Saturday before new W1 Sunday
+        _w0.ds=_off(_w0.de,-6);       // Sunday 7 days prior
+        const _reGrs=_sheetGrs(_w0.ds,_w0.de);
+        if(_reGrs!==null)_w0.grs=_reGrs;
+      }
+    }
+  }
+
   const $v=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
   const fInt=v=>v!=null?v:'—';
   const fPct=v=>v!=null?(v*100).toFixed(1)+'%':'—';
