@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """
-fetch_nso_sales.py — Pull presales and cancellations for all NSO studios
-from MART_SALES_DETAILS in Snowflake. Pure transactional approach: every
-buy (+1) and cancel (-1) transaction is counted on the day it occurs.
+fetch_nso_sales.py — Pull presales, cancellations, and open-studio membership
+tier sales for all NSO studios from MART_SALES_DETAILS in Snowflake.
 
 Key logic:
   - No dedup: all raw transactions counted, including LOC=98 rows, matching
               MindBody's raw transaction counts exactly.
-  - Presales: QUANTITY=1, IS_RETURN=0, counted on their SALE_DATE.
+  - Presales: QUANTITY=1, IS_RETURN=0, product LIKE '%pre%sale%'.
   - Cancels : QUANTITY=-1 OR IS_RETURN=1, counted on their SALE_DATE (return
               date), matching how MindBody surfaces them in period views.
   - Source  : attributed via MART_LEADS_LOG / MART_CLIENTS per client email.
   - Revenue : GROSS_PAYMENTAMT_LOCAL (presale transactions only).
+  - Tiers   : open-studio membership buys classified into tier keys
+              (unl_mo, unl_yr, std_mil, visit, other). Employee, Family,
+              Complimentary, and Aescape/Massage products are excluded.
 
 Refresh modes:
   Default (incremental): loads existing JSON, re-queries the last 14 days,
@@ -50,9 +52,21 @@ import studios as studios_registry
 # ---------------------------------------------------------------------------
 NSO_STUDIOS = studios_registry.nso_studios_by_snowflake_id()
 
-ID_LIST       = ",".join(str(i) for i in NSO_STUDIOS)
-DEFAULT_START = "2026-01-01"
-LOOKBACK_DAYS = 14   # days re-queried on every incremental run
+ID_LIST            = ",".join(str(i) for i in NSO_STUDIOS)
+TIER_STUDIOS       = {5751381}   # Naples - Mercato; expand when other studios open
+TIER_ID_LIST       = ",".join(str(i) for i in TIER_STUDIOS)
+DEFAULT_START      = "2026-01-01"
+LOOKBACK_DAYS      = 14   # days re-queried on every incremental run
+
+# Tier keys and their display labels (order matters for the dashboard)
+TIER_KEYS   = ["unl_mo", "unl_yr", "std_mil", "visit", "other"]
+TIER_LABELS = {
+    "unl_mo":  "Unlimited Monthly",
+    "unl_yr":  "Unlimited Yearly",
+    "std_mil": "Student / Military / Teacher",
+    "visit":   "Visit Packs",
+    "other":   "Other",
+}
 
 # ---------------------------------------------------------------------------
 # Source attribution CASE — same mapping used across the dashboard
@@ -226,6 +240,138 @@ def fetch_transactions(cur, start_date: str, end_date: str) -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
+# Membership tier query — open-studio products (not presale)
+# ---------------------------------------------------------------------------
+_TIER_CASE = """
+    CASE
+        -- Excluded products (NULL = skip row)
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%employee%'       THEN NULL
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%family%'         THEN NULL
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%complimentary%'  THEN NULL
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%aescape%'        THEN NULL
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%massage%'        THEN NULL
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%guest%pass%'     THEN NULL
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%preview%week%'   THEN NULL
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%classpass%'
+          OR LOWER(PRODUCT_DESCRIPTION) LIKE '%class pass%'     THEN NULL
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%wellhub%'
+          OR LOWER(PRODUCT_DESCRIPTION) LIKE '%wellness%passport%' THEN NULL
+        -- Unlimited Monthly (includes Founders, Premium Unlimited)
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%founder%'        THEN 'unl_mo'
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%unlimited%month%'
+          OR LOWER(PRODUCT_DESCRIPTION) LIKE '%month%unlimited%' THEN 'unl_mo'
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%premium%unlim%'  THEN 'unl_mo'
+        -- Unlimited Yearly (includes 6-month, All Access)
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%unlimited%year%'
+          OR LOWER(PRODUCT_DESCRIPTION) LIKE '%year%unlim%'     THEN 'unl_yr'
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%6%month%unlim%'
+          OR LOWER(PRODUCT_DESCRIPTION) LIKE '%unlim%6%month%'  THEN 'unl_yr'
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%all%access%'     THEN 'unl_yr'
+        -- Student / Military / Teacher
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%student%'
+          OR LOWER(PRODUCT_DESCRIPTION) LIKE '%teacher%'
+          OR LOWER(PRODUCT_DESCRIPTION) LIKE '%military%'       THEN 'std_mil'
+        -- Visit packs (4 / 8 / 12 visits)
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%visit%'          THEN 'visit'
+        -- Anything else that is not a presale
+        ELSE 'other'
+    END
+"""
+
+
+def fetch_membership_tiers(cur, start_date: str, end_date: str) -> list[dict]:
+    """
+    Returns one row per (studio_id, date, source, tier) for open-studio
+    membership buys only (QUANTITY=1, IS_RETURN=0, not a presale product,
+    not excluded). Excluded products (Employee, Family, Complimentary,
+    Aescape/Massage) are filtered out before grouping.
+    """
+    sql = f"""
+    WITH txn AS (
+        SELECT
+            STUDIO_ID,
+            EMAIL_ID,
+            PRODUCT_DESCRIPTION,
+            SALE_DATE::DATE AS effective_date,
+            {_TIER_CASE} AS tier
+        FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
+        WHERE STUDIO_ID IN ({TIER_ID_LIST})
+          AND ITEM_TYPE = 'Pricing Option'
+          AND QUANTITY = 1
+          AND IS_RETURN = 0
+          -- Exclude presale products (already counted in fetch_transactions)
+          AND LOWER(PRODUCT_DESCRIPTION) NOT LIKE '%pre%sale%'
+          AND (EMAIL_ID IS NULL OR (
+              LOWER(TRIM(EMAIL_ID)) NOT LIKE 'test%'
+          AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%sweat440%'
+          AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%leadteam%'
+          ))
+    ),
+    leads_src AS (
+        SELECT
+            LOWER(TRIM(CLIENT_EMAIL)) AS email,
+            STUDIO_ID,
+            LEAD_SOURCE,
+            ROW_NUMBER() OVER (
+                PARTITION BY LOWER(TRIM(CLIENT_EMAIL)), STUDIO_ID
+                ORDER BY
+                    CASE
+                        WHEN LOWER(TRIM(LEAD_SOURCE)) = 'facebook lead ad'              THEN 0
+                        WHEN LOWER(TRIM(LEAD_SOURCE)) LIKE '%instagram%'                THEN 0
+                        WHEN LOWER(TRIM(LEAD_SOURCE)) LIKE '%facebook%'
+                         AND LOWER(TRIM(LEAD_SOURCE)) LIKE '%lead%'                     THEN 0
+                        WHEN LOWER(TRIM(LEAD_SOURCE)) LIKE '%google%'                   THEN 0
+                        WHEN LOWER(TRIM(LEAD_SOURCE)) = 'public api'                    THEN 3
+                        WHEN LEAD_SOURCE IS NULL                                         THEN 2
+                        ELSE 1
+                    END,
+                    STAGE_START ASC
+            ) AS rn
+        FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_LEADS_LOG
+        WHERE STUDIO_ID IN ({TIER_ID_LIST})
+    ),
+    clients_src AS (
+        SELECT
+            LOWER(TRIM(EMAIL_ID)) AS email,
+            STUDIO_ID,
+            REFERRED_BY,
+            CAST(SIGNEDUP_DATE AS DATE) AS SIGNEDUP_DATE,
+            ROW_NUMBER() OVER (
+                PARTITION BY LOWER(TRIM(EMAIL_ID)), STUDIO_ID
+                ORDER BY SIGNEDUP_DATE ASC
+            ) AS rn
+        FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_CLIENTS
+        WHERE STUDIO_ID IN ({TIER_ID_LIST})
+          AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%sweat440%'
+          AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%leadteam%'
+          AND LOWER(TRIM(EMAIL_ID)) NOT LIKE 'test%'
+    )
+    SELECT
+        t.STUDIO_ID,
+        t.effective_date                 AS date,
+        COALESCE({_SOURCE_CASE}, 'N/A') AS source,
+        t.tier,
+        COUNT(*)                         AS cnt
+    FROM txn t
+    LEFT JOIN leads_src l
+           ON LOWER(TRIM(t.EMAIL_ID)) = l.email
+          AND t.STUDIO_ID = l.STUDIO_ID AND l.rn = 1
+    LEFT JOIN clients_src c
+           ON LOWER(TRIM(t.EMAIL_ID)) = c.email
+          AND t.STUDIO_ID = c.STUDIO_ID AND c.rn = 1
+    WHERE t.tier IS NOT NULL
+      AND t.effective_date BETWEEN '{start_date}' AND '{end_date}'
+    GROUP BY 1, 2, 3, 4
+    ORDER BY 1, 2, 3, 4
+    """
+    cur.execute(sql)
+    cols = [d[0].lower() for d in cur.description]
+    rows = [dict(zip(cols, row)) for row in cur.fetchall()]
+    print(f"  {len(rows)} tier rows returned")
+    return rows
+
+
+# ---------------------------------------------------------------------------
 # Existing JSON helpers
 # ---------------------------------------------------------------------------
 def load_existing(out_path: Path):
@@ -251,10 +397,11 @@ def load_existing(out_path: Path):
 # Build / merge output
 # ---------------------------------------------------------------------------
 def build_studios(existing_daily: dict[str, list], fresh_rows: list[dict],
-                  cutoff: str) -> dict:
+                  cutoff: str, tier_rows: list[dict] = None) -> dict:
     """
     existing_daily : {sid_str: [rows with date < cutoff]}
-    fresh_rows     : new rows from Snowflake (date >= cutoff)
+    fresh_rows     : presale rows from Snowflake (date >= cutoff)
+    tier_rows      : membership tier rows from fetch_membership_tiers()
     Returns complete studios dict with sorted daily arrays and totals.
     """
     studios = {}
@@ -265,7 +412,8 @@ def build_studios(existing_daily: dict[str, list], fresh_rows: list[dict],
             "code":   meta["code"],
             "daily":  list(existing_daily.get(sid_str, [])),
             "totals": {"presales": 0, "cancellations": 0,
-                       "net_presales": 0, "gross_revenue": 0.0},
+                       "net_presales": 0, "gross_revenue": 0.0,
+                       "membership_total": 0},
         }
 
     for r in fresh_rows:
@@ -278,15 +426,36 @@ def build_studios(existing_daily: dict[str, list], fresh_rows: list[dict],
             "presales":      int(r.get("presales")      or 0),
             "cancellations": int(r.get("cancellations") or 0),
             "gross_revenue": round(float(r.get("gross_revenue") or 0), 2),
+            "tiers":         {k: 0 for k in TIER_KEYS},
+            "membership_total": 0,
         })
+
+    # Build a lookup {(sid_str, date, source): {tier: count}} from tier_rows
+    tier_lookup: dict[tuple, dict] = defaultdict(lambda: {k: 0 for k in TIER_KEYS})
+    for r in (tier_rows or []):
+        key = (str(int(r["studio_id"])), str(r["date"])[:10], r.get("source") or "Unknown")
+        tier = r.get("tier")
+        if tier in TIER_KEYS:
+            tier_lookup[key][tier] += int(r.get("cnt") or 0)
+
+    # Merge tiers into daily rows
+    for sid_str, s in studios.items():
+        for row in s["daily"]:
+            row.setdefault("tiers", {k: 0 for k in TIER_KEYS})
+            row.setdefault("membership_total", 0)
+            key = (sid_str, row["date"], row["source"])
+            if key in tier_lookup:
+                row["tiers"] = tier_lookup[key]
+                row["membership_total"] = sum(tier_lookup[key].values())
 
     for s in studios.values():
         s["daily"].sort(key=lambda x: (x["date"], x["source"]))
         t = s["totals"]
         for row in s["daily"]:
-            t["presales"]      += row["presales"]
-            t["cancellations"] += row["cancellations"]
-            t["gross_revenue"] += row["gross_revenue"]
+            t["presales"]          += row["presales"]
+            t["cancellations"]     += row["cancellations"]
+            t["gross_revenue"]     += row["gross_revenue"]
+            t["membership_total"]  += row.get("membership_total", 0)
         t["net_presales"]  = t["presales"] - t["cancellations"]
         t["gross_revenue"] = round(t["gross_revenue"], 2)
 
@@ -341,20 +510,23 @@ def main():
 
     cur = conn.cursor()
     try:
-        print("\nQuerying MART_SALES_DETAILS...")
+        print("\nQuerying MART_SALES_DETAILS (presales)...")
         fresh_rows = fetch_transactions(cur, start_date, end_date)
+        print("\nQuerying MART_SALES_DETAILS (membership tiers)...")
+        tier_rows = fetch_membership_tiers(cur, start_date, end_date)
     finally:
         cur.close()
         conn.close()
 
-    studios = build_studios(existing_daily, fresh_rows, cutoff)
+    studios = build_studios(existing_daily, fresh_rows, cutoff, tier_rows)
 
     print("\nSummary:")
     for s in studios.values():
         t = s["totals"]
         print(f"  {s['name'].replace('SWEAT440 ',''):<28}  "
               f"presales={t['presales']:>4}  canc={t['cancellations']:>3}  "
-              f"net={t['net_presales']:>4}  revenue=${t['gross_revenue']:>10,.2f}")
+              f"net={t['net_presales']:>4}  memberships={t['membership_total']:>4}  "
+              f"revenue=${t['gross_revenue']:>10,.2f}")
 
     output = {
         "generated_at": datetime.now().isoformat(),
