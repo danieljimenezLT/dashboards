@@ -1973,18 +1973,27 @@ function renderScorecard2(){
       grs:grsW,cumGrs:Math.round(_cumGrsPre*100)/100};
   });
 
-  // Align W1 to Sunday start and derive W0's date range from adjusted W1.
-  // The scorecard data has W1 starting on Monday (day after Week 0 Pre ends on Sunday).
-  // We shift W1 back 1 day to Sunday and give W0 the full preceding Sun-Sat week.
+  // Align W0/W1 dates using PRE_WEEKS (NSO Config Sheet) as authoritative source.
+  // SC data derives weeks from Snowflake activity which may predate the official presale.
+  // Falls back to SC-based Monday→Sunday shift when PRE_WEEKS has no dates.
   {
+    const _off=(iso,days)=>{const d=new Date(iso+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);};
     const _w1=weeks.find(w=>w.w===1);
     const _w0=weeks.find(w=>w.w===0);
-    if(_w1&&_w1.ds&&new Date(_w1.ds+'T00:00:00Z').getUTCDay()===1){
-      const _off=(iso,days)=>{const d=new Date(iso+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);};
-      _w1.ds=_off(_w1.ds,-1);         // Monday → Sunday
+    const _pw0s=_pwData&&_pwData.week_0_start;
+    const _pw1s=_pwData&&_pwData.week_1_start;
+    if(_pw0s||_pw1s){
+      if(_pw1s&&_w1){_w1.ds=_pw1s;_w1.de=_off(_pw1s,6);}
       if(_w0){
-        _w0.de=_off(_w1.ds,-1);       // Saturday before new W1 Sunday
-        _w0.ds=_off(_w0.de,-6);       // Sunday 7 days prior
+        _w0.ds=_pw0s||(_pw1s?_off(_pw1s,-7):null);
+        _w0.de=_pw1s?_off(_pw1s,-1):(_pw0s?_off(_pw0s,6):null);
+        if(_w0.ds){const _reGrs=_sheetGrs(_w0.ds,_w0.de);if(_reGrs!==null)_w0.grs=_reGrs;}
+      }
+    } else if(_w1&&_w1.ds&&new Date(_w1.ds+'T00:00:00Z').getUTCDay()===1){
+      _w1.ds=_off(_w1.ds,-1);
+      if(_w0){
+        _w0.de=_off(_w1.ds,-1);
+        _w0.ds=_off(_w0.de,-6);
         const _reGrs=_sheetGrs(_w0.ds,_w0.de);
         if(_reGrs!==null)_w0.grs=_reGrs;
       }
