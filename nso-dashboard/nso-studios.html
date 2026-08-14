@@ -90,9 +90,9 @@
   <a class="nav-logo" href="../home.html"><img src="../logo.png" alt="SWEAT440"/></a>
   <div class="nav-tabs" id="navTabs">
     <button class="nav-tab active" onclick="switchTab('summary',this)">Summary</button>
-    <button class="nav-tab" onclick="switchTab('summary2',this)">Summary (Test)</button>
+    <button class="nav-tab" id="navTabSummary2" onclick="switchTab('summary2',this)">Summary (Test)</button>
     <button class="nav-tab" onclick="switchTab('scorecard',this)">Scorecard</button>
-    <button class="nav-tab" onclick="switchTab('scorecard2',this)">Scorecard (Test)</button>
+    <button class="nav-tab" id="navTabScorecard2" onclick="switchTab('scorecard2',this)">Scorecard (Test)</button>
     <button class="nav-tab" id="navClientHistory" onclick="switchTab('clienthistory',this)">Client History</button>
     <div class="nav-group">
       <button class="nav-tab nav-group-label" onclick="toggleNavGroup('funnel-group',this)">Funnel ▾</button>
@@ -3703,6 +3703,10 @@ async function init(){
     if(_igTab)_igTab.remove();
     const _defsTab=document.getElementById('navTabDefinitions');
     if(_defsTab)_defsTab.remove();
+    const _sum2Tab=document.getElementById('navTabSummary2');
+    if(_sum2Tab)_sum2Tab.remove();
+    const _sc2Tab=document.getElementById('navTabScorecard2');
+    if(_sc2Tab)_sc2Tab.remove();
   }
 
   // Load all data files
