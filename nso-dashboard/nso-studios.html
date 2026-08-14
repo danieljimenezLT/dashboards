@@ -1750,12 +1750,33 @@ function renderScorecard(){
     h+=`<th class="num${wk.isCur?' sc-cell-cur':''}" style="min-width:80px;font-size:11px;vertical-align:bottom">${topRow}W${wk.w}${ds}</th>`;
   });
   h+=`</tr></thead><tbody>`;
+  // Naples open-studio membership tier counts per scorecard week
+  const _isNaplesRmr=(sc.code||'').includes('naples');
+  const _naplesTierWk={};
+  if(_isNaplesRmr){
+    const _nRows=NSO_SALES_ROWS.filter(r=>r.studio.toLowerCase().includes('naples'));
+    const _tks=['unl_mo','unl_yr','std_mil','visit','other'];
+    rmrtRows.forEach(wk=>{
+      if(!wk.ds||!wk.de)return;
+      const rows=_nRows.filter(r=>r.date>=wk.ds&&r.date<=wk.de);
+      const t={};_tks.forEach(k=>{t[k]=rows.reduce((a,r)=>a+((r.tiers&&r.tiers[k])||0),0);});
+      t.total=_tks.reduce((a,k)=>a+t[k],0);
+      _naplesTierWk[wk.w]=t;
+    });
+  }
+  const _hasTierData=_isNaplesRmr&&Object.values(_naplesTierWk).some(t=>t.total>0);
+  const _tierMemberLabels={unl_mo:'Unlimited Monthly',unl_yr:'Unlimited Yearly',std_mil:'Student/Military/Teacher',visit:'Visit Packs',other:'Other'};
   const rmrRows2=[
     ...(t0p?[{label:`Founders ($${t0p})`,key:'t0',target:_t0tgt}]:[]),
     {label:`Tier 1 Members ($${t1p})`,key:'t1',target:_t1tgt},
     {label:`Tier 2 Members ($${t2p})`,key:'t2',target:_t2tgt},
     ...(t3p?[{label:`Tier 3 Members ($${t3p})`,key:'t3',target:_t3tgt}]:[]),
     {label:'Total Members',key:null,computed:wk=>(wk.t0||0)+(wk.t1||0)+(wk.t2||0)+(wk.t3||0),target:_totalMembersTgt,style:'font-weight:700;border-top:1px solid #e0ecf4'},
+    ...(_hasTierData?[
+      {label:'Open Memberships',key:null,computed:()=>null,style:'font-style:italic;font-size:10px;color:#8aaabb;border-top:2px solid #e0ecf4;padding-top:6px'},
+      ...['unl_mo','unl_yr','std_mil','visit','other'].map(k=>({label:_tierMemberLabels[k],key:null,computed:wk=>{const v=(_naplesTierWk[wk.w]||{})[k];return v||null;}})),
+      {label:'Total Open',key:null,computed:wk=>(_naplesTierWk[wk.w]||{}).total||null,style:'font-weight:700'},
+    ]:[]),
     {label:_ib('sc_rmr')+'Est. Day 1 RMR',key:'rmr',fmt:v=>`$${v.toLocaleString('en-US')}`,target:_rmrTgt,tgtFmt:v=>`$${Math.round(v).toLocaleString('en-US')}`,style:'border-top:1px solid #e0ecf4'},
     {label:_ib('sc_roms')+'Est. ROMS',key:'roms',fmt:v=>v.toFixed(1)+'x',target:_romsTgt,tgtFmt:v=>typeof v==='string'?v:(+v).toFixed(1)+'x'},
   ];
@@ -2214,12 +2235,33 @@ function renderScorecard2(){
     h+=`<th class="num${wk.isCur?' sc-cell-cur':''}" style="min-width:80px;font-size:11px;vertical-align:bottom">${topRow}W${wk.w}${ds}</th>`;
   });
   h+=`</tr></thead><tbody>`;
+  // Naples open-studio membership tier counts per scorecard week
+  const _isNaplesRmr2=(sc.code||'').includes('naples');
+  const _naplesTierWk2={};
+  if(_isNaplesRmr2){
+    const _nRows2=NSO_SALES_ROWS.filter(r=>r.studio.toLowerCase().includes('naples'));
+    const _tks2=['unl_mo','unl_yr','std_mil','visit','other'];
+    rmrtRows.forEach(wk=>{
+      if(!wk.ds||!wk.de)return;
+      const rows=_nRows2.filter(r=>r.date>=wk.ds&&r.date<=wk.de);
+      const t={};_tks2.forEach(k=>{t[k]=rows.reduce((a,r)=>a+((r.tiers&&r.tiers[k])||0),0);});
+      t.total=_tks2.reduce((a,k)=>a+t[k],0);
+      _naplesTierWk2[wk.w]=t;
+    });
+  }
+  const _hasTierData2=_isNaplesRmr2&&Object.values(_naplesTierWk2).some(t=>t.total>0);
+  const _tierMemberLabels2={unl_mo:'Unlimited Monthly',unl_yr:'Unlimited Yearly',std_mil:'Student/Military/Teacher',visit:'Visit Packs',other:'Other'};
   const rmrRowDefs=[
     ...(t0p?[{label:`Founders ($${t0p})`,key:'t0',target:_t0tgt}]:[]),
     {label:`Tier 1 Members ($${t1p})`,key:'t1',target:_t1tgt},
     {label:`Tier 2 Members ($${t2p})`,key:'t2',target:_t2tgt},
     ...(t3p?[{label:`Tier 3 Members ($${t3p})`,key:'t3',target:_t3tgt}]:[]),
     {label:'Total Members',key:null,computed:wk=>(wk.t0||0)+(wk.t1||0)+(wk.t2||0)+(wk.t3||0),target:_totalMembersTgt,style:'font-weight:700;border-top:1px solid #e0ecf4'},
+    ...(_hasTierData2?[
+      {label:'Open Memberships',key:null,computed:()=>null,style:'font-style:italic;font-size:10px;color:#8aaabb;border-top:2px solid #e0ecf4;padding-top:6px'},
+      ...['unl_mo','unl_yr','std_mil','visit','other'].map(k=>({label:_tierMemberLabels2[k],key:null,computed:wk=>{const v=(_naplesTierWk2[wk.w]||{})[k];return v||null;}})),
+      {label:'Total Open',key:null,computed:wk=>(_naplesTierWk2[wk.w]||{}).total||null,style:'font-weight:700'},
+    ]:[]),
     {label:_ib('sc_rmr')+'Est. Day 1 RMR',key:'rmr',fmt:v=>`$${v.toLocaleString('en-US')}`,target:_rmrTgt,tgtFmt:v=>`$${Math.round(v).toLocaleString('en-US')}`,style:'border-top:1px solid #e0ecf4'},
     {label:_ib('sc_roms')+'Est. ROMS',key:'roms',fmt:v=>v.toFixed(1)+'x',target:_romsTgt,tgtFmt:v=>typeof v==='string'?v:(+v).toFixed(1)+'x'},
   ];
