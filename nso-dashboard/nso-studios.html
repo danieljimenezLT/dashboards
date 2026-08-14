@@ -256,6 +256,7 @@
       <div class="toggle-group" id="newsales-toggles"></div>
       <div style="position:relative;width:100%;height:260px"><canvas id="newsalesChart"></canvas></div>
     </div>
+    <div id="newsales-tiers" style="display:none"></div>
     <div class="chart-card"><div class="chart-card-title">Source Participation</div><div class="data-thru-label" style="font-size:10px;color:#8aaabb;margin-top:-6px;margin-bottom:8px"></div><div class="ring-wrap" style="flex-direction:row;align-items:center;justify-content:center;gap:56px;padding:24px 40px"><div class="ring-canvas-wrap" style="width:300px;height:300px;flex-shrink:0;margin:0"><canvas id="newsalesRing"></canvas></div><div class="ring-legend" id="newsalesRingLeg"></div></div></div>
   </div>
 
@@ -1387,11 +1388,16 @@ function applyFilters(){
   const sCurr=fR(NSO_SALES_ROWS,from,to,st,sr);
   const sPP=wins.ppFrom?fR(NSO_SALES_ROWS,wins.ppFrom,wins.ppTo,st,sr):[];
   const sPY=wins.pyFrom?fR(NSO_SALES_ROWS,wins.pyFrom,wins.pyTo,st,sr):[];
-  const netSales=rows=>Math.max(0,rows.reduce((a,r)=>a+(r.first_sales||0)-(r.cancellations||0),0));
+  // Membership tiers — Naples only
+  const _naplesSelected=!st||st.length===0||st.some(s=>s.toLowerCase().includes('naples'));
+  const _tierKeys=['unl_mo','unl_yr','std_mil','visit','other'];
+  const _tierLabels={unl_mo:'Unlimited Monthly',unl_yr:'Unlimited Yearly',std_mil:'Student / Military / Teacher',visit:'Visit Packs (4/8/12)',other:'Other'};
+  const _mt=r=>_naplesSelected?(r.mem_total||0):0;
+  const netSales=rows=>Math.max(0,rows.reduce((a,r)=>a+(r.first_sales||0)+_mt(r)-(r.cancellations||0),0));
   let smC=netSales(sCurr),smP=netSales(sPP),smY=netSales(sPY);
-  const nsC=sCurr.reduce((a,r)=>a+(r.first_sales||0),0),nsP=sPP.reduce((a,r)=>a+(r.first_sales||0),0),nsY=sPY.reduce((a,r)=>a+(r.first_sales||0),0);
+  const nsC=sCurr.reduce((a,r)=>a+(r.first_sales||0)+_mt(r),0),nsP=sPP.reduce((a,r)=>a+(r.first_sales||0)+_mt(r),0),nsY=sPY.reduce((a,r)=>a+(r.first_sales||0)+_mt(r),0);
   const cnC=sCurr.reduce((a,r)=>a+(r.cancellations||0),0),cnP=sPP.reduce((a,r)=>a+(r.cancellations||0),0),cnY=sPY.reduce((a,r)=>a+(r.cancellations||0),0);
-  const newSalesByPeriod=_bucketByPeriod(sCurr,r=>r.first_sales||0);
+  const newSalesByPeriod=_bucketByPeriod(sCurr,r=>(r.first_sales||0)+_mt(r));
   const cancByPeriod=_bucketByPeriod(sCurr,r=>r.cancellations||0);
   buildTrend(toTS(curr.daily,curr.monthly),newSalesByPeriod,cancByPeriod);
   const fkpi=document.getElementById('funnel-kpis');
@@ -1402,10 +1408,25 @@ function applyFilters(){
   buildArea('leadsChart','leads-toggles',leadsSeries,activeSrcLeads,'signups');
   buildRing('leadsRing','leadsRingLeg',curr.all,'signups');
   const newsalesKpis=document.getElementById('newsales-kpis');if(newsalesKpis)newsalesKpis.innerHTML=kpiCard('Total New Sales',nsC,nsP||null,nsY||null,null,GLOSSARY.nso_new_sale);
-  const newSalesSeries=toSrcTSGran(sCurr,[]);
+  // Tier breakdown table — Naples only, hidden until membership sales exist
+  const _tierEl=document.getElementById('newsales-tiers');
+  if(_tierEl){
+    if(_naplesSelected){
+      const _memTotal=sCurr.reduce((a,r)=>a+(r.mem_total||0),0);
+      if(_memTotal>0){
+        const _tt={};_tierKeys.forEach(k=>{_tt[k]=sCurr.reduce((a,r)=>a+((r.tiers&&r.tiers[k])||0),0);});
+        let _th=`<div class="chart-card" style="margin-top:0"><div class="chart-card-title" style="margin-bottom:12px">Sales by Membership Tier</div><table class="data-table" style="width:100%"><thead><tr><th>Tier</th><th class="num">Sales</th><th class="num">Share</th></tr></thead><tbody>`;
+        _tierKeys.forEach(k=>{const v=_tt[k];if(!v)return;const pct=Math.round(v/_memTotal*100);_th+=`<tr><td>${_tierLabels[k]}</td><td class="num">${v}</td><td class="num"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end"><div style="width:60px;height:6px;background:#1a3040;border-radius:3px;overflow:hidden"><div style="height:100%;width:${pct}%;background:#00A3E0;border-radius:3px"></div></div>${pct}%</div></td></tr>`;});
+        _th+=`</tbody></table></div>`;
+        _tierEl.innerHTML=_th;_tierEl.style.display='';
+      }else{_tierEl.style.display='none';}
+    }else{_tierEl.style.display='none';}
+  }
+  const _sCurrMapped=_naplesSelected?sCurr.map(r=>({...r,first_sales:(r.first_sales||0)+(r.mem_total||0)})):sCurr;
+  const newSalesSeries=toSrcTSGran(_sCurrMapped,[]);
   const activeSrcNewSales=(sr||[]).filter(s=>newSalesSeries.some(r=>r.source===s&&(r.first_sales||0)>0));
   buildArea('newsalesChart','newsales-toggles',newSalesSeries,activeSrcNewSales,'first_sales');
-  buildRing('newsalesRing','newsalesRingLeg',sCurr,'first_sales');
+  buildRing('newsalesRing','newsalesRingLeg',_sCurrMapped,'first_sales');
   const cancKpis=document.getElementById('canc-kpis');if(cancKpis)cancKpis.innerHTML=kpiCard('Total Cancellations',cnC,cnP||null,cnY||null,null,GLOSSARY.nso_cancel);
   const cancRows=sCurr.map(r=>({...r,first_sales:r.cancellations||0}));
   const cancSeries=toSrcTSGran(cancRows,[]);
@@ -1729,12 +1750,33 @@ function renderScorecard(){
     h+=`<th class="num${wk.isCur?' sc-cell-cur':''}" style="min-width:80px;font-size:11px;vertical-align:bottom">${topRow}W${wk.w}${ds}</th>`;
   });
   h+=`</tr></thead><tbody>`;
+  // Naples open-studio membership tier counts per scorecard week
+  const _isNaplesRmr=(sc.code||'').includes('naples');
+  const _naplesTierWk={};
+  if(_isNaplesRmr){
+    const _nRows=NSO_SALES_ROWS.filter(r=>r.studio.toLowerCase().includes('naples'));
+    const _tks=['unl_mo','unl_yr','std_mil','visit','other'];
+    rmrtRows.forEach(wk=>{
+      if(!wk.ds||!wk.de)return;
+      const rows=_nRows.filter(r=>r.date>=wk.ds&&r.date<=wk.de);
+      const t={};_tks.forEach(k=>{t[k]=rows.reduce((a,r)=>a+((r.tiers&&r.tiers[k])||0),0);});
+      t.total=_tks.reduce((a,k)=>a+t[k],0);
+      _naplesTierWk[wk.w]=t;
+    });
+  }
+  const _hasTierData=_isNaplesRmr&&Object.values(_naplesTierWk).some(t=>t.total>0);
+  const _tierMemberLabels={unl_mo:'Unlimited Monthly',unl_yr:'Unlimited Yearly',std_mil:'Student/Military/Teacher',visit:'Visit Packs',other:'Other'};
   const rmrRows2=[
     ...(t0p?[{label:`Founders ($${t0p})`,key:'t0',target:_t0tgt}]:[]),
     {label:`Tier 1 Members ($${t1p})`,key:'t1',target:_t1tgt},
     {label:`Tier 2 Members ($${t2p})`,key:'t2',target:_t2tgt},
     ...(t3p?[{label:`Tier 3 Members ($${t3p})`,key:'t3',target:_t3tgt}]:[]),
     {label:'Total Members',key:null,computed:wk=>(wk.t0||0)+(wk.t1||0)+(wk.t2||0)+(wk.t3||0),target:_totalMembersTgt,style:'font-weight:700;border-top:1px solid #e0ecf4'},
+    ...(_hasTierData?[
+      {label:'Open Memberships',key:null,computed:()=>null,style:'font-style:italic;font-size:10px;color:#8aaabb;border-top:2px solid #e0ecf4;padding-top:6px'},
+      ...['unl_mo','unl_yr','std_mil','visit','other'].map(k=>({label:_tierMemberLabels[k],key:null,computed:wk=>{const v=(_naplesTierWk[wk.w]||{})[k];return v||null;}})),
+      {label:'Total Open',key:null,computed:wk=>(_naplesTierWk[wk.w]||{}).total||null,style:'font-weight:700'},
+    ]:[]),
     {label:_ib('sc_rmr')+'Est. Day 1 RMR',key:'rmr',fmt:v=>`$${v.toLocaleString('en-US')}`,target:_rmrTgt,tgtFmt:v=>`$${Math.round(v).toLocaleString('en-US')}`,style:'border-top:1px solid #e0ecf4'},
     {label:_ib('sc_roms')+'Est. ROMS',key:'roms',fmt:v=>v.toFixed(1)+'x',target:_romsTgt,tgtFmt:v=>typeof v==='string'?v:(+v).toFixed(1)+'x'},
   ];
@@ -2193,12 +2235,33 @@ function renderScorecard2(){
     h+=`<th class="num${wk.isCur?' sc-cell-cur':''}" style="min-width:80px;font-size:11px;vertical-align:bottom">${topRow}W${wk.w}${ds}</th>`;
   });
   h+=`</tr></thead><tbody>`;
+  // Naples open-studio membership tier counts per scorecard week
+  const _isNaplesRmr2=(sc.code||'').includes('naples');
+  const _naplesTierWk2={};
+  if(_isNaplesRmr2){
+    const _nRows2=NSO_SALES_ROWS.filter(r=>r.studio.toLowerCase().includes('naples'));
+    const _tks2=['unl_mo','unl_yr','std_mil','visit','other'];
+    rmrtRows.forEach(wk=>{
+      if(!wk.ds||!wk.de)return;
+      const rows=_nRows2.filter(r=>r.date>=wk.ds&&r.date<=wk.de);
+      const t={};_tks2.forEach(k=>{t[k]=rows.reduce((a,r)=>a+((r.tiers&&r.tiers[k])||0),0);});
+      t.total=_tks2.reduce((a,k)=>a+t[k],0);
+      _naplesTierWk2[wk.w]=t;
+    });
+  }
+  const _hasTierData2=_isNaplesRmr2&&Object.values(_naplesTierWk2).some(t=>t.total>0);
+  const _tierMemberLabels2={unl_mo:'Unlimited Monthly',unl_yr:'Unlimited Yearly',std_mil:'Student/Military/Teacher',visit:'Visit Packs',other:'Other'};
   const rmrRowDefs=[
     ...(t0p?[{label:`Founders ($${t0p})`,key:'t0',target:_t0tgt}]:[]),
     {label:`Tier 1 Members ($${t1p})`,key:'t1',target:_t1tgt},
     {label:`Tier 2 Members ($${t2p})`,key:'t2',target:_t2tgt},
     ...(t3p?[{label:`Tier 3 Members ($${t3p})`,key:'t3',target:_t3tgt}]:[]),
     {label:'Total Members',key:null,computed:wk=>(wk.t0||0)+(wk.t1||0)+(wk.t2||0)+(wk.t3||0),target:_totalMembersTgt,style:'font-weight:700;border-top:1px solid #e0ecf4'},
+    ...(_hasTierData2?[
+      {label:'Open Memberships',key:null,computed:()=>null,style:'font-style:italic;font-size:10px;color:#8aaabb;border-top:2px solid #e0ecf4;padding-top:6px'},
+      ...['unl_mo','unl_yr','std_mil','visit','other'].map(k=>({label:_tierMemberLabels2[k],key:null,computed:wk=>{const v=(_naplesTierWk2[wk.w]||{})[k];return v||null;}})),
+      {label:'Total Open',key:null,computed:wk=>(_naplesTierWk2[wk.w]||{}).total||null,style:'font-weight:700'},
+    ]:[]),
     {label:_ib('sc_rmr')+'Est. Day 1 RMR',key:'rmr',fmt:v=>`$${v.toLocaleString('en-US')}`,target:_rmrTgt,tgtFmt:v=>`$${Math.round(v).toLocaleString('en-US')}`,style:'border-top:1px solid #e0ecf4'},
     {label:_ib('sc_roms')+'Est. ROMS',key:'roms',fmt:v=>v.toFixed(1)+'x',target:_romsTgt,tgtFmt:v=>typeof v==='string'?v:(+v).toFixed(1)+'x'},
   ];
@@ -3758,7 +3821,7 @@ async function init(){
       const _scStu=SC.studios?SC.studios.find(x=>x.code===s.code):null;
       const _stuKey=(_scStu&&_scStu.data_name)?'SWEAT440 '+_scStu.data_name:s.name;
       (s.daily||[]).forEach(r=>{
-        NSO_SALES_ROWS.push({date:r.date,studio:_stuKey,source:r.source||'Unknown',first_sales:r.presales||0,cancellations:r.cancellations||0,gross_revenue:r.gross_revenue||0});
+        NSO_SALES_ROWS.push({date:r.date,studio:_stuKey,source:r.source||'Unknown',first_sales:r.presales||0,cancellations:r.cancellations||0,gross_revenue:r.gross_revenue||0,tiers:r.tiers||{},mem_total:r.membership_total||0});
       });
     });
   }else{console.warn('nso_sales_data.json not found');NSO_SALES=null;NSO_SALES_ROWS=[]}
