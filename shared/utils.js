@@ -636,6 +636,26 @@ function kpiCard(label,val,pp,py,fmt,info,extraHtml){
 }
 function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
+function _csvField(v) {
+  const s = v == null ? '' : String(v);
+  return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+
+// Builds a CSV from a header row + array of row arrays, triggers a browser
+// download via a Blob + synthetic <a download>, and revokes the object URL.
+function downloadCSV(filename, header, rows) {
+  const csv = [header, ...rows].map(r => r.map(_csvField).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 function toSourceTimeSeries(dailyRows,monthlyRows,gran){
   const g=gran||GRAN;
   const map={};
