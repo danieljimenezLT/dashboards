@@ -563,7 +563,7 @@ function renderSummary2(){
   let h='';
   const _fmtDate=iso=>iso?new Date(iso+'T00:00:00Z').toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric',timeZone:'UTC'}):'';
   const _fmtDateShort=_fmtDate;
-  const startDate=w[0]?.date_end||w[1]?.date_start||null;
+  const startDate=(pwData&&pwData.week_0_start)||w[0]?.date_end||w[1]?.date_start||null;
   const curPct=Math.max(4,Math.min(96,pct));
 
   // Studio switcher (inline onclick stays in Summary Test tab)
@@ -1982,6 +1982,7 @@ function renderScorecard2(){
     const _w0=weeks.find(w=>w.w===0);
     const _pw0s=_pwData&&_pwData.week_0_start;
     const _pw1s=_pwData&&_pwData.week_1_start;
+    const _oldW0Grs=_w0?(_w0.cumGrs||0):0;  // W0 is first week so cumGrs = its own grs
     if(_pw0s||_pw1s){
       if(_pw1s&&_w1){_w1.ds=_pw1s;_w1.de=_off(_pw1s,6);}
       if(_w0){
@@ -1997,6 +1998,14 @@ function renderScorecard2(){
         const _reGrs=_sheetGrs(_w0.ds,_w0.de);
         if(_reGrs!==null)_w0.grs=_reGrs;
       }
+    }
+    // Cascade cumGrs correction: W0 is the first scorecard week so cumGrs = its grs.
+    // All subsequent weeks carry the delta from the old W0 grs baked in during .map().
+    if(_w0){
+      const _newW0Grs=_w0.grs||0;
+      const _delta=_newW0Grs-_oldW0Grs;
+      _w0.cumGrs=_newW0Grs;
+      if(_delta!==0)weeks.filter(w=>w.w>0).forEach(w=>{w.cumGrs=(w.cumGrs||0)+_delta;});
     }
   }
 
