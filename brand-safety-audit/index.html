@@ -158,11 +158,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <select id="cycleSelect" onchange="onCycleChange()"><option value="">Loading…</option></select>
     </div>
     <div class="cycle-picker">
-      <span class="filter-label">Filter by post date:</span>
+      <span class="filter-label">Filter by post date (all cycles):</span>
       <input type="date" id="postDateFrom">
       <span class="sep">to</span>
       <input type="date" id="postDateTo">
-      <button class="filter-btn" onclick="applyPostDateFilter()">Apply</button>
+      <button class="filter-btn" id="applyDateFilterBtn" onclick="applyPostDateFilter()">Apply</button>
       <button class="filter-btn" id="clearDateFilterBtn" style="display:none" onclick="clearPostDateFilter()">Clear</button>
       <span class="publish-msg" id="dateFilterMsg"></span>
     </div>
@@ -230,7 +230,7 @@ const STATUS_FLOW=["pending","ops","cleared"];
 const STATUS_LABEL={pending:"⏳ Pending review",ops:"📤 Reported to Ops",cleared:"✓ Cleared"};
 const STATUS_CLASS={pending:"st-pending",ops:"st-ops",cleared:"st-cleared"};
 
-let AUDIT=null,LATEST_AUDIT=null,AVAILABLE_CYCLES=[],statuses={},currentFilter="all",expanded=null,dateFilterActive=false;
+let AUDIT=null,LATEST_AUDIT=null,AVAILABLE_CYCLES=[],statuses={},currentFilter="all",expanded=null,dateFilterActive=false,DATE_FILTER_RESULTS=[];
 
 async function loadStatuses(){
   if(SHEET_ENDPOINT){
@@ -351,15 +351,31 @@ function render(){
   }).join("");
 }
 
-// Flattens every account's postLog (all posts reviewed, flagged or clean)
-// into one list for the currently viewed cycle. Older cycles (published
-// before this field existed) simply won't have postLog on their accounts —
-// callers treat an empty result as "no per-post date data for this cycle".
-function collectPostLog(){
+// Fetches EVERY published cycle (data/<cycle>.json) and flattens their
+// accounts' postLog into one list, tagged with which cycle each post came
+// from. Deliberately independent of whichever cycle the "Viewing cycle"
+// dropdown currently shows — a date range should search the full
+// accumulated history, not just one run. Cycles published before postLog
+// existed fall back to "flags" (flagged posts only — clean posts from those
+// cycles have no recorded date and can't be recovered).
+async function collectAllHistoricalPosts(){
+  const cycles=AVAILABLE_CYCLES.length?AVAILABLE_CYCLES:await listCycles();
   const out=[];
-  for(const a of AUDIT.accounts){
-    if(!Array.isArray(a.postLog))continue;
-    for(const p of a.postLog)out.push(Object.assign({accountName:a.name,accountHandle:a.handle},p));
+  for(const cycle of cycles){
+    try{
+      const r=await fetch("data/"+cycle+".json?cb="+Date.now());
+      if(!r.ok)continue;
+      const data=await r.json();
+      for(const a of(data.accounts||[])){
+        if(Array.isArray(a.postLog)){
+          for(const p of a.postLog)out.push(Object.assign({accountName:a.name,accountHandle:a.handle,cycle:data.cycle},p));
+        }else{
+          for(const f of(a.flags||[])){
+            out.push({accountName:a.name,accountHandle:a.handle,cycle:data.cycle,id:f.id,date:f.date,postType:f.postType,caption:f.caption,link:f.link,flagged:true,level:f.level,category:f.category,legacy:true});
+          }
+        }
+      }
+    }catch(e){/* one bad/missing cycle file shouldn't fail the whole search */}
   }
   return out;
 }
@@ -378,50 +394,60 @@ function clearPostDateFilter(){
   render();
 }
 
-function applyPostDateFilter(){
+async function applyPostDateFilter(){
   const msg=document.getElementById("dateFilterMsg");
+  const btn=document.getElementById("applyDateFilterBtn");
   const fromVal=document.getElementById("postDateFrom").value;
   const toVal=document.getElementById("postDateTo").value;
   if(!fromVal||!toVal){msg.textContent="Pick both dates first.";return;}
   if(fromVal>toVal){msg.textContent='"From" must not be after "To".';return;}
-  msg.textContent="";
+  btn.disabled=true;msg.textContent="Searching across all cycles…";
+  try{
+    DATE_FILTER_RESULTS=await collectAllHistoricalPosts();
+  }catch(e){
+    msg.textContent="Search failed — "+e.message;
+    btn.disabled=false;
+    return;
+  }
+  btn.disabled=false;msg.textContent="";
   dateFilterActive=true;
   document.getElementById("clearDateFilterBtn").style.display="";
   document.getElementById("filterBar").style.display="none";
   render();
 }
 
-// Filters by the post's OWN publish date (sentAt/dueAt, carried through
-// verbatim from Buffer) — not the date the audit was run. Renders a flat
-// list across all accounts instead of the by-account card view, since a
-// date range can span multiple studios.
+// Filters the already-fetched cross-cycle results by the post's OWN publish
+// date (sentAt/dueAt, carried through verbatim from Buffer) — not the date
+// any audit was run. Renders a flat list across every cycle and account,
+// since a date range can span multiple studios and multiple review runs.
 function renderDateFilteredList(){
   const list=document.getElementById("studioList");
-  const posts=collectPostLog();
-  if(!posts.length){
-    list.innerHTML='<div class="empty">This cycle has no per-post date data — the post-date filter only works for cycles published after this feature shipped (this cycle predates it).</div>';
+  if(!DATE_FILTER_RESULTS.length){
+    list.innerHTML='<div class="empty">No historical post data found across any published cycle.</div>';
     return;
   }
   const fromVal=document.getElementById("postDateFrom").value;
   const toVal=document.getElementById("postDateTo").value;
   const from=new Date(fromVal+"T00:00:00Z");
   const to=new Date(toVal+"T23:59:59Z");
-  const filtered=posts.filter(p=>{
+  const filtered=DATE_FILTER_RESULTS.filter(p=>{
     const d=new Date(p.date);
     return !isNaN(d.getTime())&&d>=from&&d<=to;
   }).sort((x,y)=>new Date(x.date)-new Date(y.date));
+  const anyLegacy=DATE_FILTER_RESULTS.some(p=>p.legacy);
+  const legacyNote=anyLegacy?'<div class="empty" style="padding:.75rem 1rem;text-align:left;margin-bottom:8px">Cycles published before per-post date tracking only recorded dates for flagged posts — clean posts from those cycles can\'t appear here.</div>':"";
   if(!filtered.length){
-    list.innerHTML='<div class="empty">No posts in that date range.</div>';
+    list.innerHTML=legacyNote+'<div class="empty">No posts in that date range.</div>';
     return;
   }
-  list.innerHTML=filtered.map(p=>{
+  list.innerHTML=legacyNote+filtered.map(p=>{
     const lvl=p.flagged?p.level:"clean";
     const badgeLabel=p.flagged?p.category:"Clean";
     return '<div class="studio-card">'
       +'<div class="studio-header" style="cursor:default">'
         +'<div class="studio-left">'
           +'<div class="avatar av-'+lvl+'">'+ini(p.accountName)+'</div>'
-          +'<div><div class="studio-name">'+p.accountName+'</div><div class="studio-sub">@'+p.accountHandle+' · '+p.date+' · '+p.postType+'</div></div>'
+          +'<div><div class="studio-name">'+p.accountName+'</div><div class="studio-sub">@'+p.accountHandle+' · '+p.date+' · '+p.postType+' · '+p.cycle+'</div></div>'
         +'</div>'
         +'<div class="studio-right">'
           +'<span class="badge badge-'+lvl+'">'+badgeLabel+'</span>'
