@@ -1,0 +1,59 @@
+name: Test Meta Account Access (temporary)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install requests
+
+      - name: Test access to the 4 migrated studios' dedicated ad accounts
+        env:
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+        run: |
+          python - <<'PY'
+          import sys
+          from datetime import date, timedelta
+
+          sys.path.insert(0, ".")
+          from meta_client import MetaClient
+
+          ACCOUNTS = [
+              ("Austin - Highland",     "TX-002", "act_1360692008741848"),
+              ("Dallas - Prestonwood",  "TX-003", "act_901653169105027"),
+              ("Herriman",              "UT-001", "act_28850449604546812"),
+              ("Dallas - Uptown",       "TX-004", "act_907636075750262"),
+          ]
+
+          today = date.today().isoformat()
+          two_days_ago = (date.today() - timedelta(days=2)).isoformat()
+          meta = MetaClient()
+
+          failures = 0
+          for name, code, account_id in ACCOUNTS:
+              try:
+                  rows = meta.get_insights(
+                      account_id, level="account",
+                      date_start=two_days_ago, date_end=today,
+                      time_increment=1,
+                  )
+                  total_spend = sum(float(r.get("spend", 0) or 0) for r in rows)
+                  print(f"OK    {name} ({code}, {account_id}) - {len(rows)} row(s), spend so far: ${total_spend:.2f}")
+              except Exception as e:
+                  failures += 1
+                  print(f"FAIL  {name} ({code}, {account_id}) - {e}")
+
+          print()
+          if failures:
+              print(f"{failures} of {len(ACCOUNTS)} account(s) failed.")
+              sys.exit(1)
+          print("All dedicated accounts are readable with the current META_TOKEN.")
+          PY
