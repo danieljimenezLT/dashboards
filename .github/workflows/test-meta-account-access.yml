@@ -37,6 +37,13 @@ jobs:
           two_days_ago = (date.today() - timedelta(days=2)).isoformat()
           meta = MetaClient()
 
+          try:
+              me = meta._get("me", {"fields": "id,name"})
+              print(f"META_TOKEN identity: {me.get('name')} (id: {me.get('id')})")
+          except Exception as e:
+              print(f"Could not resolve token identity via /me: {e}")
+          print()
+
           failures = 0
           for name, code, account_id in ACCOUNTS:
               try:
