@@ -271,7 +271,14 @@
 
 <!-- ── TAB 5: EMAIL METRICS ───────────────────────────────────────────── -->
 <div class="tab-pane" id="tab-email">
-  <p class="filter-note">Buy 1 Get 3 · May 12 – May 25, 2026 · 5-email journey · 27 studios</p>
+  <p class="filter-note" id="emailNote"></p>
+  <div id="emailNoData" style="display:none">
+    <div class="chart-card" style="text-align:center;padding:48px 24px">
+      <div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:22px;font-weight:600;text-transform:uppercase;color:#c0d4df;letter-spacing:.06em;margin-bottom:10px">Email Metrics — Pending</div>
+      <div style="font-size:13px;color:#8aaabb;max-width:420px;margin:0 auto">Email campaign data is not yet available for this campaign. This tab will be updated once the data is imported.</div>
+    </div>
+  </div>
+  <div id="emailContent">
   <div class="kpi-grid three" id="emailKpiGrid"></div>
   <div class="chart-card" style="margin-bottom:16px">
     <div class="chart-card-title">Average per Email</div>
@@ -305,6 +312,7 @@
       </table>
     </div>
   </div>
+  </div><!-- /#emailContent -->
 </div>
 
 <!-- ── TAB 6: ADS REPORT ──────────────────────────────────────────── -->
@@ -366,9 +374,10 @@ let CAMP = null;
 let ALL_CAMPAIGNS = [];
 let PAID_ADS_DATA = null;     // daniel-paid-ads-data.json
 
-// ── Email Metrics Data (from BUY 1 GET 3.xlsx → Email Metrics sheet) ─────────
+// ── Email Metrics Data — keyed by campaign id ────────────────────────────────
 // Per email: [sent, open_rate, opens, clicks, ctor, opt_out, unsub_rate]
-const EMAIL_METRICS = [
+const EMAIL_METRICS_BY_CAMPAIGN = {};
+EMAIL_METRICS_BY_CAMPAIGN['buy-1-get-3'] = [
   {studio:'Austin - Highland',   emails:[[80,0.1000,8,0,0,0,0],[60,0.1000,6,0,0,0,0],[60,0.1000,6,0,0,1,0.017],[59,0.1017,6,0,0,0,0],[57,0.0877,5,0,0,0,0]]},
   {studio:'Austin - Zilker',     emails:[[131,0.1221,16,1,0.0625,0,0],[87,0.1264,11,0,0,0,0],[87,0.1264,11,1,0.0909,1,0.011],[86,0.1047,9,0,0,0,0],[86,0.1047,9,0,0,0,0]]},
   {studio:'Boca Raton',          emails:[[49,0.2041,10,1,0.1,1,0.02],[44,0.1818,8,0,0,0,0],[44,0.2045,9,1,0.1111,0,0],[45,0.1111,5,0,0,0,0],[44,0.1591,7,0,0,0,0]]},
@@ -397,6 +406,11 @@ const EMAIL_METRICS = [
   {studio:'Wall Township',       emails:[[53,0.3019,16,2,0.125,1,0.019],[39,0.2051,8,4,0.5,0,0],[39,0.1795,7,4,0.5714,0,0],[39,0.1795,7,3,0.4286,0,0],[38,0.1579,6,3,0.5,0,0]]},
   {studio:'West Palm Beach',     emails:[[58,0.1552,9,0,0,0,0],[47,0.1064,5,0,0,0,0],[46,0.1304,6,0,0,0,0],[46,0.1304,6,1,0.1667,0,0],[46,0.1304,6,0,0,0,0]]},
 ];
+// EMAIL_METRICS_BY_CAMPAIGN['33-percent-off'] will be added here when data is available
+
+function getEmailData() {
+  return (EMAIL_METRICS_BY_CAMPAIGN[CAMP && CAMP.id] || []);
+}
 
 function selectCampaign(idx, btn) {
   document.querySelectorAll('.camp-btn').forEach(b => b.classList.remove('active'));
@@ -1052,7 +1066,7 @@ function setEmailIdx(i, btn) {
   btn.classList.add('active');
   renderEmailTable();
   // Refresh mini cards to update active highlight
-  const rows = EMAIL_METRICS.filter(r => isSelected(r.studio));
+  const rows = getEmailData().filter(r => isSelected(r.studio));
   const emailGrid = document.getElementById('emailByEmailGrid');
   if (emailGrid) emailGrid.innerHTML = buildEmailMiniCards(rows);
 }
@@ -1081,8 +1095,22 @@ function buildEmailMiniCards(rows) {
 }
 
 function renderEmailMetrics() {
-  const rows = EMAIL_METRICS.filter(r => isSelected(r.studio));
-  if (!rows.length) return;
+  const rows = getEmailData().filter(r => isSelected(r.studio));
+  const noDataEl  = document.getElementById('emailNoData');
+  const contentEl = document.getElementById('emailContent');
+  const noteEl    = document.getElementById('emailNote');
+  if (!rows.length) {
+    if (noDataEl)  noDataEl.style.display  = '';
+    if (contentEl) contentEl.style.display = 'none';
+    if (noteEl)    noteEl.textContent = CAMP ? `${CAMP.name} · ${fmtDateStr(CAMP.date_from)} – ${fmtDateStr(CAMP.date_to)}` : '';
+    return;
+  }
+  if (noDataEl)  noDataEl.style.display  = 'none';
+  if (contentEl) contentEl.style.display = '';
+  const studios = getEmailData();
+  if (noteEl) noteEl.textContent = CAMP
+    ? `${CAMP.name} · ${fmtDateStr(CAMP.date_from)} – ${fmtDateStr(CAMP.date_to)} · ${studios[0]?.emails?.length || 5}-email journey · ${studios.length} studios`
+    : '';
 
   // Overall weighted metrics across ALL studios × ALL 5 emails
   let wSent=0, wOpens=0, wClicks=0, wOptOut=0;
@@ -1114,7 +1142,7 @@ function renderEmailMetrics() {
 }
 
 function renderEmailTable() {
-  const rows = EMAIL_METRICS.filter(r => isSelected(r.studio));
+  const rows = getEmailData().filter(r => isSelected(r.studio));
   const tbody = document.getElementById('emailBody');
   const tfoot = document.getElementById('emailFoot');
   if (!tbody) return;
