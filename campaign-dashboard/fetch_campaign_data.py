@@ -36,6 +36,14 @@ CAMPAIGNS = [
         "date_to":       "2026-05-26",
         "post_promo_to": "2026-06-30",
     },
+    {
+        "id":            "33-percent-off",
+        "name":          "33% Off",
+        "product":       "33% Off",   # TODO: confirm exact PRODUCT_DESCRIPTION in Snowflake
+        "date_from":     "2026-07-01",
+        "date_to":       "2026-07-31",
+        "post_promo_to": "2026-08-15",
+    },
 ]
 
 # ── Source attribution (mirrors MARKETING_REPORTS.PUBLIC.LEADS view) ────────

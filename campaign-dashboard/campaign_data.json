@@ -5186,6 +5186,51 @@
           "studios": "Miami - Midtown, Charlotte - Noda"
         }
       ]
+    },
+    {
+      "id": "33-percent-off",
+      "name": "33% Off",
+      "product": "33% Off",
+      "date_from": "2026-07-01",
+      "date_to": "2026-07-31",
+      "post_promo_to": "2026-08-15",
+      "notes": "Data pending — run fetch_campaign_data.py to populate",
+      "kpis": {
+        "total_purchases": 0,
+        "unique_clients": 0,
+        "new_clients": 0,
+        "platform_clients": 0,
+        "free_class_clients": 0,
+        "existing_clients": 0,
+        "total_revenue": 0.0,
+        "avg_ticket": 0.0,
+        "quality_converted": 0,
+        "quality_conv_rate": 0.0,
+        "quality_revenue": 0.0,
+        "membership_conversions": 0,
+        "membership_conv_rate": 0.0,
+        "membership_revenue": 0.0,
+        "pack_conversions": 0,
+        "pack_conv_rate": 0.0,
+        "pack_revenue": 0.0,
+        "converted_to_paid": 0,
+        "conversion_rate": 0.0,
+        "post_promo_revenue": 0.0,
+        "revenue_per_participant": 0.0
+      },
+      "lead_sources": [],
+      "studios": [],
+      "studio_conversions": [],
+      "channels": [],
+      "funnel": [],
+      "funnel_by_studio": [],
+      "post_promo_products": [],
+      "products_by_studio": [],
+      "time_series": [],
+      "time_series_by_studio": [],
+      "segment_breakdown": [],
+      "segment_by_studio": [],
+      "multi_location": []
     }
   ]
 }
