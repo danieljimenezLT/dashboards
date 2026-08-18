@@ -667,6 +667,25 @@ async function handlePublishBrandAuditCycle(body, env, headers) {
   return jsonResponse({ ok: true }, 200, headers);
 }
 
+// The dashboard's post-date filter needs the list of published cycle files
+// (brand-safety-audit/data/2026-06.json, etc.) to search across. The repo is
+// private, so the browser can't hit the GitHub Contents API directly — it
+// 404s with no auth even though the path exists — this proxies that one
+// read through the Worker's own GITHUB_TOKEN.
+async function handleListBrandAuditCycles(env, headers) {
+  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${BRAND_AUDIT_DATA_DIR}`, {
+    headers: ghHeaders(env),
+  });
+  if (!res.ok) return jsonResponse({ ok: false, error: `GitHub returned ${res.status}` }, 502, headers);
+  const files = await res.json();
+  const cycles = files
+    .filter(f => /^\d{4}-\d{2}\.json$/.test(f.name))
+    .map(f => f.name.replace('.json', ''))
+    .sort()
+    .reverse();
+  return jsonResponse({ ok: true, cycles }, 200, headers);
+}
+
 // ─── Lead detail on-demand export (LEADS_LIST) ─────────────────────────────
 // Live-queries Snowflake's SQL REST API using the same Programmatic Access
 // Token (PAT) fetch_data.py uses — never written to git, unlike data.json's
@@ -862,6 +881,14 @@ export default {
     if (body.action === 'publish_brand_audit_cycle') {
       try {
         return await handlePublishBrandAuditCycle(body, env, headers);
+      } catch (e) {
+        return jsonResponse({ ok: false, error: `Unexpected error: ${e.message}` }, 500, headers);
+      }
+    }
+
+    if (body.action === 'list_brand_audit_cycles') {
+      try {
+        return await handleListBrandAuditCycles(env, headers);
       } catch (e) {
         return jsonResponse({ ok: false, error: `Unexpected error: ${e.message}` }, 500, headers);
       }
