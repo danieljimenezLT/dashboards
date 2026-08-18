@@ -145,6 +145,8 @@
       <span style="font-size:12px;color:#5a7a8a">→</span>
       <input type="date" id="fTo" onchange="applyFilters()"/>
     </div>
+    <div class="ctrl-sep" id="downloadLeadsSep" style="display:none"></div>
+    <button class="download-btn" id="downloadLeadsBtn" style="display:none" onclick="downloadLeadsDetail(this)">⬇ Download Leads</button>
   </div>
 </div>
 
@@ -313,6 +315,48 @@ function lds(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'
 const TWO_DAYS_AGO=new Date(TODAY.getTime()-2*864e5);
 document.getElementById('fFrom').value=lds(fom);document.getElementById('fTo').value=lds(TWO_DAYS_AGO);
 
+// -- Leads Detail download (Cloudflare Worker proxy — Snowflake LEADS_LIST) -
+const _PROXY_URL    = 'https://sweat440-refresh-proxy.sweat440.workers.dev';
+const _PROXY_SECRET = 'AnwxoPAsDK9vUXVY';
+
+async function callProxy(payload) {
+  const res = await fetch(_PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-App-Secret': _PROXY_SECRET },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) throw new Error(data.error || ('HTTP ' + res.status));
+  return data;
+}
+
+async function downloadLeadsDetail(btn) {
+  const label = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Downloading…'; }
+  try {
+    // studioMenu here holds full "SWEAT440 " names (see the NSO const above);
+    // the worker re-adds that prefix itself, so strip it first to match the
+    // bare-name convention data.json/index.html use.
+    const studios = _getSel('studioMenu').map(s => s.replace(/^SWEAT440\s+/, ''));
+    const sources = _getSel('sourceMenu');
+    const dateFrom = document.getElementById('fFrom').value;
+    const dateTo   = document.getElementById('fTo').value;
+
+    const data = await callProxy({ action: 'export_leads_detail', dateFrom, dateTo, studios, sources });
+    const { columns, rows, rowCount, truncated } = data.export;
+    if (!rowCount) { alert('No leads found for the current filters.'); return; }
+
+    downloadCSV(`leads-detail_${dateFrom}_to_${dateTo}.csv`, columns, rows);
+    if (truncated) {
+      alert(`Showing the first ${rowCount.toLocaleString()} rows — narrow your filters (date range/studio/source) for a complete export.`);
+    }
+  } catch (e) {
+    alert('Leads download failed: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = label; }
+  }
+}
+
 function toggleNav(){document.getElementById('navTabs').classList.toggle('open')}
 function toggleControls(){const e=document.getElementById('ctrlInner');e.classList.toggle('open');document.getElementById('ctrlToggle').textContent=e.classList.contains('open')?'Filters ▴':'Filters ▾'}
 function switchTab(id,btn){
@@ -328,6 +372,10 @@ function switchTab(id,btn){
   btn.classList.add('active');
   document.getElementById('navTabs').classList.remove('open');
   document.querySelector('.controls-bar').style.display=(id==='summary'||id==='scorecard'||id==='summary2'||id==='scorecard2')?'none':'';
+  // "Download Leads" only makes sense on the Leads tab
+  const showDownload = id === 'leads';
+  document.getElementById('downloadLeadsBtn').style.display = showDownload ? '' : 'none';
+  document.getElementById('downloadLeadsSep').style.display = showDownload ? '' : 'none';
   if(id==='summary'){if(_scStudio)_sumStudio=_scStudio;renderSummary();}
   else if(id==='summary2'){if(_scStudio)_sumStudio=_scStudio;renderSummary2();}
   else if(id==='scorecard'){if(_sumStudio)_scStudio=_sumStudio;renderScorecard();}
