@@ -1393,7 +1393,7 @@ function applyFilters(){
   const _tierKeys=['unl_mo','unl_yr','std_mil','visit','other'];
   const _tierLabels={unl_mo:'Unlimited Monthly',unl_yr:'Unlimited Yearly',std_mil:'Student / Military / Teacher',visit:'Visit Packs (4/8/12)',other:'Other'};
   const _mt=r=>_naplesSelected?(r.mem_total||0):0;
-  const netSales=rows=>Math.max(0,rows.reduce((a,r)=>a+(r.first_sales||0)+_mt(r)-(r.cancellations||0),0));
+  const netSales=rows=>rows.reduce((a,r)=>a+(r.first_sales||0)+_mt(r)-(r.cancellations||0),0);
   let smC=netSales(sCurr),smP=netSales(sPP),smY=netSales(sPY);
   const nsC=sCurr.reduce((a,r)=>a+(r.first_sales||0)+_mt(r),0),nsP=sPP.reduce((a,r)=>a+(r.first_sales||0)+_mt(r),0),nsY=sPY.reduce((a,r)=>a+(r.first_sales||0)+_mt(r),0);
   const cnC=sCurr.reduce((a,r)=>a+(r.cancellations||0),0),cnP=sPP.reduce((a,r)=>a+(r.cancellations||0),0),cnY=sPY.reduce((a,r)=>a+(r.cancellations||0),0);
