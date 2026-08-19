@@ -1,92 +1,10 @@
 {
   "cycle": "2026-08",
-  "period": "August 5–12, 2026",
-  "generated": "2026-08-12",
-  "source": "Buffer (post metadata) + Instagram (visual review via browser)",
-  "coverage": {
-    "from": "2026-08-05",
-    "to": "2026-08-12"
-  },
-  "scope": "Static + Carousel cover frames only. 177 Reels/Stories excluded — video and 24h-ephemeral content not in scope yet.",
-  "postsReviewed": 18,
-  "postsVisuallyReviewed": 15,
-  "postsUnavailable": 3,
-  "notes": [
-    "PATTERN — Third consecutive cycle with in-studio third-party activations lacking documented partner approval: June (Jous Drink, Patriot IV), July (Pure Green, Ebkinis Swimwear, Lela's), August (Juiced Today). Six activations across five studios with no verifiable approvals. Recommend escalating as a policy gap rather than per-studio flags.",
-    "AUDIT INTEGRITY — 3 of 4 Coral Gables posts were deleted between the Buffer pull and the visual review. Confirmed as genuine deletions (retested after an 18-second delay, still unavailable), not rate-limiting. Supports auditing closer to publication date.",
-    "COLORS & TYPOGRAPHY — Network-wide application is strong. Approved blue #00A3E0, mint #00FFC2 and condensed italic caps are used consistently. NoDa 'AUGUST EVENTS' and Midtown '250 CLUB' are exemplary. Doral is the only creative with off-brand type and background."
-  ],
+  "period": "August 2026",
+  "generated": "2026-08-19",
+  "source": "Buffer (manual Claude.ai review — cover images inspected via Claude in Chrome)",
+  "postsReviewed": 8,
   "accounts": [
-    {
-      "name": "Doral",
-      "handle": "sweat440doral",
-      "posts": 1,
-      "status": "flagged",
-      "flags": [
-        {
-          "id": "2026-08-dor-bootybootcamp",
-          "level": "medium",
-          "category": "Loose brand adherence",
-          "confidence": "MEDIUM",
-          "date": "Aug 10, 2026",
-          "postType": "Static",
-          "visualReviewed": true,
-          "caption": "BOOTY BOOTCAMP WITH COACH MELANIE — It's that time of month again!!! This weekend, August 15 at 1:00–1:45 PM.",
-          "why": "Four issues compound in one creative. (1) Brand voice: 'BOOTY' as the dominant headline centers a body part rather than the training, departing from the approved energetic/encouraging/motivational tone with a 60–75% female audience. (2) Unintended double entendre: 'It's that time of month again!!!' is a common menstruation euphemism and reads crudely next to 'BOOTY BOOTCAMP'. (3) Typography: that line uses a serif/slab face that is not Oswald, Open Sans or Prohibition — no other fonts are permitted. (4) Background: dominant black, while the guide specifies white or primary blue backgrounds, with dark neutrals reserved for body text and small UI. Compliant elements: blue banner #00A3E0, mint chevrons #00FFC2, headline set in approved condensed italic.",
-          "action": "Review headline wording with the studio and reissue with approved typography and background. Confirm whether this class name is used network-wide — if so, escalate as a naming decision rather than a single-studio correction.",
-          "link": "https://www.instagram.com/p/Db3bjgmRBei/"
-        }
-      ]
-    },
-    {
-      "name": "NoDa Charlotte",
-      "handle": "sweat440noda",
-      "posts": 5,
-      "status": "flagged",
-      "flags": [
-        {
-          "id": "2026-08-noda-juicedtoday",
-          "level": "medium",
-          "category": "Loose brand adherence",
-          "confidence": "MEDIUM",
-          "date": "Aug 10, 2026",
-          "postType": "Static",
-          "visualReviewed": true,
-          "caption": "JUICED TODAY — POST WORKOUT JUICE SAMPLES. In studio, Tuesday August 11, 4:30PM–7:00PM. Collab post with @juicedtodaywithtreva.",
-          "why": "Third-party co-branding: the Juiced Today logo sits in a white box directly alongside the SWEAT440 lockup, promoting an in-studio sampling activation, published as an Instagram collab with the vendor's account. No evidence the vendor is on the approved partners list. The creative itself is fully on-brand — approved blue #00A3E0, mint #00FFC2 accents, correct condensed italic typography — so this is a partner-policy flag, not a design flag.",
-          "action": "Verify whether Juiced Today is an approved partner. If not, document the local partnership approval process with the franchisee. See cycle note on the recurring pattern.",
-          "link": "https://www.instagram.com/p/Db3C1oQvx5R/"
-        }
-      ]
-    },
-    {
-      "name": "Coral Gables",
-      "handle": "sweat440gables",
-      "posts": 4,
-      "status": "clean",
-      "flags": []
-    },
-    {
-      "name": "Deerfield Beach",
-      "handle": "sweat440deerfield",
-      "posts": 3,
-      "status": "flagged",
-      "flags": [
-        {
-          "id": "2026-08-dee-noexcuses",
-          "level": "low",
-          "category": "Loose brand adherence",
-          "confidence": "MEDIUM",
-          "date": "Aug 7, 2026",
-          "postType": "Carousel",
-          "visualReviewed": true,
-          "caption": "OFFICIALLY IN THE 100 CLUB! No shortcuts. No excuses. Just showing up, one class at a time.",
-          "why": "Caption finding, surfaced outside this cycle's visual-only scope. 'No excuses' appears on the brand guide's prohibited language list as shame-based phrasing that conflicts with the approved encouraging tone. The creative itself is clean and on-brand: member holding the 100 CLUB tee against the blue shield wall.",
-          "action": "Share the prohibited-language list with the studio. Low urgency — single instance, positive intent.",
-          "link": "https://www.instagram.com/p/DbvgWdkkWU-/"
-        }
-      ]
-    },
     {
       "name": "Coral Springs",
       "handle": "sweat440coralsprings",
@@ -102,11 +20,52 @@
       "flags": []
     },
     {
+      "name": "Doral",
+      "handle": "sweat440doral",
+      "posts": 0,
+      "status": "clean",
+      "flags": []
+    },
+    {
+      "name": "Coral Gables",
+      "handle": "sweat440gables",
+      "posts": 0,
+      "status": "clean",
+      "flags": []
+    },
+    {
       "name": "Midtown Miami",
       "handle": "sweat440midtownmiami",
       "posts": 2,
-      "status": "clean",
-      "flags": []
+      "status": "flagged",
+      "flags": [
+        {
+          "id": "6a71c55b1772bdcb07e61d2b",
+          "level": "low",
+          "category": "Active alcohol consumption",
+          "confidence": "HIGH",
+          "date": "2026-08-04T10:52:15.000Z",
+          "postType": "Static",
+          "visualReviewed": true,
+          "caption": "Meet our August Member of the Month, Milu! 🎉\n\nMilu joined the SWEAT440 family in March 2026, shortly after becoming a first-time mom. Like many new moms, she struggled with taking time for herself, but she quickly discovered that investing in her own health made her feel stronger, happier, and more present for her family.\n\nSince day one, Milu has shown incredible dedication and consistency. In just a short time, she gained more than strength—she found confidence, energy, and a supportive community that has cheered her on every step of the way.\n\nHer commitment and positive attitude inspire everyone around her, and we’re so grateful to have her as part of the SWEAT440 family. 💪\n\nFun Fact: When she’s not at the studio, you’ll probably find her enjoying mate, cumbia, asado, and fernet! 🧉💃\n\nCongratulations, Milu! Thank you for showing up, working hard, and inspiring our community every day. We can’t wait to see what you’ll accomplish next! ✨\n\n#SWEAT440 #SWEAT440Midtown #NeverLate #MemberOfTheMonth #FitnessCommunity",
+          "why": "Caption: the studio-authored \"Fun Fact\" line names fernet, an alcoholic spirit, alongside mate, cumbia and asado; the emojis used are mate and dancing, not alcohol. Visual analysis: cover image is the member standing in the studio in a 100 Club crop top and leggings in front of the official milestone shields — no alcohol visible anywhere in frame. Neither strict Category 4 trigger is met (no on-camera consumption, no happy-hour framing), so this sits below the stated bar and is surfaced only because brand copy names a spirit.",
+          "action": "Quick glance to confirm or dismiss — recommend dismiss, since visual review confirms no alcohol on camera and the reference is an incidental cultural detail. If SWEAT440 wants a stricter line, advise Midtown to keep named alcoholic beverages out of studio-authored member profiles going forward.",
+          "link": "https://www.instagram.com/p/DbnZANSqwU4/"
+        },
+        {
+          "id": "6a6e6529fa2b70e30eb9817d",
+          "level": "medium",
+          "category": "Loose brand adherence",
+          "confidence": "HIGH",
+          "date": "2026-08-01T14:44:48.000Z",
+          "postType": "Static",
+          "visualReviewed": true,
+          "caption": "We’re at The Refreshery today!\n\nStop by our SWEAT440 table to learn more about the studio, enjoy some snacks, enter our raffles, and check out a few surprises. 🔥\n\nSWEAT440 Midtown members also receive 10% off products at The Refreshery when they show their active membership.\n\nCome say hi—we’d love to see you! 💪\n\n#SWEAT440 #SWEAT440Midtown #NeverLate #TheRefreshery #MemberPerks SupportLocal MiamiFitness",
+          "why": "Caption: promotes a SWEAT440 table at third-party venue The Refreshery and announces a standing member benefit — 10% off products at The Refreshery for active members — which is an ongoing cross-promotional arrangement rather than a one-off community appearance. Visual analysis: the graphic is an explicit co-branded lockup, reading SWEAT440 with the shield next to The Refreshery's circular logo separated by a vertical divider, over brand blue with a food-prep photo background. The SWEAT440 mark itself is unmodified (white on #00A3E0), so Category 5 is clean; the flag is the partnership, not the artwork.",
+          "action": "Verify The Refreshery is on the approved partners list and that the 10% member-discount arrangement has documented franchise approval. Separately, confirm the co-branded lockup treatment (SWEAT440 mark paired with a partner logo) is an approved usage — the mark is unaltered, but partner lockups may require sign-off.",
+          "link": "https://www.instagram.com/p/DbgFGRsq2WN/"
+        }
+      ]
     },
     {
       "name": "South Miami",
@@ -119,6 +78,20 @@
       "name": "Miami Lakes",
       "handle": "sweat440miamilakes",
       "posts": 0,
+      "status": "clean",
+      "flags": []
+    },
+    {
+      "name": "Deerfield Beach",
+      "handle": "sweat440deerfield",
+      "posts": 2,
+      "status": "clean",
+      "flags": []
+    },
+    {
+      "name": "NoDa Charlotte",
+      "handle": "sweat440noda",
+      "posts": 1,
       "status": "clean",
       "flags": []
     }
