@@ -2065,7 +2065,7 @@ function openAdMedia(thumb,isVid,videoUrl,preview,adName){
   if(isVid&&videoUrl){
     ct.innerHTML=`<video controls autoplay style="max-width:92vw;max-height:85vh;border-radius:8px;background:#000" src="${videoUrl}">Your browser does not support video.</video><p style="color:#aac;font-size:11px;margin:0">${adName||''}</p>`;
   }else if(thumb){
-    const hiRes=(thumb||'').replace(/\bp\d+x\d+\b/,'p960x960');
+    const hiRes=(thumb||'').replace(/p\d+x\d+/g,'p960x960');
     const _prevLink=preview?`<a href="${preview}" target="_blank" rel="noopener" style="color:#00A3E0;font-size:12px;text-decoration:none">Ver en Meta →</a>`:'';
     ct.innerHTML=`<img src="${hiRes}" style="max-width:100%;max-height:80vh;border-radius:8px;object-fit:contain;box-shadow:0 4px 40px rgba(0,0,0,.6)" onerror="this.style.display='none'" loading="eager"/>
       <div style="display:flex;justify-content:space-between;align-items:center;width:100%;gap:12px"><p style="color:#aac;font-size:11px;margin:0;flex:1">${adName||''}</p>${_prevLink}</div>`;
