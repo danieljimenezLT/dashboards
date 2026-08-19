@@ -104,12 +104,16 @@ def analyze(posts, start_date, end_date):
     for channel_id, handle in CHANNELS.items():
         channel_posts = by_channel.get(channel_id, [])
         flags = []
+        post_log = []
         for post in channel_posts:
             post_type, asset = post_type_and_asset(post)
             if asset is None:
                 continue  # skipped Reel/video/no-image post — Phase 2
             total_reviewed += 1
             verdict = evaluate_post(post, asset)
+            post_date = post.get("sentAt") or post.get("dueAt", "")
+            caption = post.get("text", "")
+            link = post.get("externalLink", "")
             if verdict["flagged"]:
                 flags.append(
                     {
@@ -117,15 +121,30 @@ def analyze(posts, start_date, end_date):
                         "level": verdict["level"],
                         "category": verdict["category"],
                         "confidence": verdict["confidence"],
-                        "date": post.get("sentAt") or post.get("dueAt", ""),
+                        "date": post_date,
                         "postType": post_type,
                         "visualReviewed": True,
-                        "caption": post.get("text", ""),
+                        "caption": caption,
                         "why": verdict["why"],
                         "action": verdict["action"],
-                        "link": post.get("externalLink", ""),
+                        "link": link,
                     }
                 )
+            # postLog covers EVERY post (flagged or not) — unlike "flags", it's
+            # what lets the dashboard filter by the post's own publish date
+            # across clean posts too, not just flagged ones.
+            post_log.append(
+                {
+                    "id": f"{post['id']}",
+                    "date": post_date,
+                    "postType": post_type,
+                    "caption": caption,
+                    "link": link,
+                    "flagged": verdict["flagged"],
+                    "level": verdict["level"] if verdict["flagged"] else None,
+                    "category": verdict["category"] if verdict["flagged"] else None,
+                }
+            )
         accounts.append(
             {
                 "name": DISPLAY_NAMES.get(handle, handle),
@@ -133,6 +152,7 @@ def analyze(posts, start_date, end_date):
                 "posts": len(channel_posts),
                 "status": "flagged" if flags else "clean",
                 "flags": flags,
+                "postLog": post_log,
             }
         )
 
