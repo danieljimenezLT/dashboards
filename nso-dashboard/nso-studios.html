@@ -307,7 +307,7 @@
 const NSO=['SWEAT440 Aventura','SWEAT440 Burlington','SWEAT440 Dallas - Uptown','SWEAT440 Dunwoody','SWEAT440 Fort Myers','SWEAT440 Herriman','SWEAT440 Middletown','SWEAT440 Naples - Mercato','SWEAT440 North Miami','SWEAT440 Old Bridge','SWEAT440 Orlando - Dr Phillips','SWEAT440 Reston'];
 const EXCL_SRC=['ClassPass / Platforms'];
 
-let RAW=null,SC=null,PRE_WEEKS=null,GRS_SPEND=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},CH_RAW=null;const _ch={};let _chDupOnly=false;
+let RAW=null,SC=null,PRE_WEEKS=null,GRS_SPEND=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},VIDEO_DRIVE_LINKS={},CH_RAW=null;const _ch={};let _chDupOnly=false;
 let CUR_USER=null,_allowedStudios=null;const isAdminUser=()=>CUR_USER&&CUR_USER.role==='admin';
 let _sumView='cum',_sumStudio=null,_scStudio=null,_dataThruLabel='',_sumD7End=null;
 const TODAY=new Date(),fom=new Date(TODAY.getFullYear(),TODAY.getMonth(),1),lpm=new Date(fom.getTime()-864e5),fpm=new Date(lpm.getFullYear(),lpm.getMonth(),1);
@@ -2505,6 +2505,9 @@ function _adSlug(name){
 function _adVideoUrl(name){
   return AD_VIDEO_BASE?`${AD_VIDEO_BASE}/${_adSlug(name)}.mp4`:null;
 }
+function _creativeSlug(name){
+  return(name||'').replace(/^\d{2}-[A-Z]{2}-\d{3}-\d{2}\s*[-\s]+/,'').trim();
+}
 function _ensureAdLightbox(){
   if(document.getElementById('ad-lightbox'))return;
   const el=document.createElement('div');
@@ -2598,7 +2601,7 @@ function renderMeta(){
     const name=_metaCreativeName(r.ad_name||r.campaign_name);
     if(!name)return;
     if(!creativeMap[name]){creativeMap[name]={name,impressions:0,clicks:0,spend:0,leads:0,
-      media_type:r.object_type||'Other',thumb:'',preview:'',campaign:r.campaign_name||'',
+      media_type:r.object_type||'Other',thumb:'',full_img:'',preview:'',campaign:r.campaign_name||'',
       ad_name:r.ad_name||'',status:''};}
     const g=creativeMap[name];
     g.impressions+=r.impressions||0;g.clicks+=r.clicks||0;
@@ -2611,6 +2614,7 @@ function renderMeta(){
   Object.values(creativeMap).forEach(g=>{
     const meta=AD_META[g.ad_name];
     if(meta&&meta.thumbnail_url)g.thumb=meta.thumbnail_url;
+    if(meta&&meta.image_url)g.full_img=meta.image_url;
     if(meta&&meta.preview_link&&!g.preview)g.preview=meta.preview_link;
     if(meta&&meta.effective_status)g.status=meta.effective_status;
     if(meta&&meta.object_type)g.media_type=meta.object_type;
@@ -2689,7 +2693,17 @@ function renderMeta(){
     _metaTable.addEventListener('click',e=>{
       const btn=e.target.closest('.ad-thumb-btn');
       if(!btn)return;
-      openAdMedia(btn.dataset.thumb,btn.dataset.vid==='1',btn.dataset.vurl||null,btn.dataset.prev||null,btn.dataset.name);
+      const isVid=btn.dataset.vid==='1';
+      if(isAdminUser()){
+        if(isVid){
+          const url=btn.dataset.vurl||btn.dataset.prev||null;
+          if(url)window.open(url,'_blank','noopener');
+        }else{
+          openAdMedia(btn.dataset.full||btn.dataset.thumb,false,null,null,btn.dataset.name);
+        }
+      }else{
+        openAdMedia(btn.dataset.thumb,isVid,null,btn.dataset.prev||null,btn.dataset.name);
+      }
     });
   }
 
@@ -2698,8 +2712,8 @@ function renderMeta(){
     sortableTable('meta-ads-table',creativeRows,(g,i)=>{
       const isVid=(g.media_type||'').toLowerCase().includes('video')||g.name.toLowerCase().includes('reel')||g.name.toLowerCase().includes('video');
       const canLink=isAdminUser();
-      const videoUrl=isVid?_adVideoUrl(g.name):null;
-      const thumbAttrs=`class="ad-thumb-btn" data-thumb="${(g.thumb||'').replace(/"/g,'&quot;')}" data-vid="${isVid?1:0}" data-vurl="${videoUrl||''}" data-prev="${(g.preview||'').replace(/"/g,'&quot;')}" data-name="${g.name.replace(/"/g,'&quot;')}"`;
+      const driveUrl=isVid?(VIDEO_DRIVE_LINKS[_creativeSlug(g.name)]||''):'';
+      const thumbAttrs=`class="ad-thumb-btn" data-thumb="${(g.thumb||'').replace(/"/g,'&quot;')}" data-full="${(g.full_img||g.thumb||'').replace(/"/g,'&quot;')}" data-vid="${isVid?1:0}" data-vurl="${driveUrl}" data-prev="${(g.preview||'').replace(/"/g,'&quot;')}" data-name="${g.name.replace(/"/g,'&quot;')}"`;
       const fallback=`<div ${thumbAttrs} style="width:44px;height:44px;background:#0084b5;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">${isVid?'&#9654;':'&#128444;'}</div>`;
       const thumbCell=g.thumb
         ?`<div ${thumbAttrs} style="width:44px;height:44px;border-radius:6px;overflow:hidden;border:1px solid rgba(0,163,224,0.2);cursor:pointer"><img src="${g.thumb}" style="width:100%;height:100%;object-fit:cover;pointer-events:none" loading="lazy" data-fb="${fallback.replace(/"/g,'&quot;')}" onerror="this.parentElement.outerHTML=this.dataset.fb" /></div>`
@@ -3821,7 +3835,7 @@ async function init(){
   }
 
   // Load all data files
-  const [dataRes,scRes,mktRes,dashRes,gadsRes,socialRes,salesRes,gbpRes,adMetaRes,chRes,pwRes,grRes]=await Promise.allSettled([
+  const [dataRes,scRes,mktRes,dashRes,gadsRes,socialRes,salesRes,gbpRes,adMetaRes,chRes,pwRes,grRes,vdlRes]=await Promise.allSettled([
     fetch('../data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('nso_scorecard_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('marketing_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
@@ -3834,6 +3848,7 @@ async function init(){
     fetch('nso_client_history.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('nso_pre_weeks_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('nso_grassroots_spend.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
+    fetch('../video_drive_links.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
   ]);
 
   if(dataRes.status==='fulfilled'){RAW=dataRes.value;if(!RAW.daily_detail)RAW.daily_detail=[];if(!RAW.monthly_detail)RAW.monthly_detail=[]
@@ -3888,6 +3903,9 @@ async function init(){
 
   if(grRes.status==='fulfilled'){GRS_SPEND=grRes.value}
   else{console.warn('nso_grassroots_spend.json not found');GRS_SPEND=null}
+
+  if(vdlRes.status==='fulfilled'){VIDEO_DRIVE_LINKS=vdlRes.value||{}}
+  else{console.warn('video_drive_links.json not found — Drive links unavailable')}
 
   renderFreshnessNote('dataFreshnessNote', [
     {raw: dataRes.status==='fulfilled'   ? dataRes.value   : null, lagDays: 2},
