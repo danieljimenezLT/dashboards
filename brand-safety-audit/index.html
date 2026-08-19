@@ -458,12 +458,90 @@ function renderDateFilteredList(){
   }).join("");
 }
 
-// data/latest.json is the source of truth — the "Publish new cycle" button
-// below writes to this exact file via the refresh-proxy Worker (direct
-// commit to the repo), so a plain fetch always reflects the latest publish.
+// Plain fallback: data/latest.json is kept in sync with whichever cycle
+// covers the most recent dates (see the Worker's publish handler), so a
+// direct fetch is a reasonable single-cycle view when the merged load below
+// can't run (e.g. the cycle-listing call fails).
 async function loadAudit(){
   const r=await fetch("data/latest.json?cb="+Date.now());
   return await r.json();
+}
+
+// A calendar month can now hold more than one published run (e.g. an Aug
+// 1-4 backfill alongside an already-published Aug 5-12) since cycle files
+// are keyed by date range, not by month. "coverage.to" wins over the older
+// "cycle" field (itself just "YYYY-MM") as the month key, since it's the
+// authoritative date.
+function monthKeyOf(data){
+  if(data.coverage&&data.coverage.to)return data.coverage.to.slice(0,7);
+  if(data.cycle&&/^\d{4}-\d{2}$/.test(data.cycle))return data.cycle;
+  return null;
+}
+
+// Merges every run published within one calendar month into a single
+// AUDIT-shaped object — same fields renderMetrics()/render() already know
+// how to read — by summing post counts and concatenating flags/postLog per
+// account (matched by handle).
+function mergeAuditsForMonth(cycleDatas,month){
+  const sorted=cycleDatas.slice().sort((a,b)=>{
+    const av=(a.coverage&&a.coverage.from)||a.generated||"";
+    const bv=(b.coverage&&b.coverage.from)||b.generated||"";
+    return av<bv?-1:av>bv?1:0;
+  });
+  const byHandle={};
+  let postsReviewed=0,minFrom=null,maxTo=null,latestGenerated="";
+  for(const d of sorted){
+    postsReviewed+=d.postsReviewed||0;
+    if(d.generated&&d.generated>latestGenerated)latestGenerated=d.generated;
+    if(d.coverage){
+      if(d.coverage.from&&(!minFrom||d.coverage.from<minFrom))minFrom=d.coverage.from;
+      if(d.coverage.to&&(!maxTo||d.coverage.to>maxTo))maxTo=d.coverage.to;
+    }
+    for(const a of(d.accounts||[])){
+      if(!byHandle[a.handle])byHandle[a.handle]={name:a.name,handle:a.handle,posts:0,flags:[],postLog:[]};
+      const acc=byHandle[a.handle];
+      acc.posts+=a.posts||0;
+      acc.flags=acc.flags.concat(a.flags||[]);
+      if(Array.isArray(a.postLog))acc.postLog=acc.postLog.concat(a.postLog);
+    }
+  }
+  const accounts=Object.values(byHandle).map(a=>{
+    const out={name:a.name,handle:a.handle,posts:a.posts,status:a.flags.length?"flagged":"clean",flags:a.flags};
+    if(a.postLog.length)out.postLog=a.postLog;
+    return out;
+  });
+  const monthDate=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7))-1,1));
+  const merged={
+    cycle:month,
+    period:monthDate.toLocaleDateString("en-US",{month:"long",year:"numeric",timeZone:"UTC"}),
+    generated:latestGenerated,
+    source:sorted.length>1?"Combined across "+sorted.length+" review runs this month":(sorted[0].source||""),
+    postsReviewed,
+    accounts,
+  };
+  if(minFrom&&maxTo)merged.coverage={from:minFrom,to:maxTo};
+  return merged;
+}
+
+// Default view: fetch every published cycle, merge whichever calendar month
+// is most recent into one combined view, and fall back to a plain
+// data/latest.json fetch if the cycle listing comes back empty (e.g. the
+// Worker is unreachable).
+async function loadDefaultAudit(){
+  const cycles=await listCycles();
+  const loaded=[];
+  for(const cycle of cycles){
+    try{
+      const r=await fetch("data/"+cycle+".json?cb="+Date.now());
+      if(!r.ok)continue;
+      loaded.push(await r.json());
+    }catch(e){/* skip a bad cycle file rather than failing the whole load */}
+  }
+  const withMonth=loaded.map(d=>({d,month:monthKeyOf(d)})).filter(x=>x.month);
+  if(!withMonth.length)return await loadAudit();
+  const latestMonth=withMonth.map(x=>x.month).sort().reverse()[0];
+  const inMonth=withMonth.filter(x=>x.month===latestMonth).map(x=>x.d);
+  return mergeAuditsForMonth(inMonth,latestMonth);
 }
 
 function refreshHeader(){
@@ -582,9 +660,16 @@ async function publishCycle(){
     return;
   }
 
-  AUDIT=payload;
-  LATEST_AUDIT=payload;
+  // Re-fetch and re-merge rather than just assigning the uploaded payload —
+  // this cycle might share a month with others already published (e.g. a
+  // backfill), and the default view should reflect all of them combined.
   resetDateFilterState();
+  try{
+    AUDIT=await loadDefaultAudit();
+  }catch(e){
+    AUDIT=payload;
+  }
+  LATEST_AUDIT=AUDIT;
   refreshHeader();
   updateCoverageUI();
   renderMetrics();
@@ -597,7 +682,7 @@ async function publishCycle(){
 
 async function init(){
   try{
-    AUDIT=await loadAudit();
+    AUDIT=await loadDefaultAudit();
     LATEST_AUDIT=AUDIT;
   }catch(e){
     document.getElementById("studioList").innerHTML='<div class="empty">Could not load audit data — check data/latest.json.</div>';
