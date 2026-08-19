@@ -361,12 +361,16 @@ async function collectAllHistoricalPosts(){
       const r=await fetch("data/"+cycle+".json?cb="+Date.now());
       if(!r.ok)continue;
       const data=await r.json();
+      // Label with the human-readable period ("August 1-4, 2026") when the
+      // cycle has one, since "cycle" alone (e.g. "2026-08") is no longer
+      // unique — a month can now hold several separately-published runs.
+      const label=data.period||cycle;
       for(const a of(data.accounts||[])){
         if(Array.isArray(a.postLog)){
-          for(const p of a.postLog)out.push(Object.assign({accountName:a.name,accountHandle:a.handle,cycle:data.cycle},p));
+          for(const p of a.postLog)out.push(Object.assign({accountName:a.name,accountHandle:a.handle,cycle:label},p));
         }else{
           for(const f of(a.flags||[])){
-            out.push({accountName:a.name,accountHandle:a.handle,cycle:data.cycle,id:f.id,date:f.date,postType:f.postType,caption:f.caption,link:f.link,flagged:true,level:f.level,category:f.category,legacy:true});
+            out.push({accountName:a.name,accountHandle:a.handle,cycle:label,id:f.id,date:f.date,postType:f.postType,caption:f.caption,link:f.link,flagged:true,level:f.level,category:f.category,legacy:true});
           }
         }
       }
