@@ -129,7 +129,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 
   <div class="publish-box" id="publishBox">
     <div class="publish-row">
-      <span class="publish-label" id="coverageLabel">Data reviewed through: —</span>
+      <span class="publish-label" id="coverageLabel">Data reviewed: —</span>
     </div>
     <div class="publish-row">
       <span class="publish-label">1. Get posts from:</span>
@@ -563,12 +563,12 @@ function updateCoverageUI(){
   toInput.value=todayStr;
 
   if(coverage&&coverage.to){
-    label.textContent="Data reviewed through: "+coverage.to;
+    label.textContent="Data reviewed: "+(coverage.from||coverage.to)+" – "+coverage.to;
     const next=new Date(coverage.to+"T00:00:00Z");
     next.setUTCDate(next.getUTCDate()+1);
     fromInput.value=next.toISOString().slice(0,10);
   }else{
-    label.textContent="Data reviewed through: unknown (older cycle — no coverage recorded)";
+    label.textContent="Data reviewed: unknown (older cycle — no coverage recorded)";
     const weekAgo=new Date();
     weekAgo.setDate(weekAgo.getDate()-7);
     fromInput.value=weekAgo.toISOString().slice(0,10);
