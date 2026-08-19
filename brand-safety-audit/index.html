@@ -129,7 +129,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 
   <div class="publish-box" id="publishBox">
     <div class="publish-row">
-      <span class="publish-label" id="coverageLabel">Data reviewed through: —</span>
+      <span class="publish-label" id="coverageLabel">Data reviewed: —</span>
     </div>
     <div class="publish-row">
       <span class="publish-label">1. Get posts from:</span>
@@ -563,12 +563,12 @@ function updateCoverageUI(){
   toInput.value=todayStr;
 
   if(coverage&&coverage.to){
-    label.textContent="Data reviewed through: "+coverage.to;
+    label.textContent="Data reviewed: "+(coverage.from||coverage.to)+" – "+coverage.to;
     const next=new Date(coverage.to+"T00:00:00Z");
     next.setUTCDate(next.getUTCDate()+1);
     fromInput.value=next.toISOString().slice(0,10);
   }else{
-    label.textContent="Data reviewed through: unknown (older cycle — no coverage recorded)";
+    label.textContent="Data reviewed: unknown (older cycle — no coverage recorded)";
     const weekAgo=new Date();
     weekAgo.setDate(weekAgo.getDate()-7);
     fromInput.value=weekAgo.toISOString().slice(0,10);
@@ -591,8 +591,17 @@ async function listCycles(){
 
 // Validate the bare minimum shape before accepting a file — catches a
 // malformed Claude response or a wrong file before it reaches the sheet.
+const ISO_DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
+
 function validateAuditShape(data){
   if(!data||!Array.isArray(data.accounts))return"Missing \"accounts\" array.";
+  // "coverage" is required — the Worker picks which cycle becomes latest.json
+  // by comparing coverage.to across every published cycle, and this has
+  // twice now been silently omitted by the manual review flow, causing a
+  // publish to succeed but the dashboard to keep showing an older cycle.
+  if(!data.coverage||!ISO_DATE_RE.test(data.coverage.from||"")||!ISO_DATE_RE.test(data.coverage.to||"")){
+    return"Missing or invalid \"coverage\" — needs {from, to} as YYYY-MM-DD for the actual date range reviewed. Without it this cycle can silently fail to become the latest shown on the dashboard.";
+  }
   for(const a of data.accounts){
     if(typeof a.handle!=="string"||!Array.isArray(a.flags)){
       return"Account \""+(a.name||"?")+"\" is missing \"handle\" or \"flags\".";
