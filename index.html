@@ -2052,8 +2052,7 @@ function _ensureAdLightbox(){
   const el=document.createElement('div');
   el.id='ad-lightbox';
   el.style.cssText='display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);align-items:center;justify-content:center;cursor:pointer';
-  el.innerHTML=`<button onclick="closeAdLightbox()" style="position:fixed;top:14px;right:18px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:22px;line-height:1;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10000">&#10005;</button>
-    <div id="ad-lightbox-content" style="width:min(90vw,900px);max-height:90vh;position:relative;cursor:default;display:flex;flex-direction:column;align-items:center;gap:10px" onclick="event.stopPropagation()"></div>`;
+  el.innerHTML=`<div id="ad-lightbox-content" style="width:min(90vw,900px);max-height:90vh;position:relative;cursor:default" onclick="event.stopPropagation()"></div>`;
   el.addEventListener('click',closeAdLightbox);
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAdLightbox();});
   document.body.appendChild(el);
@@ -2066,9 +2065,7 @@ function openAdMedia(thumb,isVid,videoUrl,preview,adName){
     ct.innerHTML=`<video controls autoplay style="max-width:92vw;max-height:85vh;border-radius:8px;background:#000" src="${videoUrl}">Your browser does not support video.</video><p style="color:#aac;font-size:11px;margin:0">${adName||''}</p>`;
   }else if(thumb){
     const hiRes=(thumb||'').replace(/p\d+x\d+/g,'p960x960');
-    const _prevLink=preview?`<a href="${preview}" target="_blank" rel="noopener" style="color:#00A3E0;font-size:12px;text-decoration:none">Ver en Meta →</a>`:'';
-    ct.innerHTML=`<img src="${hiRes}" style="max-width:100%;max-height:80vh;border-radius:8px;object-fit:contain;box-shadow:0 4px 40px rgba(0,0,0,.6)" onerror="this.style.display='none'" loading="eager"/>
-      <div style="display:flex;justify-content:space-between;align-items:center;width:100%;gap:12px"><p style="color:#aac;font-size:11px;margin:0;flex:1">${adName||''}</p>${_prevLink}</div>`;
+    ct.innerHTML=`<img src="${hiRes}" style="max-width:100%;max-height:90vh;border-radius:8px;object-fit:contain;box-shadow:0 4px 40px rgba(0,0,0,.6)" onerror="this.style.display='none'" loading="eager"/>`;
   }else return;
   lb.style.display='flex';
 }
