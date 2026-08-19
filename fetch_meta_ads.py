@@ -106,6 +106,17 @@ def _media_type_from_creative(creative: dict) -> str | None:
     return None
 
 
+def _is_small_thumb(url: str) -> bool:
+    """Return True if the URL is a tiny Meta CDN thumbnail (p64x64 or similar < 300px)."""
+    if not url:
+        return True
+    if "external-" in url or "/emg1/" in url:
+        return True
+    import re as _re
+    m = _re.search(r'[_/]p(\d+)x\d+', url)
+    return bool(m and int(m.group(1)) < 300)
+
+
 def _extract_thumb(creative: dict) -> str:
     """
     Cascade through known Meta creative shapes to find a thumbnail URL.
@@ -113,12 +124,22 @@ def _extract_thumb(creative: dict) -> str:
     Most ads in this account are dynamic creative / Advantage+, so the
     top-level thumbnail_url / image_url come back empty. The actual image
     URL is nested inside object_story_spec or asset_feed_spec.
+
+    thumbnail_url from the batch /ids endpoint often comes back as a tiny
+    64×64 CDN URL (stp=...p64x64...). We skip those and prefer
+    asset_feed_spec.images[0].url which is the full-resolution image.
+    Fall back to the small thumbnail only as a last resort so something
+    always shows.
     """
     if not creative:
         return ""
-    # 1) Top-level (legacy / simple ads)
-    if creative.get("thumbnail_url"): return creative["thumbnail_url"]
-    if creative.get("image_url"):     return creative["image_url"]
+
+    top_thumb = creative.get("thumbnail_url") or ""
+    top_img   = creative.get("image_url") or ""
+
+    # 1) Top-level full-size (large thumbnail_url or image_url)
+    if top_thumb and not _is_small_thumb(top_thumb): return top_thumb
+    if top_img   and not _is_small_thumb(top_img):   return top_img
 
     # 2) object_story_spec — classic page-post ads
     oss = creative.get("object_story_spec") or {}
@@ -130,7 +151,7 @@ def _extract_thumb(creative: dict) -> str:
         if isinstance(ld, dict) and ld.get("picture"):
             return ld["picture"]
 
-    # 3) asset_feed_spec — dynamic creative / Advantage+
+    # 3) asset_feed_spec — dynamic creative / Advantage+ (full-res image)
     afs = creative.get("asset_feed_spec") or {}
     if isinstance(afs, dict):
         images = afs.get("images") or []
@@ -144,7 +165,8 @@ def _extract_thumb(creative: dict) -> str:
             if first.get("thumbnail_url"): return first["thumbnail_url"]
             if first.get("url"):           return first["url"]
 
-    return ""
+    # 4) Fallback: return the small thumbnail — better than nothing
+    return top_thumb or top_img
 
 
 def _media_type_from_name(ad_name: str) -> str:
