@@ -46,6 +46,13 @@
       "summary": "Both studios now appear in the New Studio Opening dashboard, and weekly sales figures correctly show as negative when a studio has more cancellations than new sign-ups."
     },
     {
+      "date": "2026-08-18",
+      "author": "Santiago Estrada",
+      "categories": ["NSO Dashboard"],
+      "title": "Added the Leads Detail download button to the New Studio Dashboard",
+      "summary": "The on-demand CSV lead-list download already available on the Open Studio Dashboard is now also available in the New Studio Opening dashboard."
+    },
+    {
       "date": "2026-08-14",
       "pr_number": 191,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/191",
@@ -53,6 +60,13 @@
       "categories": ["NSO Dashboard"],
       "title": "Added membership tier tracking for Naples",
       "summary": "The New Sales tab and scorecard now break down Naples' recurring membership revenue by tier, instead of only showing one combined total."
+    },
+    {
+      "date": "2026-08-13",
+      "author": "Santiago Estrada",
+      "categories": ["OS Dashboard"],
+      "title": "Added an on-demand Leads Detail download button",
+      "summary": "You can now download a detailed CSV list of leads directly from the Open Studio Dashboard, instead of requesting one manually."
     },
     {
       "date": "2026-08-12",
@@ -71,6 +85,20 @@
       "categories": ["Brand Audit"],
       "title": "Brand Safety Audit: easier to browse past review cycles",
       "summary": "Added a picker to browse and review previous Brand Safety Audit runs, and fixed a bug where publishing a new cycle could occasionally save incomplete data."
+    },
+    {
+      "date": "2026-08-12",
+      "author": "Santiago Estrada",
+      "categories": ["OS Dashboard"],
+      "title": "Added a totals row to the Funnel tab",
+      "summary": "The Funnel tab now shows a conversion-rate totals row, summarizing the full funnel at a glance instead of requiring you to work it out from each stage."
+    },
+    {
+      "date": "2026-08-12",
+      "author": "Santiago Estrada",
+      "categories": ["OS Dashboard"],
+      "title": "Added a Network Average comparison to the Summary tab",
+      "summary": "KPI cards on the Summary tab, and now the Funnel, First Timers, and Blended CPR tabs too, show how your studio compares to the network average — not just how it's trending against its own past periods."
     },
     {
       "date": "2026-08-12",
