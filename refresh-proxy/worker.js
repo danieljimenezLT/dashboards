@@ -647,31 +647,75 @@ async function putRepoFiles(env, files, message) {
   }
 }
 
+// Cycle files used to be keyed by calendar month ("2026-08.json"), which
+// meant a second run landing in the same month — e.g. backfilling Aug 1-4
+// after Aug 5-12 was already published — silently overwrote the earlier
+// one. Key by the actual date range reviewed instead, so every publish gets
+// its own file and history only ever accumulates. Falls back to the
+// generation date for older manual exports that omit "coverage".
+function cycleFilenameBase(payload) {
+  const coverage = payload.coverage;
+  if (coverage && coverage.from && coverage.to) return `${coverage.from}_to_${coverage.to}`;
+  return payload.generated || payload.cycle || new Date().toISOString().slice(0, 10);
+}
+
 async function handlePublishBrandAuditCycle(body, env, headers) {
   const payload = body.payload;
   const problem = validateBrandAuditPayload(payload);
   if (problem) return jsonResponse({ ok: false, error: problem }, 400, headers);
 
-  const cycle = payload.cycle || new Date().toISOString().slice(0, 7);
+  const listRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${BRAND_AUDIT_DATA_DIR}`, {
+    headers: ghHeaders(env),
+  });
+  const existingFiles = listRes.ok ? await listRes.json() : [];
+
+  const base = cycleFilenameBase(payload);
+  const existingNames = new Set(existingFiles.map(f => f.name.replace(/\.json$/, '')));
+  let filename = base;
+  for (let n = 2; existingNames.has(filename); n++) filename = `${base}-${n}`;
+
+  // latest.json tracks whichever cycle covers the most RECENT dates, not
+  // simply whichever was published most recently — otherwise backfilling an
+  // earlier gap would wrongly rewind "reviewed through" and cause the next
+  // Download to re-pull dates that are already covered. A payload missing
+  // "coverage" only wins by default (nothing to compare its date against).
+  let latestPayload = payload;
+  let latestTo = payload.coverage && payload.coverage.to;
+  for (const f of existingFiles) {
+    if (f.name === 'latest.json' || !f.name.endsWith('.json')) continue;
+    try {
+      const fileRes = await fetch(f.download_url, { headers: ghHeaders(env) });
+      const data = await fileRes.json();
+      const to = data.coverage && data.coverage.to;
+      if (to && (!latestTo || to > latestTo)) {
+        latestTo = to;
+        latestPayload = data;
+      }
+    } catch (e) {
+      // one unreadable cycle file shouldn't block the publish
+    }
+  }
+
   const content = JSON.stringify(payload, null, 2) + '\n';
+  const latestContent = JSON.stringify(latestPayload, null, 2) + '\n';
 
   await putRepoFiles(
     env,
     [
-      { path: `${BRAND_AUDIT_DATA_DIR}/latest.json`, content },
-      { path: `${BRAND_AUDIT_DATA_DIR}/${cycle}.json`, content },
+      { path: `${BRAND_AUDIT_DATA_DIR}/${filename}.json`, content },
+      { path: `${BRAND_AUDIT_DATA_DIR}/latest.json`, content: latestContent },
     ],
-    `Publish brand safety audit cycle ${cycle}`
+    `Publish brand safety audit cycle ${filename}`
   );
 
   return jsonResponse({ ok: true }, 200, headers);
 }
 
 // The dashboard's post-date filter needs the list of published cycle files
-// (brand-safety-audit/data/2026-06.json, etc.) to search across. The repo is
-// private, so the browser can't hit the GitHub Contents API directly — it
-// 404s with no auth even though the path exists — this proxies that one
-// read through the Worker's own GITHUB_TOKEN.
+// (brand-safety-audit/data/2026-06.json, brand-safety-audit/data/2026-08-05_to_2026-08-12.json,
+// etc.) to search across. The repo is private, so the browser can't hit the
+// GitHub Contents API directly — it 404s with no auth even though the path
+// exists — this proxies that one read through the Worker's own GITHUB_TOKEN.
 async function handleListBrandAuditCycles(env, headers) {
   const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${BRAND_AUDIT_DATA_DIR}`, {
     headers: ghHeaders(env),
@@ -679,8 +723,8 @@ async function handleListBrandAuditCycles(env, headers) {
   if (!res.ok) return jsonResponse({ ok: false, error: `GitHub returned ${res.status}` }, 502, headers);
   const files = await res.json();
   const cycles = files
-    .filter(f => /^\d{4}-\d{2}\.json$/.test(f.name))
-    .map(f => f.name.replace('.json', ''))
+    .filter(f => f.name !== 'latest.json' && f.name.endsWith('.json'))
+    .map(f => f.name.replace(/\.json$/, ''))
     .sort()
     .reverse();
   return jsonResponse({ ok: true, cycles }, 200, headers);
