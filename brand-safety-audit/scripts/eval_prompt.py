@@ -109,13 +109,16 @@ date range (Static and Carousel only — Reels and Stories are excluded, see \
 the "postType" already set per post). Evaluate every post using the \
 SWEAT440 Brand Safety Audit framework above, one post at a time, then \
 return a SINGLE JSON object with this exact shape (matching the dashboard's \
-data file):
+data file). "coverage" and "postLog" are REQUIRED, not optional — the \
+dashboard's storage is keyed by "coverage"'s date range, so omitting it \
+causes two different review runs to silently overwrite each other on \
+publish (this has happened before):
 
 {
   "cycle": "<copy verbatim from the export's \"cycle\" field>",
   "period": "<copy verbatim from the export's \"period\" field>",
   "generated": "<copy verbatim from the export's \"generated\" field>",
-  "coverage": <copy the export's \"coverage\" object verbatim, unchanged>,
+  "coverage": <copy the export's \"coverage\" object verbatim, unchanged — REQUIRED>,
   "source": "Buffer (manual Claude.ai review)",
   "postsReviewed": <int — total posts you evaluated, flagged or not>,
   "accounts": [
@@ -138,11 +141,28 @@ data file):
           "action": "<concrete next step for the reviewer>",
           "link": "<externalLink from the export>"
         }
+      ],
+      "postLog": [
+        {
+          "id": "<post id from the export — every post, flagged or not>",
+          "date": "<sentAt/dueAt from the export — this is the post's own \
+publish date, NOT the date you're running this analysis>",
+          "postType": "Static" | "Carousel",
+          "caption": "<the post's caption, verbatim>",
+          "link": "<externalLink from the export>",
+          "flagged": true | false,
+          "level": "high" | "medium" | "low" | null,
+          "category": "<category name, or null if not flagged>"
+        }
       ]
     }
   ]
 }
 
 Only include a post in "flags" if it's actually flagged — clean posts just \
-count toward "posts" and "postsReviewed", not toward "flags". Return ONLY \
-the JSON object, no other text, so it can be saved directly as a file."""
+count toward "posts" and "postsReviewed", not toward "flags". "postLog", \
+unlike "flags", must include EVERY post you evaluated for that account \
+(flagged and clean alike) — it's what lets the dashboard filter by the \
+post's own publish date later, across both flagged and clean posts. Return \
+ONLY the JSON object, no other text, so it can be saved directly as a \
+file."""
