@@ -1,0 +1,191 @@
+{
+  "entries": [
+    {
+      "date": "2026-08-19",
+      "pr_number": 197,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/197",
+      "author": "Sebastian Arango",
+      "categories": ["Brand Audit"],
+      "title": "Fixed missing history in the Brand Safety Audit tool",
+      "summary": "Past audit cycles had stopped showing up after a backend change. The tool now retrieves that history through a secure connection, so all past cycles are visible again."
+    },
+    {
+      "date": "2026-08-18",
+      "pr_number": 196,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/196",
+      "author": "Sebastian Arango",
+      "categories": ["Brand Audit"],
+      "title": "Brand Safety Audit's date filter now searches everything",
+      "summary": "The post-date filter previously only checked the audit cycle currently open on screen. It now searches across every past cycle, so filtering by date returns complete results."
+    },
+    {
+      "date": "2026-08-18",
+      "pr_number": 195,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/195",
+      "author": "Sebastian Arango",
+      "categories": ["Campaign Dashboard"],
+      "title": "Added Summer Pass and 33% Off to the Campaign Dashboard",
+      "summary": "The Campaign Dashboard now tracks the Summer Pass promotion (May 15 – Jun 15, with post-promo tracking through Aug 15) and the 33% Off campaign, both populated with real performance numbers."
+    },
+    {
+      "date": "2026-08-18",
+      "pr_number": 194,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/194",
+      "author": "Sebastian Arango",
+      "categories": ["NSO Dashboard"],
+      "title": "Added Reston's opening milestones to the New Studio Dashboard",
+      "summary": "Preview Week and Grand Opening milestones for the Reston studio launch are now tracked alongside the rest of its new-studio-opening data."
+    },
+    {
+      "date": "2026-08-18",
+      "pr_number": 192,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/192",
+      "author": "Sebastian Arango",
+      "categories": ["NSO Dashboard"],
+      "title": "Long Beach and Rose Creek added as New Studio Openings",
+      "summary": "Both studios now appear in the New Studio Opening dashboard, and weekly sales figures correctly show as negative when a studio has more cancellations than new sign-ups."
+    },
+    {
+      "date": "2026-08-14",
+      "pr_number": 191,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/191",
+      "author": "Sebastian Arango",
+      "categories": ["NSO Dashboard"],
+      "title": "Added membership tier tracking for Naples",
+      "summary": "The New Sales tab and scorecard now break down Naples' recurring membership revenue by tier, instead of only showing one combined total."
+    },
+    {
+      "date": "2026-08-12",
+      "pr_number": 189,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/189",
+      "author": "Sebastian Arango",
+      "categories": ["Brand Audit"],
+      "title": "Brand Safety Audit can now filter by the post's own date",
+      "summary": "You can filter Instagram posts in the Brand Safety Audit tool by the date they were actually published, making it easier to review a specific week or month."
+    },
+    {
+      "date": "2026-08-12",
+      "pr_number": 188,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/188",
+      "author": "Sebastian Arango",
+      "categories": ["Brand Audit"],
+      "title": "Brand Safety Audit: easier to browse past review cycles",
+      "summary": "Added a picker to browse and review previous Brand Safety Audit runs, and fixed a bug where publishing a new cycle could occasionally save incomplete data."
+    },
+    {
+      "date": "2026-08-12",
+      "pr_number": 186,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/186",
+      "author": "Sebastian Arango",
+      "categories": ["NSO Dashboard"],
+      "title": "Fixed a missing goal target after a data rebuild",
+      "summary": "A studio's milestone/goal target could occasionally get lost whenever its scorecard data was rebuilt. It's now automatically restored every time."
+    },
+    {
+      "date": "2026-08-12",
+      "pr_number": 185,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/185",
+      "author": "Sebastian Arango",
+      "categories": ["NSO Dashboard"],
+      "title": "Fort Myers presale data now shows in the New Studio Dashboard",
+      "summary": "Fort Myers' pre-opening sales data is now correctly linked and visible in the New Studio Opening dashboard."
+    },
+    {
+      "date": "2026-08-12",
+      "pr_number": 184,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/184",
+      "author": "Sebastian Arango",
+      "categories": ["NSO Dashboard"],
+      "title": "Fixed how presale sign-ups get credited to their source",
+      "summary": "Presale sign-ups are now matched to the correct marketing source (e.g. website vs. a third-party listing), fixing a mismatch introduced by a recent data update."
+    },
+    {
+      "date": "2026-08-11",
+      "pr_number": 183,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/183",
+      "author": "Santiago Estrada",
+      "categories": ["NSO Dashboard", "OS Dashboard"],
+      "title": "Added call and direction tracking to Google Ads, opened up dashboard access",
+      "summary": "The New Studio Opening dashboard's Google Ads tab now shows Opportunities, Cost per Opportunity, Calls, and Direction requests. Franchisees and studio managers can also now access the Open Studio Dashboard, not just corporate and admin users."
+    },
+    {
+      "date": "2026-08-11",
+      "pr_number": 181,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/181",
+      "author": "Santiago Estrada",
+      "categories": ["OS Dashboard"],
+      "title": "Added a Glossary tab to the Open Studio Dashboard",
+      "summary": "A new admin-only Glossary tab explains what each metric on the dashboard means."
+    },
+    {
+      "date": "2026-08-10",
+      "pr_number": 180,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/180",
+      "author": "Sebastian Arango",
+      "categories": ["Brand Audit"],
+      "title": "Brand Safety Audit: choose a custom date range for downloads",
+      "summary": "You can now pick a specific date range when downloading posts from the Brand Safety Audit tool, instead of only getting a fixed default range."
+    },
+    {
+      "date": "2026-08-10",
+      "pr_number": 178,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/178",
+      "author": "Sebastian Arango",
+      "categories": ["General"],
+      "title": "Fixed Google Ads data matching for three studios",
+      "summary": "Google Ads performance data now correctly links to Dunwoody, Old Bridge, and Middletown, instead of being missed due to a naming mismatch."
+    },
+    {
+      "date": "2026-08-10",
+      "pr_number": 177,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/177",
+      "author": "Sebastian Arango",
+      "categories": ["Brand Audit", "NSO Dashboard"],
+      "title": "Launched the Brand Safety Audit dashboard",
+      "summary": "A new admin-only tool reviews Instagram posts against SWEAT440's brand safety guidelines."
+    },
+    {
+      "date": "2026-08-06",
+      "author": "Santiago Estrada",
+      "categories": ["OS Dashboard"],
+      "title": "Added a conversion rate trend chart to the Funnel tab",
+      "summary": "The Funnel tab now shows how conversion rates have trended over time, instead of only the current snapshot."
+    },
+    {
+      "date": "2026-08-06",
+      "pr_number": 175,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/175",
+      "author": "Sebastian Arango",
+      "categories": ["Campaign Dashboard"],
+      "title": "Added a full Meta Ads report to the Campaign Dashboard",
+      "summary": "The Campaign Dashboard now includes a full breakdown of Meta Ads performance data."
+    },
+    {
+      "date": "2026-08-05",
+      "pr_number": 173,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/173",
+      "author": "Sebastian Arango",
+      "categories": ["NSO Dashboard"],
+      "title": "Dynamic weekly goals and lead-source filtering added",
+      "summary": "The Summary tab's weekly sales goal now recalculates automatically based on how many weeks remain until opening day, and Client History now lets you filter by, and see, the marketing source for each entry."
+    },
+    {
+      "date": "2026-08-05",
+      "pr_number": 172,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/172",
+      "author": "Sebastian Arango",
+      "categories": ["General"],
+      "title": "Fixed duplicate lead counting from Meta Ads",
+      "summary": "Some Meta Ads leads were being counted twice. That's now fixed, so Meta lead totals are accurate."
+    },
+    {
+      "date": "2026-08-05",
+      "pr_number": 170,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/170",
+      "author": "Sebastian Arango",
+      "categories": ["OS Dashboard", "NSO Dashboard"],
+      "title": "Meta Ads leads now split into Native and Offsite",
+      "summary": "Meta Ads reporting now separates leads generated directly on Meta's platform from those tracked via offsite conversions, giving a clearer picture of where leads actually come from."
+    }
+  ]
+}

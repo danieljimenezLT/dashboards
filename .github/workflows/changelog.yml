@@ -1,0 +1,123 @@
+name: Update Changelog
+
+# Runs whenever a pull request is merged into main. Reads the ```changelog
+# fenced block out of the PR description (see .github/pull_request_template.md)
+# for the title/summary, auto-detects which dashboard(s) it affects from the
+# changed files, and appends the result to changelog.json — which
+# admin-reports/changelog.html reads. PRs with no changelog block, or with
+# `skip: true` in it, are not logged.
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  changelog:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.ADMIN_PUSH_TOKEN }}
+
+      - name: Extract changelog entry from PR description
+        id: extract
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          printf '%s' "$PR_BODY" > pr_body.txt
+
+          BLOCK=$(awk '/^```changelog/{flag=1;next} /^```/{if(flag) exit} flag' pr_body.txt)
+
+          if [ -z "$BLOCK" ]; then
+            echo "No \`\`\`changelog block found in PR #$PR_NUMBER description — skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          TITLE=$(echo "$BLOCK" | grep -m1 '^title:' | sed 's/^title:[[:space:]]*//')
+          SUMMARY=$(echo "$BLOCK" | grep -m1 '^summary:' | sed 's/^summary:[[:space:]]*//')
+          SKIP=$(echo "$BLOCK" | grep -m1 '^skip:' | sed 's/^skip:[[:space:]]*//')
+
+          if [ "$SKIP" = "true" ]; then
+            echo "PR #$PR_NUMBER changelog block marked skip: true — not a user-facing change."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ -z "$TITLE" ] || [ -z "$SUMMARY" ]; then
+            echo "\`\`\`changelog block in PR #$PR_NUMBER is missing title or summary — skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          jq -n --arg title "$TITLE" --arg summary "$SUMMARY" '{title: $title, summary: $summary}' > entry.json
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Detect which dashboard(s) this PR touches
+        id: categories
+        if: steps.extract.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          curl -s -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$REPO/pulls/$PR_NUMBER/files?per_page=100" \
+            | jq -r '.[].filename' > changed_files.txt
+
+          CATS=()
+          grep -q '^nso-dashboard/'         changed_files.txt && CATS+=("NSO Dashboard")
+          grep -q '^brand-safety-audit/'    changed_files.txt && CATS+=("Brand Audit")
+          grep -q '^campaign-dashboard/'    changed_files.txt && CATS+=("Campaign Dashboard")
+          grep -q '^paid-ads-dashboards/'   changed_files.txt && CATS+=("Paid Ads Dashboard")
+          grep -qx 'index.html'             changed_files.txt && CATS+=("OS Dashboard")
+          [ ${#CATS[@]} -eq 0 ] && CATS+=("General")
+
+          printf '%s\n' "${CATS[@]}" | jq -R . | jq -s -c . > categories.json
+          cat categories.json
+
+      - name: Append entry to changelog.json
+        if: steps.extract.outputs.skip != 'true'
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_AUTHOR_LOGIN: ${{ github.event.pull_request.user.login }}
+          MERGED_AT: ${{ github.event.pull_request.merged_at }}
+        run: |
+          [ -f changelog.json ] || echo '{"entries":[]}' > changelog.json
+          [ -f .github/changelog-authors.json ] || echo '{}' > .github/changelog-authors.json
+          [ -f categories.json ] || echo '["General"]' > categories.json
+
+          DATE=$(date -u -d "$MERGED_AT" +%Y-%m-%d 2>/dev/null || date -u +%Y-%m-%d)
+          AUTHOR=$(jq -r --arg login "$PR_AUTHOR_LOGIN" '.[$login] // $login' .github/changelog-authors.json)
+
+          NEW_ENTRY=$(jq -n \
+            --slurpfile e entry.json \
+            --slurpfile cats categories.json \
+            --arg date "$DATE" \
+            --argjson pr "$PR_NUMBER" \
+            --arg pr_url "$PR_URL" \
+            --arg author "$AUTHOR" \
+            '$e[0] + {date: $date, pr_number: $pr, pr_url: $pr_url, author: $author, categories: $cats[0]} | {date, pr_number, pr_url, author, categories, title, summary}')
+
+          jq --argjson entry "$NEW_ENTRY" '.entries = [$entry] + .entries' changelog.json > changelog.json.tmp
+          mv changelog.json.tmp changelog.json
+
+      - name: Commit and push
+        if: steps.extract.outputs.skip != 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add changelog.json
+          git diff --cached --quiet || git commit -m "chore: log changelog entry for PR #${{ github.event.pull_request.number }}"
+          git pull --rebase origin main
+          git push
