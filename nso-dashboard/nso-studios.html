@@ -2696,7 +2696,7 @@ function renderMeta(){
   // Populate creative ads table
   if(creativeRows.length){
     sortableTable('meta-ads-table',creativeRows,(g,i)=>{
-      const isVid=(g.media_type||'').toLowerCase().includes('video')||g.name.toLowerCase().includes('reel');
+      const isVid=(g.media_type||'').toLowerCase().includes('video')||g.name.toLowerCase().includes('reel')||g.name.toLowerCase().includes('video');
       const canLink=isAdminUser();
       const videoUrl=isVid?_adVideoUrl(g.name):null;
       const thumbAttrs=`class="ad-thumb-btn" data-thumb="${(g.thumb||'').replace(/"/g,'&quot;')}" data-vid="${isVid?1:0}" data-vurl="${videoUrl||''}" data-prev="${(g.preview||'').replace(/"/g,'&quot;')}" data-name="${g.name.replace(/"/g,'&quot;')}"`;
