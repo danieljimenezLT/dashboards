@@ -43,6 +43,12 @@ const USERS = {
     studios: null,
     role: 'admin'
   },
+  'andre@studioseven.agency': {
+    passwordHash: 'c61231d836ec478aed49c3f25a2c9b7b488bae81aabfa53020cceceb4d6e4bd3',
+    name: 'Andre T',
+    studios: null,
+    role: 'admin'
+  },
   'laura.londono@leadteam.com': {
     passwordHash: '15743531a3962a0aff9eb020754e49cb58ef8ab6ed81ddfcb674572e60c62f8a',
     name: 'Laura Londoño',
