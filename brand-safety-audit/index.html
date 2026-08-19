@@ -591,8 +591,17 @@ async function listCycles(){
 
 // Validate the bare minimum shape before accepting a file — catches a
 // malformed Claude response or a wrong file before it reaches the sheet.
+const ISO_DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
+
 function validateAuditShape(data){
   if(!data||!Array.isArray(data.accounts))return"Missing \"accounts\" array.";
+  // "coverage" is required — the Worker picks which cycle becomes latest.json
+  // by comparing coverage.to across every published cycle, and this has
+  // twice now been silently omitted by the manual review flow, causing a
+  // publish to succeed but the dashboard to keep showing an older cycle.
+  if(!data.coverage||!ISO_DATE_RE.test(data.coverage.from||"")||!ISO_DATE_RE.test(data.coverage.to||"")){
+    return"Missing or invalid \"coverage\" — needs {from, to} as YYYY-MM-DD for the actual date range reviewed. Without it this cycle can silently fail to become the latest shown on the dashboard.";
+  }
   for(const a of data.accounts){
     if(typeof a.handle!=="string"||!Array.isArray(a.flags)){
       return"Account \""+(a.name||"?")+"\" is missing \"handle\" or \"flags\".";

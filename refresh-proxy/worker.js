@@ -574,8 +574,26 @@ async function handleExportBrandAuditPosts(body, env, headers) {
   return jsonResponse({ ok: true, export: exportData }, 200, headers);
 }
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
 function validateBrandAuditPayload(payload) {
   if (!payload || !Array.isArray(payload.accounts)) return 'Missing "accounts" array.';
+  // "coverage" is REQUIRED, not just recommended: the publish handler picks
+  // which cycle becomes latest.json by comparing coverage.to across every
+  // published cycle, and a coverage-less payload is deliberately never
+  // allowed to win that comparison (an earlier bug let one silently
+  // overwrite a later cycle). Without this check, a coverage-less payload
+  // instead gets silently stuck behind whatever's already latest — twice
+  // now the manual review flow has shipped a file missing this field, so
+  // reject it up front with an actionable error instead of accepting a
+  // publish that the dashboard then appears to ignore.
+  if (
+    !payload.coverage ||
+    !ISO_DATE.test(payload.coverage.from || '') ||
+    !ISO_DATE.test(payload.coverage.to || '')
+  ) {
+    return 'Missing or invalid "coverage" — needs {"from":"YYYY-MM-DD","to":"YYYY-MM-DD"} for the actual date range reviewed, not the date this was generated. Without it the dashboard can silently fail to show this cycle as the latest.';
+  }
   for (const a of payload.accounts) {
     if (typeof a.handle !== 'string' || !Array.isArray(a.flags)) {
       return `Account "${a.name || '?'}" is missing "handle" or "flags".`;
