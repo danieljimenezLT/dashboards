@@ -55,6 +55,12 @@ const USERS = {
     studios: null,
     role: 'admin'
   },
+  'david.diaz@leadteam.com': {
+    passwordHash: '582bda4d19e247bdc6eddc9ab8866d05fa27ef3d2f171fcb2a240aa68f7242b3',
+    name: 'David Diaz',
+    studios: null,
+    role: 'admin'
+  },
 
   // ── Corporate (SWEAT440) — full access ────────────────────────────────────
   'matt@sweat440.com': {
