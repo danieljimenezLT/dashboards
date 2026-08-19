@@ -2716,7 +2716,7 @@ function renderMeta(){
       const statusBadge=`<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:${stColor}22;color:${stColor};letter-spacing:.3px">${stLabel}</span>`;
       return`<tr>
         <td style="padding:8px 6px">${thumbCell}</td>
-        <td><div>${nameCell}</div><div style="font-size:11px;color:#8aabbf;margin-top:2px">${g.media_type==='VIDEO'?'Video':g.media_type==='SHARE'?'Image':g.media_type&&g.media_type!=='POST_DELETED'?g.media_type:'Other'}</div></td>
+        <td><div>${nameCell}</div><div style="font-size:11px;color:#8aabbf;margin-top:2px">${isVid?'Video':g.media_type==='SHARE'?'Shared':g.media_type&&g.media_type!=='POST_DELETED'?g.media_type:'Other'}</div></td>
         <td>${statusBadge}</td>
         <td class="num">${fK(g.impressions)}</td>
         <td class="num">${fN(g.clicks)}</td>
