@@ -375,9 +375,10 @@ def run(start_override: str | None = None):
     for ad_id in set(list(ad_name_seen.keys()) + list(status_by_ad.keys())):
         creative   = cdetails.get(cids_per_ad.get(ad_id, ""), {})
         media_type = _media_type_from_creative(creative) or _media_type_from_name(ad_name_seen.get(ad_id, ""))
-        thumb = _extract_thumb(creative)
+        image_url  = _extract_thumb(creative)   # best full-res URL available
+        native_thumb = (creative.get("thumbnail_url") or creative.get("image_url") or "")
 
-        if thumb:
+        if image_url:
             thumb_hits += 1
         elif creative:
             thumb_missing += 1
@@ -387,7 +388,8 @@ def run(start_override: str | None = None):
             "status":        status_by_ad.get(ad_id, (ad_meta.get(ad_id) or {}).get("status", "UNKNOWN")),
             "media_type":    media_type,
             "studio_code":   ad_studio_seen.get(ad_id) or (ad_meta.get(ad_id) or {}).get("studio_code"),
-            "thumbnail_url": thumb or (ad_meta.get(ad_id) or {}).get("thumbnail_url", ""),
+            "thumbnail_url": native_thumb or image_url or (ad_meta.get(ad_id) or {}).get("thumbnail_url", ""),
+            "image_url":     image_url or native_thumb or (ad_meta.get(ad_id) or {}).get("image_url", ""),
             "preview_link":  preview_link_by_ad.get(ad_id) or (ad_meta.get(ad_id) or {}).get("preview_link", ""),
             "library_url":   f"https://www.facebook.com/ads/library/?id={library_id_by_ad.get(ad_id, ad_id)}&country=US",
         }

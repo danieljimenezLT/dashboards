@@ -2514,7 +2514,7 @@ function _ensureAdLightbox(){
   el.id='ad-lightbox';
   el.style.cssText='display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);align-items:center;justify-content:center;cursor:pointer';
   el.innerHTML=`
-    <div id="ad-lightbox-content" style="width:min(90vw,900px);max-height:90vh;position:relative;cursor:default;display:flex;align-items:center;justify-content:center" onclick="event.stopPropagation()"></div>`;
+    <div id="ad-lightbox-content" style="max-width:min(90vw,900px);max-height:90vh;position:relative;cursor:default;display:flex;align-items:center;justify-content:center" onclick="event.stopPropagation()"></div>`;
   el.addEventListener('click',closeAdLightbox);
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAdLightbox();});
   document.body.appendChild(el);
