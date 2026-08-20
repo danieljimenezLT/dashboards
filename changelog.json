@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-08-20",
+      "pr_number": 211,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/211",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO Pre-Launch Milestones now persist across daily refreshes",
+      "summary": "Preview Week and Grand Opening are now auto-generated from the sheet's Target Opening Date column and no longer wiped on each daily data refresh."
+    },
+    {
       "date": "2026-08-19",
       "pr_number": 205,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/205",
