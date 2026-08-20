@@ -25,6 +25,10 @@ _COL_TIER1 = 3
 _COL_TIER2 = 4
 _COL_TIER3 = 5
 
+# Studios that show Preview Week + Grand Opening milestone cards.
+# Add a studio code here when it's approaching its opening date.
+PREVIEW_WEEK_STUDIOS = {"VA-001"}  # Reston
+
 # Pre-launch milestone columns (ordered by appearance in the pre-launch timeline).
 # Each entry: (key, sheet_header_name)
 MILESTONE_COLS = [
@@ -264,7 +268,8 @@ for row in data_rows:
     goal_ann    = norm_float(_hcell(row, "Goal to Announce Opening"))
 
     # Derive Preview Week (opening_date - 7 days) and Grand Opening from sheet
-    if open_date:
+    # Only for studios in PREVIEW_WEEK_STUDIOS (e.g. Reston approaching opening)
+    if open_date and code in PREVIEW_WEEK_STUDIOS:
         go_dt  = datetime.strptime(open_date, "%Y-%m-%d")
         pw_dt  = go_dt - timedelta(days=7)
         pw_end = go_dt - timedelta(days=1)
