@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-20",
+      "pr_number": 213,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/213",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO week grid now extends continuously after a studio opens",
+      "summary": "Fixed Naples data stopping at a fixed week ceiling after its opening date. Week buckets now auto-extend as time passes, so post-opening membership and sales data continues to appear in the dashboard."
+    },
+    {
+      "date": "2026-08-20",
       "pr_number": 212,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/212",
       "author": "Sebastian Arango",
