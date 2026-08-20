@@ -256,6 +256,8 @@ _TIER_CASE = """
           OR LOWER(PRODUCT_DESCRIPTION) LIKE '%class pass%'     THEN NULL
         WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%wellhub%'
           OR LOWER(PRODUCT_DESCRIPTION) LIKE '%wellness%passport%' THEN NULL
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%free%class%'
+          OR LOWER(PRODUCT_DESCRIPTION) LIKE '%1st class%'        THEN NULL
         -- Unlimited Monthly (includes Founders, Premium Unlimited)
         WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%founder%'        THEN 'unl_mo'
         WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%unlimited%month%'
@@ -297,6 +299,7 @@ def fetch_membership_tiers(cur, start_date: str, end_date: str) -> list[dict]:
         FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
         WHERE STUDIO_ID IN ({TIER_ID_LIST})
           AND ITEM_TYPE = 'Pricing Option'
+          AND REVENUE_CATEGORY = 'Memberships'
           AND QUANTITY = 1
           AND IS_RETURN = 0
           -- Exclude presale products (already counted in fetch_transactions)
