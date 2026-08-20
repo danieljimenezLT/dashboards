@@ -130,6 +130,9 @@ def fetch_meta_ads(start_date, end_date):
                         entry["thumbnail_url"] = thumb
                     if obj_type:
                         entry["object_type"] = obj_type
+                    vid = cdata.get("video_id", "")
+                    if vid:
+                        entry["video_id"] = vid
             print(f"  {len(cdetails)} creatives fetched", flush=True)
         except Exception as e:
             print(f"  WARNING: Could not fetch creatives: {e}", flush=True)

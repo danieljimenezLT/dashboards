@@ -460,6 +460,7 @@ def run(start_override: str | None = None):
                               or (ad_meta.get(ad_id) or {}).get("image_url", "")),
             "preview_link":  preview_link_by_ad.get(ad_id) or (ad_meta.get(ad_id) or {}).get("preview_link", ""),
             "library_url":   f"https://www.facebook.com/ads/library/?id={library_id_by_ad.get(ad_id, ad_id)}&country=US",
+            "video_id":      creative.get("video_id", "") if creative else "",
         }
 
     log.info(f"  ad_meta: {len(ad_meta)} ads (thumb hits {thumb_hits}, creatives w/ no thumb {thumb_missing})")

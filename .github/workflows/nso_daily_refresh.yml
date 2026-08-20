@@ -108,6 +108,13 @@ jobs:
           rm -f nso-dashboard/marketing_all_new.json
         continue-on-error: true
 
+      - name: Sync NSO ad thumbnails/videos to Drive
+        env:
+          META_ACCESS_TOKEN:               ${{ secrets.META_TOKEN }}
+          GOOGLE_SERVICE_ACCOUNT_KEY_PATH: nso-dashboard/credentials/service_account.json
+        run: python sync_ad_media.py --dashboard nso
+        continue-on-error: true
+
       # ── SCORECARD ──────────────────────────────────────────────────────────
       - name: Rebuild Scorecard
         env:
@@ -166,6 +173,7 @@ jobs:
             nso-dashboard/nso_scorecard_data.json \
             nso-dashboard/nso_ad_meta.json \
             nso-dashboard/nso_client_history.json
+          git add nso-dashboard/nso_media_cache.json 2>/dev/null || true
           find nso-dashboard/thumbnails -type f 2>/dev/null | grep -q . && \
             git add nso-dashboard/thumbnails/ || true
           git diff --cached --quiet || \

@@ -34,6 +34,18 @@ jobs:
         run: python fetch_meta_ads.py
         continue-on-error: true
 
+      - name: Write Google service account credentials
+        run: |
+          mkdir -p nso-dashboard/credentials
+          printf '%s' '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > nso-dashboard/credentials/service_account.json
+
+      - name: Sync OS ad thumbnails/videos to Drive
+        env:
+          META_ACCESS_TOKEN:               ${{ secrets.META_TOKEN }}
+          GOOGLE_SERVICE_ACCOUNT_KEY_PATH: nso-dashboard/credentials/service_account.json
+        run: python sync_ad_media.py --dashboard os
+        continue-on-error: true
+
       - name: Fetch Google Ads data
         env:
           GOOGLE_ADS_DEVELOPER_TOKEN:   ${{ secrets.GOOGLE_ADS_DEVELOPER_TOKEN }}
@@ -84,6 +96,7 @@ jobs:
           git add nso-dashboard/social_insights.json
           git add nso-dashboard/gbp_data.json
           git add nso-dashboard/thumbnails/ 2>/dev/null || true
+          git add os_media_cache.json 2>/dev/null || true
           git diff --cached --quiet || git commit -m "chore: refresh data $(date -u '+%Y-%m-%d %H:%M UTC')"
           git pull --rebase origin main
           git push
