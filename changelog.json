@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-20",
+      "pr_number": 219,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/219",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix Open Studio ads thumbnails — more ads now show images instead of dark squares",
+      "summary": "Meta emg1 proxy URLs are now unwrapped to extract permanent facebook.com/ads/image/ URLs, fixing ~777 ads whose thumbnails were showing broken/dark due to expired CDN tokens."
+    },
+    {
+      "date": "2026-08-20",
       "pr_number": 220,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/220",
       "author": "Sebastian Arango",
