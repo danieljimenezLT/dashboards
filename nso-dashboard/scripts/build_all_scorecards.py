@@ -828,9 +828,9 @@ def main():
         go_wk = cfg["go_week"] or 28
         co_wk = cfg["co_week"]
         num_weeks = max(go_wk + 3, 28)
-        # Studios with no confirmed opening date (e.g. Reston): extend to cover
-        # the current week + 3-week buffer so new weeks auto-populate from APIs.
-        if cfg["week1_start"] and not cfg["opening_date"]:
+        # Always extend to current week + 3-week buffer so data keeps flowing
+        # after opening day (applies to Naples and any other studio that opened).
+        if cfg["week1_start"]:
             weeks_elapsed = max(0, (TODAY - cfg["week1_start"]).days // 7)
             num_weeks = max(num_weeks, weeks_elapsed + 3)
 
