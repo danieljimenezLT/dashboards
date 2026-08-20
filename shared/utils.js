@@ -100,7 +100,7 @@ const STUDIO_COLOR_MAP = {
 
   // Erika Sanchez (2) — magentas
   'Coral Gables':               '#880E4F',  // dark magenta
-  'Naples - Mercato':           '#F06292',  // medium pink (NSO)
+  'Naples - Mercato':           '#F06292',  // medium pink
 
   // Max Gelrud (1)
   'South Miami':                '#4E342E',  // dark brown
