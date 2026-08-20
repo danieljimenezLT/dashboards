@@ -256,6 +256,8 @@ _TIER_CASE = """
           OR LOWER(PRODUCT_DESCRIPTION) LIKE '%class pass%'     THEN NULL
         WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%wellhub%'
           OR LOWER(PRODUCT_DESCRIPTION) LIKE '%wellness%passport%' THEN NULL
+        WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%free%class%'
+          OR LOWER(PRODUCT_DESCRIPTION) LIKE '%1st class%'        THEN NULL
         -- Unlimited Monthly (includes Founders, Premium Unlimited)
         WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%founder%'        THEN 'unl_mo'
         WHEN LOWER(PRODUCT_DESCRIPTION) LIKE '%unlimited%month%'
