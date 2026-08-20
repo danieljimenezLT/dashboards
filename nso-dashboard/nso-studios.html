@@ -2514,7 +2514,7 @@ function _ensureAdLightbox(){
   el.id='ad-lightbox';
   el.style.cssText='display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);align-items:center;justify-content:center;cursor:pointer';
   el.innerHTML=`
-    <div id="ad-lightbox-content" style="width:min(90vw,900px);max-height:90vh;position:relative;cursor:default" onclick="event.stopPropagation()"></div>`;
+    <div id="ad-lightbox-content" style="width:min(90vw,900px);max-height:90vh;position:relative;cursor:default;display:flex;align-items:center;justify-content:center" onclick="event.stopPropagation()"></div>`;
   el.addEventListener('click',closeAdLightbox);
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAdLightbox();});
   document.body.appendChild(el);
@@ -2529,8 +2529,13 @@ function openAdMedia(thumb,isVid,videoUrl,preview,adName){
   } else if(isVid&&preview){
     window.open(preview,'_blank','noopener');return;
   } else if(thumb){
-    const hiRes=(thumb||'').replace(/p\d+x\d+/g,'p960x960');
-    ct.innerHTML=`<img src="${hiRes}" style="max-width:100%;max-height:90vh;border-radius:8px;object-fit:contain;box-shadow:0 4px 40px rgba(0,0,0,.6)" onerror="this.style.display='none'" loading="eager"/>`;
+    const hiRes=(thumb||'').replace(/_p\d+x\d+/g,'');
+    const img=document.createElement('img');
+    img.style.cssText='max-width:100%;max-height:90vh;border-radius:8px;object-fit:contain;box-shadow:0 4px 40px rgba(0,0,0,.6)';
+    img.loading='eager';
+    img.onerror=()=>{img.onerror=null;img.src=thumb;};
+    img.src=hiRes;
+    ct.appendChild(img);
   } else return;
   lb.style.display='flex';
 }
