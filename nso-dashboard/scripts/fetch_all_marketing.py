@@ -51,6 +51,7 @@ def fetch_meta_ads(start_date, end_date):
     from pathlib import Path
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
     from meta_client import MetaClient
+    import studios as studios_registry
 
     print("\n>> META ADS")
     token = os.environ.get("META_ACCESS_TOKEN")
@@ -177,6 +178,59 @@ def fetch_meta_ads(start_date, end_date):
         print(f"  {len(rows)} ad-day rows fetched", flush=True)
     except Exception as e:
         print(f"  ERROR: Meta Ads insights failed: {e}", flush=True)
+
+    # ── 4. Dedicated per-studio accounts (account-level spend only) ────────
+    # Studios that migrated off the shared account onto their own — 100% of an
+    # account's spend belongs to that studio, so no name-matching is needed.
+    # Account-level only for now (no ad list/creatives): one row per day,
+    # tagged with an explicit studio_code that nso-studios.html's metaFilter()
+    # matches on directly instead of scanning campaign_name.
+    for studio in studios_registry.meta_dedicated_accounts():
+        code, name, account_id = studio["code"], studio["name"], studio["account_id"]
+        print(f"  Fetching account-level data from {account_id} ({name})...", flush=True)
+        try:
+            raw_account_rows = meta.get_insights(
+                account_id,
+                level="account",
+                date_start=start_date,
+                date_end=end_date,
+                time_increment=1,
+            )
+        except Exception as e:
+            print(f"  WARNING: account-level insights failed for {name} ({account_id}): {e}", flush=True)
+            continue
+
+        for row in raw_account_rows:
+            leads, offsite_leads = 0, 0
+            for action in (row.get("actions") or []):
+                at = action.get("action_type")
+                v  = int(float(action.get("value", 0)))
+                if at == "lead":
+                    leads += v
+                elif at == "offsite_conversion.fb_pixel_lead":
+                    offsite_leads += v
+            spend = round(safe(row.get("spend")), 2)
+            rows.append({
+                "date":          row.get("date_start", ""),
+                "campaign_name": "",
+                "campaign_id":   "",
+                "adset_name":    "",
+                "ad_name":       "",
+                "studio_code":   code,
+                "spend":         spend,
+                "impressions":   int(safe(row.get("impressions"))),
+                "clicks":        int(safe(row.get("clicks"))),
+                "ctr":           0,
+                "cpc":           0,
+                "leads":         leads,
+                "offsite_leads": offsite_leads,
+                "cost_per_lead": round(spend / leads, 2) if leads else 0,
+                "thumbnail_url": "",
+                "image_url":     "",
+                "preview_link":  "",
+                "object_type":   "",
+            })
+        print(f"  {len(raw_account_rows)} account-day rows fetched for {name}", flush=True)
 
     return rows, creatives
 

@@ -53,6 +53,18 @@ def meta_studio_rows() -> list[dict]:
     return rows
 
 
+def meta_dedicated_accounts() -> list[dict]:
+    """Studios with their own Meta ad account (migrated off the shared corporate
+    account). All spend/leads in that account belong 100% to the studio — no
+    name-matching needed. Shape: {code, name, account_id}."""
+    rows = []
+    for s in load_studios():
+        acct = s.get("meta", {}).get("ad_account_id")
+        if acct:
+            rows.append({"code": s.get("code"), "name": s["name"], "account_id": acct})
+    return rows
+
+
 def google_ads_campaign_map() -> list[tuple[re.Pattern, str]]:
     """Shape expected by fetch_google_ads.py's studio_from_campaign(): [(compiled_regex, canonical_name)].
 

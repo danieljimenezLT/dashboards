@@ -2482,7 +2482,7 @@ function metaFilter(studio,from,to){
   const code=META_CODES[studio];
   if(!code)return[];
   return META_RAW.filter(r=>{
-    if(!r.campaign_name.includes(code))return false;
+    if(r.studio_code?r.studio_code!==code:!r.campaign_name.includes(code))return false;
     if(from&&r.date<from)return false;
     if(to&&r.date>to)return false;
     return true;

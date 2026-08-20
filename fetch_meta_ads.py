@@ -218,7 +218,11 @@ def run(start_override: str | None = None):
     import studios as studios_registry
 
     ad_account  = studios_registry.defaults()["meta_ad_account_id"]  # e.g. "act_1553887681409034"
-    studios_cfg = studios_registry.meta_studio_rows()
+    dedicated_accounts = studios_registry.meta_dedicated_accounts()
+    dedicated_codes    = {d["code"] for d in dedicated_accounts}
+    # Studios with their own ad account are excluded from shared-account matching —
+    # their spend now lives entirely in their dedicated account (see step 3b below).
+    studios_cfg = [s for s in studios_registry.meta_studio_rows() if s.get("code") not in dedicated_codes]
 
     today     = date.today()
     today_iso = today.isoformat()
@@ -365,6 +369,46 @@ def run(start_override: str | None = None):
 
     log.info(f"  processed: {rows_written} matched, {rows_skipped} skipped (no studio match)")
     log.info(f"  ad_daily:  {len(ad_daily_idx)} total (date×studio×ad) rows")
+
+    # ── 3b. Dedicated per-studio accounts (account-level spend only) ──
+    # Studios that migrated off the shared account onto their own — 100% of an
+    # account's spend belongs to that studio, so no name-matching is needed.
+    # Account-level only for now (no ad list/creatives), one synthetic row per
+    # day keyed by a fixed ad_id so build_spend_data.py's per-studio_code sum
+    # picks it up like any other ad_daily row.
+    for studio in dedicated_accounts:
+        code, name, account_id = studio["code"], studio["name"], studio["account_id"]
+        log.info(f"Fetching account-level daily insights [{daily_start} → {daily_end}] "
+                 f"from {account_id} ({name}) ...")
+        try:
+            raw_account_daily = meta.get_insights(
+                account_id,
+                level="account",
+                date_start=daily_start,
+                date_end=daily_end,
+                time_increment=1,
+            )
+            log.info(f"  {len(raw_account_daily)} day rows")
+        except Exception as e:
+            log.warning(f"  ❌ account-level insights failed for {name} ({account_id}): {e}")
+            continue
+
+        for row in raw_account_daily:
+            d = row.get("date_start")
+            if not d:
+                continue
+            ad_daily_idx[(d, code, "ACCOUNT_TOTAL")] = {
+                "date":          d,
+                "studio_code":   code,
+                "ad_id":         "ACCOUNT_TOTAL",
+                "ad_name":       "(account-level total)",
+                "spend":         round(safe_float(row.get("spend")), 2),
+                "impressions":   int(safe_float(row.get("impressions"))),
+                "clicks":        int(safe_float(row.get("clicks"))),
+                "leads":         leads_of(row),
+                "offsite_leads": offsite_leads_of(row),
+                "trials":        trials_of(row),
+            }
 
     # ── 4. Build ad_meta snapshot ─────────────────────────────────────
     # Start from existing, then update with fresh data
