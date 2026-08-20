@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-20",
+      "pr_number": 222,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/222",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Sync Meta ad thumbnails and videos to Google Drive for permanent display",
+      "summary": "Ad thumbnails and videos are now downloaded during each daily refresh and stored in Google Drive. OS ads with expiring URLs are refreshed on a 90-day rolling basis; NSO ad media is kept for the full year. This replaces HMAC-expiring CDN URLs that would go dark between refreshes."
+    },
+    {
+      "date": "2026-08-20",
       "pr_number": 221,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/221",
       "author": "Sebastian Arango",
