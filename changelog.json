@@ -2,6 +2,18 @@
   "entries": [
     {
       "date": "2026-08-20",
+      "pr_number": 214,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/214",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Open Studio ad lightbox — full-res images and easier close",
+      "summary": "Ad lightbox in Open Studio now shows full-resolution images (matching NSO behavior) and the dark backdrop on the sides is now wider and easier to click to close the lightbox."
+    },
+    {
+      "date": "2026-08-20",
       "pr_number": 215,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/215",
       "author": "Santiago Estrada",
