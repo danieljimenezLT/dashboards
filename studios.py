@@ -139,13 +139,14 @@ def snowflake_id_by_code() -> dict[str, int]:
 
 
 def nso_studios_by_snowflake_id() -> dict[int, dict]:
-    """{snowflake_id: {name: "SWEAT440 X", code}} for fetch_nso_sales.py's NSO_STUDIOS,
-    restricted to status == 'nso' studios with a known snowflake_id (matches the
-    original hand-picked NSO_STUDIOS roster, which never included 'open' studios)."""
+    """{snowflake_id: {name: "SWEAT440 X", code}} for fetch_nso_sales.py's NSO_STUDIOS.
+    Includes status=='nso' studios plus any open studio with nso_track==true (studios
+    that graduated from presale but still need tracking in the NSO dashboard)."""
     return {
         s["snowflake_id"]: {"name": f"SWEAT440 {s['name']}", "code": s["code"]}
         for s in load_studios()
-        if s.get("status") == "nso" and s.get("snowflake_id") and s.get("code")
+        if (s.get("status") == "nso" or s.get("nso_track"))
+        and s.get("snowflake_id") and s.get("code")
     }
 
 
