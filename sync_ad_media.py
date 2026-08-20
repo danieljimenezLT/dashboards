@@ -55,7 +55,9 @@ OS_CACHE      = REPO_ROOT / "os_media_cache.json"
 NSO_CACHE     = REPO_ROOT / "nso-dashboard" / "nso_media_cache.json"
 
 OS_RETENTION_DAYS = 90
-DRIVE_ROOT_FOLDER = "SWEAT440 Ad Media"
+# Shared Drive folder — shared with the service account at this ID.
+# Subfolders "os/" and "nso/" are created automatically inside it.
+DRIVE_ROOT_FOLDER_ID = "1XZPoMSawhnnF8YIJHkeGywe5VeNNCROd"
 
 DRIVE_BASE   = "https://www.googleapis.com/drive/v3"
 DRIVE_UPLOAD = "https://www.googleapis.com/upload/drive/v3"
@@ -350,7 +352,7 @@ def main():
 
     today = date.today()
     drive = DriveClient(sa_file)
-    root  = drive.get_or_create_folder(DRIVE_ROOT_FOLDER)
+    root  = DRIVE_ROOT_FOLDER_ID
 
     if args.dashboard in ("os", "both"):
         folder = drive.get_or_create_folder("os", root)
