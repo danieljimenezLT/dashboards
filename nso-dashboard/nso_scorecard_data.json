@@ -850,12 +850,12 @@
           "conversion_rate": 0.0,
           "comm_events": 0,
           "ig_new_followers": null,
-          "meta_spend": 292.6,
+          "meta_spend": 292.83,
           "google_spend": 102.42,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 270.97,
-          "total_marketing_spend": 665.99,
+          "total_marketing_spend": 666.22,
           "blended_cpl": 11.1,
           "blended_cpa": null,
           "estimated_day1_rmr": null
@@ -1192,6 +1192,18 @@
           "label": "Paid Presales Start Date",
           "subtitle": "Presales campaign begins",
           "date": "2026-02-10"
+        },
+        {
+          "key": "preview_week",
+          "label": "Preview Week",
+          "subtitle": "Aug 15 \u2013 Aug 21, 2026",
+          "date": "2026-08-15"
+        },
+        {
+          "key": "grand_opening",
+          "label": "Grand Opening",
+          "subtitle": "Doors open to the public",
+          "date": "2026-08-22"
         }
       ],
       "sku_map": {
@@ -1775,8 +1787,8 @@
         "marketing_budget": 18700.0
       },
       "co_week": 11,
-      "go_week": 28,
-      "opening_date": null,
+      "go_week": 42,
+      "opening_date": "2026-09-05",
       "current_week": 39,
       "weeks": [
         {
@@ -1796,7 +1808,7 @@
           "digital_presales_week": null,
           "conversion_rate": null,
           "comm_events": null,
-          "ig_new_followers": 127,
+          "ig_new_followers": 128,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -2840,7 +2852,7 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 36.1,
           "comm_events": 9,
-          "ig_new_followers": 7,
+          "ig_new_followers": 5,
           "meta_spend": 307.81,
           "google_spend": 281.96,
           "grassroots_spend": 155.0,
@@ -2956,15 +2968,15 @@
           "digital_cancellations_week": 1,
           "conversion_rate": 33.3,
           "comm_events": 0,
-          "ig_new_followers": 2,
-          "meta_spend": 280.72,
+          "ig_new_followers": 3,
+          "meta_spend": 280.81,
           "google_spend": 125.62,
           "grassroots_spend": 105.0,
           "other_spend": 0.0,
           "leadteam_fee": 270.97,
-          "total_marketing_spend": 782.31,
-          "blended_cpl": 130.38,
-          "blended_cpa": 391.15,
+          "total_marketing_spend": 782.4,
+          "blended_cpl": 130.4,
+          "blended_cpa": 391.2,
           "estimated_day1_rmr": null
         },
         {
@@ -3001,6 +3013,93 @@
           "date_range": "8/30 - 9/5",
           "date_start": "2026-08-30",
           "date_end": "2026-09-05",
+          "new_leads": null,
+          "total_leads": 937.0,
+          "digital_leads_week": null,
+          "presales_week": null,
+          "presales_count": 277.0,
+          "cancellations_week": null,
+          "cancellations_count": 43.0,
+          "grassroots_leads": null,
+          "grassroots_presales": null,
+          "digital_presales_week": null,
+          "digital_cancellations_week": null,
+          "conversion_rate": null,
+          "comm_events": null,
+          "ig_new_followers": null,
+          "meta_spend": null,
+          "google_spend": null,
+          "grassroots_spend": null,
+          "other_spend": null,
+          "leadteam_fee": null,
+          "total_marketing_spend": null,
+          "blended_cpl": null,
+          "blended_cpa": null,
+          "estimated_day1_rmr": null
+        },
+        {
+          "week": "WEEK 42",
+          "date_range": "9/6 - 9/12",
+          "date_start": "2026-09-06",
+          "date_end": "2026-09-12",
+          "new_leads": null,
+          "total_leads": 937.0,
+          "digital_leads_week": null,
+          "presales_week": null,
+          "presales_count": 277.0,
+          "cancellations_week": null,
+          "cancellations_count": 43.0,
+          "grassroots_leads": null,
+          "grassroots_presales": null,
+          "digital_presales_week": null,
+          "digital_cancellations_week": null,
+          "conversion_rate": null,
+          "comm_events": null,
+          "ig_new_followers": null,
+          "meta_spend": null,
+          "google_spend": null,
+          "grassroots_spend": null,
+          "other_spend": null,
+          "leadteam_fee": null,
+          "total_marketing_spend": null,
+          "blended_cpl": null,
+          "blended_cpa": null,
+          "estimated_day1_rmr": null
+        },
+        {
+          "week": "WEEK 43",
+          "date_range": "9/13 - 9/19",
+          "date_start": "2026-09-13",
+          "date_end": "2026-09-19",
+          "new_leads": null,
+          "total_leads": 937.0,
+          "digital_leads_week": null,
+          "presales_week": null,
+          "presales_count": 277.0,
+          "cancellations_week": null,
+          "cancellations_count": 43.0,
+          "grassroots_leads": null,
+          "grassroots_presales": null,
+          "digital_presales_week": null,
+          "digital_cancellations_week": null,
+          "conversion_rate": null,
+          "comm_events": null,
+          "ig_new_followers": null,
+          "meta_spend": null,
+          "google_spend": null,
+          "grassroots_spend": null,
+          "other_spend": null,
+          "leadteam_fee": null,
+          "total_marketing_spend": null,
+          "blended_cpl": null,
+          "blended_cpa": null,
+          "estimated_day1_rmr": null
+        },
+        {
+          "week": "WEEK 44",
+          "date_range": "9/20 - 9/26",
+          "date_start": "2026-09-20",
+          "date_end": "2026-09-26",
           "new_leads": null,
           "total_leads": 937.0,
           "digital_leads_week": null,
@@ -3313,6 +3412,27 @@
           "t1": 191,
           "t2": 4,
           "t3": 0
+        },
+        {
+          "week": 42,
+          "t0": 55,
+          "t1": 191,
+          "t2": 4,
+          "t3": 0
+        },
+        {
+          "week": 43,
+          "t0": 55,
+          "t1": 191,
+          "t2": 4,
+          "t3": 0
+        },
+        {
+          "week": 44,
+          "t0": 55,
+          "t1": 191,
+          "t2": 4,
+          "t3": 0
         }
       ],
       "pricing": {
@@ -3337,6 +3457,18 @@
           "label": "Paid Presales Start Date",
           "subtitle": "Presales campaign begins",
           "date": "2025-11-11"
+        },
+        {
+          "key": "preview_week",
+          "label": "Preview Week",
+          "subtitle": "Aug 29 \u2013 Sep 4, 2026",
+          "date": "2026-08-29"
+        },
+        {
+          "key": "grand_opening",
+          "label": "Grand Opening",
+          "subtitle": "Doors open to the public",
+          "date": "2026-09-05"
         }
       ],
       "sku_map": {
@@ -3946,7 +4078,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": null,
-          "ig_new_followers": 1885,
+          "ig_new_followers": 1935,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -4526,7 +4658,7 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 32.5,
           "comm_events": 8,
-          "ig_new_followers": 102,
+          "ig_new_followers": 52,
           "meta_spend": 560.0,
           "google_spend": 222.72,
           "grassroots_spend": 0.0,
@@ -4551,7 +4683,7 @@
           "cancellations_count": 12.0,
           "grassroots_leads": 21,
           "grassroots_presales": 12,
-          "digital_presales_week": 0,
+          "digital_presales_week": 1,
           "digital_cancellations_week": 0,
           "conversion_rate": 33.3,
           "comm_events": 8,
@@ -4642,7 +4774,7 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 37.5,
           "comm_events": 0,
-          "ig_new_followers": 13,
+          "ig_new_followers": 16,
           "meta_spend": 0.0,
           "google_spend": 104.74,
           "grassroots_spend": 0.0,
@@ -5207,6 +5339,18 @@
           "label": "Paid Presales Start Date",
           "subtitle": "Presales campaign begins",
           "date": "2026-06-09"
+        },
+        {
+          "key": "preview_week",
+          "label": "Preview Week",
+          "subtitle": "Oct 3 \u2013 Oct 9, 2026",
+          "date": "2026-10-03"
+        },
+        {
+          "key": "grand_opening",
+          "label": "Grand Opening",
+          "subtitle": "Doors open to the public",
+          "date": "2026-10-10"
         }
       ],
       "sku_map": {
@@ -5620,7 +5764,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": null,
-          "ig_new_followers": 233,
+          "ig_new_followers": 234,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -5736,7 +5880,7 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 22.2,
           "comm_events": 0,
-          "ig_new_followers": 18,
+          "ig_new_followers": 15,
           "meta_spend": 611.1,
           "google_spend": 0.0,
           "grassroots_spend": 0.0,
@@ -5852,15 +5996,15 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 28.2,
           "comm_events": 1,
-          "ig_new_followers": 10,
-          "meta_spend": 767.32,
+          "ig_new_followers": 19,
+          "meta_spend": 768.59,
           "google_spend": 98.97,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 270.97,
-          "total_marketing_spend": 1137.26,
-          "blended_cpl": 29.16,
-          "blended_cpa": 103.39,
+          "total_marketing_spend": 1138.53,
+          "blended_cpl": 29.19,
+          "blended_cpa": 103.5,
           "estimated_day1_rmr": null
         },
         {
@@ -6781,6 +6925,18 @@
           "label": "Paid Presales Start Date",
           "subtitle": "Presales campaign begins",
           "date": "2026-07-28"
+        },
+        {
+          "key": "preview_week",
+          "label": "Preview Week",
+          "subtitle": "Jan 2 \u2013 Jan 8, 2027",
+          "date": "2027-01-02"
+        },
+        {
+          "key": "grand_opening",
+          "label": "Grand Opening",
+          "subtitle": "Doors open to the public",
+          "date": "2027-01-09"
         }
       ],
       "sku_map": {
@@ -6930,7 +7086,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": null,
-          "ig_new_followers": 749,
+          "ig_new_followers": 751,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -7278,7 +7434,7 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 2.0,
           "comm_events": 6,
-          "ig_new_followers": 83,
+          "ig_new_followers": 79,
           "meta_spend": 1049.12,
           "google_spend": 133.04,
           "grassroots_spend": 0.0,
@@ -7394,15 +7550,15 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 44.4,
           "comm_events": 0,
-          "ig_new_followers": 36,
-          "meta_spend": 396.67,
+          "ig_new_followers": 44,
+          "meta_spend": 396.8,
           "google_spend": 51.03,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 270.97,
-          "total_marketing_spend": 718.67,
+          "total_marketing_spend": 718.8,
           "blended_cpl": 39.93,
-          "blended_cpa": 89.83,
+          "blended_cpa": 89.85,
           "estimated_day1_rmr": null
         },
         {
@@ -7973,6 +8129,18 @@
           "label": "Paid Presales Start Date",
           "subtitle": "Presales campaign begins",
           "date": "2026-05-26"
+        },
+        {
+          "key": "preview_week",
+          "label": "Preview Week",
+          "subtitle": "Sep 19 \u2013 Sep 25, 2026",
+          "date": "2026-09-19"
+        },
+        {
+          "key": "grand_opening",
+          "label": "Grand Opening",
+          "subtitle": "Doors open to the public",
+          "date": "2026-09-26"
         }
       ],
       "sku_map": {
@@ -8202,7 +8370,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": null,
-          "ig_new_followers": 494,
+          "ig_new_followers": 495,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -8463,7 +8631,7 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 34.8,
           "comm_events": 4,
-          "ig_new_followers": 27,
+          "ig_new_followers": 20,
           "meta_spend": 1274.0,
           "google_spend": 110.11,
           "grassroots_spend": 0.0,
@@ -8488,7 +8656,7 @@
           "cancellations_count": 6.0,
           "grassroots_leads": 28,
           "grassroots_presales": 3,
-          "digital_presales_week": 6,
+          "digital_presales_week": 7,
           "digital_cancellations_week": 0,
           "conversion_rate": 29.4,
           "comm_events": 5,
@@ -8546,7 +8714,7 @@
           "cancellations_count": 8.0,
           "grassroots_leads": 13,
           "grassroots_presales": 3,
-          "digital_presales_week": 1,
+          "digital_presales_week": 2,
           "digital_cancellations_week": 0,
           "conversion_rate": 14.8,
           "comm_events": 7,
@@ -8579,15 +8747,15 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 50.0,
           "comm_events": 0,
-          "ig_new_followers": 18,
-          "meta_spend": 587.94,
+          "ig_new_followers": 25,
+          "meta_spend": 588.2,
           "google_spend": 225.84,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 270.97,
-          "total_marketing_spend": 1084.75,
-          "blended_cpl": 60.26,
-          "blended_cpa": 120.53,
+          "total_marketing_spend": 1085.01,
+          "blended_cpl": 60.28,
+          "blended_cpa": 120.56,
           "estimated_day1_rmr": null
         },
         {
@@ -9243,6 +9411,18 @@
           "label": "Paid Presales Start Date",
           "subtitle": "Presales campaign begins",
           "date": "2026-05-27"
+        },
+        {
+          "key": "preview_week",
+          "label": "Preview Week",
+          "subtitle": "Sep 19 \u2013 Sep 25, 2026",
+          "date": "2026-09-19"
+        },
+        {
+          "key": "grand_opening",
+          "label": "Grand Opening",
+          "subtitle": "Doors open to the public",
+          "date": "2026-09-26"
         }
       ],
       "sku_map": {
@@ -9556,7 +9736,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": null,
-          "ig_new_followers": 297,
+          "ig_new_followers": 309,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -9817,7 +9997,7 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 35.3,
           "comm_events": 4,
-          "ig_new_followers": 27,
+          "ig_new_followers": 20,
           "meta_spend": 1193.19,
           "google_spend": 294.46,
           "grassroots_spend": 0.0,
@@ -9933,15 +10113,15 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 58.8,
           "comm_events": 0,
-          "ig_new_followers": 13,
-          "meta_spend": 1093.33,
+          "ig_new_followers": 18,
+          "meta_spend": 1093.54,
           "google_spend": 183.29,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 270.97,
-          "total_marketing_spend": 1547.59,
-          "blended_cpl": 91.03,
-          "blended_cpa": 154.76,
+          "total_marketing_spend": 1547.8,
+          "blended_cpl": 91.05,
+          "blended_cpa": 154.78,
           "estimated_day1_rmr": null
         },
         {
@@ -10597,6 +10777,18 @@
           "label": "Paid Presales Start Date",
           "subtitle": "Presales campaign begins",
           "date": "2026-05-27"
+        },
+        {
+          "key": "preview_week",
+          "label": "Preview Week",
+          "subtitle": "Sep 19 \u2013 Sep 25, 2026",
+          "date": "2026-09-19"
+        },
+        {
+          "key": "grand_opening",
+          "label": "Grand Opening",
+          "subtitle": "Doors open to the public",
+          "date": "2026-09-26"
         }
       ],
       "sku_map": {
@@ -10882,7 +11074,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": null,
-          "ig_new_followers": 19516,
+          "ig_new_followers": 19515,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -11201,7 +11393,7 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 22.8,
           "comm_events": 7,
-          "ig_new_followers": 52,
+          "ig_new_followers": 44,
           "meta_spend": 454.68,
           "google_spend": 216.9,
           "grassroots_spend": 0.0,
@@ -11317,7 +11509,7 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 100.0,
           "comm_events": 0,
-          "ig_new_followers": 15,
+          "ig_new_followers": 21,
           "meta_spend": 0.0,
           "google_spend": 0.0,
           "grassroots_spend": 0.0,
@@ -11963,6 +12155,18 @@
           "label": "Paid Presales Start Date",
           "subtitle": "Presales campaign begins",
           "date": "2026-06-09"
+        },
+        {
+          "key": "preview_week",
+          "label": "Preview Week",
+          "subtitle": "Oct 31 \u2013 Nov 6, 2026",
+          "date": "2026-10-31"
+        },
+        {
+          "key": "grand_opening",
+          "label": "Grand Opening",
+          "subtitle": "Doors open to the public",
+          "date": "2026-11-07"
         }
       ],
       "sku_map": {
@@ -13421,6 +13625,18 @@
       },
       "milestones": [
         {
+          "key": "preview_week",
+          "label": "Preview Week",
+          "subtitle": "Jan 30 \u2013 Feb 5, 2026",
+          "date": "2026-01-30"
+        },
+        {
+          "key": "grand_opening",
+          "label": "Grand Opening",
+          "subtitle": "Doors open to the public",
+          "date": "2026-02-06"
+        },
+        {
           "key": "early_lead_date",
           "label": "Early Lead Date",
           "subtitle": "Landing page & early interest list",
@@ -13745,14 +13961,14 @@
           "conversion_rate": 18.8,
           "comm_events": 1,
           "ig_new_followers": null,
-          "meta_spend": 607.34,
+          "meta_spend": 607.92,
           "google_spend": 97.02,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 270.97,
-          "total_marketing_spend": 975.33,
-          "blended_cpl": 60.96,
-          "blended_cpa": 325.11,
+          "total_marketing_spend": 975.91,
+          "blended_cpl": 60.99,
+          "blended_cpa": 325.3,
           "estimated_day1_rmr": null
         },
         {
@@ -14567,6 +14783,18 @@
           "label": "Paid Presales Start Date",
           "subtitle": "Presales campaign begins",
           "date": "2026-07-28"
+        },
+        {
+          "key": "preview_week",
+          "label": "Preview Week",
+          "subtitle": "Oct 31 \u2013 Nov 6, 2026",
+          "date": "2026-10-31"
+        },
+        {
+          "key": "grand_opening",
+          "label": "Grand Opening",
+          "subtitle": "Doors open to the public",
+          "date": "2026-11-07"
         }
       ],
       "sku_map": {
@@ -14913,14 +15141,14 @@
           "conversion_rate": 77.8,
           "comm_events": 3,
           "ig_new_followers": null,
-          "meta_spend": 746.61,
+          "meta_spend": 747.36,
           "google_spend": 120.95,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 270.97,
-          "total_marketing_spend": 1138.53,
-          "blended_cpl": 126.5,
-          "blended_cpa": 162.65,
+          "total_marketing_spend": 1139.28,
+          "blended_cpl": 126.59,
+          "blended_cpa": 162.75,
           "estimated_day1_rmr": null
         },
         {
@@ -15877,6 +16105,18 @@
           "label": "Paid Presales Start Date",
           "subtitle": "Presales campaign begins",
           "date": "2026-07-28"
+        },
+        {
+          "key": "preview_week",
+          "label": "Preview Week",
+          "subtitle": "Jan 9 \u2013 Jan 15, 2027",
+          "date": "2027-01-09"
+        },
+        {
+          "key": "grand_opening",
+          "label": "Grand Opening",
+          "subtitle": "Doors open to the public",
+          "date": "2027-01-16"
         }
       ],
       "sku_map": {
@@ -17398,6 +17638,18 @@
           "label": "Paid Presales Start Date",
           "subtitle": "Presales campaign begins",
           "date": "2026-11-17"
+        },
+        {
+          "key": "preview_week",
+          "label": "Preview Week",
+          "subtitle": "Mar 6 \u2013 Mar 12, 2027",
+          "date": "2027-03-06"
+        },
+        {
+          "key": "grand_opening",
+          "label": "Grand Opening",
+          "subtitle": "Doors open to the public",
+          "date": "2027-03-13"
         }
       ],
       "sku_map": {
