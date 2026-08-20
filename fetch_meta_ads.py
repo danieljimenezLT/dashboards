@@ -106,14 +106,28 @@ def _media_type_from_creative(creative: dict) -> str | None:
     return None
 
 
+def _extract_inner_fb_ads_url(url: str) -> str:
+    """If url is a Meta emg1/external- proxy wrapping a facebook.com/ads/image/ URL,
+    extract and return the inner URL — it's publicly accessible and permanent.
+    Returns empty string if this URL is not that pattern."""
+    if not url or ("external-" not in url and "/emg1/" not in url):
+        return ""
+    from urllib.parse import unquote as _unquote
+    m = re.search(r'[?&]url=([^&]+)', url)
+    if not m:
+        return ""
+    inner = _unquote(m.group(1))
+    return inner if "facebook.com/ads/image/" in inner else ""
+
+
 def _is_small_thumb(url: str) -> bool:
     """Return True if the URL is a tiny Meta CDN thumbnail (p64x64 or similar < 300px)."""
     if not url:
         return True
     if "external-" in url or "/emg1/" in url:
-        return True
-    import re as _re
-    m = _re.search(r'[_/]p(\d+)x\d+', url)
+        # emg1/external- wrapping facebook.com/ads/image/ is publicly accessible
+        return not bool(_extract_inner_fb_ads_url(url))
+    m = re.search(r'[_/]p(\d+)x\d+', url)
     return bool(m and int(m.group(1)) < 300)
 
 
@@ -138,8 +152,10 @@ def _extract_thumb(creative: dict) -> str:
     top_img   = creative.get("image_url") or ""
 
     # 1) Top-level full-size (large thumbnail_url or image_url)
-    if top_thumb and not _is_small_thumb(top_thumb): return top_thumb
-    if top_img   and not _is_small_thumb(top_img):   return top_img
+    if top_thumb and not _is_small_thumb(top_thumb):
+        return _extract_inner_fb_ads_url(top_thumb) or top_thumb
+    if top_img and not _is_small_thumb(top_img):
+        return _extract_inner_fb_ads_url(top_img) or top_img
 
     # 2) object_story_spec — classic page-post ads
     oss = creative.get("object_story_spec") or {}
@@ -432,8 +448,16 @@ def run(start_override: str | None = None):
             "status":        status_by_ad.get(ad_id, (ad_meta.get(ad_id) or {}).get("status", "UNKNOWN")),
             "media_type":    media_type,
             "studio_code":   ad_studio_seen.get(ad_id) or (ad_meta.get(ad_id) or {}).get("studio_code"),
-            "thumbnail_url": native_thumb or image_url or (ad_meta.get(ad_id) or {}).get("thumbnail_url", ""),
-            "image_url":     image_url or native_thumb or (ad_meta.get(ad_id) or {}).get("image_url", ""),
+            "thumbnail_url": (_extract_inner_fb_ads_url(native_thumb)
+                              or _extract_inner_fb_ads_url(image_url)
+                              or (image_url if "facebook.com/ads/image/" in image_url else "")
+                              or native_thumb or image_url
+                              or (ad_meta.get(ad_id) or {}).get("thumbnail_url", "")),
+            "image_url":     (_extract_inner_fb_ads_url(image_url)
+                              or _extract_inner_fb_ads_url(native_thumb)
+                              or (image_url if "facebook.com/ads/image/" in image_url else "")
+                              or image_url or native_thumb
+                              or (ad_meta.get(ad_id) or {}).get("image_url", "")),
             "preview_link":  preview_link_by_ad.get(ad_id) or (ad_meta.get(ad_id) or {}).get("preview_link", ""),
             "library_url":   f"https://www.facebook.com/ads/library/?id={library_id_by_ad.get(ad_id, ad_id)}&country=US",
         }
