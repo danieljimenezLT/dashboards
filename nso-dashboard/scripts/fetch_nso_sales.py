@@ -299,6 +299,7 @@ def fetch_membership_tiers(cur, start_date: str, end_date: str) -> list[dict]:
         FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
         WHERE STUDIO_ID IN ({TIER_ID_LIST})
           AND ITEM_TYPE = 'Pricing Option'
+          AND REVENUE_CATEGORY = 'Memberships'
           AND QUANTITY = 1
           AND IS_RETURN = 0
           -- Exclude presale products (already counted in fetch_transactions)
