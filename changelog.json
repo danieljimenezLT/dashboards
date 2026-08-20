@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-20",
+      "pr_number": 223,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/223",
+      "author": "Sebastian Arango",
+      "categories": [
+        "General"
+      ],
+      "title": "Fix Refresh Meta Ads Only workflow to also sync thumbnails/videos to Drive",
+      "summary": "The manual \"Refresh Meta Ads Data Only\" workflow now runs the Drive sync step after fetching Meta data, consistent with the main daily refresh workflow."
+    },
+    {
+      "date": "2026-08-20",
       "pr_number": 222,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/222",
       "author": "Sebastian Arango",
