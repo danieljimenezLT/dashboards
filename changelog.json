@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-20",
+      "pr_number": 220,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/220",
+      "author": "Sebastian Arango",
+      "categories": [
+        "General"
+      ],
+      "title": "Fix Naples data disappearing from NSO dashboard after studio opened",
+      "summary": "Naples showed 0 sales and empty client history in the NSO dashboard because changing its status to 'open' dropped it from the data fetch. Added an nso_track flag so it keeps appearing in both dashboards."
+    },
+    {
+      "date": "2026-08-20",
       "pr_number": 218,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/218",
       "author": "Sebastian Arango",
