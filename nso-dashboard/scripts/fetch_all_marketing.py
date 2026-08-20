@@ -36,6 +36,16 @@ def _public_thumb(url: str) -> str:
     return url
 
 
+import re as _re
+
+def _is_small_thumb(url: str) -> bool:
+    """Return True if the URL is a tiny Meta CDN thumbnail (< 300px)."""
+    if not url:
+        return True
+    m = _re.search(r'[_/]p(\d+)x\d+', url)
+    return bool(m and int(m.group(1)) < 300)
+
+
 def safe(val, default=0):
     try:
         return float(val) if val is not None else default
