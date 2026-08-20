@@ -7,6 +7,15 @@ on:
 permissions:
   contents: write
 
+# Two pushes landing on the same branch seconds apart (e.g. a merge commit
+# immediately followed by changelog.yml's own follow-up commit) used to race
+# on the gh-pages push. Each deploy always rebuilds gh-pages from that push's
+# full state, so a superseded run carries no information the newer one
+# lacks — safe to cancel it rather than let both push at once.
+concurrency:
+  group: pages-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
