@@ -2,6 +2,18 @@
   "entries": [
     {
       "date": "2026-08-20",
+      "pr_number": 221,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/221",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Fix video/carousel ad thumbnails showing small in the ads list",
+      "summary": "Applied the same _p64x64 URL-strip trick used in the lightbox to the 44px list thumbnail cell, so video and carousel ads now display at full resolution in both the NSO and Open Studio dashboards."
+    },
+    {
+      "date": "2026-08-20",
       "pr_number": 219,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/219",
       "author": "Sebastian Arango",
