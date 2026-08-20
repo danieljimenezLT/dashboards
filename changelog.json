@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-20",
+      "pr_number": 218,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/218",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix Naples membership count — exclude non-membership products",
+      "summary": "Single Class, Guest Pass, free class passes, and other Class/Class Packs were incorrectly counted as memberships in the Naples Funnel tab. Now only products with REVENUE_CATEGORY = 'Memberships' (and not presales, employee, or guest passes) are counted, reducing the inflated Total New Sales figure to the correct value."
+    },
+    {
+      "date": "2026-08-20",
       "pr_number": 214,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/214",
       "author": "Sebastian Arango",
