@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-21",
+      "pr_number": 229,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/229",
+      "author": "Sebastian Arango",
+      "categories": [
+        "General"
+      ],
+      "title": "Deduplicate Drive ad media — 90% fewer files",
+      "summary": "Ads sharing the same creative now reuse one Drive file (dedup by video_id, image_hash, and creative name). Image links now open in Drive viewer like videos. Reduces OS Drive files from ~2,159 to ~203."
+    },
+    {
+      "date": "2026-08-21",
       "pr_number": 228,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/228",
       "author": "Sebastian Arango",
