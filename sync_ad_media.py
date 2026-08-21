@@ -28,6 +28,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import sys
 import time
 from datetime import date, timedelta
@@ -163,7 +164,7 @@ def _ck(key: str) -> str:
 
 
 def _thumb_url(fid: str) -> str:
-    return f"https://lh3.googleusercontent.com/d/{fid}"
+    return f"https://drive.google.com/file/d/{fid}/view"
 
 
 def _video_embed_url(fid: str) -> str:
@@ -226,6 +227,14 @@ def _fullres_via_hash(image_hash: str, token: str) -> str:
         return ""
 
 
+_PREFIX_RE = re.compile(r"^\d{2}-[A-Z]{2}-\d{3}-\d{2}(?:\s*-\s*|\s+)")
+
+def _creative_name(ad_name: str) -> str:
+    """Strip studio/year prefix (e.g. '26-FL-001-02 - ') to get the shared creative name."""
+    m = _PREFIX_RE.match(ad_name)
+    return ad_name[m.end():].strip() if m else ""
+
+
 # ── core processing ───────────────────────────────────────────────────────────
 
 def process(
@@ -244,12 +253,29 @@ def process(
     videos_uploaded = 0
     total_uploaded  = 0
 
+    # Dedup maps: same video_id / image_hash / creative_name → reuse existing Drive file ID
+    vid_to_fid:      dict[str, str] = {}
+    hash_to_fid:     dict[str, str] = {}
+    cname_vid_fid:   dict[str, str] = {}  # creative name → video Drive ID
+    cname_img_fid:   dict[str, str] = {}  # creative name → image Drive ID
+    for ce in cache.values():
+        if ce.get("video_id") and ce.get("drive_video_id"):
+            vid_to_fid[ce["video_id"]] = ce["drive_video_id"]
+        if ce.get("image_hash") and ce.get("drive_image_id"):
+            hash_to_fid[ce["image_hash"]] = ce["drive_image_id"]
+        if ce.get("creative_name"):
+            if ce.get("drive_video_id"):
+                cname_vid_fid[ce["creative_name"]] = ce["drive_video_id"]
+            if ce.get("drive_image_id"):
+                cname_img_fid[ce["creative_name"]] = ce["drive_image_id"]
+
     for key_raw, entry in ads.items():
         if limit and total_uploaded >= limit:
             break
-        ck       = _ck(key_raw)
-        thumb    = entry.get("thumbnail_url", "")
-        video_id = entry.get("video_id", "")
+        ck            = _ck(key_raw)
+        video_id      = entry.get("video_id", "")
+        ad_name       = entry.get("name", key_raw)
+        creative_name = _creative_name(ad_name)
         is_video = (
             entry.get("media_type") == "Video"
             or entry.get("object_type") == "VIDEO"
@@ -285,38 +311,69 @@ def process(
 
         # Upload full-res image to Drive (static ads only)
         if need_image:
-            img_url = _best_image_url(entry)
-            # If URL isn't the permanent full-res version, try adimages API with hash
-            if img_url and "facebook.com/ads/image/" not in img_url and token:
-                ih = entry.get("image_hash", "")
-                if ih:
+            ih = entry.get("image_hash", "")
+            # Dedup priority: image_hash → creative_name → upload new
+            if ih and ih in hash_to_fid:
+                fid = hash_to_fid[ih]
+                log.info(f"  image  dedup(hash) {key_raw[:50]}")
+            elif creative_name and creative_name in cname_img_fid:
+                fid = cname_img_fid[creative_name]
+                log.info(f"  image  dedup(name) {key_raw[:50]} ← \"{creative_name[:40]}\"")
+            else:
+                fid = None
+                img_url = _best_image_url(entry)
+                if img_url and "facebook.com/ads/image/" not in img_url and token and ih:
                     full = _fullres_via_hash(ih, token)
                     if full:
                         img_url = full
-            if img_url:
-                log.info(f"  image  <- {key_raw[:60]}")
-                data = _download(img_url)
-                if data:
-                    fid = drive.upload(data, f"{ck}_image.jpg", "image/jpeg", folder_id)
-                    cached["drive_image_id"] = fid
-                    entry["drive_image_url"] = _thumb_url(fid)
-                    thumbs_uploaded += 1
-                    total_uploaded  += 1
+                if img_url:
+                    log.info(f"  image  <- {key_raw[:60]}")
+                    img_data = _download(img_url)
+                    if img_data:
+                        fid = drive.upload(img_data, f"{ck}_image.jpg", "image/jpeg", folder_id)
+                        if ih:
+                            hash_to_fid[ih] = fid
+                        if creative_name:
+                            cname_img_fid[creative_name] = fid
+                        thumbs_uploaded += 1
+                        total_uploaded  += 1
+            if fid:
+                cached["drive_image_id"] = fid
+                if ih:
+                    cached["image_hash"] = ih
+                if creative_name:
+                    cached["creative_name"] = creative_name
+                entry["drive_image_url"] = _thumb_url(fid)
 
         # Upload full video MP4
         if need_video:
-            log.info(f"  video  <- video_id={video_id}")
-            src = _video_source_url(video_id, token)
-            if src:
-                data = _download(src, timeout=300)
-                if data:
-                    size_kb = len(data) // 1024
-                    fid = drive.upload(data, f"{ck}_video.mp4", "video/mp4", folder_id)
-                    cached["drive_video_id"] = fid
-                    entry["drive_video_url"] = _video_embed_url(fid)
-                    videos_uploaded += 1
-                    total_uploaded  += 1
-                    log.info(f"    {size_kb} KB → Drive ({videos_uploaded}/{max_new_videos})")
+            # Dedup priority: video_id → creative_name → upload new
+            if video_id in vid_to_fid:
+                fid = vid_to_fid[video_id]
+                log.info(f"  video  dedup(id) {key_raw[:50]}")
+            elif creative_name and creative_name in cname_vid_fid:
+                fid = cname_vid_fid[creative_name]
+                log.info(f"  video  dedup(name) {key_raw[:50]} ← \"{creative_name[:40]}\"")
+            else:
+                fid = None
+                src = _video_source_url(video_id, token)
+                if src:
+                    vid_data = _download(src, timeout=300)
+                    if vid_data:
+                        size_kb = len(vid_data) // 1024
+                        fid = drive.upload(vid_data, f"{ck}_video.mp4", "video/mp4", folder_id)
+                        vid_to_fid[video_id] = fid
+                        if creative_name:
+                            cname_vid_fid[creative_name] = fid
+                        videos_uploaded += 1
+                        total_uploaded  += 1
+                        log.info(f"    {size_kb} KB → Drive ({videos_uploaded}/{max_new_videos})")
+            if fid:
+                cached["drive_video_id"] = fid
+                cached["video_id"]       = video_id
+                if creative_name:
+                    cached["creative_name"] = creative_name
+                entry["drive_video_url"] = _video_embed_url(fid)
 
         time.sleep(0.5)
 
