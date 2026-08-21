@@ -39,6 +39,7 @@ from google.oauth2 import service_account
 from google.auth.transport.requests import Request as GoogleAuthRequest
 
 load_dotenv(Path(__file__).parent / ".env")
+load_dotenv(Path(__file__).parent / "nso-dashboard" / ".env", override=False)
 
 log = logging.getLogger("sync-ad-media")
 logging.basicConfig(
@@ -85,9 +86,13 @@ class DriveClient:
             q += f" and '{parent_id}' in parents"
         r = requests.get(
             f"{DRIVE_BASE}/files",
-            params={"q": q, "fields": "files(id)", "pageSize": 1},
+            params={"q": q, "fields": "files(id)", "pageSize": 1,
+                    "supportsAllDrives": "true", "includeItemsFromAllDrives": "true"},
             headers=self._h(),
         )
+        if not r.ok:
+            log.error(f"Drive list error {r.status_code}: {r.text[:300]}")
+            r.raise_for_status()
         files = r.json().get("files", [])
         if files:
             return files[0]["id"]
@@ -96,10 +101,13 @@ class DriveClient:
             body["parents"] = [parent_id]
         r = requests.post(
             f"{DRIVE_BASE}/files",
+            params={"supportsAllDrives": "true"},
             headers={**self._h(), "Content-Type": "application/json"},
             json=body,
         )
-        r.raise_for_status()
+        if not r.ok:
+            log.error(f"Drive create folder error {r.status_code}: {r.text[:300]}")
+            r.raise_for_status()
         return r.json()["id"]
 
     def upload(self, data: bytes, filename: str, mime: str, parent_id: str) -> str:
@@ -114,11 +122,13 @@ class DriveClient:
         )
         r = requests.post(
             f"{DRIVE_UPLOAD}/files",
-            params={"uploadType": "multipart", "fields": "id"},
+            params={"uploadType": "multipart", "fields": "id", "supportsAllDrives": "true"},
             headers={**self._h(), "Content-Type": "multipart/related; boundary=xbnd"},
             data=body,
             timeout=300,
         )
+        if not r.ok:
+            log.error(f"Drive upload error {r.status_code}: {r.text[:300]}")
         r.raise_for_status()
         file_id = r.json()["id"]
         # Make publicly readable (anyone with the link)
@@ -144,16 +154,6 @@ def _ck(key: str) -> str:
     return key if key.isdigit() else hashlib.md5(key.encode()).hexdigest()[:16]
 
 
-def _needs_upload(url: str) -> bool:
-    if not url:
-        return True
-    if "facebook.com/ads/image/" in url:
-        return False  # permanent public URL — no upload needed
-    if "lh3.googleusercontent.com" in url or "drive.google.com" in url:
-        return False  # already in Drive
-    return True  # scontent HMAC — expires, needs upload
-
-
 def _thumb_url(fid: str) -> str:
     return f"https://lh3.googleusercontent.com/d/{fid}"
 
@@ -174,18 +174,33 @@ def _download(url: str, timeout: int = 60) -> bytes | None:
         return None
 
 
+META_AD_ACCOUNT_ID = "act_1553887681409034"
+
+
 def _video_source_url(video_id: str, token: str) -> str:
-    """Get the direct MP4 URL for a Meta video via Graph API."""
+    """Get the direct MP4 URL for a Meta video via the advideos edge."""
     try:
         r = requests.get(
-            f"https://graph.facebook.com/v20.0/{video_id}",
-            params={"fields": "source", "access_token": token},
+            f"https://graph.facebook.com/v20.0/{META_AD_ACCOUNT_ID}/advideos",
+            params={"video_ids": video_id, "fields": "source", "access_token": token},
             timeout=30,
         )
-        return r.json().get("source", "")
+        data = r.json().get("data", [])
+        return data[0].get("source", "") if data else ""
     except Exception as e:
         log.warning(f"  video source failed ({video_id}): {e}")
         return ""
+
+
+def _best_image_url(entry: dict) -> str:
+    """Return the best full-size image URL for a static ad entry.
+    Prefers facebook.com/ads/image/ (permanent, full-res) over scontent HMAC."""
+    for key in ("image_url", "thumbnail_url"):
+        url = entry.get(key, "")
+        if url and "facebook.com/ads/image/" in url:
+            return url
+    # Fall back to whatever is available (may be p64x64 but at least something)
+    return entry.get("image_url", "") or entry.get("thumbnail_url", "")
 
 
 # ── core processing ───────────────────────────────────────────────────────────
@@ -198,12 +213,16 @@ def process(
     token: str,
     today: date,
     max_new_videos: int,
+    limit: int = 0,
 ) -> tuple[int, int]:
     """Process ads dict, upload missing media to Drive.  Returns (thumbs, videos)."""
     thumbs_uploaded = 0
     videos_uploaded = 0
+    total_uploaded  = 0
 
     for key_raw, entry in ads.items():
+        if limit and total_uploaded >= limit:
+            break
         ck       = _ck(key_raw)
         thumb    = entry.get("thumbnail_url", "")
         video_id = entry.get("video_id", "")
@@ -217,14 +236,15 @@ def process(
         cached["last_seen"] = today.isoformat()
 
         # Restore Drive URLs from cache into the entry (so JSON has them even when we skip upload)
-        if cached.get("drive_thumb_id"):
-            entry["drive_thumb_url"] = _thumb_url(cached["drive_thumb_id"])
+        if cached.get("drive_image_id"):
+            entry["drive_image_url"] = _thumb_url(cached["drive_image_id"])
         if cached.get("drive_video_id"):
             entry["drive_video_url"] = _video_embed_url(cached["drive_video_id"])
 
-        # Decide what still needs uploading
-        need_thumb  = not cached.get("drive_thumb_id") and _needs_upload(thumb) and bool(thumb)
-        need_video  = (
+        # Videos: upload only the MP4 (grid thumbnail stays as-is from Facebook URL)
+        # Static ads: upload full-res image to Drive for click-to-view
+        need_image = not is_video and not cached.get("drive_image_id")
+        need_video = (
             is_video
             and not cached.get("drive_video_id")
             and bool(video_id)
@@ -232,22 +252,25 @@ def process(
             and videos_uploaded < max_new_videos
         )
 
-        if not need_thumb and not need_video:
+        if not need_image and not need_video:
             continue
 
-        # Upload thumbnail image
-        if need_thumb:
-            log.info(f"  thumb  ← {key_raw[:70]}")
-            data = _download(thumb)
-            if data:
-                fid = drive.upload(data, f"{ck}_thumb.jpg", "image/jpeg", folder_id)
-                cached["drive_thumb_id"] = fid
-                entry["drive_thumb_url"] = _thumb_url(fid)
-                thumbs_uploaded += 1
+        # Upload full-res image to Drive (static ads only)
+        if need_image:
+            img_url = _best_image_url(entry)
+            if img_url:
+                log.info(f"  image  <- {key_raw[:60]}")
+                data = _download(img_url)
+                if data:
+                    fid = drive.upload(data, f"{ck}_image.jpg", "image/jpeg", folder_id)
+                    cached["drive_image_id"] = fid
+                    entry["drive_image_url"] = _thumb_url(fid)
+                    thumbs_uploaded += 1
+                    total_uploaded  += 1
 
-        # Upload full video
+        # Upload full video MP4
         if need_video:
-            log.info(f"  video  ← video_id={video_id}")
+            log.info(f"  video  <- video_id={video_id}")
             src = _video_source_url(video_id, token)
             if src:
                 data = _download(src, timeout=300)
@@ -257,6 +280,7 @@ def process(
                     cached["drive_video_id"] = fid
                     entry["drive_video_url"] = _video_embed_url(fid)
                     videos_uploaded += 1
+                    total_uploaded  += 1
                     log.info(f"    {size_kb} KB → Drive ({videos_uploaded}/{max_new_videos})")
 
         time.sleep(0.1)
@@ -285,7 +309,7 @@ def prune_old(drive: DriveClient, cache: dict, cutoff_iso: str) -> int:
 
 # ── per-dashboard runners ─────────────────────────────────────────────────────
 
-def run_os(drive: DriveClient, folder_id: str, token: str, today: date, max_new_videos: int):
+def run_os(drive: DriveClient, folder_id: str, token: str, today: date, max_new_videos: int, limit: int = 0):
     if not OS_JSON.exists():
         log.warning(f"Not found: {OS_JSON}")
         return
@@ -294,7 +318,7 @@ def run_os(drive: DriveClient, folder_id: str, token: str, today: date, max_new_
     ads   = data.get("ad_meta", {})
     log.info(f"OS: {len(ads)} ads")
 
-    nt, nv = process(drive, ads, folder_id, cache, token, today, max_new_videos)
+    nt, nv = process(drive, ads, folder_id, cache, token, today, max_new_videos, limit)
 
     cutoff = (today - timedelta(days=OS_RETENTION_DAYS)).isoformat()
     pruned = prune_old(drive, cache, cutoff)
@@ -305,7 +329,7 @@ def run_os(drive: DriveClient, folder_id: str, token: str, today: date, max_new_
     log.info(f"OS done: {nt} thumbs, {nv} videos uploaded, {pruned} Drive files pruned")
 
 
-def run_nso(drive: DriveClient, folder_id: str, token: str, today: date, max_new_videos: int):
+def run_nso(drive: DriveClient, folder_id: str, token: str, today: date, max_new_videos: int, limit: int = 0):
     if not NSO_JSON.exists():
         log.warning(f"Not found: {NSO_JSON}")
         return
@@ -314,7 +338,7 @@ def run_nso(drive: DriveClient, folder_id: str, token: str, today: date, max_new
     ads   = data.get("ad_meta", {})
     log.info(f"NSO: {len(ads)} ads")
 
-    nt, nv = process(drive, ads, folder_id, cache, token, today, max_new_videos)
+    nt, nv = process(drive, ads, folder_id, cache, token, today, max_new_videos, limit)
 
     # NSO keeps media for the full year — no pruning
     data["ad_meta"] = ads
@@ -332,6 +356,8 @@ def main():
                         help="Max new video uploads per run (default 50). "
                              "Thumbs are unlimited. After the first week all "
                              "existing ads are cached and only new ads upload.")
+    parser.add_argument("--limit", type=int, default=0,
+                        help="Cap total uploads (thumbs + videos) for testing. 0 = unlimited.")
     args = parser.parse_args()
 
     token = (
@@ -356,11 +382,11 @@ def main():
 
     if args.dashboard in ("os", "both"):
         folder = drive.get_or_create_folder("os", root)
-        run_os(drive, folder, token, today, args.max_new_videos)
+        run_os(drive, folder, token, today, args.max_new_videos, args.limit)
 
     if args.dashboard in ("nso", "both"):
         folder = drive.get_or_create_folder("nso", root)
-        run_nso(drive, folder, token, today, args.max_new_videos)
+        run_nso(drive, folder, token, today, args.max_new_videos, args.limit)
 
 
 if __name__ == "__main__":

@@ -2368,6 +2368,8 @@ async function buildMetaTab() {
         full_img:    '',
         preview_link: '',
         library_url: '',
+        drive_img:   '',
+        drive_vid:   '',
         _adIds:      [],
       };
     }
@@ -2381,10 +2383,12 @@ async function buildMetaTab() {
     const _stPri = {ACTIVE:5, PAUSED:4, ADSET_PAUSED:3, CAMPAIGN_PAUSED:3, COMPLETED:2, ARCHIVED:1, DELETED:0};
     const _newSt = (meta?.status || '').toUpperCase();
     if ((_stPri[_newSt] ?? -1) > (_stPri[g.status] ?? -1)) g.status = _newSt;
-    if (!g.thumbnail   && meta?.thumbnail_url) g.thumbnail   = meta.thumbnail_url;
-    if (!g.full_img    && meta?.image_url)     g.full_img    = meta.image_url;
-    if (!g.preview_link && meta?.preview_link) g.preview_link = meta.preview_link;
-    if (!g.library_url  && meta?.library_url)  g.library_url  = meta.library_url;
+    if (!g.thumbnail    && meta?.thumbnail_url)  g.thumbnail    = meta.thumbnail_url;
+    if (!g.full_img     && meta?.image_url)      g.full_img     = meta.image_url;
+    if (!g.preview_link && meta?.preview_link)   g.preview_link = meta.preview_link;
+    if (!g.library_url  && meta?.library_url)    g.library_url  = meta.library_url;
+    if (!g.drive_img    && meta?.drive_image_url) g.drive_img   = meta.drive_image_url;
+    if (!g.drive_vid    && meta?.drive_video_url) g.drive_vid   = meta.drive_video_url;
     g._adIds.push(ad_id);
   }
   // Clean up _adIds
@@ -2432,8 +2436,9 @@ async function buildMetaTab() {
           const canLink = !!_pageId || isAdminUser();
           let thumbCell;
           if (isAdminUser()) {
-            const driveUrl = (isVid ? VIDEO_DRIVE_LINKS[g.name] || '' : '');
-            const ta = `class="ad-thumb-btn" data-thumb="${(g.thumbnail||'').replace(/"/g,'&quot;')}" data-full="${(g.full_img||g.thumbnail||'').replace(/"/g,'&quot;')}" data-vid="${isVid?1:0}" data-vurl="${driveUrl}" data-prev="${(g.preview_link||'').replace(/"/g,'&quot;')}" data-name="${g.name.replace(/"/g,'&quot;')}"`;
+            const driveUrl = isVid ? (g.drive_vid || VIDEO_DRIVE_LINKS[g.name] || '') : '';
+            const driveImg = !isVid ? (g.drive_img || '') : '';
+            const ta = `class="ad-thumb-btn" data-thumb="${(g.thumbnail||'').replace(/"/g,'&quot;')}" data-full="${(g.full_img||g.thumbnail||'').replace(/"/g,'&quot;')}" data-vid="${isVid?1:0}" data-vurl="${driveUrl}" data-dimg="${driveImg.replace(/"/g,'&quot;')}" data-prev="${(g.preview_link||'').replace(/"/g,'&quot;')}" data-name="${g.name.replace(/"/g,'&quot;')}"`;
             const fbAdm = `<div style="width:44px;height:44px;background:#0084b5;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">${fallbackIcon}</div>`;
             thumbCell = g.thumbnail
               ? `<div ${ta} style="width:44px;height:44px;border-radius:6px;overflow:hidden;border:1px solid rgba(0,163,224,0.2);cursor:pointer"><img src="${(g.thumbnail||'').replace(/_p\d+x\d+/g,'')}" style="width:100%;height:100%;object-fit:cover;pointer-events:none" loading="lazy" data-fb="${fbAdm.replace(/"/g,'&quot;')}" data-orig="${(g.thumbnail||'').replace(/"/g,'&quot;')}" onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src=this.dataset.orig||''}else{this.parentElement.outerHTML=this.dataset.fb}"/></div>`
@@ -2450,8 +2455,10 @@ async function buildMetaTab() {
                 : `<div style="display:flex;width:44px;height:44px;background:#0084b5;border-radius:6px;align-items:center;justify-content:center;font-size:18px">${fallbackIcon}</div>`);
           }
           const mediaLabel = isVid ? 'Video' : 'Image';
-          const nameCell = (canLink && adLink !== '#')
-            ? `<a href="${adLink}" target="_blank" rel="noopener" style="color:#1a4d6e;text-decoration:none;font-weight:600;font-size:13px">${g.name}</a>`
+          const _adminDriveLink = isAdminUser() ? (isVid ? driveUrl : driveImg) : '';
+          const _nameHref = _adminDriveLink || (canLink && adLink !== '#' ? adLink : '');
+          const nameCell = _nameHref
+            ? `<a href="${_nameHref}" target="_blank" rel="noopener" style="color:#1a4d6e;text-decoration:none;font-weight:600;font-size:13px">${g.name}</a>`
             : `<span style="font-weight:600;font-size:13px">${g.name}</span>`;
           return `<tr>
             <td style="padding:8px 6px">${thumbCell}</td>
@@ -2499,7 +2506,9 @@ async function buildMetaTab() {
               const url = btn.dataset.vurl || btn.dataset.prev || null;
               if (url) window.open(url, '_blank', 'noopener');
             } else {
-              openAdMedia(btn.dataset.full || btn.dataset.thumb, false, null, btn.dataset.prev || null, btn.dataset.name);
+              const di = btn.dataset.dimg || '';
+              if (di) window.open(di, '_blank', 'noopener');
+              else openAdMedia(btn.dataset.full || btn.dataset.thumb, false, null, btn.dataset.prev || null, btn.dataset.name);
             }
           });
         }
