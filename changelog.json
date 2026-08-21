@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-21",
+      "pr_number": 231,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/231",
+      "author": "Sebastian Arango",
+      "categories": [
+        "General"
+      ],
+      "title": "Fix workflow crash and wrong Drive videos appearing per studio",
+      "summary": "Fixed a NameError in the daily fetch script and reset the OS media cache so each studio's version of a shared creative now links to the correct Drive video."
+    },
+    {
+      "date": "2026-08-21",
       "pr_number": 230,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/230",
       "author": "Sebastian Arango",
