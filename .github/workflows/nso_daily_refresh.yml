@@ -112,7 +112,7 @@ jobs:
         env:
           META_ACCESS_TOKEN:               ${{ secrets.META_TOKEN }}
           GOOGLE_SERVICE_ACCOUNT_KEY_PATH: nso-dashboard/credentials/service_account.json
-        run: python sync_ad_media.py --dashboard nso
+        run: python sync_ad_media.py --dashboard nso --max-new-images 300
         continue-on-error: true
 
       # ── SCORECARD ──────────────────────────────────────────────────────────
