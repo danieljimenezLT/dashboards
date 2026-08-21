@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-21",
+      "pr_number": 226,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/226",
+      "author": "Sebastian Arango",
+      "categories": [
+        "General"
+      ],
+      "title": "Ad thumbnails now open full 1080px resolution on click for all ad types",
+      "summary": "Carousel and Advantage+ ads previously showed ~600px images when clicked by admin users. Now all static ad types fetch and upload the full 1080×1080 image to Drive."
+    },
+    {
+      "date": "2026-08-21",
       "pr_number": 224,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/224",
       "author": "Sebastian Arango",
