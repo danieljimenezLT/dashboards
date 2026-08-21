@@ -124,12 +124,17 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 <div class="container">
   <div class="page-header">
     <h1 class="page-title">Brand Safety Audit</h1>
-    <p class="page-subtitle" id="pageSubtitle">Loading audit data…</p>
+    <p class="page-subtitle" id="pageSubtitle">SWEAT440 network · Instagram brand safety audit · Caption + visual creative analysis — human review required on all flagged items</p>
   </div>
 
   <div class="publish-box" id="publishBox">
     <div class="publish-row">
       <span class="publish-label" id="coverageLabel">Data reviewed: —</span>
+    </div>
+    <div class="publish-row" id="statusSaveRow" style="display:none">
+      <span class="publish-label">Status changes: <span id="statusDirtyCount">0</span> unsaved</span>
+      <button class="status-btn st-ops" id="saveStatusBtn" onclick="saveStatusChanges()">Save status changes</button>
+      <span class="publish-msg" id="statusSaveMsg"></span>
     </div>
     <div class="publish-row">
       <span class="publish-label">1. Get posts from:</span>
@@ -163,18 +168,18 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <span class="publish-msg" id="dateFilterMsg"></span>
     </div>
     <div class="metrics" id="metricsRow"></div>
-    <div class="filter-bar" id="filterBar">
+    <div class="filter-bar" id="filterBar" style="display:none">
       <span class="filter-label">Show:</span>
       <button class="filter-btn fb-all" data-f="all" onclick="setFilter('all',this)">All accounts</button>
       <button class="filter-btn" data-f="medium" onclick="setFilter('medium',this)">MEDIUM</button>
       <button class="filter-btn" data-f="low" onclick="setFilter('low',this)">LOW</button>
       <button class="filter-btn" data-f="clean" onclick="setFilter('clean',this)">Clean</button>
     </div>
-    <div class="studio-list" id="studioList"><div class="empty">Loading…</div></div>
+    <div class="studio-list" id="studioList"><div class="empty">Pick a date range above and click Apply to see posts from that period.</div></div>
   </div>
 
   <div class="tab-panel" id="tab-criteria">
-    <div class="criteria-intro">This audit evaluates SWEAT440 Instagram content against 6 brand-safety categories. It is a <strong>triage tool</strong> — its output is a flag-and-review queue for human adjudication. It surfaces genuine risk, not aesthetic preferences. The only strict visual rule is logo integrity. Use the status button on each flag to track its lifecycle: <strong>Pending review → Reported to Ops → Cleared</strong>. Every change is saved automatically.</div>
+    <div class="criteria-intro">This audit evaluates SWEAT440 Instagram content against 6 brand-safety categories. It is a <strong>triage tool</strong> — its output is a flag-and-review queue for human adjudication. It surfaces genuine risk, not aesthetic preferences. The only strict visual rule is logo integrity. Use the status button on each flag to track its lifecycle: <strong>Pending review → Reported to Ops → Cleared</strong>. Status changes are kept in this session until you click <strong>Save status changes</strong> at the top — that's what actually publishes them for everyone.</div>
     <div class="score-row"><span class="score-badge" style="background:var(--red-pale);color:var(--red)">HIGH</span><div><strong>Clear, unambiguous violation.</strong> Logo recolored or distorted; explicit lyric soundtrack confirmed; active alcohol consumption on camera; overt political endorsement. Immediate action.</div></div>
     <div class="score-row"><span class="score-badge" style="background:var(--amber-pale);color:var(--amber)">MEDIUM</span><div><strong>Likely violation, context-dependent.</strong> Suggestive pose; unconfirmed explicit audio; external partnership without documented approval. Review this week.</div></div>
     <div class="score-row"><span class="score-badge" style="background:var(--sky-pale);color:var(--sky)">LOW</span><div><strong>Borderline — quick human glance.</strong> Cultural/social messaging short of a violation; loose brand formatting. Confirm or dismiss.</div></div>
@@ -210,10 +215,6 @@ if (_authUser && _authUser.role !== 'admin') {
 }
 
 // ═══════════════ CONFIG ═══════════════
-// Set this to the Apps Script Web App URL after Santiago publishes it.
-// While empty, statuses are saved in the reviewer's browser (localStorage).
-const SHEET_ENDPOINT = "";
-
 // Same Cloudflare Worker + shared secret already used by home.html and
 // admin-reports/add-studio.html — holds BUFFER_API_TOKEN and GITHUB_TOKEN
 // server-side so neither ever reaches this page. See refresh-proxy/worker.js.
@@ -227,31 +228,48 @@ const STATUS_LABEL={pending:"⏳ Pending review",ops:"📤 Reported to Ops",clea
 const STATUS_CLASS={pending:"st-pending",ops:"st-ops",cleared:"st-cleared"};
 
 let AUDIT=null,LATEST_AUDIT=null,statuses={},currentFilter="all",expanded=null,dateFilterActive=false,DATE_FILTER_RESULTS=[];
+let dirtyStatusIds=new Set();
 
+// Flag statuses (Pending review / Reported to Ops / Cleared) live in
+// data/statuses.json, committed to the repo via the Worker — shared across
+// every reviewer/device. Clicking a flag's status button only changes it
+// locally (tracked in dirtyStatusIds); "Save status changes" is what
+// actually publishes it for everyone else.
 async function loadStatuses(){
-  if(SHEET_ENDPOINT){
-    try{
-      const r=await fetch(SHEET_ENDPOINT+"?action=get");
-      statuses=await r.json()||{};
-      return;
-    }catch(e){console.warn("Sheet fetch failed, falling back to local",e);}
-  }
-  try{statuses=JSON.parse(localStorage.getItem("s440-audit-statuses")||"{}");}catch(e){statuses={};}
-}
-async function saveStatus(flagId,status){
-  statuses[flagId]={status:status,updated:new Date().toISOString().slice(0,10)};
-  try{localStorage.setItem("s440-audit-statuses",JSON.stringify(statuses));}catch(e){}
-  if(SHEET_ENDPOINT){
-    try{
-      await fetch(SHEET_ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"set",flagId:flagId,status:status,cycle:AUDIT.cycle})});
-    }catch(e){console.warn("Sheet save failed; status kept locally",e);}
-  }
+  try{
+    const r=await fetch("data/statuses.json?cb="+Date.now());
+    statuses=r.ok?await r.json():{};
+  }catch(e){statuses={};}
 }
 function cycleStatus(flagId){
   const cur=(statuses[flagId]&&statuses[flagId].status)||"pending";
   const next=STATUS_FLOW[(STATUS_FLOW.indexOf(cur)+1)%STATUS_FLOW.length];
-  saveStatus(flagId,next);
+  statuses[flagId]={status:next,updated:new Date().toISOString().slice(0,10)};
+  dirtyStatusIds.add(flagId);
+  updateStatusSaveUI();
   render();
+}
+function updateStatusSaveUI(){
+  const n=dirtyStatusIds.size;
+  document.getElementById("statusSaveRow").style.display=n?"":"none";
+  document.getElementById("statusDirtyCount").textContent=n;
+}
+async function saveStatusChanges(){
+  const btn=document.getElementById("saveStatusBtn");
+  const msg=document.getElementById("statusSaveMsg");
+  btn.disabled=true;msg.textContent="Saving…";
+  try{
+    await callProxy({action:"save_brand_audit_statuses",statuses:statuses});
+  }catch(e){
+    msg.textContent="Save failed — "+e.message;
+    btn.disabled=false;
+    return;
+  }
+  dirtyStatusIds.clear();
+  updateStatusSaveUI();
+  btn.disabled=false;
+  msg.textContent="Saved — visible to everyone now.";
+  setTimeout(()=>{msg.textContent="";},6000);
 }
 
 function switchTab(name,btn){
@@ -276,6 +294,7 @@ function topLevel(a){
 }
 
 function renderMetrics(){
+  if(!AUDIT){document.getElementById("metricsRow").innerHTML="";return;}
   const accounts=AUDIT.accounts;
   const high=accounts.reduce((n,a)=>n+a.flags.filter(f=>f.level==="high").length,0);
   const med=accounts.reduce((n,a)=>n+a.flags.filter(f=>f.level==="medium").length,0);
@@ -288,8 +307,10 @@ function renderMetrics(){
 }
 
 function render(){
-  if(!AUDIT)return;
-  if(dateFilterActive){renderDateFilteredList();return;}
+  const filterBar=document.getElementById("filterBar");
+  if(!AUDIT){filterBar.style.display="none";return;}
+  if(dateFilterActive){filterBar.style.display="none";renderDateFilteredList();return;}
+  filterBar.style.display="";
   const list=document.getElementById("studioList");
   const items=AUDIT.accounts.filter(a=>{
     const lvl=topLevel(a);
@@ -442,6 +463,14 @@ function renderDateFilteredList(){
   list.innerHTML=legacyNote+filtered.map(p=>{
     const lvl=p.flagged?p.level:"clean";
     const badgeLabel=p.flagged?p.category:"Clean";
+    const st=(statuses[p.id]&&statuses[p.id].status)||"pending";
+    const stDate=statuses[p.id]&&statuses[p.id].updated?statuses[p.id].updated:"";
+    const statusRow=p.flagged
+      ?'<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:6px">'
+        +'<button class="status-btn '+STATUS_CLASS[st]+'" onclick="cycleStatus(\''+p.id+'\')" title="Click to change status">'+STATUS_LABEL[st]+'</button>'
+        +(stDate?'<span class="status-meta">updated '+stDate+'</span>':"")
+      +'</div>'
+      :"";
     return '<div class="studio-card">'
       +'<div class="studio-header" style="cursor:default">'
         +'<div class="studio-left">'
@@ -453,7 +482,7 @@ function renderDateFilteredList(){
           +(p.link?'<a class="ig-link" href="'+p.link+'" target="_blank" rel="noopener">'+IG_ICON+' View</a>':"")
         +'</div>'
       +'</div>'
-      +(p.caption?'<div class="detail-panel" style="display:block"><div class="flag-caption">&ldquo;'+p.caption+'&rdquo;</div></div>':"")
+      +(p.caption||statusRow?'<div class="detail-panel" style="display:block">'+(p.caption?'<div class="flag-caption">&ldquo;'+p.caption+'&rdquo;</div>':"")+statusRow+'</div>':"")
     +'</div>';
   }).join("");
 }
@@ -467,84 +496,8 @@ async function loadAudit(){
   return await r.json();
 }
 
-// A calendar month can now hold more than one published run (e.g. an Aug
-// 1-4 backfill alongside an already-published Aug 5-12) since cycle files
-// are keyed by date range, not by month. "coverage.to" wins over the older
-// "cycle" field (itself just "YYYY-MM") as the month key, since it's the
-// authoritative date.
-function monthKeyOf(data){
-  if(data.coverage&&data.coverage.to)return data.coverage.to.slice(0,7);
-  if(data.cycle&&/^\d{4}-\d{2}$/.test(data.cycle))return data.cycle;
-  return null;
-}
-
-// Merges every run published within one calendar month into a single
-// AUDIT-shaped object — same fields renderMetrics()/render() already know
-// how to read — by summing post counts and concatenating flags/postLog per
-// account (matched by handle).
-function mergeAuditsForMonth(cycleDatas,month){
-  const sorted=cycleDatas.slice().sort((a,b)=>{
-    const av=(a.coverage&&a.coverage.from)||a.generated||"";
-    const bv=(b.coverage&&b.coverage.from)||b.generated||"";
-    return av<bv?-1:av>bv?1:0;
-  });
-  const byHandle={};
-  let postsReviewed=0,minFrom=null,maxTo=null,latestGenerated="";
-  for(const d of sorted){
-    postsReviewed+=d.postsReviewed||0;
-    if(d.generated&&d.generated>latestGenerated)latestGenerated=d.generated;
-    if(d.coverage){
-      if(d.coverage.from&&(!minFrom||d.coverage.from<minFrom))minFrom=d.coverage.from;
-      if(d.coverage.to&&(!maxTo||d.coverage.to>maxTo))maxTo=d.coverage.to;
-    }
-    for(const a of(d.accounts||[])){
-      if(!byHandle[a.handle])byHandle[a.handle]={name:a.name,handle:a.handle,posts:0,flags:[],postLog:[]};
-      const acc=byHandle[a.handle];
-      acc.posts+=a.posts||0;
-      acc.flags=acc.flags.concat(a.flags||[]);
-      if(Array.isArray(a.postLog))acc.postLog=acc.postLog.concat(a.postLog);
-    }
-  }
-  const accounts=Object.values(byHandle).map(a=>{
-    const out={name:a.name,handle:a.handle,posts:a.posts,status:a.flags.length?"flagged":"clean",flags:a.flags};
-    if(a.postLog.length)out.postLog=a.postLog;
-    return out;
-  });
-  const monthDate=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5,7))-1,1));
-  const merged={
-    cycle:month,
-    period:monthDate.toLocaleDateString("en-US",{month:"long",year:"numeric",timeZone:"UTC"}),
-    generated:latestGenerated,
-    source:sorted.length>1?"Combined across "+sorted.length+" review runs this month":(sorted[0].source||""),
-    postsReviewed,
-    accounts,
-  };
-  if(minFrom&&maxTo)merged.coverage={from:minFrom,to:maxTo};
-  return merged;
-}
-
-// Default view: fetch every published cycle, merge whichever calendar month
-// is most recent into one combined view, and fall back to a plain
-// data/latest.json fetch if the cycle listing comes back empty (e.g. the
-// Worker is unreachable).
-async function loadDefaultAudit(){
-  const cycles=await listCycles();
-  const loaded=[];
-  for(const cycle of cycles){
-    try{
-      const r=await fetch("data/"+cycle+".json?cb="+Date.now());
-      if(!r.ok)continue;
-      loaded.push(await r.json());
-    }catch(e){/* skip a bad cycle file rather than failing the whole load */}
-  }
-  const withMonth=loaded.map(d=>({d,month:monthKeyOf(d)})).filter(x=>x.month);
-  if(!withMonth.length)return await loadAudit();
-  const latestMonth=withMonth.map(x=>x.month).sort().reverse()[0];
-  const inMonth=withMonth.filter(x=>x.month===latestMonth).map(x=>x.d);
-  return mergeAuditsForMonth(inMonth,latestMonth);
-}
-
 function refreshHeader(){
+  if(!AUDIT)return;
   document.getElementById("topbarMeta").textContent="Brand Safety Audit · "+AUDIT.accounts.length+" accounts · "+AUDIT.period+" · "+AUDIT.postsReviewed+" posts reviewed";
   document.getElementById("pageSubtitle").textContent="SWEAT440 network · "+AUDIT.period+" · "+AUDIT.postsReviewed+" posts pulled live from Buffer · Caption + visual creative analysis — human review required on all flagged items";
   document.getElementById("footerLeft").textContent="SWEAT440 · Brand Safety Audit · "+AUDIT.period+" · Data pulled live from Buffer · Confidential — Internal Use Only";
@@ -568,7 +521,7 @@ function updateCoverageUI(){
     next.setUTCDate(next.getUTCDate()+1);
     fromInput.value=next.toISOString().slice(0,10);
   }else{
-    label.textContent="Data reviewed: unknown (older cycle — no coverage recorded)";
+    label.textContent=LATEST_AUDIT?"Data reviewed: unknown (older cycle — no coverage recorded)":"Data reviewed: no cycles published yet";
     const weekAgo=new Date();
     weekAgo.setDate(weekAgo.getDate()-7);
     fromInput.value=weekAgo.toISOString().slice(0,10);
@@ -669,16 +622,17 @@ async function publishCycle(){
     return;
   }
 
-  // Re-fetch and re-merge rather than just assigning the uploaded payload —
-  // this cycle might share a month with others already published (e.g. a
-  // backfill), and the default view should reflect all of them combined.
+  // Show the just-published cycle directly as instant confirmation — this
+  // does NOT become the default view on a future page load (that stays
+  // empty until a date filter is applied), it's only shown here because
+  // publishing is an explicit action, not a default landing state.
   resetDateFilterState();
+  AUDIT=payload;
   try{
-    AUDIT=await loadDefaultAudit();
+    LATEST_AUDIT=await loadAudit();
   }catch(e){
-    AUDIT=payload;
+    LATEST_AUDIT=payload;
   }
-  LATEST_AUDIT=AUDIT;
   refreshHeader();
   updateCoverageUI();
   renderMetrics();
@@ -689,15 +643,17 @@ async function publishCycle(){
   setTimeout(()=>{msg.textContent="";},6000);
 }
 
+// No default view on load — the results area stays on its "pick a date
+// range" prompt until the reviewer applies a filter, per how this dashboard
+// is meant to be used now that it covers 44 accounts (loading everything at
+// once by default was too much). LATEST_AUDIT is still fetched quietly so
+// "Data reviewed" / the Download date pickers work correctly.
 async function init(){
   try{
-    AUDIT=await loadDefaultAudit();
-    LATEST_AUDIT=AUDIT;
+    LATEST_AUDIT=await loadAudit();
   }catch(e){
-    document.getElementById("studioList").innerHTML='<div class="empty">Could not load audit data — check data/latest.json.</div>';
-    return;
+    LATEST_AUDIT=null;
   }
-  refreshHeader();
   updateCoverageUI();
   await loadStatuses();
   renderMetrics();
