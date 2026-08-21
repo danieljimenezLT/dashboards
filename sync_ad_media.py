@@ -199,8 +199,23 @@ def _best_image_url(entry: dict) -> str:
         url = entry.get(key, "")
         if url and "facebook.com/ads/image/" in url:
             return url
-    # Fall back to whatever is available (may be p64x64 but at least something)
+    # Fall back to whatever is available
     return entry.get("image_url", "") or entry.get("thumbnail_url", "")
+
+
+def _fullres_via_hash(image_hash: str, token: str) -> str:
+    """Call adimages API with image_hash to get the permanent full-res URL."""
+    try:
+        r = requests.get(
+            f"https://graph.facebook.com/v20.0/{META_AD_ACCOUNT_ID}/adimages",
+            params={"hashes[]": image_hash, "fields": "url", "access_token": token},
+            timeout=30,
+        )
+        data = r.json().get("data", [])
+        return data[0].get("url", "") if data else ""
+    except Exception as e:
+        log.warning(f"  adimages hash lookup failed ({image_hash[:8]}...): {e}")
+        return ""
 
 
 # ── core processing ───────────────────────────────────────────────────────────
@@ -258,6 +273,13 @@ def process(
         # Upload full-res image to Drive (static ads only)
         if need_image:
             img_url = _best_image_url(entry)
+            # If URL isn't the permanent full-res version, try adimages API with hash
+            if img_url and "facebook.com/ads/image/" not in img_url and token:
+                ih = entry.get("image_hash", "")
+                if ih:
+                    full = _fullres_via_hash(ih, token)
+                    if full:
+                        img_url = full
             if img_url:
                 log.info(f"  image  <- {key_raw[:60]}")
                 data = _download(img_url)

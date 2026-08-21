@@ -106,6 +106,28 @@ def _media_type_from_creative(creative: dict) -> str | None:
     return None
 
 
+def _extract_image_hash(creative: dict) -> str:
+    """Return the best image_hash from a creative, trying all known locations."""
+    if not creative:
+        return ""
+    if creative.get("image_hash"):
+        return creative["image_hash"]
+    oss = creative.get("object_story_spec") or {}
+    if isinstance(oss, dict):
+        ld = oss.get("link_data") or {}
+        if isinstance(ld, dict) and ld.get("image_hash"):
+            return ld["image_hash"]
+        pd = oss.get("photo_data") or {}
+        if isinstance(pd, dict) and pd.get("image_hash"):
+            return pd["image_hash"]
+    afs = creative.get("asset_feed_spec") or {}
+    if isinstance(afs, dict):
+        images = afs.get("images") or []
+        if images and isinstance(images[0], dict) and images[0].get("hash"):
+            return images[0]["hash"]
+    return ""
+
+
 def _extract_inner_fb_ads_url(url: str) -> str:
     """If url is a Meta emg1/external- proxy wrapping a facebook.com/ads/image/ URL,
     extract and return the inner URL — it's publicly accessible and permanent.
@@ -461,6 +483,7 @@ def run(start_override: str | None = None):
             "preview_link":  preview_link_by_ad.get(ad_id) or (ad_meta.get(ad_id) or {}).get("preview_link", ""),
             "library_url":   f"https://www.facebook.com/ads/library/?id={library_id_by_ad.get(ad_id, ad_id)}&country=US",
             "video_id":      creative.get("video_id", "") if creative else "",
+            "image_hash":    _extract_image_hash(creative) if creative else "",
         }
 
     log.info(f"  ad_meta: {len(ad_meta)} ads (thumb hits {thumb_hits}, creatives w/ no thumb {thumb_missing})")
