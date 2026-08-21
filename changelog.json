@@ -1,6 +1,18 @@
 {
   "entries": [
     {
+      "date": "2026-08-21",
+      "pr_number": 224,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/224",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Admin users can now click ad thumbnails/names to open full-res images and videos from Google Drive",
+      "summary": "Clicking an ad in the Meta Ads table (OS and NSO dashboards) opens the full-resolution image or video on Google Drive for admin users. Non-admin behavior is unchanged."
+    },
+    {
       "date": "2026-08-20",
       "pr_number": 223,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/223",
