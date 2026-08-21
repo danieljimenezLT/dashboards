@@ -158,6 +158,14 @@ class DriveClient:
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
+_PREFIX_RE = re.compile(r"^\d{2}-[A-Z]{2}-\d{3}-\d{2}(?:\s*-\s*|\s+)", re.IGNORECASE)
+
+def _creative_name(ad_name: str) -> str:
+    """Strip studio/campaign prefix (e.g. '26-FL-013-02 - ') to get the shared creative name."""
+    m = _PREFIX_RE.match(ad_name or "")
+    return ad_name[m.end():].strip() if m else ""
+
+
 def _ck(key: str) -> str:
     """Short stable cache key: use ad_id as-is (numeric), MD5-prefix for names."""
     return key if key.isdigit() else hashlib.md5(key.encode()).hexdigest()[:16]
@@ -227,13 +235,6 @@ def _fullres_via_hash(image_hash: str, token: str) -> str:
         return ""
 
 
-_PREFIX_RE = re.compile(r"^\d{2}-[A-Z]{2}-\d{3}-\d{2}(?:\s*-\s*|\s+)")
-
-def _creative_name(ad_name: str) -> str:
-    """Strip studio/year prefix (e.g. '26-FL-001-02 - ') to get the shared creative name."""
-    m = _PREFIX_RE.match(ad_name)
-    return ad_name[m.end():].strip() if m else ""
-
 
 # ── core processing ───────────────────────────────────────────────────────────
 
@@ -253,21 +254,21 @@ def process(
     videos_uploaded = 0
     total_uploaded  = 0
 
-    # Dedup maps: same video_id / image_hash / creative_name → reuse existing Drive file ID
-    vid_to_fid:      dict[str, str] = {}
-    hash_to_fid:     dict[str, str] = {}
-    cname_vid_fid:   dict[str, str] = {}  # creative name → video Drive ID
-    cname_img_fid:   dict[str, str] = {}  # creative name → image Drive ID
+    # Dedup by exact match only: same Meta video_id = same file; same image_hash = same pixels.
+    # Dedup maps:
+    #   vid_to_fid   — same Meta video_id → definitely same file, always safe
+    #   hash_to_fid  — same image_hash → same pixels, always safe
+    #   cname_vid_fid — same creative name (prefix stripped) → assume same video content
+    vid_to_fid:    dict[str, str] = {}
+    hash_to_fid:   dict[str, str] = {}
+    cname_vid_fid: dict[str, str] = {}
     for ce in cache.values():
         if ce.get("video_id") and ce.get("drive_video_id"):
             vid_to_fid[ce["video_id"]] = ce["drive_video_id"]
         if ce.get("image_hash") and ce.get("drive_image_id"):
             hash_to_fid[ce["image_hash"]] = ce["drive_image_id"]
-        if ce.get("creative_name"):
-            if ce.get("drive_video_id"):
-                cname_vid_fid[ce["creative_name"]] = ce["drive_video_id"]
-            if ce.get("drive_image_id"):
-                cname_img_fid[ce["creative_name"]] = ce["drive_image_id"]
+        if ce.get("creative_name") and ce.get("drive_video_id"):
+            cname_vid_fid[ce["creative_name"]] = ce["drive_video_id"]
 
     for key_raw, entry in ads.items():
         if limit and total_uploaded >= limit:
@@ -312,15 +313,11 @@ def process(
         # Upload full-res image to Drive (static ads only)
         if need_image:
             ih = entry.get("image_hash", "")
-            # Dedup priority: image_hash → creative_name → upload new
+            fid = None
             if ih and ih in hash_to_fid:
                 fid = hash_to_fid[ih]
                 log.info(f"  image  dedup(hash) {key_raw[:50]}")
-            elif creative_name and creative_name in cname_img_fid:
-                fid = cname_img_fid[creative_name]
-                log.info(f"  image  dedup(name) {key_raw[:50]} ← \"{creative_name[:40]}\"")
             else:
-                fid = None
                 img_url = _best_image_url(entry)
                 if img_url and "facebook.com/ads/image/" not in img_url and token and ih:
                     full = _fullres_via_hash(ih, token)
@@ -333,29 +330,24 @@ def process(
                         fid = drive.upload(img_data, f"{ck}_image.jpg", "image/jpeg", folder_id)
                         if ih:
                             hash_to_fid[ih] = fid
-                        if creative_name:
-                            cname_img_fid[creative_name] = fid
                         thumbs_uploaded += 1
                         total_uploaded  += 1
             if fid:
                 cached["drive_image_id"] = fid
                 if ih:
                     cached["image_hash"] = ih
-                if creative_name:
-                    cached["creative_name"] = creative_name
                 entry["drive_image_url"] = _thumb_url(fid)
 
         # Upload full video MP4
         if need_video:
-            # Dedup priority: video_id → creative_name → upload new
+            fid = None
             if video_id in vid_to_fid:
                 fid = vid_to_fid[video_id]
                 log.info(f"  video  dedup(id) {key_raw[:50]}")
             elif creative_name and creative_name in cname_vid_fid:
                 fid = cname_vid_fid[creative_name]
-                log.info(f"  video  dedup(name) {key_raw[:50]} ← \"{creative_name[:40]}\"")
+                log.info(f"  video  dedup(name) {key_raw[:50]} <- \"{creative_name[:40]}\"")
             else:
-                fid = None
                 src = _video_source_url(video_id, token)
                 if src:
                     vid_data = _download(src, timeout=300)
@@ -367,7 +359,7 @@ def process(
                             cname_vid_fid[creative_name] = fid
                         videos_uploaded += 1
                         total_uploaded  += 1
-                        log.info(f"    {size_kb} KB → Drive ({videos_uploaded}/{max_new_videos})")
+                        log.info(f"    {size_kb} KB -> Drive ({videos_uploaded}/{max_new_videos})")
             if fid:
                 cached["drive_video_id"] = fid
                 cached["video_id"]       = video_id
@@ -408,11 +400,19 @@ def run_os(drive: DriveClient, folder_id: str, token: str, today: date, max_new_
     cache = json.loads(OS_CACHE.read_text(encoding="utf-8")) if OS_CACHE.exists() else {}
     data  = json.loads(OS_JSON.read_text(encoding="utf-8"))
     ads   = data.get("ad_meta", {})
-    log.info(f"OS: {len(ads)} ads")
-
-    nt, nv = process(drive, ads, folder_id, cache, token, today, max_new_videos, limit, max_new_images)
-
     cutoff = (today - timedelta(days=OS_RETENTION_DAYS)).isoformat()
+    # Only sync media for ads seen in the last 90 days.
+    # fetched_at is stamped by fetch_meta_ads.py; fall back to all ads if field not yet present.
+    ads_recent = {k: v for k, v in ads.items() if v.get("fetched_at", "") >= cutoff}
+    if not ads_recent:
+        ads_recent = ads  # first run before fetch_meta_ads.py stamps fetched_at
+    log.info(f"OS: {len(ads)} ads total, {len(ads_recent)} within 90-day window")
+
+    nt, nv = process(drive, ads_recent, folder_id, cache, token, today, max_new_videos, limit, max_new_images)
+    # Write Drive URLs back to the full ads dict
+    for k, v in ads_recent.items():
+        if k in ads:
+            ads[k].update({fk: fv for fk, fv in v.items() if fk.startswith("drive_")})
     pruned = prune_old(drive, cache, cutoff)
 
     data["ad_meta"] = ads

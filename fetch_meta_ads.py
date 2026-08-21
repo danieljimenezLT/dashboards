@@ -484,6 +484,7 @@ def run(start_override: str | None = None):
             "library_url":   f"https://www.facebook.com/ads/library/?id={library_id_by_ad.get(ad_id, ad_id)}&country=US",
             "video_id":      creative.get("video_id", "") if creative else "",
             "image_hash":    _extract_image_hash(creative) if creative else "",
+            "fetched_at":    daily_to,
         }
 
     log.info(f"  ad_meta: {len(ad_meta)} ads (thumb hits {thumb_hits}, creatives w/ no thumb {thumb_missing})")
