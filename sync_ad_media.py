@@ -239,7 +239,7 @@ def _fullres_via_hash(image_hash: str, token: str) -> str:
 # ── core processing ───────────────────────────────────────────────────────────
 
 def process(
-    drive: DriveClient,
+    drive: "DriveClient | None",
     ads: dict,
     folder_id: str,
     cache: dict,
@@ -248,11 +248,21 @@ def process(
     max_new_videos: int,
     limit: int = 0,
     max_new_images: int = 0,
+    local_save: "Path | None" = None,
 ) -> tuple[int, int]:
-    """Process ads dict, upload missing media to Drive.  Returns (thumbs, videos)."""
+    """Process ads dict, upload missing media to Drive.  Returns (thumbs, videos).
+
+    If local_save is set, files are saved to that directory instead of Drive.
+    Cache and JSON files are NOT modified in local_save mode — use the manifest
+    (local_save/manifest.json) to review what was downloaded and what was deduped.
+    """
     thumbs_uploaded = 0
     videos_uploaded = 0
     total_uploaded  = 0
+    manifest: list[dict] = []          # populated only when local_save is set
+
+    if local_save:
+        local_save.mkdir(parents=True, exist_ok=True)
 
     # Dedup by exact match only — creative-name dedup is intentionally excluded for videos
     # because different studios upload separate files under the same campaign name.
@@ -260,7 +270,7 @@ def process(
     #   vid_hash_fid  — same MP4 content hash → same bytes, safe to reuse Drive file
     #   hash_to_fid   — same image_hash → same pixels
     vid_to_fid:   dict[str, str] = {}
-    vid_hash_fid: dict[str, str] = {}
+    vid_hash_fid: dict[str, str] = {}  # content_hash → drive_id OR local_filename
     hash_to_fid:  dict[str, str] = {}
     for ce in cache.values():
         if ce.get("video_id") and ce.get("drive_video_id"):
@@ -284,13 +294,15 @@ def process(
         )
 
         cached = cache.setdefault(ck, {})
-        cached["last_seen"] = today.isoformat()
+        if not local_save:
+            cached["last_seen"] = today.isoformat()
 
         # Restore Drive URLs from cache into the entry (so JSON has them even when we skip upload)
-        if cached.get("drive_image_id"):
-            entry["drive_image_url"] = _thumb_url(cached["drive_image_id"])
-        if cached.get("drive_video_id"):
-            entry["drive_video_url"] = _video_embed_url(cached["drive_video_id"])
+        if not local_save:
+            if cached.get("drive_image_id"):
+                entry["drive_image_url"] = _thumb_url(cached["drive_image_id"])
+            if cached.get("drive_video_id"):
+                entry["drive_video_url"] = _video_embed_url(cached["drive_video_id"])
 
         # Videos: upload only the MP4 (grid thumbnail stays as-is from Facebook URL)
         # Static ads: upload full-res image to Drive for click-to-view
@@ -317,6 +329,9 @@ def process(
             if ih and ih in hash_to_fid:
                 fid = hash_to_fid[ih]
                 log.info(f"  image  dedup(hash) {key_raw[:50]}")
+                if local_save:
+                    manifest.append({"type": "image", "ad": ad_name, "ck": ck,
+                                     "dedup_from_hash": ih, "local_file": None})
             else:
                 img_url = _best_image_url(entry)
                 if img_url and "facebook.com/ads/image/" not in img_url and token and ih:
@@ -327,12 +342,23 @@ def process(
                     log.info(f"  image  <- {key_raw[:60]}")
                     img_data = _download(img_url)
                     if img_data:
-                        fid = drive.upload(img_data, f"{ck}_image.jpg", "image/jpeg", folder_id)
-                        if ih:
-                            hash_to_fid[ih] = fid
-                        thumbs_uploaded += 1
-                        total_uploaded  += 1
-            if fid:
+                        local_name = f"{ck}_image.jpg"
+                        if local_save:
+                            (local_save / local_name).write_bytes(img_data)
+                            manifest.append({"type": "image", "ad": ad_name, "ck": ck,
+                                             "image_hash": ih, "local_file": local_name,
+                                             "size_kb": len(img_data) // 1024})
+                            if ih:
+                                hash_to_fid[ih] = local_name  # track for dedup within run
+                            thumbs_uploaded += 1
+                            total_uploaded  += 1
+                        else:
+                            fid = drive.upload(img_data, local_name, "image/jpeg", folder_id)
+                            if ih:
+                                hash_to_fid[ih] = fid
+                            thumbs_uploaded += 1
+                            total_uploaded  += 1
+            if fid and not local_save:
                 cached["drive_image_id"] = fid
                 if ih:
                     cached["image_hash"] = ih
@@ -344,30 +370,60 @@ def process(
             if video_id in vid_to_fid:
                 fid = vid_to_fid[video_id]
                 log.info(f"  video  dedup(vid_id) {key_raw[:50]}")
+                if local_save:
+                    manifest.append({"type": "video", "ad": ad_name, "ck": ck,
+                                     "video_id": video_id, "dedup_from_vid_id": video_id,
+                                     "local_file": None})
             else:
                 src = _video_source_url(video_id, token)
                 if src:
                     vid_data = _download(src, timeout=300)
                     if vid_data:
                         vh = hashlib.md5(vid_data).hexdigest()
+                        local_name = f"{ck}_video.mp4"
                         if vh in vid_hash_fid:
-                            fid = vid_hash_fid[vh]
-                            log.info(f"  video  dedup(content) {key_raw[:50]}")
+                            existing = vid_hash_fid[vh]
+                            log.info(f"  video  dedup(content) {key_raw[:50]} <- {str(existing)[:40]}")
+                            if local_save:
+                                manifest.append({"type": "video", "ad": ad_name, "ck": ck,
+                                                 "video_id": video_id, "content_hash": vh,
+                                                 "dedup_from": str(existing), "local_file": None})
+                            else:
+                                fid = existing
                         else:
                             size_kb = len(vid_data) // 1024
-                            fid = drive.upload(vid_data, f"{ck}_video.mp4", "video/mp4", folder_id)
-                            vid_hash_fid[vh] = fid
-                            videos_uploaded += 1
-                            total_uploaded  += 1
-                            log.info(f"    {size_kb} KB -> Drive ({videos_uploaded}/{max_new_videos})")
-                        vid_to_fid[video_id] = fid
-                        cached["video_content_hash"] = vh
-            if fid:
+                            if local_save:
+                                (local_save / local_name).write_bytes(vid_data)
+                                vid_hash_fid[vh] = local_name
+                                manifest.append({"type": "video", "ad": ad_name, "ck": ck,
+                                                 "video_id": video_id, "content_hash": vh,
+                                                 "local_file": local_name, "size_kb": size_kb})
+                                videos_uploaded += 1
+                                total_uploaded  += 1
+                                log.info(f"    {size_kb} KB -> {local_name} ({videos_uploaded}/{max_new_videos})")
+                            else:
+                                fid = drive.upload(vid_data, local_name, "video/mp4", folder_id)
+                                vid_hash_fid[vh] = fid
+                                videos_uploaded += 1
+                                total_uploaded  += 1
+                                log.info(f"    {size_kb} KB -> Drive ({videos_uploaded}/{max_new_videos})")
+                        if not local_save:
+                            vid_to_fid[video_id] = fid
+                            cached["video_content_hash"] = vh
+            if fid and not local_save:
                 cached["drive_video_id"] = fid
                 cached["video_id"]       = video_id
                 entry["drive_video_url"] = _video_embed_url(fid)
 
-        time.sleep(0.5)
+        time.sleep(0.2 if local_save else 0.5)
+
+    if local_save and manifest:
+        (local_save / "manifest.json").write_text(
+            json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+        deduped = sum(1 for m in manifest if m.get("dedup_from") or m.get("dedup_from_hash") or m.get("dedup_from_vid_id"))
+        log.info(f"  local-save: {thumbs_uploaded} images + {videos_uploaded} videos downloaded, "
+                 f"{deduped} deduped. Manifest: {local_save / 'manifest.json'}")
 
     return thumbs_uploaded, videos_uploaded
 
@@ -393,7 +449,9 @@ def prune_old(drive: DriveClient, cache: dict, cutoff_iso: str) -> int:
 
 # ── per-dashboard runners ─────────────────────────────────────────────────────
 
-def run_os(drive: DriveClient, folder_id: str, token: str, today: date, max_new_videos: int, limit: int = 0, max_new_images: int = 0):
+def run_os(drive: "DriveClient | None", folder_id: str, token: str, today: date,
+           max_new_videos: int, limit: int = 0, max_new_images: int = 0,
+           local_save: "Path | None" = None):
     if not OS_JSON.exists():
         log.warning(f"Not found: {OS_JSON}")
         return
@@ -408,20 +466,25 @@ def run_os(drive: DriveClient, folder_id: str, token: str, today: date, max_new_
         ads_recent = ads  # first run before fetch_meta_ads.py stamps fetched_at
     log.info(f"OS: {len(ads)} ads total, {len(ads_recent)} within 90-day window")
 
-    nt, nv = process(drive, ads_recent, folder_id, cache, token, today, max_new_videos, limit, max_new_images)
-    # Write Drive URLs back to the full ads dict
-    for k, v in ads_recent.items():
-        if k in ads:
-            ads[k].update({fk: fv for fk, fv in v.items() if fk.startswith("drive_")})
-    pruned = prune_old(drive, cache, cutoff)
+    nt, nv = process(drive, ads_recent, folder_id, cache, token, today,
+                     max_new_videos, limit, max_new_images, local_save)
+    if not local_save:
+        # Write Drive URLs back to the full ads dict
+        for k, v in ads_recent.items():
+            if k in ads:
+                ads[k].update({fk: fv for fk, fv in v.items() if fk.startswith("drive_")})
+        pruned = prune_old(drive, cache, cutoff)
+        data["ad_meta"] = ads
+        OS_JSON.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+        OS_CACHE.write_text(json.dumps(cache, indent=2, ensure_ascii=False), encoding="utf-8")
+        log.info(f"OS done: {nt} thumbs, {nv} videos uploaded, {pruned} Drive files pruned")
+    else:
+        log.info(f"OS local-save done: {nt} images + {nv} videos saved to {local_save}")
 
-    data["ad_meta"] = ads
-    OS_JSON.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
-    OS_CACHE.write_text(json.dumps(cache, indent=2, ensure_ascii=False), encoding="utf-8")
-    log.info(f"OS done: {nt} thumbs, {nv} videos uploaded, {pruned} Drive files pruned")
 
-
-def run_nso(drive: DriveClient, folder_id: str, token: str, today: date, max_new_videos: int, limit: int = 0, max_new_images: int = 0):
+def run_nso(drive: "DriveClient | None", folder_id: str, token: str, today: date,
+            max_new_videos: int, limit: int = 0, max_new_images: int = 0,
+            local_save: "Path | None" = None):
     if not NSO_JSON.exists():
         log.warning(f"Not found: {NSO_JSON}")
         return
@@ -430,13 +493,16 @@ def run_nso(drive: DriveClient, folder_id: str, token: str, today: date, max_new
     ads   = data.get("ad_meta", {})
     log.info(f"NSO: {len(ads)} ads")
 
-    nt, nv = process(drive, ads, folder_id, cache, token, today, max_new_videos, limit, max_new_images)
-
-    # NSO keeps media for the full year — no pruning
-    data["ad_meta"] = ads
-    NSO_JSON.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
-    NSO_CACHE.write_text(json.dumps(cache, indent=2, ensure_ascii=False), encoding="utf-8")
-    log.info(f"NSO done: {nt} thumbs, {nv} videos uploaded")
+    nt, nv = process(drive, ads, folder_id, cache, token, today,
+                     max_new_videos, limit, max_new_images, local_save)
+    if not local_save:
+        # NSO keeps media for the full year — no pruning
+        data["ad_meta"] = ads
+        NSO_JSON.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+        NSO_CACHE.write_text(json.dumps(cache, indent=2, ensure_ascii=False), encoding="utf-8")
+        log.info(f"NSO done: {nt} thumbs, {nv} videos uploaded")
+    else:
+        log.info(f"NSO local-save done: {nt} images + {nv} videos saved to {local_save}")
 
 
 # ── entry point ───────────────────────────────────────────────────────────────
@@ -451,6 +517,9 @@ def main():
                              "Limits burst on first run. 0 = unlimited.")
     parser.add_argument("--limit", type=int, default=0,
                         help="Cap total uploads (thumbs + videos) for testing. 0 = unlimited.")
+    parser.add_argument("--local-save", metavar="DIR",
+                        help="Download files to DIR instead of Drive. "
+                             "Cache/JSON not modified — review manifest.json then run normally.")
     args = parser.parse_args()
 
     token = (
@@ -461,25 +530,36 @@ def main():
     if not token:
         log.warning("META_ACCESS_TOKEN not set — video downloads will be skipped")
 
+    local_save = Path(args.local_save) if args.local_save else None
+
     sa_file = (
         os.environ.get("GOOGLE_SERVICE_ACCOUNT_KEY_PATH")
         or "nso-dashboard/credentials/service_account.json"
     )
-    if not Path(sa_file).exists():
-        log.error(f"Service account file not found: {sa_file}")
-        sys.exit(1)
+    drive = None
+    folder_os = folder_nso = ""
+    if not local_save:
+        if not Path(sa_file).exists():
+            log.error(f"Service account file not found: {sa_file}")
+            sys.exit(1)
+        drive = DriveClient(sa_file)
+        root  = DRIVE_ROOT_FOLDER_ID
+        if args.dashboard in ("os", "both"):
+            folder_os = drive.get_or_create_folder("os", root)
+        if args.dashboard in ("nso", "both"):
+            folder_nso = drive.get_or_create_folder("nso", root)
 
     today = date.today()
-    drive = DriveClient(sa_file)
-    root  = DRIVE_ROOT_FOLDER_ID
 
     if args.dashboard in ("os", "both"):
-        folder = drive.get_or_create_folder("os", root)
-        run_os(drive, folder, token, today, args.max_new_videos, args.limit, args.max_new_images)
+        ls = (local_save / "os") if local_save else None
+        run_os(drive, folder_os, token, today, args.max_new_videos, args.limit,
+               args.max_new_images, ls)
 
     if args.dashboard in ("nso", "both"):
-        folder = drive.get_or_create_folder("nso", root)
-        run_nso(drive, folder, token, today, args.max_new_videos, args.limit, args.max_new_images)
+        ls = (local_save / "nso") if local_save else None
+        run_nso(drive, folder_nso, token, today, args.max_new_videos, args.limit,
+                args.max_new_images, ls)
 
 
 if __name__ == "__main__":
