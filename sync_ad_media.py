@@ -254,14 +254,19 @@ def process(
     videos_uploaded = 0
     total_uploaded  = 0
 
-    # Dedup by exact match only: same Meta video_id = same file; same image_hash = same pixels.
-    # Creative name dedup is intentionally excluded for videos: different studios upload separate
-    # files under the same campaign name, so name == name does NOT imply same video content.
-    vid_to_fid:  dict[str, str] = {}
-    hash_to_fid: dict[str, str] = {}
+    # Dedup by exact match only — creative-name dedup is intentionally excluded for videos
+    # because different studios upload separate files under the same campaign name.
+    #   vid_to_fid    — same Meta video_id → definitely same file
+    #   vid_hash_fid  — same MP4 content hash → same bytes, safe to reuse Drive file
+    #   hash_to_fid   — same image_hash → same pixels
+    vid_to_fid:   dict[str, str] = {}
+    vid_hash_fid: dict[str, str] = {}
+    hash_to_fid:  dict[str, str] = {}
     for ce in cache.values():
         if ce.get("video_id") and ce.get("drive_video_id"):
             vid_to_fid[ce["video_id"]] = ce["drive_video_id"]
+        if ce.get("video_content_hash") and ce.get("drive_video_id"):
+            vid_hash_fid[ce["video_content_hash"]] = ce["drive_video_id"]
         if ce.get("image_hash") and ce.get("drive_image_id"):
             hash_to_fid[ce["image_hash"]] = ce["drive_image_id"]
 
@@ -338,18 +343,25 @@ def process(
             fid = None
             if video_id in vid_to_fid:
                 fid = vid_to_fid[video_id]
-                log.info(f"  video  dedup(id) {key_raw[:50]}")
+                log.info(f"  video  dedup(vid_id) {key_raw[:50]}")
             else:
                 src = _video_source_url(video_id, token)
                 if src:
                     vid_data = _download(src, timeout=300)
                     if vid_data:
-                        size_kb = len(vid_data) // 1024
-                        fid = drive.upload(vid_data, f"{ck}_video.mp4", "video/mp4", folder_id)
+                        vh = hashlib.md5(vid_data).hexdigest()
+                        if vh in vid_hash_fid:
+                            fid = vid_hash_fid[vh]
+                            log.info(f"  video  dedup(content) {key_raw[:50]}")
+                        else:
+                            size_kb = len(vid_data) // 1024
+                            fid = drive.upload(vid_data, f"{ck}_video.mp4", "video/mp4", folder_id)
+                            vid_hash_fid[vh] = fid
+                            videos_uploaded += 1
+                            total_uploaded  += 1
+                            log.info(f"    {size_kb} KB -> Drive ({videos_uploaded}/{max_new_videos})")
                         vid_to_fid[video_id] = fid
-                        videos_uploaded += 1
-                        total_uploaded  += 1
-                        log.info(f"    {size_kb} KB -> Drive ({videos_uploaded}/{max_new_videos})")
+                        cached["video_content_hash"] = vh
             if fid:
                 cached["drive_video_id"] = fid
                 cached["video_id"]       = video_id
