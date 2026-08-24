@@ -2062,7 +2062,12 @@ function openAdMedia(thumb,isVid,videoUrl,preview,adName){
   const lb=document.getElementById('ad-lightbox');
   const ct=document.getElementById('ad-lightbox-content');
   if(isVid&&videoUrl){
-    ct.innerHTML=`<video controls autoplay style="max-width:92vw;max-height:85vh;border-radius:8px;background:#000" src="${videoUrl}">Your browser does not support video.</video><p style="color:#aac;font-size:11px;margin:0">${adName||''}</p>`;
+    const isFbEmbed=videoUrl.includes('facebook.com/plugins/video');
+    if(isFbEmbed){
+      ct.innerHTML=`<div style="position:relative;width:min(640px,92vw)"><iframe src="${videoUrl}" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;display:block" allowfullscreen allow="autoplay;encrypted-media"></iframe><p style="color:#aac;font-size:11px;margin:6px 0 0;text-align:center">${adName||''}</p></div>`;
+    }else{
+      ct.innerHTML=`<video controls autoplay style="max-width:92vw;max-height:85vh;border-radius:8px;background:#000" src="${videoUrl}">Your browser does not support video.</video><p style="color:#aac;font-size:11px;margin:0">${adName||''}</p>`;
+    }
   }else if(thumb){
     const hiRes=(thumb||'').replace(/_p\d+x\d+/g,'');
     const img=document.createElement('img');
@@ -2506,7 +2511,7 @@ async function buildMetaTab() {
             const isVidBtn = btn.dataset.vid === '1';
             if (isVidBtn) {
               const url = btn.dataset.vurl || btn.dataset.prev || null;
-              if (url) window.open(url, '_blank', 'noopener');
+              if (url) openAdMedia(btn.dataset.thumb, true, url, btn.dataset.prev || null, btn.dataset.name);
             } else {
               const di = btn.dataset.dimg || '';
               if (di) window.open(di, '_blank', 'noopener');
