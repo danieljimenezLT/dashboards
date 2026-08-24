@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-24",
+      "pr_number": 240,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/240",
+      "author": "Sebastian Arango",
+      "categories": [
+        "OS Dashboard"
+      ],
+      "title": "Video ads open in an inline lightbox; daily sync fills up to 200 videos per run",
+      "summary": "Video ad thumbnails now open in a centered modal overlay at 640px wide instead of navigating to a full-page Facebook embed. Fixed width clipping on the embed player. Also increased the daily video sync cap to 200 per run so pending embed URLs fill faster."
+    },
+    {
+      "date": "2026-08-24",
       "pr_number": 238,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/238",
       "author": "Sebastian Arango",
