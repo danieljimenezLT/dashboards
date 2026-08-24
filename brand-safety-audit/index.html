@@ -308,8 +308,12 @@ function renderMetrics(){
 
 function render(){
   const filterBar=document.getElementById("filterBar");
-  if(!AUDIT){filterBar.style.display="none";return;}
+  // dateFilterActive must be checked BEFORE !AUDIT — the date-filtered view
+  // works off DATE_FILTER_RESULTS, not AUDIT, and AUDIT is null by design
+  // whenever no cycle has been explicitly published/loaded this session.
+  // Checking !AUDIT first short-circuited every date-filter render.
   if(dateFilterActive){filterBar.style.display="none";renderDateFilteredList();return;}
+  if(!AUDIT){filterBar.style.display="none";return;}
   filterBar.style.display="";
   const list=document.getElementById("studioList");
   const items=AUDIT.accounts.filter(a=>{
