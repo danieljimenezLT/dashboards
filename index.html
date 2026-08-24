@@ -2079,7 +2079,7 @@ function openAdMedia(thumb,isVid,videoUrl,preview,adName){
   }else if(thumb){
     const hiRes=(thumb||'').replace(/_p\d+x\d+/g,'');
     const img=document.createElement('img');
-    img.style.cssText='max-width:92vw;max-height:90vh;border-radius:8px;object-fit:contain;box-shadow:0 4px 40px rgba(0,0,0,.6)';
+    img.style.cssText='max-width:92vw;max-height:85vh;border-radius:8px;object-fit:contain;box-shadow:0 4px 40px rgba(0,0,0,.6)';
     img.loading='eager';
     img.onerror=()=>{img.onerror=null;img.src=thumb;};
     img.src=hiRes;
