@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-24",
+      "pr_number": 237,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/237",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Add Long Beach studio button to NSO dashboard",
+      "summary": "Long Beach now appears as a selectable studio in the NSO dashboard. All internal lookup maps (Meta Ads, Google Ads, GA4, scorecard) have been updated to recognize it."
+    },
+    {
+      "date": "2026-08-24",
       "pr_number": 235,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/235",
       "author": "Sebastian Arango",
