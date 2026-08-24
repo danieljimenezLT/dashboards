@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-24",
+      "pr_number": 242,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/242",
+      "author": "Sebastian Arango",
+      "categories": [
+        "OS Dashboard"
+      ],
+      "title": "Fix portrait video clipping in OS Dashboard ad lightbox",
+      "summary": "Vertical video ads (9:16) were being clipped at the bottom in the ad viewer modal. Normalized embed width to 360px and replaced the fixed 16:9 aspect ratio with a flexible height, so portrait videos display fully and landscape videos are letterboxed."
+    },
+    {
+      "date": "2026-08-24",
       "pr_number": 241,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/241",
       "author": "Sebastian Arango",
