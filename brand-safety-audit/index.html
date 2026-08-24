@@ -312,7 +312,7 @@ function render(){
   // works off DATE_FILTER_RESULTS, not AUDIT, and AUDIT is null by design
   // whenever no cycle has been explicitly published/loaded this session.
   // Checking !AUDIT first short-circuited every date-filter render.
-  if(dateFilterActive){filterBar.style.display="none";renderDateFilteredList();return;}
+  if(dateFilterActive){filterBar.style.display="";renderDateFilteredList();return;}
   if(!AUDIT){filterBar.style.display="none";return;}
   filterBar.style.display="";
   const list=document.getElementById("studioList");
@@ -436,7 +436,6 @@ async function applyPostDateFilter(){
   btn.disabled=false;msg.textContent="";
   dateFilterActive=true;
   document.getElementById("clearDateFilterBtn").style.display="";
-  document.getElementById("filterBar").style.display="none";
   render();
 }
 
@@ -454,14 +453,26 @@ function renderDateFilteredList(){
   const toVal=document.getElementById("postDateTo").value;
   const from=new Date(fromVal+"T00:00:00Z");
   const to=new Date(toVal+"T23:59:59Z");
-  const filtered=DATE_FILTER_RESULTS.filter(p=>{
+  const inRange=DATE_FILTER_RESULTS.filter(p=>{
     const d=new Date(p.date);
     return !isNaN(d.getTime())&&d>=from&&d<=to;
   }).sort((x,y)=>new Date(x.date)-new Date(y.date));
   const anyLegacy=DATE_FILTER_RESULTS.some(p=>p.legacy);
   const legacyNote=anyLegacy?'<div class="empty" style="padding:.75rem 1rem;text-align:left;margin-bottom:8px">Cycles published before per-post date tracking only recorded dates for flagged posts — clean posts from those cycles can\'t appear here.</div>':"";
-  if(!filtered.length){
+  if(!inRange.length){
     list.innerHTML=legacyNote+'<div class="empty">No posts in that date range.</div>';
+    return;
+  }
+  // Same Show: All/MEDIUM/LOW/Clean buttons used by the by-account view —
+  // applied here by each post's own level instead of an account's overall level.
+  const filtered=inRange.filter(p=>{
+    const lvl=p.flagged?p.level:"clean";
+    if(currentFilter==="all")return true;
+    if(currentFilter==="clean")return lvl==="clean";
+    return lvl===currentFilter;
+  });
+  if(!filtered.length){
+    list.innerHTML=legacyNote+'<div class="empty">No posts match this filter in that date range.</div>';
     return;
   }
   list.innerHTML=legacyNote+filtered.map(p=>{
