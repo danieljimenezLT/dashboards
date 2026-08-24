@@ -194,18 +194,35 @@ def _download(url: str, timeout: int = 60) -> bytes | None:
 META_AD_ACCOUNT_ID = "act_1553887681409034"
 
 
-def _video_source_url(video_id: str, token: str) -> str:
-    """Get the direct MP4 URL for a Meta video via the advideos edge."""
+class RateLimitError(Exception):
+    pass
+
+
+def _video_embed_src(video_id: str, token: str) -> str:
+    """Return the permanent Facebook embed iframe src URL for a Meta ad video.
+
+    Uses GET /{video_id}?fields=embed_html which works with an ad-account token
+    and returns a stable facebook.com/plugins/video.php URL (never expires).
+    Raises RateLimitError on Meta error code 4 so the caller can stop early.
+    """
+    import re as _re
     try:
         r = requests.get(
-            f"https://graph.facebook.com/v20.0/{META_AD_ACCOUNT_ID}/advideos",
-            params={"video_ids": video_id, "fields": "source", "access_token": token},
+            f"https://graph.facebook.com/v20.0/{video_id}",
+            params={"fields": "embed_html", "access_token": token},
             timeout=30,
         )
-        data = r.json().get("data", [])
-        return data[0].get("source", "") if data else ""
+        resp = r.json()
+        err_code = (resp.get("error") or {}).get("code")
+        if err_code == 4:
+            raise RateLimitError("Meta API rate limit (#4) reached")
+        embed_html = resp.get("embed_html", "")
+        m = _re.search(r'src="([^"]+)"', embed_html)
+        return m.group(1) if m else ""
+    except RateLimitError:
+        raise
     except Exception as e:
-        log.warning(f"  video source failed ({video_id}): {e}")
+        log.warning(f"  video embed failed ({video_id}): {e}")
         return ""
 
 
@@ -248,20 +265,20 @@ def process(
     max_new_videos: int,
     limit: int = 0,
     max_new_images: int = 0,
+    skip_images: bool = False,
 ) -> tuple[int, int]:
     """Process ads dict, upload missing media to Drive.  Returns (thumbs, videos)."""
     thumbs_uploaded = 0
     videos_uploaded = 0
     total_uploaded  = 0
 
-    # Dedup by exact match only: same Meta video_id = same file; same image_hash = same pixels.
-    # Creative name dedup is intentionally excluded for videos: different studios upload separate
-    # files under the same campaign name, so name == name does NOT imply same video content.
-    vid_to_fid:  dict[str, str] = {}
-    hash_to_fid: dict[str, str] = {}
+    # Dedup maps: video_id → embed URL (no Drive upload for videos);
+    # image_hash → Drive file ID (images still go to Drive).
+    vid_to_embed: dict[str, str] = {}
+    hash_to_fid:  dict[str, str] = {}
     for ce in cache.values():
-        if ce.get("video_id") and ce.get("drive_video_id"):
-            vid_to_fid[ce["video_id"]] = ce["drive_video_id"]
+        if ce.get("video_id") and ce.get("video_embed_url"):
+            vid_to_embed[ce["video_id"]] = ce["video_embed_url"]
         if ce.get("image_hash") and ce.get("drive_image_id"):
             hash_to_fid[ce["image_hash"]] = ce["drive_image_id"]
 
@@ -281,22 +298,23 @@ def process(
         cached = cache.setdefault(ck, {})
         cached["last_seen"] = today.isoformat()
 
-        # Restore Drive URLs from cache into the entry (so JSON has them even when we skip upload)
+        # Restore URLs from cache into the entry (so JSON has them even when we skip upload)
         if cached.get("drive_image_id"):
             entry["drive_image_url"] = _thumb_url(cached["drive_image_id"])
-        if cached.get("drive_video_id"):
-            entry["drive_video_url"] = _video_embed_url(cached["drive_video_id"])
+        if cached.get("video_embed_url"):
+            entry["drive_video_url"] = cached["video_embed_url"]
 
         # Videos: upload only the MP4 (grid thumbnail stays as-is from Facebook URL)
         # Static ads: upload full-res image to Drive for click-to-view
         need_image = (
-            not is_video
+            not skip_images
+            and not is_video
             and not cached.get("drive_image_id")
             and (max_new_images == 0 or thumbs_uploaded < max_new_images)
         )
         need_video = (
             is_video
-            and not cached.get("drive_video_id")
+            and not cached.get("video_embed_url")
             and bool(video_id)
             and bool(token)
             and videos_uploaded < max_new_videos
@@ -333,27 +351,26 @@ def process(
                     cached["image_hash"] = ih
                 entry["drive_image_url"] = _thumb_url(fid)
 
-        # Upload full video MP4
+        # Store Facebook embed URL for video ads (no Drive upload needed)
         if need_video:
-            fid = None
-            if video_id in vid_to_fid:
-                fid = vid_to_fid[video_id]
+            embed_src = None
+            if video_id in vid_to_embed:
+                embed_src = vid_to_embed[video_id]
                 log.info(f"  video  dedup(id) {key_raw[:50]}")
             else:
-                src = _video_source_url(video_id, token)
-                if src:
-                    vid_data = _download(src, timeout=300)
-                    if vid_data:
-                        size_kb = len(vid_data) // 1024
-                        fid = drive.upload(vid_data, f"{ck}_video.mp4", "video/mp4", folder_id)
-                        vid_to_fid[video_id] = fid
-                        videos_uploaded += 1
-                        total_uploaded  += 1
-                        log.info(f"    {size_kb} KB -> Drive ({videos_uploaded}/{max_new_videos})")
-            if fid:
-                cached["drive_video_id"] = fid
-                cached["video_id"]       = video_id
-                entry["drive_video_url"] = _video_embed_url(fid)
+                try:
+                    embed_src = _video_embed_src(video_id, token)
+                except RateLimitError:
+                    log.warning("  Meta rate limit hit — stopping video processing for this run")
+                    break
+            if embed_src:
+                cached["video_embed_url"] = embed_src
+                cached["video_id"]        = video_id
+                vid_to_embed[video_id]    = embed_src
+                entry["drive_video_url"]  = embed_src
+                videos_uploaded += 1
+                total_uploaded  += 1
+                log.info(f"  video  embed ({videos_uploaded}/{max_new_videos}) {key_raw[:50]}")
 
         time.sleep(0.5)
 
@@ -381,7 +398,7 @@ def prune_old(drive: DriveClient, cache: dict, cutoff_iso: str) -> int:
 
 # ── per-dashboard runners ─────────────────────────────────────────────────────
 
-def run_os(drive: DriveClient, folder_id: str, token: str, today: date, max_new_videos: int, limit: int = 0, max_new_images: int = 0):
+def run_os(drive: DriveClient, folder_id: str, token: str, today: date, max_new_videos: int, limit: int = 0, max_new_images: int = 0, skip_images: bool = False):
     if not OS_JSON.exists():
         log.warning(f"Not found: {OS_JSON}")
         return
@@ -389,15 +406,12 @@ def run_os(drive: DriveClient, folder_id: str, token: str, today: date, max_new_
     data  = json.loads(OS_JSON.read_text(encoding="utf-8"))
     ads   = data.get("ad_meta", {})
     cutoff = (today - timedelta(days=OS_RETENTION_DAYS)).isoformat()
-    # Only sync media for ads seen in the last 90 days.
-    # fetched_at is stamped by fetch_meta_ads.py; fall back to all ads if field not yet present.
     ads_recent = {k: v for k, v in ads.items() if v.get("fetched_at", "") >= cutoff}
     if not ads_recent:
-        ads_recent = ads  # first run before fetch_meta_ads.py stamps fetched_at
+        ads_recent = ads
     log.info(f"OS: {len(ads)} ads total, {len(ads_recent)} within 90-day window")
 
-    nt, nv = process(drive, ads_recent, folder_id, cache, token, today, max_new_videos, limit, max_new_images)
-    # Write Drive URLs back to the full ads dict
+    nt, nv = process(drive, ads_recent, folder_id, cache, token, today, max_new_videos, limit, max_new_images, skip_images)
     for k, v in ads_recent.items():
         if k in ads:
             ads[k].update({fk: fv for fk, fv in v.items() if fk.startswith("drive_")})
@@ -406,10 +420,10 @@ def run_os(drive: DriveClient, folder_id: str, token: str, today: date, max_new_
     data["ad_meta"] = ads
     OS_JSON.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
     OS_CACHE.write_text(json.dumps(cache, indent=2, ensure_ascii=False), encoding="utf-8")
-    log.info(f"OS done: {nt} thumbs, {nv} videos uploaded, {pruned} Drive files pruned")
+    log.info(f"OS done: {nt} thumbs, {nv} videos stored, {pruned} Drive files pruned")
 
 
-def run_nso(drive: DriveClient, folder_id: str, token: str, today: date, max_new_videos: int, limit: int = 0, max_new_images: int = 0):
+def run_nso(drive: DriveClient, folder_id: str, token: str, today: date, max_new_videos: int, limit: int = 0, max_new_images: int = 0, skip_images: bool = False):
     if not NSO_JSON.exists():
         log.warning(f"Not found: {NSO_JSON}")
         return
@@ -418,13 +432,12 @@ def run_nso(drive: DriveClient, folder_id: str, token: str, today: date, max_new
     ads   = data.get("ad_meta", {})
     log.info(f"NSO: {len(ads)} ads")
 
-    nt, nv = process(drive, ads, folder_id, cache, token, today, max_new_videos, limit, max_new_images)
+    nt, nv = process(drive, ads, folder_id, cache, token, today, max_new_videos, limit, max_new_images, skip_images)
 
-    # NSO keeps media for the full year — no pruning
     data["ad_meta"] = ads
     NSO_JSON.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
     NSO_CACHE.write_text(json.dumps(cache, indent=2, ensure_ascii=False), encoding="utf-8")
-    log.info(f"NSO done: {nt} thumbs, {nv} videos uploaded")
+    log.info(f"NSO done: {nt} thumbs, {nv} videos stored")
 
 
 # ── entry point ───────────────────────────────────────────────────────────────
@@ -439,6 +452,8 @@ def main():
                              "Limits burst on first run. 0 = unlimited.")
     parser.add_argument("--limit", type=int, default=0,
                         help="Cap total uploads (thumbs + videos) for testing. 0 = unlimited.")
+    parser.add_argument("--skip-images", action="store_true",
+                        help="Skip all image processing (useful when only syncing videos).")
     args = parser.parse_args()
 
     token = (
@@ -463,11 +478,11 @@ def main():
 
     if args.dashboard in ("os", "both"):
         folder = drive.get_or_create_folder("os", root)
-        run_os(drive, folder, token, today, args.max_new_videos, args.limit, args.max_new_images)
+        run_os(drive, folder, token, today, args.max_new_videos, args.limit, args.max_new_images, args.skip_images)
 
     if args.dashboard in ("nso", "both"):
         folder = drive.get_or_create_folder("nso", root)
-        run_nso(drive, folder, token, today, args.max_new_videos, args.limit, args.max_new_images)
+        run_nso(drive, folder, token, today, args.max_new_videos, args.limit, args.max_new_images, args.skip_images)
 
 
 if __name__ == "__main__":
