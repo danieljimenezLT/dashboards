@@ -20,8 +20,12 @@ def json_serial(obj):
 
 
 def strip_brand(name):
-    """Remove 'SWEAT440 ' prefix for canonical studio names used across all data sources."""
-    return name.replace("SWEAT440 ", "") if name else name
+    """Remove 'SWEAT440 ' prefix for canonical studio names used across all data sources.
+    Handles both 'SWEAT440 Name' and 'SWEAT440 - Name' (dash-prefixed Snowflake names)."""
+    if not name:
+        return name
+    name = name.replace("SWEAT440 - ", "").replace("SWEAT440 ", "")
+    return name
 
 
 # ════════════════════════════════════════════════════════════════════════════
