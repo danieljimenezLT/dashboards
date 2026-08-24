@@ -181,7 +181,8 @@ def _video_embed_url(fid: str) -> str:
 
 def _download(url: str, timeout: int = 60) -> bytes | None:
     try:
-        r = requests.get(url, timeout=timeout, allow_redirects=True)
+        # Use (connect, read) tuple so a hanging server doesn't block forever
+        r = requests.get(url, timeout=(15, timeout), allow_redirects=True)
         if r.status_code == 200:
             return r.content
         log.warning(f"  HTTP {r.status_code} downloading {url[:80]}")
@@ -248,6 +249,7 @@ def process(
     limit: int = 0,
     max_new_images: int = 0,
     local_save: "Path | None" = None,
+    skip_images: bool = False,
 ) -> tuple[int, int]:
     """Process ads dict, upload missing media to Drive.  Returns (thumbs, videos).
 
@@ -306,7 +308,8 @@ def process(
         # Videos: upload only the MP4 (grid thumbnail stays as-is from Facebook URL)
         # Static ads: upload full-res image to Drive for click-to-view
         need_image = (
-            not is_video
+            not skip_images
+            and not is_video
             and not cached.get("drive_image_id")
             and (max_new_images == 0 or thumbs_uploaded < max_new_images)
         )
@@ -450,7 +453,7 @@ def prune_old(drive: DriveClient, cache: dict, cutoff_iso: str) -> int:
 
 def run_os(drive: "DriveClient | None", folder_id: str, token: str, today: date,
            max_new_videos: int, limit: int = 0, max_new_images: int = 0,
-           local_save: "Path | None" = None):
+           local_save: "Path | None" = None, skip_images: bool = False):
     if not OS_JSON.exists():
         log.warning(f"Not found: {OS_JSON}")
         return
@@ -466,7 +469,7 @@ def run_os(drive: "DriveClient | None", folder_id: str, token: str, today: date,
     log.info(f"OS: {len(ads)} ads total, {len(ads_recent)} within 90-day window")
 
     nt, nv = process(drive, ads_recent, folder_id, cache, token, today,
-                     max_new_videos, limit, max_new_images, local_save)
+                     max_new_videos, limit, max_new_images, local_save, skip_images)
     if not local_save:
         # Write Drive URLs back to the full ads dict
         for k, v in ads_recent.items():
@@ -483,7 +486,7 @@ def run_os(drive: "DriveClient | None", folder_id: str, token: str, today: date,
 
 def run_nso(drive: "DriveClient | None", folder_id: str, token: str, today: date,
             max_new_videos: int, limit: int = 0, max_new_images: int = 0,
-            local_save: "Path | None" = None):
+            local_save: "Path | None" = None, skip_images: bool = False):
     if not NSO_JSON.exists():
         log.warning(f"Not found: {NSO_JSON}")
         return
@@ -493,7 +496,7 @@ def run_nso(drive: "DriveClient | None", folder_id: str, token: str, today: date
     log.info(f"NSO: {len(ads)} ads")
 
     nt, nv = process(drive, ads, folder_id, cache, token, today,
-                     max_new_videos, limit, max_new_images, local_save)
+                     max_new_videos, limit, max_new_images, local_save, skip_images)
     if not local_save:
         # NSO keeps media for the full year — no pruning
         data["ad_meta"] = ads
@@ -514,6 +517,8 @@ def main():
     parser.add_argument("--max-new-images", type=int, default=300,
                         help="Max new image uploads per run (default 300). "
                              "Limits burst on first run. 0 = unlimited.")
+    parser.add_argument("--skip-images", action="store_true",
+                        help="Skip all image processing (useful when only syncing videos).")
     parser.add_argument("--limit", type=int, default=0,
                         help="Cap total uploads (thumbs + videos) for testing. 0 = unlimited.")
     parser.add_argument("--local-save", metavar="DIR",
@@ -553,12 +558,12 @@ def main():
     if args.dashboard in ("os", "both"):
         ls = (local_save / "os") if local_save else None
         run_os(drive, folder_os, token, today, args.max_new_videos, args.limit,
-               args.max_new_images, ls)
+               args.max_new_images, ls, args.skip_images)
 
     if args.dashboard in ("nso", "both"):
         ls = (local_save / "nso") if local_save else None
         run_nso(drive, folder_nso, token, today, args.max_new_videos, args.limit,
-                args.max_new_images, ls)
+                args.max_new_images, ls, args.skip_images)
 
 
 if __name__ == "__main__":
