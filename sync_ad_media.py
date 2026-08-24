@@ -195,15 +195,26 @@ def _download(url: str, timeout: int = 60) -> bytes | None:
 META_AD_ACCOUNT_ID = "act_1553887681409034"
 
 
+class RateLimitError(Exception):
+    pass
+
+
 def _video_source_url(video_id: str, token: str) -> str:
-    """Get the direct MP4 URL for a Meta video by querying the video object directly."""
+    """Get the direct MP4 URL for a Meta video by querying the video object directly.
+    Raises RateLimitError on Meta error code 4 so the caller can abort early."""
     try:
         r = requests.get(
             f"https://graph.facebook.com/v20.0/{video_id}",
             params={"fields": "source", "access_token": token},
             timeout=30,
         )
-        return r.json().get("source", "")
+        resp = r.json()
+        err_code = (resp.get("error") or {}).get("code")
+        if err_code == 4:
+            raise RateLimitError("Meta API rate limit (#4) reached")
+        return resp.get("source", "")
+    except RateLimitError:
+        raise
     except Exception as e:
         log.warning(f"  video source failed ({video_id}): {e}")
         return ""
@@ -377,7 +388,11 @@ def process(
                                      "video_id": video_id, "dedup_from_vid_id": video_id,
                                      "local_file": None})
             else:
-                src = _video_source_url(video_id, token)
+                try:
+                    src = _video_source_url(video_id, token)
+                except RateLimitError:
+                    log.warning("  Meta rate limit hit — stopping video processing for this run")
+                    break
                 if src:
                     vid_data = _download(src, timeout=300)
                     if vid_data:
