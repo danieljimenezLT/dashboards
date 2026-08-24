@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-24",
+      "pr_number": 241,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/241",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix Long Beach \"Total to Date\" leads showing 0",
+      "summary": "build_scorecard_from_data.py was matching data.json rows by the wrong studio name field, so Long Beach had 0 cumulative leads. Fixed to use the correct short name (data_name) and populated the scorecard with 60 leads to date."
+    },
+    {
+      "date": "2026-08-24",
       "pr_number": 240,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/240",
       "author": "Sebastian Arango",
