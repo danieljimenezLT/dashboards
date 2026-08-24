@@ -2047,49 +2047,50 @@ const isAdminUser   = () => CUR_USER && CUR_USER.role === 'admin';
 // in loadData() below).
 
 // Strip "26-FL-015-02 - " style prefix to get the creative short name
-function _ensureAdLightbox(){
-  if(document.getElementById('ad-lightbox'))return;
-  const el=document.createElement('div');
-  el.id='ad-lightbox';
-  el.style.cssText='display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);align-items:center;justify-content:center;cursor:pointer';
-  el.innerHTML=`<div id="ad-lightbox-content" style="max-width:min(90vw,900px);max-height:90vh;position:relative;cursor:default;display:flex;align-items:center;justify-content:center" onclick="event.stopPropagation()"></div>`;
-  el.addEventListener('click',closeAdLightbox);
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAdLightbox();});
-  document.body.appendChild(el);
-}
 function openAdMedia(thumb,isVid,videoUrl,preview,adName){
-  _ensureAdLightbox();
-  const lb=document.getElementById('ad-lightbox');
-  const ct=document.getElementById('ad-lightbox-content');
+  closeAdLightbox();
+  const lb=document.createElement('div');
+  lb.id='ad-lightbox';
+  lb.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;cursor:pointer';
+  lb.addEventListener('click',closeAdLightbox);
+  document.addEventListener('keydown',function _lbKey(e){if(e.key==='Escape'){closeAdLightbox();document.removeEventListener('keydown',_lbKey);}});
+  const ct=document.createElement('div');
+  ct.id='ad-lightbox-content';
+  ct.style.cssText='cursor:default;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;align-items:center';
+  ct.addEventListener('click',e=>e.stopPropagation());
   if(isVid&&videoUrl){
     const isFbEmbed=videoUrl.includes('facebook.com/plugins/video');
     const isDrive=videoUrl.includes('drive.google.com')&&videoUrl.includes('/preview');
     if(isFbEmbed){
-      // width=360 keeps portrait (9:16) videos within an 80vh container without clipping.
-      // Facebook's player letterboxes landscape videos in the taller space.
+      // width=360 fits portrait (9:16) videos in an 80vh frame; FB letterboxes landscape.
       const src=videoUrl.replace(/([?&])width=\d+/,'$1width=360');
-      ct.innerHTML=`<div style="width:min(360px,92vw)"><iframe src="${src}" style="width:100%;height:min(80vh,640px);border:none;border-radius:8px;display:block" allowfullscreen allow="autoplay;encrypted-media"></iframe><p style="color:#aac;font-size:11px;margin:6px 0 0;text-align:center">${adName||''}</p></div>`;
+      const wrap=document.createElement('div');
+      wrap.style.cssText='width:min(360px,92vw)';
+      wrap.innerHTML=`<iframe src="${src}" style="width:100%;height:min(60vh,520px);border:none;border-radius:8px;display:block" allowfullscreen allow="autoplay;encrypted-media"></iframe><p style="color:#aac;font-size:11px;margin:6px 0 0;text-align:center">${adName||''}</p>`;
+      ct.appendChild(wrap);
     }else if(isDrive){
-      ct.innerHTML=`<div style="width:min(640px,92vw)"><iframe src="${videoUrl}" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;display:block" allowfullscreen allow="autoplay"></iframe><p style="color:#aac;font-size:11px;margin:6px 0 0;text-align:center">${adName||''}</p></div>`;
+      const wrap=document.createElement('div');
+      wrap.style.cssText='width:min(640px,92vw)';
+      wrap.innerHTML=`<iframe src="${videoUrl}" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;display:block" allowfullscreen allow="autoplay"></iframe><p style="color:#aac;font-size:11px;margin:6px 0 0;text-align:center">${adName||''}</p>`;
+      ct.appendChild(wrap);
     }else{
       ct.innerHTML=`<video controls autoplay style="max-width:92vw;max-height:85vh;border-radius:8px;background:#000" src="${videoUrl}">Your browser does not support video.</video><p style="color:#aac;font-size:11px;margin:0">${adName||''}</p>`;
     }
   }else if(thumb){
     const hiRes=(thumb||'').replace(/_p\d+x\d+/g,'');
     const img=document.createElement('img');
-    img.style.cssText='max-width:100%;max-height:90vh;border-radius:8px;object-fit:contain;box-shadow:0 4px 40px rgba(0,0,0,.6)';
+    img.style.cssText='max-width:92vw;max-height:90vh;border-radius:8px;object-fit:contain;box-shadow:0 4px 40px rgba(0,0,0,.6)';
     img.loading='eager';
     img.onerror=()=>{img.onerror=null;img.src=thumb;};
     img.src=hiRes;
     ct.appendChild(img);
   }else return;
-  lb.style.display='flex';
+  lb.appendChild(ct);
+  document.body.appendChild(lb);
 }
 function closeAdLightbox(){
   const lb=document.getElementById('ad-lightbox');
-  if(!lb)return;
-  lb.style.display='none';
-  document.getElementById('ad-lightbox-content').innerHTML='';
+  if(lb)lb.remove();
 }
 
 function creativeShortName(adName) {
@@ -2507,7 +2508,6 @@ async function buildMetaTab() {
       );
       // Admin-only thumbnail click handler (delegated, survives table re-sorts)
       if (isAdminUser()) {
-        _ensureAdLightbox();
         const _adsTable = document.getElementById('meta-ads-table');
         if (_adsTable && !_adsTable._lbBound) {
           _adsTable._lbBound = true;
