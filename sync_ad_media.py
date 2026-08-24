@@ -195,15 +195,14 @@ META_AD_ACCOUNT_ID = "act_1553887681409034"
 
 
 def _video_source_url(video_id: str, token: str) -> str:
-    """Get the direct MP4 URL for a Meta video via the advideos edge."""
+    """Get the direct MP4 URL for a Meta video by querying the video object directly."""
     try:
         r = requests.get(
-            f"https://graph.facebook.com/v20.0/{META_AD_ACCOUNT_ID}/advideos",
-            params={"video_ids": video_id, "fields": "source", "access_token": token},
+            f"https://graph.facebook.com/v20.0/{video_id}",
+            params={"fields": "source", "access_token": token},
             timeout=30,
         )
-        data = r.json().get("data", [])
-        return data[0].get("source", "") if data else ""
+        return r.json().get("source", "")
     except Exception as e:
         log.warning(f"  video source failed ({video_id}): {e}")
         return ""
