@@ -146,6 +146,22 @@
       "tier_pricing": null
     },
     {
+      "name": "Charlotte - South End",
+      "code": "NC-002",
+      "state": "NC",
+      "status": "nso",
+      "excluded_default": true,
+      "meta": {},
+      "google_ads": {},
+      "ga4": {
+        "studio_page_path": "/gyms/locations-north-carolina-charlotte-south-end/"
+      },
+      "gbp": {},
+      "snowflake_id": null,
+      "social_slug": "south-end",
+      "tier_pricing": null
+    },
+    {
       "name": "Coral Gables",
       "code": "FL-003",
       "state": "FL",
@@ -792,7 +808,7 @@
     },
     {
       "name": "OKC - Rose Creek",
-      "code": null,
+      "code": "OK-001",
       "state": "OK",
       "status": "nso",
       "excluded_default": true,
