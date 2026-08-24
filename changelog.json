@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-08-24",
+      "pr_number": 235,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/235",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Add Long Beach as a New Studio Opening",
+      "summary": "Long Beach (NY-005) is now fully configured in the studio registry with its Snowflake ID, Google Ads CID, GBP location ID, Instagram ID, and GA4 page path. It will appear in all NSO dashboard fetch scripts on next run."
+    },
+    {
       "date": "2026-08-21",
       "pr_number": 231,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/231",
