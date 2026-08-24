@@ -419,16 +419,22 @@
     },
     {
       "name": "Long Beach",
-      "code": null,
-      "state": "CA",
+      "code": "NY-005",
+      "state": "NY",
       "status": "nso",
       "excluded_default": true,
-      "meta": {},
-      "google_ads": {},
+      "meta": {
+        "instagram_account_id": "17841411727425800"
+      },
+      "google_ads": {
+        "customer_id": "330-965-6191"
+      },
       "ga4": {},
-      "gbp": {},
-      "snowflake_id": null,
-      "social_slug": null,
+      "gbp": {
+        "location_id": "7629344561899220561"
+      },
+      "snowflake_id": 5755749,
+      "social_slug": "longbeachny",
       "tier_pricing": null
     },
     {
