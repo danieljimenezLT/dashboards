@@ -24,7 +24,8 @@ import sys
 from datetime import date, timedelta
 from pathlib import Path
 
-ROOT = Path(__file__).parent.parent
+ROOT      = Path(__file__).parent.parent   # nso-dashboard/
+REPO_ROOT = ROOT.parent                    # dashboards/ (where data.json lives)
 TODAY = date.today()
 
 
@@ -71,10 +72,10 @@ def main():
             studio_filter = sys.argv[i + 1]
 
     sc_path   = ROOT / "nso_scorecard_data.json"
-    data_path = ROOT / "data.json"
+    data_path = REPO_ROOT / "data.json"
 
     print(f"Loading {data_path.name} ...")
-    with open(data_path, encoding="utf-8") as f:
+    with open(data_path, encoding="utf-8-sig") as f:
         raw = json.load(f)
 
     print(f"Loading {sc_path.name} ...")
@@ -93,8 +94,10 @@ def main():
         print(f"  {full_name}")
         print(f"{'='*72}")
 
-        # Daily rows for this studio
-        studio_rows = [r for r in daily if r.get("studio") == full_name]
+        # Daily rows for this studio — data.json uses short names (strip_brand applied),
+        # so match against data_name ("Herriman") not full_name ("SWEAT440 Herriman").
+        match_name = studio.get("data_name") or full_name
+        studio_rows = [r for r in daily if r.get("studio") == match_name]
         if not studio_rows:
             print("  No rows found in data.json — skipping.")
             continue
