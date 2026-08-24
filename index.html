@@ -2065,9 +2065,10 @@ function openAdMedia(thumb,isVid,videoUrl,preview,adName){
     const isFbEmbed=videoUrl.includes('facebook.com/plugins/video');
     const isDrive=videoUrl.includes('drive.google.com')&&videoUrl.includes('/preview');
     if(isFbEmbed){
-      // Normalize embed width to 640 so it fits the container without clipping
-      const src=videoUrl.replace(/([?&])width=\d+/,'$1width=640');
-      ct.innerHTML=`<div style="width:min(640px,92vw)"><iframe src="${src}" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;display:block" allowfullscreen allow="autoplay;encrypted-media"></iframe><p style="color:#aac;font-size:11px;margin:6px 0 0;text-align:center">${adName||''}</p></div>`;
+      // width=360 keeps portrait (9:16) videos within an 80vh container without clipping.
+      // Facebook's player letterboxes landscape videos in the taller space.
+      const src=videoUrl.replace(/([?&])width=\d+/,'$1width=360');
+      ct.innerHTML=`<div style="width:min(360px,92vw)"><iframe src="${src}" style="width:100%;height:min(80vh,640px);border:none;border-radius:8px;display:block" allowfullscreen allow="autoplay;encrypted-media"></iframe><p style="color:#aac;font-size:11px;margin:6px 0 0;text-align:center">${adName||''}</p></div>`;
     }else if(isDrive){
       ct.innerHTML=`<div style="width:min(640px,92vw)"><iframe src="${videoUrl}" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;display:block" allowfullscreen allow="autoplay"></iframe><p style="color:#aac;font-size:11px;margin:6px 0 0;text-align:center">${adName||''}</p></div>`;
     }else{
