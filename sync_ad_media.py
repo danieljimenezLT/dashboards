@@ -255,20 +255,15 @@ def process(
     total_uploaded  = 0
 
     # Dedup by exact match only: same Meta video_id = same file; same image_hash = same pixels.
-    # Dedup maps:
-    #   vid_to_fid   — same Meta video_id → definitely same file, always safe
-    #   hash_to_fid  — same image_hash → same pixels, always safe
-    #   cname_vid_fid — same creative name (prefix stripped) → assume same video content
-    vid_to_fid:    dict[str, str] = {}
-    hash_to_fid:   dict[str, str] = {}
-    cname_vid_fid: dict[str, str] = {}
+    # Creative name dedup is intentionally excluded for videos: different studios upload separate
+    # files under the same campaign name, so name == name does NOT imply same video content.
+    vid_to_fid:  dict[str, str] = {}
+    hash_to_fid: dict[str, str] = {}
     for ce in cache.values():
         if ce.get("video_id") and ce.get("drive_video_id"):
             vid_to_fid[ce["video_id"]] = ce["drive_video_id"]
         if ce.get("image_hash") and ce.get("drive_image_id"):
             hash_to_fid[ce["image_hash"]] = ce["drive_image_id"]
-        if ce.get("creative_name") and ce.get("drive_video_id"):
-            cname_vid_fid[ce["creative_name"]] = ce["drive_video_id"]
 
     for key_raw, entry in ads.items():
         if limit and total_uploaded >= limit:
@@ -344,9 +339,6 @@ def process(
             if video_id in vid_to_fid:
                 fid = vid_to_fid[video_id]
                 log.info(f"  video  dedup(id) {key_raw[:50]}")
-            elif creative_name and creative_name in cname_vid_fid:
-                fid = cname_vid_fid[creative_name]
-                log.info(f"  video  dedup(name) {key_raw[:50]} <- \"{creative_name[:40]}\"")
             else:
                 src = _video_source_url(video_id, token)
                 if src:
@@ -355,16 +347,12 @@ def process(
                         size_kb = len(vid_data) // 1024
                         fid = drive.upload(vid_data, f"{ck}_video.mp4", "video/mp4", folder_id)
                         vid_to_fid[video_id] = fid
-                        if creative_name:
-                            cname_vid_fid[creative_name] = fid
                         videos_uploaded += 1
                         total_uploaded  += 1
                         log.info(f"    {size_kb} KB -> Drive ({videos_uploaded}/{max_new_videos})")
             if fid:
                 cached["drive_video_id"] = fid
                 cached["video_id"]       = video_id
-                if creative_name:
-                    cached["creative_name"] = creative_name
                 entry["drive_video_url"] = _video_embed_url(fid)
 
         time.sleep(0.5)
