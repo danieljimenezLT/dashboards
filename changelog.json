@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-24",
+      "pr_number": 238,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/238",
+      "author": "Sebastian Arango",
+      "categories": [
+        "OS Dashboard"
+      ],
+      "title": "Video ads now open in an inline lightbox instead of a new tab",
+      "summary": "Clicking a video ad thumbnail now opens the video in a centered modal overlay at 640px wide, instead of navigating to a full-page Facebook embed URL in a new tab."
+    },
+    {
+      "date": "2026-08-24",
       "pr_number": 237,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/237",
       "author": "Sebastian Arango",
