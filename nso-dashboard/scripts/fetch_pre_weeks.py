@@ -80,18 +80,22 @@ def load_sheet_config() -> list[dict]:
     return out
 
 
-def load_daily_leads() -> dict[str, dict[str, int]]:
-    """Returns {studio_name: {date_str: total_signups}}."""
+def load_daily_leads() -> dict[str, dict[str, dict]]:
+    """Returns {studio_name: {date_str: {total, grassroots}}}."""
     data = json.loads(DATA_JSON.read_text(encoding="utf-8"))
-    by_studio: dict[str, dict[str, int]] = {}
+    by_studio: dict[str, dict[str, dict]] = {}
     for row in data.get("daily_detail", []):
         studio   = row.get("studio", "")
         date_str = row.get("date", "")
         signups  = int(row.get("signups") or 0)
+        src      = str(row.get("source", "")).lower()
         if not studio or not date_str:
             continue
         by_studio.setdefault(studio, {})
-        by_studio[studio][date_str] = by_studio[studio].get(date_str, 0) + signups
+        by_studio[studio].setdefault(date_str, {"total": 0, "grassroots": 0})
+        by_studio[studio][date_str]["total"] += signups
+        if src == "grassroots":
+            by_studio[studio][date_str]["grassroots"] += signups
     return by_studio
 
 
@@ -142,19 +146,22 @@ def build_pre_weeks(cfg: dict, daily_leads: dict) -> list[dict]:
     while bucket_end >= earliest:
         bucket_start = max(bucket_end - timedelta(days=6), earliest)
 
-        new_leads = 0
+        new_leads = grassroots_leads = 0
         d = bucket_start
         while d <= bucket_end:
-            new_leads += leads_by_date.get(d.isoformat(), 0)
+            day_data = leads_by_date.get(d.isoformat(), {})
+            new_leads       += day_data.get("total", 0)
+            grassroots_leads += day_data.get("grassroots", 0)
             d += timedelta(days=1)
 
         weeks.append({
-            "week_num":   week_num,
-            "week":       f"WEEK {week_num}",
-            "date_start": bucket_start.isoformat(),
-            "date_end":   bucket_end.isoformat(),
-            "new_leads":  new_leads,
-            "total_leads": None,  # filled below
+            "week_num":        week_num,
+            "week":            f"WEEK {week_num}",
+            "date_start":      bucket_start.isoformat(),
+            "date_end":        bucket_end.isoformat(),
+            "new_leads":       new_leads,
+            "grassroots_leads": grassroots_leads if grassroots_leads > 0 else None,
+            "total_leads":     None,  # filled below
         })
 
         bucket_end = bucket_start - timedelta(days=1)
