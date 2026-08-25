@@ -262,7 +262,8 @@ def load_studio_config(gc):
         cpl_raw      = _ch(row, "cpl range") or None
         cpa_raw      = _ch(row, "cpa range") or None
         conv_rate    = _parse_float(_ch(row, "conversion rate"))
-        mkt_budget   = _parse_float(_ch(row, "marketing budget"))
+        mkt_budget      = _parse_float(_ch(row, "marketing budget"))
+        goal_announce   = _parse_float(_ch(row, "goal to announce opening", "goal to announce")) or None
 
         # Platform IDs — found by header name (columns may vary)
         ig_id      = _ch(row, "instagram id") or None
@@ -303,7 +304,8 @@ def load_studio_config(gc):
             "ig_id":           ig_id,
             "sheet_url":       sheet_url,
             "snowflake_id":    snowflake_id,
-            "gads_account_id": gads_cid.replace("-", "") if gads_cid else None,
+            "gads_account_id":      gads_cid.replace("-", "") if gads_cid else None,
+            "goal_announce_target": goal_announce,
         })
 
     return studios
@@ -452,9 +454,11 @@ def load_ig_followers(social_raw):
 def load_meta_spend(meta_rows):
     """Build {code: {date_str: spend}} from marketing_data.json meta_ads.
 
-    Meta campaigns use studio names in their names (e.g. 'Dr Phillips'), not codes.
-    Match using EVENTS_SPEND_STUDIO_MAP aliases (longest first to avoid false positives),
-    falling back to the studio code itself.
+    Two attribution paths:
+    1. Dedicated-account rows: have studio_code set explicitly (no campaign_name).
+       Attributed directly by code — no name matching needed.
+    2. Shared-account rows: campaign_name contains studio keyword.
+       Matched via EVENTS_SPEND_STUDIO_MAP aliases (longest first).
     """
     all_codes = [cfg["code"] for cfg in _STUDIO_CFG_CACHE]
 
@@ -470,10 +474,18 @@ def load_meta_spend(meta_rows):
 
     by = defaultdict(lambda: defaultdict(float))
     for r in meta_rows:
-        cname = str(r.get("campaign_name", "")).lower()
         d = str(r.get("date", ""))[:10]
         spend = float(r.get("spend") or 0)
         if spend <= 0 or len(d) < 10:
+            continue
+        # Path 1: dedicated account row tagged with studio_code
+        studio_code = r.get("studio_code", "")
+        if studio_code and studio_code in all_codes:
+            by[studio_code][d] += spend
+            continue
+        # Path 2: shared account — match by campaign name
+        cname = str(r.get("campaign_name", "")).lower()
+        if not cname:
             continue
         for code, keywords in match_list:
             if any(kw in cname for kw in keywords):
@@ -1026,16 +1038,17 @@ def main():
                     print(f"  IG gap {gap} added to Week 0 (total {cf_total}, accounted {accounted})")
 
         studio_entry = {
-            "name":          cfg["name"],
-            "code":          code,
-            "full_name":     full,
-            "data_name":     cfg["data_name"],
-            "targets":       cfg["targets"],
-            "co_week":       co_wk,
-            "go_week":       go_wk,
-            "opening_date":  cfg["opening_date"].isoformat() if cfg["opening_date"] else None,
-            "current_week":  cw_num,
-            "weeks":         weeks_out,
+            "name":                 cfg["name"],
+            "code":                 code,
+            "full_name":            full,
+            "data_name":            cfg["data_name"],
+            "targets":              cfg["targets"],
+            "co_week":              co_wk,
+            "go_week":              go_wk,
+            "opening_date":         cfg["opening_date"].isoformat() if cfg["opening_date"] else None,
+            "goal_announce_target": cfg.get("goal_announce_target"),
+            "current_week":         cw_num,
+            "weeks":                weeks_out,
         }
         output_studios.append(studio_entry)
 

@@ -157,9 +157,13 @@
         "studio_page_path": "/gyms/locations-north-carolina-charlotte-south-end/"
       },
       "gbp": {},
-      "snowflake_id": null,
+      "snowflake_id": 5755905,
       "social_slug": "south-end",
-      "tier_pricing": null
+      "tier_pricing": {
+        "tier1_price": 99,
+        "tier2_price": 129,
+        "tier3_price": 149
+      }
     },
     {
       "name": "Coral Gables",
