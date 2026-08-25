@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-25",
+      "pr_number": 250,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/250",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Track grassroots leads separately in pre-Week-0 data",
+      "summary": "fetch_pre_weeks.py now computes grassroots_leads per pre-week bucket in nso_pre_weeks_data.json, showing how many pre-opening leads came from grassroots outreach."
+    },
+    {
+      "date": "2026-08-25",
       "pr_number": 249,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/249",
       "author": "Sebastian Arango",
