@@ -1070,6 +1070,8 @@ def main():
                     s["tier_rmr_by_week"] = prev_s["tier_rmr_by_week"]
                 if prev_s.get("pricing") is not None:
                     s["pricing"] = prev_s["pricing"]
+                if prev_s.get("milestones"):
+                    s["milestones"] = prev_s["milestones"]
         except Exception:
             pass
 
