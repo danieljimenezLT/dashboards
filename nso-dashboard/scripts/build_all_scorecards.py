@@ -265,6 +265,26 @@ def load_studio_config(gc):
         mkt_budget      = _parse_float(_ch(row, "marketing budget"))
         goal_announce   = _parse_float(_ch(row, "goal to announce opening", "goal to announce")) or None
 
+        # Milestone dates from Scheduling columns
+        _MILESTONE_COLS = [
+            ("early_lead_date",       "early lead date",                  "Early Lead Date",                    "Landing page & early interest list"),
+            ("mbo_date",              "full marketing build out complete", "Full Marketing Build Out Complete",  "Lead form live on website"),
+            ("paid_presales_start_date", "paid presales start date",       "Paid Presales Start Date",           "Presales campaign begins"),
+            ("paid_lead_gen_date",    "paid lead gen date",               "Paid Lead Gen Start",                "Meta / Google paid ads begin"),
+        ]
+        milestones = []
+        for key, col_name, label, subtitle in _MILESTONE_COLS:
+            d = _parse_date(_ch(row, col_name))
+            if d:
+                milestones.append({"key": key, "label": label, "subtitle": subtitle, "date": d.isoformat()})
+        milestones.sort(key=lambda m: m["date"])
+        # Reston fixed milestones (Preview Week + Grand Opening) — not in the Sheet
+        if code == "VA-001":
+            milestones += [
+                {"key": "preview_week",  "label": "Preview Week",  "subtitle": "Aug 29 – Sep 4, 2026", "date": "2026-08-29"},
+                {"key": "grand_opening", "label": "Grand Opening", "subtitle": "Doors open to the public",  "date": "2026-09-05"},
+            ]
+
         # Platform IDs — found by header name (columns may vary)
         ig_id      = _ch(row, "instagram id") or None
         sheet_url  = _ch(row, "grassroots sheet url") or None
@@ -306,6 +326,7 @@ def load_studio_config(gc):
             "snowflake_id":    snowflake_id,
             "gads_account_id":      gads_cid.replace("-", "") if gads_cid else None,
             "goal_announce_target": goal_announce,
+            "milestones":           milestones,
         })
 
     return studios
@@ -1047,6 +1068,7 @@ def main():
             "go_week":              go_wk,
             "opening_date":         cfg["opening_date"].isoformat() if cfg["opening_date"] else None,
             "goal_announce_target": cfg.get("goal_announce_target"),
+            "milestones":           cfg.get("milestones", []),
             "current_week":         cw_num,
             "weeks":                weeks_out,
         }
@@ -1070,8 +1092,6 @@ def main():
                     s["tier_rmr_by_week"] = prev_s["tier_rmr_by_week"]
                 if prev_s.get("pricing") is not None:
                     s["pricing"] = prev_s["pricing"]
-                if prev_s.get("milestones"):
-                    s["milestones"] = prev_s["milestones"]
         except Exception:
             pass
 
