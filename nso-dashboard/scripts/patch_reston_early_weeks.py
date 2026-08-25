@@ -1,51 +1,52 @@
 """
 patch_reston_early_weeks.py
 
-For Reston (VA-001):
-  1. Replaces weeks 0-29 with frozen data from reston_static_weeks.json
-  2. For weeks 30+ (date_start >= 2026-06-08), assigns sequential week numbers
-     and keeps Snowflake/API data from build_all_scorecards.py
-  3. Recalculates cumulative total_leads from new_leads across all weeks
-  4. Calibrates IG Week 0 so cumulative total = current_followers
+For Reston (VA-001), selectively overlays static data from reston_static_weeks.json
+into the scorecard produced by build_all_scorecards.py:
 
-Reston weeks are sequential (no pause weeks).
+  - new_leads, grassroots_leads: filled from static for weeks where data.json has no
+    coverage (date_end < DATA_START). data.json for Reston starts 2026-01-03 (W7).
+  - ig_new_followers: overlaid from static for ALL weeks, then W0 calibrated so
+    the cumulative equals current_followers from social_insights.json.
+  - meta_spend, google_spend, presales, etc.: kept from live API data (already accurate).
+  - Weeks W31+ (date_start > 2026-06-13): kept as-is from build_all_scorecards.py.
+
+This avoids date-boundary conflicts between the static file's Mon–Sun weeks and the
+live scorecard's Sun–Sat weeks.
 """
 import json
-import calendar as cal_mod
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 
 ROOT           = Path(__file__).parent.parent
 SCORECARD_FILE = ROOT / "nso_scorecard_data.json"
 STATIC_FILE    = ROOT / "reston_static_weeks.json"
 RESTON_CODE    = "VA-001"
-WEEK1_START    = date(2025, 11, 17)   # Reston Week 1 Monday
-STATIC_CUTOFF  = "2026-06-07"         # date_end of last static week (W29)
+DATA_START     = "2026-01-03"   # first date data.json has Reston rows
 
 
-def cal_wk_to_reston_wk(cal_wk):
-    """Reston weeks are sequential — no pause weeks."""
-    return max(0, cal_wk)
+def _wk_num(label):
+    """Extract integer week number from 'WEEK 5' or 'Week 0'."""
+    try:
+        return int(label.strip().split()[-1])
+    except (ValueError, IndexError):
+        return -1
 
 
-def date_to_cal_wk(date_start_str):
-    """Return the sequential calendar week number for a given Monday date string."""
-    if not date_start_str:
-        return 0
-    ds = date.fromisoformat(date_start_str)
-    delta = (ds - WEEK1_START).days
-    if delta < 0:
-        return 0
-    return delta // 7 + 1
-
-
-# ── Load static weeks (W0-W34) ─────────────────────────────────────────────────
+# ── Load static weeks ──────────────────────────────────────────────────────────
 print("Loading reston_static_weeks.json ...")
 with open(STATIC_FILE) as f:
     static_weeks = json.load(f)
-print(f"  {len(static_weeks)} static weeks (W0-W29)")
 
-# ── Load current scorecard ──────────────────────────────────────────────────────
+# Build lookup: static week number → {new_leads, grassroots_leads, ig_new_followers}
+static_by_num = {}
+for sw in static_weeks:
+    n = _wk_num(sw.get("week", ""))
+    if n >= 0:
+        static_by_num[n] = sw
+print(f"  {len(static_weeks)} static weeks loaded (W0–W{max(static_by_num)})")
+
+# ── Load current scorecard ─────────────────────────────────────────────────────
 with open(SCORECARD_FILE) as f:
     sc = json.load(f)
 
@@ -54,51 +55,44 @@ if not reston:
     print("ERROR: Reston not found in scorecard")
     raise SystemExit(1)
 
-# ── Extract dynamic weeks (W30+) from build_all_scorecards.py output ──────────
-dynamic_weeks = [
-    wk for wk in reston["weeks"]
-    if wk.get("date_start") and wk.get("date_start") > STATIC_CUTOFF
-]
-print(f"\nDynamic weeks (W30+): {len(dynamic_weeks)}")
-
-# ── Relabel dynamic weeks with correct sequential Reston week numbers ──────────
+# ── Overlay static data into live weeks ───────────────────────────────────────
 today_str = date.today().isoformat()
-new_current = 29  # last confirmed static week
+patched = 0
 
-for wk in dynamic_weeks:
-    cal_wk = date_to_cal_wk(wk.get("date_start"))
-    reston_wk = cal_wk_to_reston_wk(cal_wk)
-    old_label = wk.get("week", "")
-    wk["week"] = f"WEEK {reston_wk}"
-    ds = wk.get("date_start", "")
-    if ds and ds <= today_str:
-        new_current = reston_wk
-    print(f"  {old_label:10s} -> WEEK {reston_wk}  ({wk.get('date_start')} - {wk.get('date_end')})")
+for wk in reston["weeks"]:
+    n = _wk_num(wk.get("week", ""))
+    sw = static_by_num.get(n)
+    if sw is None:
+        continue
 
-# ── Combine static + dynamic ──────────────────────────────────────────────────
-all_weeks = static_weeks + dynamic_weeks
+    date_end = wk.get("date_end", "")
+    date_start = wk.get("date_start") or ""
 
-# ── Recalculate cumulative total_leads from new_leads ─────────────────────────
-print("\nRecalculating cumulative total_leads...")
+    # 1. Leads: fill from static only for weeks before data.json coverage
+    if date_end < DATA_START or (not date_start and date_end < DATA_START):
+        if not wk.get("new_leads"):
+            wk["new_leads"] = sw.get("new_leads") or 0
+        if not wk.get("grassroots_leads"):
+            wk["grassroots_leads"] = sw.get("grassroots_leads") or 0
+
+    # 2. IG followers: always overlay from static (API only covers 30 days)
+    static_ig = sw.get("ig_new_followers")
+    if static_ig is not None and not wk.get("ig_new_followers"):
+        wk["ig_new_followers"] = static_ig
+        patched += 1
+
+print(f"\nOverlaid static data: {patched} IG updates")
+
+# ── Recalculate cumulative total_leads ────────────────────────────────────────
+print("Recalculating cumulative total_leads...")
 cum = 0.0
-for wk in all_weeks:
+for wk in reston["weeks"]:
     nl = wk.get("new_leads") or 0
     cum += nl
-    if cum > 0:
-        wk["total_leads"] = cum
+    wk["total_leads"] = cum if cum > 0 else (0.0 if wk.get("week") == "Week 0" else None)
 print(f"  Final cumulative leads: {cum}")
 
-# ── Update Reston studio entry ────────────────────────────────────────────────
-reston["weeks"]        = all_weeks
-reston["current_week"] = new_current
-reston["co_week"]      = 12   # W12 contains 2026-02-02 (C/O date)
-print(f"\ncurrent_week set to {new_current}")
-
-# Ensure founders rate is visible in the RMR breakdown
-if reston.get("pricing") is not None:
-    reston["pricing"]["tier0_price"] = 99
-
-# ── IG gap → Week 0 ───────────────────────────────────────────────────────────
+# ── Calibrate IG Week 0 so cumulative = current_followers ─────────────────────
 print("\nCalibrating IG Week 0 so cumulative = current_followers...")
 try:
     with open(ROOT / "social_insights.json") as f:
@@ -110,10 +104,10 @@ try:
     )
     if cf is not None:
         cf = int(cf)
-        w0 = next((w for w in all_weeks if w.get("week") == "Week 0"), None)
+        w0 = next((w for w in reston["weeks"] if w.get("week") == "Week 0"), None)
         sum_rest = sum(
             (w.get("ig_new_followers") or 0)
-            for w in all_weeks if w.get("week") != "Week 0"
+            for w in reston["weeks"] if w.get("week") != "Week 0"
         )
         w0_val = max(0, cf - sum_rest)
         if w0 is not None:
@@ -130,4 +124,4 @@ except FileNotFoundError:
 with open(SCORECARD_FILE, "w") as f:
     json.dump(sc, f, indent=2)
 
-print("\nDone. W0-W29 frozen from static file. W30+ from Snowflake with sequential week numbering.")
+print("\nDone. Reston early weeks overlaid from static file.")
