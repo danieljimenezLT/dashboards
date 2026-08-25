@@ -18,6 +18,20 @@
       "go_week": 28,
       "opening_date": "2026-08-22",
       "goal_announce_target": 300.0,
+      "milestones": [
+        {
+          "key": "mbo_date",
+          "label": "Full Marketing Build Out Complete",
+          "subtitle": "Lead form live on website",
+          "date": "2026-02-09"
+        },
+        {
+          "key": "paid_presales_start_date",
+          "label": "Paid Presales Start Date",
+          "subtitle": "Presales campaign begins",
+          "date": "2026-02-10"
+        }
+      ],
       "current_week": 29,
       "weeks": [
         {
@@ -1180,21 +1194,7 @@
         "tier2_members_target": 100,
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
-      },
-      "milestones": [
-        {
-          "key": "mbo_date",
-          "label": "Full Marketing Build Out Complete",
-          "subtitle": "Lead form live on website",
-          "date": "2026-02-09"
-        },
-        {
-          "key": "paid_presales_start_date",
-          "label": "Paid Presales Start Date",
-          "subtitle": "Presales campaign begins",
-          "date": "2026-02-10"
-        }
-      ]
+      }
     },
     {
       "name": "Reston",
@@ -1214,6 +1214,32 @@
       "go_week": 42,
       "opening_date": "2026-09-05",
       "goal_announce_target": 250.0,
+      "milestones": [
+        {
+          "key": "mbo_date",
+          "label": "Full Marketing Build Out Complete",
+          "subtitle": "Lead form live on website",
+          "date": "2025-11-11"
+        },
+        {
+          "key": "paid_presales_start_date",
+          "label": "Paid Presales Start Date",
+          "subtitle": "Presales campaign begins",
+          "date": "2025-11-11"
+        },
+        {
+          "key": "preview_week",
+          "label": "Preview Week",
+          "subtitle": "Aug 29 \u2013 Sep 4, 2026",
+          "date": "2026-08-29"
+        },
+        {
+          "key": "grand_opening",
+          "label": "Grand Opening",
+          "subtitle": "Doors open to the public",
+          "date": "2026-09-05"
+        }
+      ],
       "current_week": 41,
       "weeks": [
         {
@@ -2870,33 +2896,7 @@
         "tier2_members_target": 225,
         "estimated_roms_target": "5x",
         "tier0_price": 99
-      },
-      "milestones": [
-        {
-          "key": "mbo_date",
-          "label": "Full Marketing Build Out Complete",
-          "subtitle": "Lead form live on website",
-          "date": "2025-11-11"
-        },
-        {
-          "key": "paid_presales_start_date",
-          "label": "Paid Presales Start Date",
-          "subtitle": "Presales campaign begins",
-          "date": "2025-11-11"
-        },
-        {
-          "key": "preview_week",
-          "label": "Preview Week",
-          "subtitle": "Aug 29 \u2013 Sep 4, 2026",
-          "date": "2026-08-29"
-        },
-        {
-          "key": "grand_opening",
-          "label": "Grand Opening",
-          "subtitle": "Doors open to the public",
-          "date": "2026-09-05"
-        }
-      ]
+      }
     },
     {
       "name": "Herriman",
@@ -2916,6 +2916,20 @@
       "go_week": 30,
       "opening_date": "2026-10-03",
       "goal_announce_target": 300.0,
+      "milestones": [
+        {
+          "key": "mbo_date",
+          "label": "Full Marketing Build Out Complete",
+          "subtitle": "Lead form live on website",
+          "date": "2026-03-09"
+        },
+        {
+          "key": "paid_presales_start_date",
+          "label": "Paid Presales Start Date",
+          "subtitle": "Presales campaign begins",
+          "date": "2026-06-09"
+        }
+      ],
       "current_week": 25,
       "weeks": [
         {
@@ -4150,21 +4164,7 @@
         "tier2_members_target": 125,
         "tier3_members_target": 165,
         "estimated_roms_target": "5x"
-      },
-      "milestones": [
-        {
-          "key": "mbo_date",
-          "label": "Full Marketing Build Out Complete",
-          "subtitle": "Lead form live on website",
-          "date": "2026-03-09"
-        },
-        {
-          "key": "paid_presales_start_date",
-          "label": "Paid Presales Start Date",
-          "subtitle": "Presales campaign begins",
-          "date": "2026-06-09"
-        }
-      ]
+      }
     },
     {
       "name": "Old Bridge",
@@ -4184,6 +4184,32 @@
       "go_week": 28,
       "opening_date": "2027-01-09",
       "goal_announce_target": 300.0,
+      "milestones": [
+        {
+          "key": "early_lead_date",
+          "label": "Early Lead Date",
+          "subtitle": "Landing page & early interest list",
+          "date": "2026-05-14"
+        },
+        {
+          "key": "mbo_date",
+          "label": "Full Marketing Build Out Complete",
+          "subtitle": "Lead form live on website",
+          "date": "2026-06-30"
+        },
+        {
+          "key": "paid_lead_gen_date",
+          "label": "Paid Lead Gen Start",
+          "subtitle": "Meta / Google paid ads begin",
+          "date": "2026-07-01"
+        },
+        {
+          "key": "paid_presales_start_date",
+          "label": "Paid Presales Start Date",
+          "subtitle": "Presales campaign begins",
+          "date": "2026-07-28"
+        }
+      ],
       "current_week": 9,
       "weeks": [
         {
@@ -5340,33 +5366,7 @@
         "tier1_members_target": 200,
         "tier2_members_target": 240,
         "estimated_roms_target": "5x"
-      },
-      "milestones": [
-        {
-          "key": "early_lead_date",
-          "label": "Early Lead Date",
-          "subtitle": "Landing page & early interest list",
-          "date": "2026-05-14"
-        },
-        {
-          "key": "mbo_date",
-          "label": "Full Marketing Build Out Complete",
-          "subtitle": "Lead form live on website",
-          "date": "2026-06-30"
-        },
-        {
-          "key": "paid_lead_gen_date",
-          "label": "Paid Lead Gen Start",
-          "subtitle": "Meta / Google paid ads begin",
-          "date": "2026-07-01"
-        },
-        {
-          "key": "paid_presales_start_date",
-          "label": "Paid Presales Start Date",
-          "subtitle": "Presales campaign begins",
-          "date": "2026-07-28"
-        }
-      ]
+      }
     },
     {
       "name": "Dr Phillips",
@@ -5386,6 +5386,20 @@
       "go_week": 21,
       "opening_date": "2026-09-26",
       "goal_announce_target": 250.0,
+      "milestones": [
+        {
+          "key": "mbo_date",
+          "label": "Full Marketing Build Out Complete",
+          "subtitle": "Lead form live on website",
+          "date": "2026-05-04"
+        },
+        {
+          "key": "paid_presales_start_date",
+          "label": "Paid Presales Start Date",
+          "subtitle": "Presales campaign begins",
+          "date": "2026-05-26"
+        }
+      ],
       "current_week": 17,
       "weeks": [
         {
@@ -6436,21 +6450,7 @@
         "tier2_members_target": 125,
         "tier3_members_target": 165,
         "estimated_roms_target": "5x"
-      },
-      "milestones": [
-        {
-          "key": "mbo_date",
-          "label": "Full Marketing Build Out Complete",
-          "subtitle": "Lead form live on website",
-          "date": "2026-05-04"
-        },
-        {
-          "key": "paid_presales_start_date",
-          "label": "Paid Presales Start Date",
-          "subtitle": "Presales campaign begins",
-          "date": "2026-05-26"
-        }
-      ]
+      }
     },
     {
       "name": "Aventura",
@@ -6470,6 +6470,20 @@
       "go_week": 18,
       "opening_date": "2026-09-26",
       "goal_announce_target": 300.0,
+      "milestones": [
+        {
+          "key": "mbo_date",
+          "label": "Full Marketing Build Out Complete",
+          "subtitle": "Lead form live on website",
+          "date": "2026-05-19"
+        },
+        {
+          "key": "paid_presales_start_date",
+          "label": "Paid Presales Start Date",
+          "subtitle": "Presales campaign begins",
+          "date": "2026-05-27"
+        }
+      ],
       "current_week": 14,
       "weeks": [
         {
@@ -7518,21 +7532,7 @@
         "tier1_members_target": 200,
         "tier2_members_target": 240,
         "estimated_roms_target": "5x"
-      },
-      "milestones": [
-        {
-          "key": "mbo_date",
-          "label": "Full Marketing Build Out Complete",
-          "subtitle": "Lead form live on website",
-          "date": "2026-05-19"
-        },
-        {
-          "key": "paid_presales_start_date",
-          "label": "Paid Presales Start Date",
-          "subtitle": "Presales campaign begins",
-          "date": "2026-05-27"
-        }
-      ]
+      }
     },
     {
       "name": "North Miami",
@@ -7552,6 +7552,20 @@
       "go_week": 18,
       "opening_date": "2026-09-26",
       "goal_announce_target": 300.0,
+      "milestones": [
+        {
+          "key": "mbo_date",
+          "label": "Full Marketing Build Out Complete",
+          "subtitle": "Lead form live on website",
+          "date": "2026-05-19"
+        },
+        {
+          "key": "paid_presales_start_date",
+          "label": "Paid Presales Start Date",
+          "subtitle": "Presales campaign begins",
+          "date": "2026-05-27"
+        }
+      ],
       "current_week": 14,
       "weeks": [
         {
@@ -8600,21 +8614,7 @@
         "tier1_members_target": 200,
         "tier2_members_target": 240,
         "estimated_roms_target": "5x"
-      },
-      "milestones": [
-        {
-          "key": "mbo_date",
-          "label": "Full Marketing Build Out Complete",
-          "subtitle": "Lead form live on website",
-          "date": "2026-05-19"
-        },
-        {
-          "key": "paid_presales_start_date",
-          "label": "Paid Presales Start Date",
-          "subtitle": "Presales campaign begins",
-          "date": "2026-05-27"
-        }
-      ]
+      }
     },
     {
       "name": "Dallas - Uptown",
@@ -8634,6 +8634,20 @@
       "go_week": 26,
       "opening_date": "2026-11-07",
       "goal_announce_target": 300.0,
+      "milestones": [
+        {
+          "key": "mbo_date",
+          "label": "Full Marketing Build Out Complete",
+          "subtitle": "Lead form live on website",
+          "date": "2026-05-14"
+        },
+        {
+          "key": "paid_presales_start_date",
+          "label": "Paid Presales Start Date",
+          "subtitle": "Presales campaign begins",
+          "date": "2026-06-09"
+        }
+      ],
       "current_week": 16,
       "weeks": [
         {
@@ -9722,21 +9736,7 @@
         "tier2_members_target": 100,
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
-      },
-      "milestones": [
-        {
-          "key": "mbo_date",
-          "label": "Full Marketing Build Out Complete",
-          "subtitle": "Lead form live on website",
-          "date": "2026-05-14"
-        },
-        {
-          "key": "paid_presales_start_date",
-          "label": "Paid Presales Start Date",
-          "subtitle": "Presales campaign begins",
-          "date": "2026-06-09"
-        }
-      ]
+      }
     },
     {
       "name": "Fort Myers",
@@ -9756,6 +9756,32 @@
       "go_week": 28,
       "opening_date": "2026-02-06",
       "goal_announce_target": 300.0,
+      "milestones": [
+        {
+          "key": "early_lead_date",
+          "label": "Early Lead Date",
+          "subtitle": "Landing page & early interest list",
+          "date": "2026-06-19"
+        },
+        {
+          "key": "mbo_date",
+          "label": "Full Marketing Build Out Complete",
+          "subtitle": "Lead form live on website",
+          "date": "2026-06-25"
+        },
+        {
+          "key": "paid_lead_gen_date",
+          "label": "Paid Lead Gen Start",
+          "subtitle": "Meta / Google paid ads begin",
+          "date": "2026-09-08"
+        },
+        {
+          "key": "paid_presales_start_date",
+          "label": "Paid Presales Start Date",
+          "subtitle": "Presales campaign begins",
+          "date": "2026-10-06"
+        }
+      ],
       "current_week": 9,
       "weeks": [
         {
@@ -10914,33 +10940,7 @@
         "tier2_members_target": 125,
         "tier3_members_target": 165,
         "estimated_roms_target": "5x"
-      },
-      "milestones": [
-        {
-          "key": "early_lead_date",
-          "label": "Early Lead Date",
-          "subtitle": "Landing page & early interest list",
-          "date": "2026-06-19"
-        },
-        {
-          "key": "mbo_date",
-          "label": "Full Marketing Build Out Complete",
-          "subtitle": "Lead form live on website",
-          "date": "2026-06-25"
-        },
-        {
-          "key": "paid_lead_gen_date",
-          "label": "Paid Lead Gen Start",
-          "subtitle": "Meta / Google paid ads begin",
-          "date": "2026-09-08"
-        },
-        {
-          "key": "paid_presales_start_date",
-          "label": "Paid Presales Start Date",
-          "subtitle": "Presales campaign begins",
-          "date": "2026-10-06"
-        }
-      ]
+      }
     },
     {
       "name": "Dunwoody",
@@ -10960,6 +10960,32 @@
       "go_week": 19,
       "opening_date": "2026-11-07",
       "goal_announce_target": 300.0,
+      "milestones": [
+        {
+          "key": "early_lead_date",
+          "label": "Early Lead Date",
+          "subtitle": "Landing page & early interest list",
+          "date": "2026-06-22"
+        },
+        {
+          "key": "mbo_date",
+          "label": "Full Marketing Build Out Complete",
+          "subtitle": "Lead form live on website",
+          "date": "2026-06-24"
+        },
+        {
+          "key": "paid_lead_gen_date",
+          "label": "Paid Lead Gen Start",
+          "subtitle": "Meta / Google paid ads begin",
+          "date": "2026-07-01"
+        },
+        {
+          "key": "paid_presales_start_date",
+          "label": "Paid Presales Start Date",
+          "subtitle": "Presales campaign begins",
+          "date": "2026-07-28"
+        }
+      ],
       "current_week": 9,
       "weeks": [
         {
@@ -12010,33 +12036,7 @@
         "tier2_members_target": 125,
         "tier3_members_target": 165,
         "estimated_roms_target": "5x"
-      },
-      "milestones": [
-        {
-          "key": "early_lead_date",
-          "label": "Early Lead Date",
-          "subtitle": "Landing page & early interest list",
-          "date": "2026-06-22"
-        },
-        {
-          "key": "mbo_date",
-          "label": "Full Marketing Build Out Complete",
-          "subtitle": "Lead form live on website",
-          "date": "2026-06-24"
-        },
-        {
-          "key": "paid_lead_gen_date",
-          "label": "Paid Lead Gen Start",
-          "subtitle": "Meta / Google paid ads begin",
-          "date": "2026-07-01"
-        },
-        {
-          "key": "paid_presales_start_date",
-          "label": "Paid Presales Start Date",
-          "subtitle": "Presales campaign begins",
-          "date": "2026-07-28"
-        }
-      ]
+      }
     },
     {
       "name": "Middletown",
@@ -12056,6 +12056,32 @@
       "go_week": 29,
       "opening_date": "2027-01-16",
       "goal_announce_target": 300.0,
+      "milestones": [
+        {
+          "key": "early_lead_date",
+          "label": "Early Lead Date",
+          "subtitle": "Landing page & early interest list",
+          "date": "2026-05-14"
+        },
+        {
+          "key": "mbo_date",
+          "label": "Full Marketing Build Out Complete",
+          "subtitle": "Lead form live on website",
+          "date": "2026-06-30"
+        },
+        {
+          "key": "paid_lead_gen_date",
+          "label": "Paid Lead Gen Start",
+          "subtitle": "Meta / Google paid ads begin",
+          "date": "2026-07-01"
+        },
+        {
+          "key": "paid_presales_start_date",
+          "label": "Paid Presales Start Date",
+          "subtitle": "Presales campaign begins",
+          "date": "2026-07-28"
+        }
+      ],
       "current_week": 9,
       "weeks": [
         {
@@ -13248,33 +13274,7 @@
         "tier1_members_target": 200,
         "tier2_members_target": 240,
         "estimated_roms_target": "5x"
-      },
-      "milestones": [
-        {
-          "key": "early_lead_date",
-          "label": "Early Lead Date",
-          "subtitle": "Landing page & early interest list",
-          "date": "2026-05-14"
-        },
-        {
-          "key": "mbo_date",
-          "label": "Full Marketing Build Out Complete",
-          "subtitle": "Lead form live on website",
-          "date": "2026-06-30"
-        },
-        {
-          "key": "paid_lead_gen_date",
-          "label": "Paid Lead Gen Start",
-          "subtitle": "Meta / Google paid ads begin",
-          "date": "2026-07-01"
-        },
-        {
-          "key": "paid_presales_start_date",
-          "label": "Paid Presales Start Date",
-          "subtitle": "Presales campaign begins",
-          "date": "2026-07-28"
-        }
-      ]
+      }
     },
     {
       "name": "Burlington",
@@ -13294,6 +13294,32 @@
       "go_week": 34,
       "opening_date": "2027-03-13",
       "goal_announce_target": 300.0,
+      "milestones": [
+        {
+          "key": "early_lead_date",
+          "label": "Early Lead Date",
+          "subtitle": "Landing page & early interest list",
+          "date": "2026-07-02"
+        },
+        {
+          "key": "mbo_date",
+          "label": "Full Marketing Build Out Complete",
+          "subtitle": "Lead form live on website",
+          "date": "2026-07-17"
+        },
+        {
+          "key": "paid_lead_gen_date",
+          "label": "Paid Lead Gen Start",
+          "subtitle": "Meta / Google paid ads begin",
+          "date": "2026-10-20"
+        },
+        {
+          "key": "paid_presales_start_date",
+          "label": "Paid Presales Start Date",
+          "subtitle": "Presales campaign begins",
+          "date": "2026-11-17"
+        }
+      ],
       "current_week": 6,
       "weeks": [
         {
@@ -14668,33 +14694,7 @@
         "tier2_members_target": 125,
         "tier3_members_target": 165,
         "estimated_roms_target": "5x"
-      },
-      "milestones": [
-        {
-          "key": "early_lead_date",
-          "label": "Early Lead Date",
-          "subtitle": "Landing page & early interest list",
-          "date": "2026-07-02"
-        },
-        {
-          "key": "mbo_date",
-          "label": "Full Marketing Build Out Complete",
-          "subtitle": "Lead form live on website",
-          "date": "2026-07-17"
-        },
-        {
-          "key": "paid_lead_gen_date",
-          "label": "Paid Lead Gen Start",
-          "subtitle": "Meta / Google paid ads begin",
-          "date": "2026-10-20"
-        },
-        {
-          "key": "paid_presales_start_date",
-          "label": "Paid Presales Start Date",
-          "subtitle": "Presales campaign begins",
-          "date": "2026-11-17"
-        }
-      ]
+      }
     },
     {
       "name": "Long Beach",
@@ -14714,6 +14714,32 @@
       "go_week": 25,
       "opening_date": "2027-02-06",
       "goal_announce_target": 300.0,
+      "milestones": [
+        {
+          "key": "mbo_date",
+          "label": "Full Marketing Build Out Complete",
+          "subtitle": "Lead form live on website",
+          "date": "2026-08-21"
+        },
+        {
+          "key": "early_lead_date",
+          "label": "Early Lead Date",
+          "subtitle": "Landing page & early interest list",
+          "date": "2026-10-20"
+        },
+        {
+          "key": "paid_lead_gen_date",
+          "label": "Paid Lead Gen Start",
+          "subtitle": "Meta / Google paid ads begin",
+          "date": "2026-10-20"
+        },
+        {
+          "key": "paid_presales_start_date",
+          "label": "Paid Presales Start Date",
+          "subtitle": "Presales campaign begins",
+          "date": "2026-11-17"
+        }
+      ],
       "current_week": 2,
       "weeks": [
         {
@@ -15764,33 +15790,7 @@
         "tier2_members_target": 125,
         "tier3_members_target": 165,
         "estimated_roms_target": "5x"
-      },
-      "milestones": [
-        {
-          "key": "mbo_date",
-          "label": "Full Marketing Build Out Complete",
-          "subtitle": "Lead form live on website",
-          "date": "2026-08-21"
-        },
-        {
-          "key": "early_lead_date",
-          "label": "Early Lead Date",
-          "subtitle": "Landing page & early interest list",
-          "date": "2026-10-20"
-        },
-        {
-          "key": "paid_lead_gen_date",
-          "label": "Paid Lead Gen Start",
-          "subtitle": "Meta / Google paid ads begin",
-          "date": "2026-10-20"
-        },
-        {
-          "key": "paid_presales_start_date",
-          "label": "Paid Presales Start Date",
-          "subtitle": "Presales campaign begins",
-          "date": "2026-11-17"
-        }
-      ]
+      }
     },
     {
       "name": "Rose Creek",
@@ -15810,6 +15810,26 @@
       "go_week": 22,
       "opening_date": "2027-01-23",
       "goal_announce_target": 300.0,
+      "milestones": [
+        {
+          "key": "early_lead_date",
+          "label": "Early Lead Date",
+          "subtitle": "Landing page & early interest list",
+          "date": "2026-09-01"
+        },
+        {
+          "key": "paid_lead_gen_date",
+          "label": "Paid Lead Gen Start",
+          "subtitle": "Meta / Google paid ads begin",
+          "date": "2026-09-01"
+        },
+        {
+          "key": "paid_presales_start_date",
+          "label": "Paid Presales Start Date",
+          "subtitle": "Presales campaign begins",
+          "date": "2026-09-24"
+        }
+      ],
       "current_week": 1,
       "weeks": [
         {
@@ -16673,6 +16693,32 @@
       "go_week": 33,
       "opening_date": "2027-04-10",
       "goal_announce_target": 300.0,
+      "milestones": [
+        {
+          "key": "mbo_date",
+          "label": "Full Marketing Build Out Complete",
+          "subtitle": "Lead form live on website",
+          "date": "2026-08-27"
+        },
+        {
+          "key": "early_lead_date",
+          "label": "Early Lead Date",
+          "subtitle": "Landing page & early interest list",
+          "date": "2026-11-17"
+        },
+        {
+          "key": "paid_lead_gen_date",
+          "label": "Paid Lead Gen Start",
+          "subtitle": "Meta / Google paid ads begin",
+          "date": "2026-11-17"
+        },
+        {
+          "key": "paid_presales_start_date",
+          "label": "Paid Presales Start Date",
+          "subtitle": "Presales campaign begins",
+          "date": "2026-12-15"
+        }
+      ],
       "current_week": 0,
       "weeks": [
         {
@@ -17757,33 +17803,7 @@
         "tier2_members_target": 125,
         "tier3_members_target": 165,
         "estimated_roms_target": "5x"
-      },
-      "milestones": [
-        {
-          "key": "mbo_date",
-          "label": "Full Marketing Build Out Complete",
-          "subtitle": "Lead form live on website",
-          "date": "2026-08-27"
-        },
-        {
-          "key": "early_lead_date",
-          "label": "Early Lead Date",
-          "subtitle": "Landing page & early interest list",
-          "date": "2026-11-17"
-        },
-        {
-          "key": "paid_lead_gen_date",
-          "label": "Paid Lead Gen Start",
-          "subtitle": "Meta / Google paid ads begin",
-          "date": "2026-11-17"
-        },
-        {
-          "key": "paid_presales_start_date",
-          "label": "Paid Presales Start Date",
-          "subtitle": "Presales campaign begins",
-          "date": "2026-12-15"
-        }
-      ]
+      }
     }
   ]
 }
