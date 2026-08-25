@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-24T10:10:48.746406",
+  "generated_at": "2026-08-25T00:00:00.000000",
   "source_sheet": "https://docs.google.com/spreadsheets/d/1KhXfeofzltGyllmrfIm9UN2xqLUgBtjAxPhT-E0SQmk",
   "studios": {
     "FL-019": {
@@ -7,7 +7,16 @@
       "full_name": "SWEAT440 Naples - Mercato",
       "week_0_start": "2026-02-01",
       "week_1_start": "2026-02-08",
-      "pre_weeks": []
+      "pre_weeks": [
+        {
+          "week_num": -1,
+          "week": "WEEK -1",
+          "date_start": "2026-01-25",
+          "date_end": "2026-01-31",
+          "new_leads": 2,
+          "total_leads": 2
+        }
+      ]
     },
     "VA-001": {
       "name": "Reston",
