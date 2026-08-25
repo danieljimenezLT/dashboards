@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-25",
+      "pr_number": 249,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/249",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix Reston early-week lead and IG data; fix Naples week 0 start date",
+      "summary": "Reston weeks 0–6 now show correct historical leads (from manually-compiled static file) and IG follower counts. Naples week 0 start date corrected to Feb 1, 2026."
+    },
+    {
+      "date": "2026-08-25",
       "pr_number": 248,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/248",
       "author": "Sebastian Arango",
