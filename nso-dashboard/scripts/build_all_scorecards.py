@@ -69,6 +69,10 @@ EVENTS_SPEND_STUDIO_MAP = {
     "dunwoody": "GA-001",
     "middletown": "NJ-005",
     "fort myers": "FL-022",
+    "rose creek": "OK-001",
+    "okc - rose creek": "OK-001",
+    "south end": "NC-002",
+    "charlotte - south end": "NC-002",
 }
 
 
