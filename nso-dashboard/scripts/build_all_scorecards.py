@@ -533,13 +533,41 @@ def load_google_spend(gads_rows):
 
 
 
-def load_events_spend_from_nso_config(gc):
+def load_events_spend_from_nso_config(gc, studio_cfgs=None):
     """Read 'Weekly Events & Spend' tab from NSO Config sheet.
-    Returns {code: (spend_by_week, events_by_week, other_by_week)} keyed by studio week number (int).
-    'Week 1' in the sheet = studio Week 1, mapped directly without date conversion."""
+
+    Returns {code: (spend_by_week, events_by_week, other_by_week)} keyed by
+    SCORECARD week number.  The sheet stores values under its own 'Week 1 Start
+    Date' (Mon–Sun), which may differ from the scorecard's Sun–Sat boundaries.
+    We convert each sheet week column to a date (sheet_w1 + (N-1)*7 days) and
+    look it up in the studio's scorecard bounds to get the real week number.
+    """
     result = {}
     if not gc:
         return result
+
+    # Build date-string → scorecard week-number lookup per studio code.
+    sc_date_to_wk: dict[str, dict[str, int]] = {}
+    if studio_cfgs:
+        for cfg in studio_cfgs:
+            code = cfg["code"]
+            w1   = cfg["week1_start"]
+            if code == "FL-019":
+                bounds = make_naples_bounds(70)
+            elif w1:
+                bounds = make_sun_sat_bounds(w1, 70)
+            else:
+                continue
+            date_wk: dict[str, int] = {}
+            for wn, ws_d, we_d in bounds:
+                if ws_d is None:
+                    continue
+                d = ws_d
+                while d <= we_d:
+                    date_wk[d.isoformat()] = wn
+                    d += timedelta(days=1)
+            sc_date_to_wk[code] = date_wk
+
     try:
         sh = gc.open_by_url(NSO_CONFIG_SHEET_URL)
         ws = sh.worksheet("Weekly Events & Spend")
@@ -551,23 +579,28 @@ def load_events_spend_from_nso_config(gc):
     if len(all_rows) < 3:
         return result
 
-    # Row index 1 = column headers: "Name", "Metric", "Week 1", "Week 2", ..., "Total"
+    # Row 1 = headers: "Name", "Week 1 Start Date", "Metric", "Week 1", "Week 2", ...
+    # Use \s*$ so "Week 1 Start Date" is NOT matched (doesn't end with a digit).
     header_row = all_rows[1]
-    col_to_week_num = {}
+    col_to_sheet_wk: dict[int, int] = {}
     for col_i, hdr in enumerate(header_row):
-        m = re.match(r"Week\s+(\d+)", str(hdr).strip(), re.IGNORECASE)
+        m = re.match(r"Week\s+(\d+)\s*$", str(hdr).strip(), re.IGNORECASE)
         if m:
-            col_to_week_num[col_i] = int(m.group(1))
+            col_to_sheet_wk[col_i] = int(m.group(1))
 
-    current_code = None
+    current_code:    str | None  = None
+    current_sheet_w1             = None   # date of the sheet's own Week 1
+
     for row in all_rows[2:]:
         if not row:
             continue
-        name_cell   = str(row[0]).strip().lower() if row[0] else ""
-        metric_cell = str(row[1]).strip().lower() if len(row) > 1 else ""
+        name_cell    = str(row[0]).strip().lower() if row[0] else ""
+        w1_date_cell = str(row[1]).strip()          if len(row) > 1 else ""
+        metric_cell  = str(row[2]).strip().lower()  if len(row) > 2 else ""
 
         if name_cell:
-            current_code = EVENTS_SPEND_STUDIO_MAP.get(name_cell)
+            current_code     = EVENTS_SPEND_STUDIO_MAP.get(name_cell)
+            current_sheet_w1 = _parse_sheet_date(w1_date_cell) if w1_date_cell else None
             if current_code and current_code not in result:
                 result[current_code] = (defaultdict(float), defaultdict(int), defaultdict(float))
 
@@ -579,25 +612,40 @@ def load_events_spend_from_nso_config(gc):
         is_other_spend = "other" in metric_cell and "$" in metric_cell
         is_events      = "events" in metric_cell or "#" in metric_cell
 
-        for col_i, wk_num in col_to_week_num.items():
+        if not (is_spend or is_other_spend or is_events):
+            continue
+
+        date_wk = sc_date_to_wk.get(current_code, {})
+
+        for col_i, sheet_wn in col_to_sheet_wk.items():
             if col_i >= len(row):
                 continue
             val = str(row[col_i]).strip()
             if not val or val == "-":
                 continue
+
+            # Map sheet week number → scorecard week number via date.
+            if current_sheet_w1 and date_wk:
+                sheet_wk_start = current_sheet_w1 + timedelta(days=(sheet_wn - 1) * 7)
+                sc_wn = date_wk.get(sheet_wk_start.isoformat())
+                if sc_wn is None:
+                    continue  # before W0 (pre-weeks) or beyond loaded range
+            else:
+                sc_wn = sheet_wn  # fallback: no bounds available
+
             if is_spend:
                 amt = _parse_amount(val)
                 if amt > 0:
-                    spend_d[wk_num] += amt
+                    spend_d[sc_wn] += amt
             elif is_other_spend:
                 amt = _parse_amount(val)
                 if amt > 0:
-                    other_d[wk_num] += amt
+                    other_d[sc_wn] += amt
             elif is_events:
                 try:
                     cnt = int(re.sub(r"[^\d]", "", val))
                     if cnt > 0:
-                        events_d[wk_num] += cnt
+                        events_d[sc_wn] += cnt
                 except (ValueError, TypeError):
                     pass
 
@@ -840,7 +888,7 @@ def main():
 
     # Load grassroots spend + community events + other spend from NSO Config "Weekly Events & Spend" tab.
     print("\nLoading grassroots/events/other spend data from NSO Config sheet...")
-    nso_config_gr = load_events_spend_from_nso_config(gc)
+    nso_config_gr = load_events_spend_from_nso_config(gc, studio_cfgs)
 
     gr_spend_by_code    = {}
     events_by_code      = {}
