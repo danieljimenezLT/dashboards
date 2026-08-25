@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-25",
+      "pr_number": 248,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/248",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Milestone dates now sync automatically from NSO Config Google Sheet",
+      "summary": "Pre-Launch Milestone dates in the Scorecard tab (MBO date, Paid Presales Start, etc.) are now read directly from the NSO Config spreadsheet on every daily refresh. Updating a date in the Sheet will appear in the dashboard automatically the next day."
+    },
+    {
+      "date": "2026-08-25",
       "pr_number": 247,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/247",
       "author": "Sebastian Arango",
