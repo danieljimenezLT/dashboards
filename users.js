@@ -479,9 +479,9 @@ const USERS = {
     studios: ['Fort Myers'],
     role: 'franchisee'
   },
-  'aron@kairosok.co': {
+  'aron@kairosok.com': {
     passwordHash: '31e040693ac34c1460bd7fdc3d02992316e4a1779d18107dd1163336e8c3a42b',
-    name: 'Aron',
+    name: 'Aaron Deen',
     studios: ['OKC - Rose Creek'],
     role: 'franchisee'
   },
