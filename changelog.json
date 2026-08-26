@@ -1,6 +1,18 @@
 {
   "entries": [
     {
+      "date": "2026-08-26",
+      "pr_number": 251,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/251",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Fix missing thumbnails and add post links for boosted-post ads",
+      "summary": "SHARE-type Meta ads (boosted organic posts like Hyrox - Video - Purpose) now show their thumbnail in the ad grid, and clicking opens the original Facebook post instead of a broken preview link."
+    },
+    {
       "date": "2026-08-25",
       "pr_number": 250,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/250",
