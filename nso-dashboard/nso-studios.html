@@ -1624,6 +1624,12 @@ function renderScorecard(){
     };
   }).filter(w=>w.w<=cw);
 
+  // Offset cumulative Total Leads by pre-launch total (same as Scorecard Test)
+  const _pwDataSc=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[sc.code];
+  const _pwListSc=(_pwDataSc&&_pwDataSc.pre_weeks)||[];
+  const _preWkTlSc=_pwListSc.length?(_pwListSc[_pwListSc.length-1].total_leads||0):0;
+  if(_preWkTlSc>0)weeks.forEach(wk=>{if(wk.tl!=null)wk.tl+=_preWkTlSc;});
+
   const $v=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
   const fInt=v=>v!=null?v:'—';
   const fPct=v=>v!=null?(v*100).toFixed(1)+'%':'—';
@@ -2054,12 +2060,21 @@ function renderScorecard2(){
   // ── Pre-weeks: combine PRE_WEEKS lead data with sheet-sourced GRS spend ──
   const _pwData=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[sc.code];
   const _pwList=(_pwData&&_pwData.pre_weeks)||[];
+
+  // If the official W1 hasn't started yet, the scorecard weeks are pre-launch
+  // data that overlaps with the pre-weeks — suppress them to avoid double-counting.
+  const _todaySc2=new Date().toISOString().slice(0,10);
+  const _w1Official=_pwData&&_pwData.week_1_start;
+  const _isPreLaunch2=!_w1Official||_w1Official>_todaySc2;
+  if(_isPreLaunch2)weeks.splice(0);
+
   let _cumGrsPre=0;
   const preWeekCols=_pwList.map(pw=>{
     const grsW=_sheetGrs(pw.date_start,pw.date_end);
     _cumGrsPre+=grsW||0;
     return{w:pw.week_num,isPre:true,ds:pw.date_start,de:pw.date_end,
-      nl:pw.new_leads||null,tl:pw.total_leads||null,
+      nl:pw.new_leads||null, gl:pw.grassroots_leads||null, ev:pw.comm_events||null,
+      tl:pw.total_leads||null,
       grs:grsW,cumGrs:Math.round(_cumGrsPre*100)/100};
   });
 
@@ -2101,8 +2116,9 @@ function renderScorecard2(){
 
   // Offset SC cumulative Total Leads by pre-launch total so the Cumulative view
   // shows true leads from presale start (pre-weeks + SC), not SC-only.
+  // Skip when pre-launch: scorecard weeks were suppressed above, pre-weeks carry the total.
   const _preWkTl=preWeekCols.length?(preWeekCols[preWeekCols.length-1].tl||0):0;
-  if(_preWkTl>0)weeks.forEach(wk=>{if(wk.tl!=null)wk.tl+=_preWkTl;});
+  if(!_isPreLaunch2&&_preWkTl>0)weeks.forEach(wk=>{if(wk.tl!=null)wk.tl+=_preWkTl;});
 
   const $v=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
   const fInt=v=>v!=null?v:'—';
@@ -2261,6 +2277,55 @@ function renderScorecard2(){
     h+=`★ Grassroots Spend sourced from <a href="https://docs.google.com/spreadsheets/d/1oLvrjTfcGUmt-mi1bp2xnqmESgt4uu4QlLCfAOKoRd8" target="_blank" style="color:#00A3E0;text-decoration:none">NSO Spend Form responses</a>`;
     if(!_grsEntries.length)h+=` <em>(no data for this studio yet)</em>`;
     h+=`</div>`;
+  }
+
+  // ── PRE-LAUNCH MODE: W1 hasn't started — show simplified weekly table ──
+  if(_isPreLaunch2){
+    const _plWeeks=preWeekCols.filter(pw=>pw.ds<=_todaySc2);
+    const _plCur=_plWeeks[_plWeeks.length-1];
+    const _pl$v=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
+    const _plFmt=v=>v!=null?v:'—';
+    const _plCpr=v=>v!=null?'$'+v.toFixed(2):'—';
+    h+=`<div style="overflow-x:auto;margin-top:4px">`;
+    h+=`<table class="sc-table"><thead><tr>`;
+    h+=`<th style="min-width:160px;text-align:left">Metric</th>`;
+    _plWeeks.forEach(pw=>{
+      const isCur=pw===_plCur;
+      h+=`<th class="num${isCur?' sc-cell-cur':''}" style="min-width:56px">`;
+      h+=`${_fmtD(pw.ds)}<br><span style="font-weight:400;color:#8aaabb;font-size:10px">${_fmtD(pw.de)}</span></th>`;
+    });
+    h+=`</tr></thead><tbody>`;
+    const _plRows=[
+      {label:_ib('sc_new_leads')+'New Leads',      key:'nl', req:null, colorFn:()=>null},
+      {label:_ib('sc_grassroots_leads')+'Grassroots Leads', key:'gl', req:40,
+       colorFn:v=>v==null?'':v>=40?'sc-cell-good':v>=20?'sc-cell-warn':'sc-cell-bad'},
+      {label:_ib('sc_comm_events')+'Comm. Events',  key:'ev', req:6,
+       colorFn:v=>v==null?'':v>=6?'sc-cell-good':v>=3?'sc-cell-warn':'sc-cell-bad'},
+      {label:_ib('sc_grassroots_spend')+'Total Mktg Spend', key:'grs', fmt:_pl$v, colorFn:()=>null},
+      {label:_ib('sc_blended_cpl')+'Blended CPL',
+       computed:pw=>(pw.grs&&((pw.nl||0)+(pw.gl||0))>0)?pw.grs/((pw.nl||0)+(pw.gl||0)):null,
+       fmt:_plCpr,
+       colorFn:v=>v==null?'':v<=41?'sc-cell-good':v<=53?'sc-cell-warn':'sc-cell-bad'},
+    ];
+    _plRows.forEach(row=>{
+      h+=`<tr><td>${row.label}${row.req!=null?`<span style="font-size:9px;color:#aabbc8;margin-left:6px">Bm: ${row.req}</span>`:''}</td>`;
+      _plWeeks.forEach(pw=>{
+        const val=row.computed?row.computed(pw):(pw[row.key]??null);
+        const cls=row.colorFn(val);
+        const fmt=row.fmt||_plFmt;
+        h+=`<td class="num${cls?' '+cls:''}">${fmt(val)}</td>`;
+      });
+      h+=`</tr>`;
+    });
+    h+=`</tbody></table></div>`;
+    if(_pwData&&(_pwData.week_0_start||_w1Official)){
+      h+=`<div style="margin-top:14px;font-size:11px;color:#5a7a8a;font-family:'Open Sans',sans-serif">`;
+      if(_pwData.week_0_start)h+=`<strong>W0 starts:</strong> ${_fmtD(_pwData.week_0_start)}`;
+      if(_w1Official)h+=`${_pwData.week_0_start?' &nbsp;·&nbsp; ':''}<strong>W1 starts:</strong> ${_fmtD(_w1Official)}`;
+      h+=`</div>`;
+    }
+    el.innerHTML=h;
+    return;
   }
 
   // ── RMR mini-table (no pre-week columns) ──────────────────────────────
