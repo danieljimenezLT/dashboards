@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-26",
+      "pr_number": 255,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/255",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Added a new Staging Reports section to Marketing Admin Reports, including a preview of Leadteam Discounts and External Agency spend on the OS Dashboard",
+      "summary": "Admins can now see how Leadteam fee discounts and external agency costs affect marketing spend on a new staging report, and work-in-progress admin reports are now grouped under a dedicated Staging Reports section; the main OS Dashboard everyone else sees is unchanged."
+    },
+    {
+      "date": "2026-08-26",
       "pr_number": 254,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/254",
       "author": "Sebastian Arango",
