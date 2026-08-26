@@ -49,6 +49,12 @@ const USERS = {
     studios: null,
     role: 'admin'
   },
+  'billing@sweat440.com': {
+    passwordHash: '57915684cae882e5e3d9ca1ec0a7e5e0758937f71fea33d04f94462aa9a5af32',
+    name: 'Kris Patrick',
+    studios: null,
+    role: 'admin'
+  },
   'laura.londono@leadteam.com': {
     passwordHash: '15743531a3962a0aff9eb020754e49cb58ef8ab6ed81ddfcb674572e60c62f8a',
     name: 'Laura Londoño',
