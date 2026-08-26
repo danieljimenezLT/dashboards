@@ -355,6 +355,7 @@ const USERS = {
     name: "Matt O'Connor",
     studios: [
       'Charlotte - Noda',
+      'Charlotte - South End',
     ],
     role: 'franchisee'
   },
@@ -684,6 +685,12 @@ const USERS = {
     passwordHash: 'e3ea1ee16b2b769841c65602f3dbc8e31b3290c8f083bf1077d0078c23a212c0',
     name: 'Manager Charlotte - NoDa',
     studios: ['Charlotte - Noda'],
+    role: 'manager'
+  },
+  'manager.cltsouthend@sweat440.studio': {
+    passwordHash: '745708a007619d37b09329ae6955740a608664a2a04ce3324d6a59e5de5894db',
+    name: 'Manager Charlotte - South End',
+    studios: ['Charlotte - South End'],
     role: 'manager'
   },
   'manager.northmiami@sweat440.studio': {
