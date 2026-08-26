@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SWEAT440 — Staging Reports</title>
+<link rel="icon" href="../favicon.jpg"/>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Open Sans',sans-serif;background:#0084B5;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
+
+.back-link{position:fixed;top:24px;left:24px;display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.65);font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;text-decoration:none;transition:color .15s}
+.back-link:hover{color:#fff}
+
+.logo-wrap{margin-bottom:48px;text-align:center}
+.logo-wrap img{height:48px}
+
+.welcome{font-family:'Oswald',sans-serif;font-style:italic;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:3px;color:rgba(255,255,255,.65);text-align:center;margin-bottom:8px}
+.welcome-name{font-family:'Oswald',sans-serif;font-style:italic;font-size:36px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#fff;text-align:center;margin-bottom:56px}
+
+.cards{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;width:100%;max-width:820px}
+
+.dash-card{flex:1;min-width:280px;max-width:360px;background:#fff;border-radius:20px;padding:48px 36px 44px;text-align:center;cursor:pointer;text-decoration:none;box-shadow:0 16px 48px rgba(0,0,0,.22);transition:transform .2s ease,box-shadow .2s ease;display:block}
+.dash-card:hover{transform:translateY(-6px);box-shadow:0 28px 64px rgba(0,0,0,.3)}
+.dash-card:active{transform:translateY(-2px)}
+
+.dash-icon{width:72px;height:72px;border-radius:18px;margin:0 auto 24px;display:flex;align-items:center;justify-content:center}
+.dash-icon svg{width:34px;height:34px}
+.dash-icon.blue{background:#e6f6fd}
+.dash-icon.cyan{background:#e0fff6}
+.dash-icon.yellow{background:#fbfde0}
+.dash-icon.pale{background:#D2EFFF}
+
+.dash-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#1a1a2e;margin-bottom:10px}
+.dash-desc{font-size:13px;color:#8aaabb;line-height:1.7}
+
+.signout{margin-top:48px;background:none;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.65);font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;padding:9px 24px;border-radius:8px;cursor:pointer;transition:all .15s}
+.signout:hover{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.5)}
+
+@media(max-width:600px){
+  .welcome-name{font-size:28px}
+  .cards{flex-direction:column;align-items:center}
+  .dash-card{max-width:100%}
+  .logo-wrap img{height:38px}
+  .back-link{position:static;margin-bottom:24px}
+}
+</style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">← Marketing Admin Reports</a>
+
+<div class="logo-wrap">
+  <img src="../logo.png" alt="SWEAT440"/>
+</div>
+
+<div class="welcome">Marketing Admin Reports</div>
+<div class="welcome-name">Staging Reports</div>
+
+<div class="cards">
+  <a class="dash-card" href="os-dashboard-agency-preview.html">
+    <div class="dash-icon pale">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0084B5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+      </svg>
+    </div>
+    <div class="dash-title">OS Dashboard: Agency Spend (Staging)</div>
+    <div class="dash-desc">Preview of the Open Studio Dashboard with Leadteam Discount &amp; External Agency spend added to Summary and Blended CPR</div>
+  </a>
+
+  <a class="dash-card" href="../campaign-dashboard/index.html">
+    <div class="dash-icon cyan">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#00C9A7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4M4 6v12a2 2 0 0 0 2 2h14v-4M18 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+      </svg>
+    </div>
+    <div class="dash-title">Campaign Dashboard (Staging)</div>
+    <div class="dash-desc">Performance breakdown for specific marketing campaigns</div>
+  </a>
+
+  <a class="dash-card" href="add-studio.html">
+    <div class="dash-icon pale">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0084B5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>
+      </svg>
+    </div>
+    <div class="dash-title">Add Studio (Staging)</div>
+    <div class="dash-desc">Onboard a new studio into the canonical studios.json registry via PR</div>
+  </a>
+
+  <a class="dash-card" href="../brand-safety-audit/index.html">
+    <div class="dash-icon blue">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#00A3E0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6z"/><path d="M9 12l2 2 4-4"/>
+      </svg>
+    </div>
+    <div class="dash-title">Brand Safety Audit (Staging)</div>
+    <div class="dash-desc">Instagram content triage against SWEAT440's 6 brand-safety categories</div>
+  </a>
+</div>
+
+<button class="signout" onclick="logout()">Sign out</button>
+
+<script src="../users.js"></script>
+<script src="../shared/auth.js"></script>
+<script>
+const user = checkAuth();
+if (user) {
+  if (user.role !== 'admin') {
+    location.replace('../home.html');
+  }
+}
+</script>
+</body>
+</html>
