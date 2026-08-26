@@ -2716,8 +2716,23 @@ function openAdMedia(thumb,isVid,videoUrl,preview,adName){
   const lb=document.getElementById('ad-lightbox');
   const ct=document.getElementById('ad-lightbox-content');
   if(isVid&&videoUrl){
-    ct.innerHTML=`<video controls autoplay style="max-width:92vw;max-height:85vh;border-radius:8px;background:#000" src="${videoUrl}">Your browser does not support video.</video>
-      <p style="color:#aac;font-size:11px;margin:0">${adName||''}</p>`;
+    const isFbEmbed=videoUrl.includes('facebook.com/plugins/video');
+    const isDrive=videoUrl.includes('drive.google.com')&&videoUrl.includes('/preview');
+    if(isFbEmbed){
+      const wrap=document.createElement('div');
+      wrap.style.cssText='width:min(360px,92vw)';
+      const src=videoUrl.replace(/([?&])width=\d+/,'$1width=360');
+      wrap.innerHTML=`<iframe src="${src}" style="width:100%;height:min(60vh,520px);border:none;border-radius:8px;display:block" allowfullscreen allow="autoplay;encrypted-media"></iframe><p style="color:#aac;font-size:11px;margin:6px 0 0;text-align:center">${adName||''}</p>`;
+      ct.appendChild(wrap);
+    } else if(isDrive){
+      const wrap=document.createElement('div');
+      wrap.style.cssText='width:min(640px,92vw)';
+      wrap.innerHTML=`<iframe src="${videoUrl}" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;display:block" allowfullscreen allow="autoplay"></iframe><p style="color:#aac;font-size:11px;margin:6px 0 0;text-align:center">${adName||''}</p>`;
+      ct.appendChild(wrap);
+    } else {
+      ct.innerHTML=`<video controls autoplay style="max-width:92vw;max-height:85vh;border-radius:8px;background:#000" src="${videoUrl}">Your browser does not support video.</video>
+        <p style="color:#aac;font-size:11px;margin:0">${adName||''}</p>`;
+    }
   } else if(isVid&&preview){
     window.open(preview,'_blank','noopener');return;
   } else if(thumb){
