@@ -336,6 +336,7 @@ def run(start_override: str | None = None):
     # library_url is kept as a fallback using effective_object_story_id.
     preview_link_by_ad: dict[str, str] = {}
     library_id_by_ad: dict[str, str] = {}
+    post_url_by_ad: dict[str, str] = {}
     for ad in all_ads:
         ad_id = ad.get("id")
         if not ad_id: continue
@@ -343,9 +344,12 @@ def run(start_override: str | None = None):
         if psl:
             preview_link_by_ad[ad_id] = psl
         eosi = ad.get("effective_object_story_id") or ""
-        post_id = eosi.split("_", 1)[1] if "_" in eosi else eosi
-        if post_id:
+        if "_" in eosi:
+            page_id, post_id = eosi.split("_", 1)
             library_id_by_ad[ad_id] = post_id
+            post_url_by_ad[ad_id] = f"https://www.facebook.com/{page_id}/posts/{post_id}/"
+        elif eosi:
+            library_id_by_ad[ad_id] = eosi
 
     # ── 3. Process daily ad rows → ad_daily ──────────────────────────
     # Index bucket keyed by (date, studio_code, ad_id)
@@ -481,6 +485,7 @@ def run(start_override: str | None = None):
                               or image_url or native_thumb
                               or (ad_meta.get(ad_id) or {}).get("image_url", "")),
             "preview_link":  preview_link_by_ad.get(ad_id) or (ad_meta.get(ad_id) or {}).get("preview_link", ""),
+            "post_url":      post_url_by_ad.get(ad_id) or (ad_meta.get(ad_id) or {}).get("post_url", ""),
             "library_url":   f"https://www.facebook.com/ads/library/?id={library_id_by_ad.get(ad_id, ad_id)}&country=US",
             "video_id":      creative.get("video_id", "") if creative else "",
             "image_hash":    _extract_image_hash(creative) if creative else "",
