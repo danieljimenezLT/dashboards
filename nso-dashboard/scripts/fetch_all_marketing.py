@@ -27,11 +27,16 @@ if not os.environ.get("META_ACCESS_TOKEN"):
 
 def _public_thumb(url: str) -> str:
     """Return url only if it's a publicly accessible CDN URL.
-    Facebook emg1/external- proxy URLs are IP-bound to the server that generated
-    them and return 403 when loaded in the browser from a different IP."""
+    emg1/external- proxy URLs are IP-bound, but they often wrap a real
+    facebook.com/ads/image/?d=... URL in their ?url= param — extract that
+    instead of discarding the thumbnail entirely (e.g. SHARE-type ads)."""
     if not url:
         return ""
     if "external-" in url or "/emg1/" in url:
+        import urllib.parse as _up
+        inner = _up.parse_qs(_up.urlparse(url).query).get("url", [""])[0]
+        if inner and "facebook.com/ads/image/" in inner:
+            return inner
         return ""
     return url
 
@@ -133,6 +138,10 @@ def fetch_meta_ads(start_date, end_date):
                     vid = cdata.get("video_id", "")
                     if vid:
                         entry["video_id"] = vid
+                    eso = cdata.get("effective_object_story_id", "")
+                    if eso and "_" in eso and obj_type == "SHARE":
+                        page_id, post_id = eso.split("_", 1)
+                        entry["post_url"] = f"https://www.facebook.com/{page_id}/posts/{post_id}/"
             print(f"  {len(cdetails)} creatives fetched", flush=True)
         except Exception as e:
             print(f"  WARNING: Could not fetch creatives: {e}", flush=True)

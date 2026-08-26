@@ -2397,7 +2397,8 @@ async function buildMetaTab() {
     if ((_stPri[_newSt] ?? -1) > (_stPri[g.status] ?? -1)) g.status = _newSt;
     if (!g.thumbnail    && meta?.thumbnail_url)  g.thumbnail    = meta.thumbnail_url;
     if (!g.full_img     && meta?.image_url)      g.full_img     = meta.image_url;
-    if (!g.preview_link && meta?.preview_link)   g.preview_link = meta.preview_link;
+    if (meta?.post_url)                           g.preview_link = meta.post_url;
+    else if (!g.preview_link && meta?.preview_link) g.preview_link = meta.preview_link;
     if (!g.library_url  && meta?.library_url)    g.library_url  = meta.library_url;
     if (!g.drive_img    && meta?.drive_image_url) g.drive_img   = meta.drive_image_url;
     if (!g.drive_vid    && meta?.drive_video_url) g.drive_vid   = meta.drive_video_url;

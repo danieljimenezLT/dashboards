@@ -2622,7 +2622,8 @@ function renderMeta(){
     const meta=AD_META[g.ad_name];
     if(meta&&meta.thumbnail_url)g.thumb=meta.thumbnail_url;
     if(meta&&meta.image_url)g.full_img=meta.image_url;
-    if(meta&&meta.preview_link&&!g.preview)g.preview=meta.preview_link;
+    if(meta&&meta.post_url)g.preview=meta.post_url;
+    else if(meta&&meta.preview_link&&!g.preview)g.preview=meta.preview_link;
     if(meta&&meta.effective_status)g.status=meta.effective_status;
     if(meta&&meta.object_type)g.media_type=meta.object_type;
     if(meta&&meta.drive_image_url&&!g.drive_img)g.drive_img=meta.drive_image_url;
@@ -2703,17 +2704,19 @@ function renderMeta(){
       const btn=e.target.closest('.ad-thumb-btn');
       if(!btn)return;
       const isVid=btn.dataset.vid==='1';
+      const vurl=btn.dataset.vurl||'';
+      const prev=btn.dataset.prev||'';
       if(isAdminUser()){
         if(isVid){
-          const url=btn.dataset.vurl||btn.dataset.prev||null;
-          if(url)window.open(url,'_blank','noopener');
+          if(vurl)openAdMedia(btn.dataset.thumb,true,vurl,prev,btn.dataset.name);
+          else if(prev)window.open(prev,'_blank','noopener');
         }else{
           const di=btn.dataset.dimg||'';
           if(di)window.open(di,'_blank','noopener');
           else openAdMedia(btn.dataset.full||btn.dataset.thumb,false,null,null,btn.dataset.name);
         }
       }else{
-        openAdMedia(btn.dataset.thumb,isVid,null,btn.dataset.prev||null,btn.dataset.name);
+        openAdMedia(btn.dataset.thumb,isVid,vurl||null,prev||null,btn.dataset.name);
       }
     });
   }
