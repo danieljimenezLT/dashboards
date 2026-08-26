@@ -138,6 +138,10 @@ def fetch_meta_ads(start_date, end_date):
                     vid = cdata.get("video_id", "")
                     if vid:
                         entry["video_id"] = vid
+                    eso = cdata.get("effective_object_story_id", "")
+                    if eso and "_" in eso and obj_type == "SHARE":
+                        page_id, post_id = eso.split("_", 1)
+                        entry["post_url"] = f"https://www.facebook.com/{page_id}/posts/{post_id}/"
             print(f"  {len(cdetails)} creatives fetched", flush=True)
         except Exception as e:
             print(f"  WARNING: Could not fetch creatives: {e}", flush=True)

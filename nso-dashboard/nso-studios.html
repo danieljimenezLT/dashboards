@@ -2622,7 +2622,8 @@ function renderMeta(){
     const meta=AD_META[g.ad_name];
     if(meta&&meta.thumbnail_url)g.thumb=meta.thumbnail_url;
     if(meta&&meta.image_url)g.full_img=meta.image_url;
-    if(meta&&meta.preview_link&&!g.preview)g.preview=meta.preview_link;
+    if(meta&&meta.post_url)g.preview=meta.post_url;
+    else if(meta&&meta.preview_link&&!g.preview)g.preview=meta.preview_link;
     if(meta&&meta.effective_status)g.status=meta.effective_status;
     if(meta&&meta.object_type)g.media_type=meta.object_type;
     if(meta&&meta.drive_image_url&&!g.drive_img)g.drive_img=meta.drive_image_url;
