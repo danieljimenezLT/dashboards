@@ -307,7 +307,7 @@
 const NSO=['SWEAT440 Aventura','SWEAT440 Burlington','SWEAT440 Charlotte - South End','SWEAT440 Dallas - Uptown','SWEAT440 Dunwoody','SWEAT440 Fort Myers','SWEAT440 Herriman','SWEAT440 Long Beach','SWEAT440 Middletown','SWEAT440 Naples - Mercato','SWEAT440 North Miami','SWEAT440 OKC - Rose Creek','SWEAT440 Old Bridge','SWEAT440 Orlando - Dr Phillips','SWEAT440 Reston'];
 const EXCL_SRC=['ClassPass / Platforms'];
 
-let RAW=null,SC=null,PRE_WEEKS=null,GRS_SPEND=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},VIDEO_DRIVE_LINKS={},CH_RAW=null;const _ch={};let _chDupOnly=false;
+let RAW=null,SC=null,SC2=null,PRE_WEEKS=null,GRS_SPEND=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},VIDEO_DRIVE_LINKS={},CH_RAW=null;const _ch={};let _chDupOnly=false;
 let CUR_USER=null,_allowedStudios=null;const isAdminUser=()=>CUR_USER&&CUR_USER.role==='admin';
 let _sumView='cum',_sumStudio=null,_scStudio=null,_dataThruLabel='',_sumD7End=null;
 const TODAY=new Date(),fom=new Date(TODAY.getFullYear(),TODAY.getMonth(),1),lpm=new Date(fom.getTime()-864e5),fpm=new Date(lpm.getFullYear(),lpm.getMonth(),1);
@@ -573,12 +573,14 @@ function toggleDs(btn,i){if(!trendChart)return;const ds=trendChart.data.datasets
    SUMMARY TAB
    ══════════════════════════════════════════════════════════════════════════ */
 function renderSummary2(){
-  if(!SC||!SC.studios||!SC.studios.length)return;
+  const _SC2=SC2||SC;
+  if(!_SC2||!_SC2.studios||!_SC2.studios.length)return;
   const _scVis=(_allowedStudios
-    ?(SC.studios||[]).filter(s=>_allowedStudios.includes((s.data_name||s.full_name||s.name||'').replace(/^SWEAT440\s+/,'')))
-    :(SC.studios||[])).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    ?(_SC2.studios||[]).filter(s=>_allowedStudios.includes((s.data_name||s.full_name||s.name||'').replace(/^SWEAT440\s+/,'')))
+    :(_SC2.studios||[])).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   if(_sumStudio&&_allowedStudios&&!_scVis.find(s=>s.code===_sumStudio.code))_sumStudio=null;
-  const studio=_sumStudio||_scVis[0];
+  // Always resolve studio from SC2 list (not stale SC reference)
+  const studio=(_sumStudio?_scVis.find(s=>s.code===_sumStudio.code):null)||_scVis[0];
   if(!studio){document.getElementById('summary2Content').innerHTML='';return;}
   if(!_sumStudio)_sumStudio=studio;
 
@@ -621,7 +623,7 @@ function renderSummary2(){
   h+=`<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">`;
   _scVis.forEach(s=>{
     const active=s.code===studio.code;
-    h+=`<button onclick="var _sc=SC.studios.find(x=>x.code==='${s.code}');if(_sc){_sumStudio=_sc;renderSummary2();}" style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;padding:6px 16px;border-radius:4px;border:2px solid ${active?'#00A3E0':'#c0d4df'};background:${active?'#00A3E0':'transparent'};color:${active?'#fff':'#5a7a8a'};cursor:pointer;letter-spacing:.5px">${s.name}</button>`;
+    h+=`<button onclick="var _sc=(SC2||SC).studios.find(x=>x.code==='${s.code}');if(_sc){_sumStudio=_sc;renderSummary2();}" style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;padding:6px 16px;border-radius:4px;border:2px solid ${active?'#00A3E0':'#c0d4df'};background:${active?'#00A3E0':'transparent'};color:${active?'#fff':'#5a7a8a'};cursor:pointer;letter-spacing:.5px">${s.name}</button>`;
   });
   h+=`</div>`;
 
@@ -810,10 +812,10 @@ function drawCum2Chart(studio){
   const presPace=w.map((_,i)=>Math.min(tPres,Math.round(wkPresPace*i)));
   const allLabels=[...preLabels,...scLabels];
   // Ensure cumulative never drops at the pre-weeks → W0 transition.
-  // Scorecard and data.json use different Snowflake queries; W0 may undercount.
+  // Pre-weeks and SC2 weeks are separate date ranges — W0 cumulative = pre-total + W0 leads.
   const _preTotal=preLeadsD.length?(preLeadsD[preLeadsD.length-1]||0):0;
   const scLeadsAdj=_preTotal>0?[]:null;
-  if(scLeadsAdj){let _adj=_preTotal,_rv=0;for(let i=0;i<scLeadsD.length;i++){const v=scLeadsD[i];if(v===null){scLeadsAdj.push(null);continue;}if(i===0)_adj=Math.max(_preTotal,v);else _adj+=Math.max(0,v-_rv);scLeadsAdj.push(_adj);_rv=v;}}
+  if(scLeadsAdj){let _adj=_preTotal,_rv=0;for(let i=0;i<scLeadsD.length;i++){const v=scLeadsD[i];if(v===null){scLeadsAdj.push(null);continue;}if(i===0)_adj=_preTotal+v;else _adj+=Math.max(0,v-_rv);scLeadsAdj.push(_adj);_rv=v;}}
   const allLeadsD=[...preLeadsD,...(scLeadsAdj||scLeadsD)];
   const allPresD=[...preWeeks.map(()=>null),...scPresD];
   const allLeadsPace=[...preWeeks.map(()=>null),...leadsPace];
@@ -909,6 +911,14 @@ function drawPreLaunchLeadsChart(studio){
   const pwData=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[studio.code];
   const todayS=new Date().toISOString().slice(0,10);
   const pws=((pwData&&pwData.pre_weeks)||[]).filter(pw=>pw.date_start<=todayS);
+  // Fallback: if no PRE_WEEKS entry, synthesize weeks from SC2 week boundaries (Sun–Sat from build_scorecard_v2.py)
+  if(pws.length===0&&studio.weeks&&studio.weeks.length>0){
+    const _scCw=studio.current_week||0;
+    studio.weeks.forEach((w,i)=>{
+      if(i<=_scCw&&w.date_start&&w.date_start<=todayS)
+        pws.push({date_start:w.date_start,date_end:w.date_end,new_leads:w.new_leads||0,total_leads:w.total_leads||0});
+    });
+  }
   const _lbl=iso=>{if(!iso)return'';const d=new Date(iso+'T00:00:00Z');return`${d.getUTCMonth()+1}/${d.getUTCDate()}`;};
   const labels=pws.map(pw=>`${_lbl(pw.date_start)} ${_lbl(pw.date_end)}`);
   const isWeekly=_sumView==='weekly';
@@ -1670,12 +1680,6 @@ function renderScorecard(){
     };
   }).filter(w=>w.w<=cw);
 
-  // Offset cumulative Total Leads by pre-launch total (same as Scorecard Test)
-  const _pwDataSc=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[sc.code];
-  const _pwListSc=(_pwDataSc&&_pwDataSc.pre_weeks)||[];
-  const _preWkTlSc=_pwListSc.length?(_pwListSc[_pwListSc.length-1].total_leads||0):0;
-  if(_preWkTlSc>0)weeks.forEach(wk=>{if(wk.tl!=null)wk.tl+=_preWkTlSc;});
-
   const $v=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
   const fInt=v=>v!=null?v:'—';
   const fPct=v=>v!=null?(v*100).toFixed(1)+'%':'—';
@@ -2038,19 +2042,21 @@ function toggleScCpa2(){
 }
 
 function renderScorecard2(){
+  const _SC2=SC2||SC;
   const el=document.getElementById('scorecard2-content');if(!el)return;
-  if(!SC||!SC.studios||!SC.studios.length){
+  if(!_SC2||!_SC2.studios||!_SC2.studios.length){
     el.innerHTML='<div style="padding:40px;text-align:center;color:#8aaabb;font-family:Oswald,sans-serif;font-style:italic">Scorecard data not available.</div>';
     return;
   }
   const _scVisCard=(_allowedStudios
-    ?(SC.studios||[]).filter(s=>_allowedStudios.includes((s.data_name||s.full_name||s.name||'').replace(/^SWEAT440\s+/,'')))
-    :(SC.studios||[])).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    ?(_SC2.studios||[]).filter(s=>_allowedStudios.includes((s.data_name||s.full_name||s.name||'').replace(/^SWEAT440\s+/,'')))
+    :(_SC2.studios||[])).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   if(!_scStudio||(_allowedStudios&&!_scVisCard.find(s=>s.code===_scStudio.code))){
     const selStudios=_getSel('studioMenu');
     _scStudio=(selStudios.length?_scVisCard.find(s=>selStudios.includes(s.full_name)):null)||_scVisCard[0];
   }
-  const sc=_scStudio||_scVisCard[0];
+  // Always resolve sc from SC2 list by code (not stale SC reference)
+  const sc=(_scStudio?_scVisCard.find(s=>s.code===_scStudio.code):null)||_scVisCard[0];
   const cw=sc.current_week||0;
   const tgt=sc.targets||{};
 
@@ -2139,14 +2145,15 @@ function renderScorecard2(){
     const _oldW0Grs=_w0?(_w0.cumGrs||0):0;  // W0 is first week so cumGrs = its own grs
     if(_pw0s||_pw1s){
       const _oldW1ds=_w1&&_w1.ds?_w1.ds:null;
-      if(_pw1s&&_w1){_w1.ds=_pw1s;_w1.de=_off(_pw1s,6);}
+      // FL-019 (Naples) uses hardcoded Sunday-start weeks; PRE_WEEKS may have Saturday — skip W1 override
+      if(_pw1s&&_w1&&sc.code!=='FL-019'){_w1.ds=_pw1s;_w1.de=_off(_pw1s,6);}
       if(_w0){
         _w0.ds=_pw0s||(_pw1s?_off(_pw1s,-7):null);
         _w0.de=_pw1s?_off(_pw1s,-1):(_pw0s?_off(_pw0s,6):null);
         if(_w0.ds){const _reGrs=_sheetGrs(_w0.ds,_w0.de);if(_reGrs!==null)_w0.grs=_reGrs;}
       }
-      // Cascade the W1 date shift to W2+ so week dates stay sequential
-      if(_pw1s&&_oldW1ds&&_oldW1ds!==_pw1s){
+      // Cascade the W1 date shift to W2+ so week dates stay sequential (skip FL-019)
+      if(sc.code!=='FL-019'&&_pw1s&&_oldW1ds&&_oldW1ds!==_pw1s){
         const _shiftDays=Math.round((new Date(_pw1s+'T00:00:00Z')-new Date(_oldW1ds+'T00:00:00Z'))/864e5);
         if(_shiftDays!==0){
           weeks.filter(w=>w.w>=2).forEach(w=>{
@@ -4036,9 +4043,10 @@ async function init(){
   }
 
   // Load all data files
-  const [dataRes,scRes,mktRes,dashRes,gadsRes,socialRes,salesRes,gbpRes,adMetaRes,chRes,pwRes,grRes,vdlRes]=await Promise.allSettled([
+  const [dataRes,scRes,sc2Res,mktRes,dashRes,gadsRes,socialRes,salesRes,gbpRes,adMetaRes,chRes,pwRes,grRes,vdlRes]=await Promise.allSettled([
     fetch('../data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('nso_scorecard_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
+    fetch('nso_scorecard_data2.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('marketing_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('dashboard_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('nso_google_ads.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
@@ -4061,6 +4069,9 @@ async function init(){
 
   if(scRes.status==='fulfilled'){SC=scRes.value}
   else{console.warn('nso_scorecard_data.json not found');SC={studios:[]};document.getElementById('summaryContent').innerHTML='<div style="padding:40px;text-align:center;color:#8aaabb;font-family:Oswald,sans-serif;font-style:italic">Scorecard data not yet available for NSO studios.</div>'}
+
+  if(sc2Res.status==='fulfilled'){SC2=sc2Res.value}
+  else{console.warn('nso_scorecard_data2.json not found — Test tabs will fall back to SC');SC2=SC}
 
   if(mktRes.status==='fulfilled'){GA4_RAW=mktRes.value.ga4_traffic||[];META_RAW=mktRes.value.meta_ads||[]}
   else{console.warn('marketing_data.json not found');GA4_RAW=[];META_RAW=[]}
