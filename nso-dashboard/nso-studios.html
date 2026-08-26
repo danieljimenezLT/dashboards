@@ -2704,17 +2704,19 @@ function renderMeta(){
       const btn=e.target.closest('.ad-thumb-btn');
       if(!btn)return;
       const isVid=btn.dataset.vid==='1';
+      const vurl=btn.dataset.vurl||'';
+      const prev=btn.dataset.prev||'';
       if(isAdminUser()){
         if(isVid){
-          const url=btn.dataset.vurl||btn.dataset.prev||null;
-          if(url)window.open(url,'_blank','noopener');
+          if(vurl)openAdMedia(btn.dataset.thumb,true,vurl,prev,btn.dataset.name);
+          else if(prev)window.open(prev,'_blank','noopener');
         }else{
           const di=btn.dataset.dimg||'';
           if(di)window.open(di,'_blank','noopener');
           else openAdMedia(btn.dataset.full||btn.dataset.thumb,false,null,null,btn.dataset.name);
         }
       }else{
-        openAdMedia(btn.dataset.thumb,isVid,null,btn.dataset.prev||null,btn.dataset.name);
+        openAdMedia(btn.dataset.thumb,isVid,vurl||null,prev||null,btn.dataset.name);
       }
     });
   }
