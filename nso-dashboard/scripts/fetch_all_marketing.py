@@ -61,7 +61,7 @@ def safe(val, default=0):
 # ════════════════════════════════════════════════════════════════════════════
 # META ADS  (uses meta_client.py from repo root — has retry on rate limits)
 # ════════════════════════════════════════════════════════════════════════════
-def fetch_meta_ads(start_date, end_date):
+def fetch_meta_ads(start_date, end_date, existing_ad_meta=None):
     import sys
     from pathlib import Path
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
@@ -107,12 +107,31 @@ def fetch_meta_ads(start_date, end_date):
     # get_creatives_by_ids() chunks by 10 and halves on failure — no single
     # bad creative kills the whole batch.
     if cids_per_name:
-        unique_cids = list({c for c in cids_per_name.values()})
+        cache = existing_ad_meta or {}
+        # Skip creatives already cached with a valid (non-proxy) thumbnail URL.
+        # Active ads with no cached thumbnail still get fetched so new creatives are picked up.
         cid_to_names: dict[str, list[str]] = {}
         for name, cid in cids_per_name.items():
-            cid_to_names.setdefault(cid, []).append(name)
+            cached_thumb = _public_thumb(cache.get(name, {}).get("thumbnail_url", ""))
+            if not cached_thumb:
+                cid_to_names.setdefault(cid, []).append(name)
+            else:
+                # Pre-populate from cache so the merge step has data without an API call.
+                entry = creatives.setdefault(name, {
+                    "thumbnail_url": "", "image_url": "", "preview_link": "",
+                    "object_type": "", "effective_status": "",
+                })
+                entry["thumbnail_url"] = cached_thumb
+                for field in ("image_url", "object_type", "video_id", "post_url"):
+                    if cache[name].get(field):
+                        entry[field] = cache[name][field]
 
-        print(f"  Fetching {len(unique_cids)} creatives in batch...", flush=True)
+        unique_cids = list(cid_to_names.keys())
+        skipped = len(cids_per_name) - len(cid_to_names)
+        if skipped:
+            print(f"  {skipped} creatives skipped (cached); fetching {len(unique_cids)} new/uncached...", flush=True)
+        else:
+            print(f"  Fetching {len(unique_cids)} creatives in batch...", flush=True)
         try:
             cdetails = meta.get_creatives_by_ids(unique_cids)
             for cid, cdata in cdetails.items():
@@ -138,6 +157,16 @@ def fetch_meta_ads(start_date, end_date):
                     vid = cdata.get("video_id", "")
                     if vid:
                         entry["video_id"] = vid
+                    # image_hash lets sync_ad_media call the adimages API for a
+                    # permanent facebook.com/ads/image/ URL that works from any IP.
+                    ih = (
+                        cdata.get("image_hash") or
+                        ((cdata.get("object_story_spec") or {}).get("link_data") or {}).get("image_hash") or
+                        ((cdata.get("object_story_spec") or {}).get("photo_data") or {}).get("image_hash") or
+                        (((cdata.get("asset_feed_spec") or {}).get("images") or [{}])[0]).get("hash") or ""
+                    )
+                    if ih:
+                        entry["image_hash"] = ih
                     eso = cdata.get("effective_object_story_id", "")
                     if eso and "_" in eso and obj_type == "SHARE":
                         page_id, post_id = eso.split("_", 1)
@@ -710,7 +739,16 @@ def main():
     }
 
     if args.source in ("meta", "all"):
-        output["meta_ads"], ad_meta = fetch_meta_ads(start_date, end_date)
+        existing_ad_meta = {}
+        if args.ad_meta_output:
+            ad_meta_path = Path(args.ad_meta_output)
+            if ad_meta_path.exists():
+                try:
+                    with open(ad_meta_path, encoding="utf-8") as f:
+                        existing_ad_meta = json.load(f).get("ad_meta", {})
+                except Exception:
+                    pass
+        output["meta_ads"], ad_meta = fetch_meta_ads(start_date, end_date, existing_ad_meta)
         output["ad_meta"] = ad_meta
     else:
         ad_meta = {}

@@ -179,9 +179,15 @@ def _video_embed_url(fid: str) -> str:
     return f"https://drive.google.com/file/d/{fid}/preview"
 
 
+_BROWSER_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Referer": "https://www.facebook.com/",
+    "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+}
+
 def _download(url: str, timeout: int = 60) -> bytes | None:
     try:
-        r = requests.get(url, timeout=timeout, allow_redirects=True)
+        r = requests.get(url, timeout=timeout, allow_redirects=True, headers=_BROWSER_HEADERS)
         if r.status_code == 200:
             return r.content
         log.warning(f"  HTTP {r.status_code} downloading {url[:80]}")
@@ -229,11 +235,18 @@ def _video_embed_src(video_id: str, token: str) -> str:
 def _best_image_url(entry: dict) -> str:
     """Return the best full-size image URL for a static ad entry.
     Prefers facebook.com/ads/image/ (permanent, full-res) over scontent HMAC."""
+    import urllib.parse as _up
     for key in ("image_url", "thumbnail_url"):
         url = entry.get(key, "")
         if url and "facebook.com/ads/image/" in url:
             return url
-    # Fall back to whatever is available
+    # emg1/external- proxy URLs wrap the real facebook.com/ads/image/ URL in ?url=
+    for key in ("image_url", "thumbnail_url"):
+        url = entry.get(key, "")
+        if url and ("external-" in url or "/emg1/" in url):
+            inner = _up.parse_qs(_up.urlparse(url).query).get("url", [""])[0]
+            if inner and "facebook.com/ads/image/" in inner:
+                return inner
     return entry.get("image_url", "") or entry.get("thumbnail_url", "")
 
 
@@ -332,7 +345,8 @@ def process(
                 log.info(f"  image  dedup(hash) {key_raw[:50]}")
             else:
                 img_url = _best_image_url(entry)
-                if img_url and "facebook.com/ads/image/" not in img_url and token and ih:
+                # If hash is available but URL is missing or non-permanent, use adimages API
+                if ih and token and (not img_url or "facebook.com/ads/image/" not in img_url):
                     full = _fullres_via_hash(ih, token)
                     if full:
                         img_url = full
