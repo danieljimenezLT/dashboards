@@ -110,6 +110,7 @@
         <button class="nav-tab nav-sub" onclick="switchTab('google',this)">Google Ads</button>
       </div>
     </div>
+    <button class="nav-tab" id="navTabCpr" onclick="switchTab('cpr',this)">Blended CPR<span class="nav-badge alpha">Alpha</span></button>
     <div class="nav-group">
       <button class="nav-tab nav-group-label" onclick="toggleNavGroup('organic-group',this)">Organic Channels ▾</button>
       <div class="nav-submenu" id="organic-group">
@@ -278,6 +279,11 @@
       <div style="position:relative;width:100%;height:260px"><canvas id="cancChart"></canvas></div>
     </div>
     <div class="chart-card"><div class="chart-card-title">Source Participation</div><div class="data-thru-label" style="font-size:10px;color:#8aaabb;margin-top:-6px;margin-bottom:8px"></div><div class="ring-wrap" style="flex-direction:row;align-items:center;justify-content:center;gap:56px;padding:24px 40px"><div class="ring-canvas-wrap" style="width:300px;height:300px;flex-shrink:0;margin:0"><canvas id="cancRing"></canvas></div><div class="ring-legend" id="cancRingLeg"></div></div></div>
+  </div>
+
+  <!-- BLENDED CPR TAB -->
+  <div class="tab-content" id="tab-cpr">
+    <div id="cpr-content"></div>
   </div>
 
   <!-- DEFINITIONS TAB -->
@@ -1541,6 +1547,7 @@ function applyFilters(){
   if(document.getElementById('tab-google').classList.contains('active'))renderGoogle();
   if(document.getElementById('tab-ga4').classList.contains('active'))renderGA4();
   if(document.getElementById('tab-gbp').classList.contains('active'))renderGBP();
+  if(document.getElementById('tab-cpr').classList.contains('active'))renderCPR();
 
   if(document.getElementById('tab-instagram').classList.contains('active'))renderInstagram();
   if(document.getElementById('tab-scorecard').classList.contains('active'))renderScorecard();
@@ -2644,6 +2651,229 @@ function drawScCumChart(sc,weeks){
     plugins:{legend:{position:'bottom',labels:{font:{family:'Oswald',size:12,style:'italic'},usePointStyle:true,padding:16}}},
     scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',maxRotation:0}},
       y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'},min:0}}}});
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BLENDED CPR TAB
+   ══════════════════════════════════════════════════════════════════════════ */
+let CPR_META=true,CPR_GOOGLE=true,CPR_LT=true,CPR_GRAN='weekly',_cprChart=null;
+
+function _cprToggle(type){if(type==='meta')CPR_META=!CPR_META;else if(type==='google')CPR_GOOGLE=!CPR_GOOGLE;else CPR_LT=!CPR_LT;renderCPR();}
+function _cprSetGran(g){CPR_GRAN=g;renderCPR();}
+
+function _cprMetaSpend(studios,from,to){
+  return studios.reduce((s,st)=>s+metaFilter(st,from,to).reduce((a,r)=>a+(r.spend||0),0),0);
+}
+function _cprGoogleSpend(studios,from,to){
+  return studios.reduce((s,st)=>s+googleFilter(st,from,to).reduce((a,r)=>a+(r.spend||0),0),0);
+}
+function _cprLtFee(studios,from,to){
+  if(!from||!to||!studios.length)return 0;
+  const days=Math.round((new Date(to+'T00:00:00Z')-new Date(from+'T00:00:00Z'))/(864e5))+1;
+  return studios.length*1200*(days/30.4375);
+}
+function _cprTotalSpend(studios,from,to){
+  return(CPR_META?_cprMetaSpend(studios,from,to):0)
+        +(CPR_GOOGLE?_cprGoogleSpend(studios,from,to):0)
+        +(CPR_LT?_cprLtFee(studios,from,to):0);
+}
+function _cprLeads(from,to,studios,sources){
+  const f=from?new Date(from+'T00:00:00Z'):null,t=to?new Date(to+'T23:59:59Z'):new Date();
+  return fR(RAW.daily_detail||[],f,t,studios,sources).reduce((a,r)=>a+(r.signups||0),0)
+        +fR(RAW.monthly_detail||[],f,t,studios,sources).reduce((a,r)=>a+(r.signups||0),0);
+}
+function _cprSales(from,to,studios,sources){
+  const f=from?new Date(from+'T00:00:00Z'):null,t=to?new Date(to+'T23:59:59Z'):new Date();
+  return fR(NSO_SALES_ROWS,f,t,studios,sources).reduce((a,r)=>a+(r.first_sales||0),0);
+}
+
+function _cprBuckets(from,to){
+  if(!from||!to)return[];
+  const buckets=[],f=new Date(from+'T00:00:00Z'),t=new Date(to+'T00:00:00Z');
+  const fmt=d=>d.toISOString().slice(0,10);
+  if(CPR_GRAN==='daily'){
+    const cur=new Date(f);
+    while(cur<=t){const ds=fmt(cur);buckets.push({label:fmtDayLabel(ds),from:ds,to:ds});cur.setUTCDate(cur.getUTCDate()+1);}
+  } else if(CPR_GRAN==='weekly'){
+    const cur=new Date(f);const dow=cur.getUTCDay();cur.setUTCDate(cur.getUTCDate()-(dow===0?6:dow-1));
+    while(cur<=t){
+      const wFrom=fmt(cur<f?f:cur);
+      const wEndD=new Date(cur);wEndD.setUTCDate(wEndD.getUTCDate()+6);
+      const wTo=fmt(wEndD>t?t:wEndD);
+      buckets.push({label:fmtDayLabel(wFrom),from:wFrom,to:wTo});
+      cur.setUTCDate(cur.getUTCDate()+7);
+    }
+  } else {
+    const cur=new Date(Date.UTC(f.getUTCFullYear(),f.getUTCMonth(),1));
+    while(cur<=t){
+      const mFrom=fmt(cur<f?f:cur);
+      const mEnd=new Date(Date.UTC(cur.getUTCFullYear(),cur.getUTCMonth()+1,0));
+      const mTo=fmt(mEnd>t?t:mEnd);
+      buckets.push({label:fmtMonthLabel(fmt(cur)),from:mFrom,to:mTo});
+      cur.setUTCMonth(cur.getUTCMonth()+1);
+    }
+  }
+  return buckets;
+}
+
+function renderCPR(){
+  const el=document.getElementById('cpr-content');if(!el)return;
+  if(!RAW)return;
+  const from=document.getElementById('fFrom').value||null;
+  const to=document.getElementById('fTo').value||null;
+  const selStudios=_getSel('studioMenu'),selSrc=_getSel('sourceMenu');
+  const activeStudios=NSO.filter(s=>selStudios.includes(s));
+  if(!activeStudios.length){el.innerHTML='<div style="padding:40px;text-align:center;color:#8aaabb;font-family:Oswald,sans-serif;font-style:italic">No studios selected.</div>';return;}
+
+  const fD=from?new Date(from+'T00:00:00Z'):null,tD=to?new Date(to+'T23:59:59Z'):new Date();
+  const wins=fD&&tD?cW(fD,tD):{ppFrom:null,ppTo:null,pyFrom:null,pyTo:null};
+  const _iso=d=>d?d.toISOString().slice(0,10):null;
+
+  const totalMeta=_cprMetaSpend(activeStudios,from,to);
+  const totalGoogle=_cprGoogleSpend(activeStudios,from,to);
+  const totalLt=_cprLtFee(activeStudios,from,to);
+  const totalSpend=_cprTotalSpend(activeStudios,from,to);
+  const totalLeads=_cprLeads(from,to,activeStudios,selSrc);
+  const totalSales=_cprSales(from,to,activeStudios,selSrc);
+  const cpl=totalLeads>0?totalSpend/totalLeads:0;
+  const cps=totalSales>0?totalSpend/totalSales:0;
+
+  const ppFrom=_iso(wins.ppFrom),ppTo=_iso(wins.ppTo);
+  const pyFrom=_iso(wins.pyFrom),pyTo=_iso(wins.pyTo);
+  const ppMeta=ppFrom?_cprMetaSpend(activeStudios,ppFrom,ppTo):0;
+  const ppGoogle=ppFrom?_cprGoogleSpend(activeStudios,ppFrom,ppTo):0;
+  const ppLt=ppFrom?_cprLtFee(activeStudios,ppFrom,ppTo):0;
+  const pyMeta=pyFrom?_cprMetaSpend(activeStudios,pyFrom,pyTo):0;
+  const pyGoogle=pyFrom?_cprGoogleSpend(activeStudios,pyFrom,pyTo):0;
+  const pyLt=pyFrom?_cprLtFee(activeStudios,pyFrom,pyTo):0;
+  const ppSpend=ppFrom?_cprTotalSpend(activeStudios,ppFrom,ppTo):0;
+  const pySpend=pyFrom?_cprTotalSpend(activeStudios,pyFrom,pyTo):0;
+  const ppLeads=ppFrom?_cprLeads(ppFrom,ppTo,activeStudios,selSrc):0;
+  const pyLeads=pyFrom?_cprLeads(pyFrom,pyTo,activeStudios,selSrc):0;
+  const ppSales=ppFrom?_cprSales(ppFrom,ppTo,activeStudios,selSrc):0;
+  const pySales=pyFrom?_cprSales(pyFrom,pyTo,activeStudios,selSrc):0;
+  const ppCpl=ppLeads>0?ppSpend/ppLeads:null;
+  const pyCpl=pyLeads>0?pySpend/pyLeads:null;
+  const ppCps=ppSales>0?ppSpend/ppSales:null;
+  const pyCps=pySales>0?pySpend/pySales:null;
+
+  const f$=v=>'$'+Math.round(v).toLocaleString('en-US');
+  const f$2=v=>'$'+Number(v).toFixed(2);
+  const fN=v=>Number(v).toLocaleString();
+  const _dPct=(v,ref)=>ref>0?((v-ref)/ref*100).toFixed(1):null;
+  const _deltaH=(v,ref)=>{const d=_dPct(v,ref);if(d===null)return'';const cls=parseFloat(d)<=0?'pos':'neg';return`<div class="kpi-card-delta ${cls}">${parseFloat(d)<=0?'▼':'▲'} ${Math.abs(d)}% prev period</div>`;};
+  const _deltaYH=(v,ref)=>{const d=_dPct(v,ref);if(d===null)return'';const cls=parseFloat(d)<=0?'pos':'neg';return`<div class="kpi-card-delta ${cls}">${parseFloat(d)<=0?'▼':'▲'} ${Math.abs(d)}% prev year</div>`;};
+
+  let h='';
+
+  // ── Cost source toggles (OS-style pill buttons) ──────────────────────────
+  h+=`<div class="chart-card" style="margin-bottom:20px">
+    <div class="chart-card-title">Cost sources</div>
+    <div class="cpr-filter">
+      <span style="font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;color:#5a7a8a;text-transform:uppercase;letter-spacing:1px">Include:</span>
+      <button class="cpr-tog${CPR_GOOGLE?' on':''}" onclick="_cprToggle('google')" style="${CPR_GOOGLE?'border-color:#34A853;background:#34A853':''}">Google Ads</button>
+      <button class="cpr-tog${CPR_META?' on':''}" onclick="_cprToggle('meta')" style="${CPR_META?'border-color:#1877F2;background:#1877F2':''}">Meta Ads</button>
+      <button class="cpr-tog${CPR_LT?' on':''}" onclick="_cprToggle('lt')" style="${CPR_LT?'border-color:#FF6B35;background:#FF6B35':''}">Leadteam Fee</button>
+    </div>
+  </div>`;
+
+  // ── Spend breakdown (OS-style kpi-card with colored top border + separators) ──
+  const _spendCard=(label,v,vPp,vPy,color)=>{
+    const ppH=vPp>0?_deltaH(v,vPp):'';
+    const pyH=vPy>0?_deltaYH(v,vPy):'';
+    return`<div class="kpi-card" style="flex:1;min-width:140px;border-top:3px solid ${color}"><div class="kpi-card-label">${label}</div><div class="kpi-card-val">${f$(v)}</div>${ppH}${pyH}</div>`;
+  };
+  const spCards=[];
+  if(CPR_GOOGLE){spCards.push('');spCards.push(_spendCard('Google Ads',totalGoogle,ppGoogle,pyGoogle,'#34A853'));}
+  if(CPR_META){if(spCards.length)spCards.push('<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">+</span>');spCards.push(_spendCard('Meta Ads',totalMeta,ppMeta,pyMeta,'#1877F2'));}
+  if(CPR_LT){if(spCards.length)spCards.push('<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">+</span>');spCards.push(_spendCard('Leadteam Fee',totalLt,ppLt,pyLt,'#FF6B35'));}
+  if(spCards.length){
+    spCards.push('<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">=</span>');
+    spCards.push(_spendCard('Total Spend',totalSpend,ppSpend,pySpend,'#1a1a2e'));
+  }
+  h+=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:20px">${spCards.join('')}</div>`;
+
+  // ── KPI cards ────────────────────────────────────────────────────────────
+  h+=`<div class="kpi-grid" style="grid-template-columns:1fr 1fr;margin-bottom:20px">`;
+  h+=cprKpiCard('Blended Cost per Lead',cpl,ppCpl,pyCpl,f$2);
+  h+=cprKpiCard('Blended Cost per Sale',cps,ppCps,pyCps,f$2);
+  h+=`</div>`;
+
+  // ── Time-series chart ────────────────────────────────────────────────────
+  const buckets=_cprBuckets(from,to);
+  const cplData=buckets.map(b=>{const sp=_cprTotalSpend(activeStudios,b.from,b.to);const ld=_cprLeads(b.from,b.to,activeStudios,selSrc);return ld>0?+(sp/ld).toFixed(2):null;});
+  const cpsData=buckets.map(b=>{const sp=_cprTotalSpend(activeStudios,b.from,b.to);const sl=_cprSales(b.from,b.to,activeStudios,selSrc);return sl>0?+(sp/sl).toFixed(2):null;});
+  const chartLabels=buckets.map(b=>b.label);
+
+  h+=`<div class="chart-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+      <div class="toggle-group" style="margin-bottom:0">
+        <button class="tog-btn on" id="cprDsCpl" onclick="_cprToggleDs(this,0)" style="border-color:#00A3E0;background:#00A3E0;color:#000"><span class="dot" style="background:#000"></span>Blended CPL</button>
+        <button class="tog-btn on" id="cprDsCps" onclick="_cprToggleDs(this,1)" style="border-color:#DDFF00;background:#DDFF00;color:#000"><span class="dot" style="background:#000"></span>Blended CPS</button>
+      </div>
+      <div class="gran-group">
+        <button class="gran-btn${CPR_GRAN==='daily'?' active':''}" onclick="_cprSetGran('daily')">Daily</button>
+        <button class="gran-btn${CPR_GRAN==='weekly'?' active':''}" onclick="_cprSetGran('weekly')">Weekly</button>
+        <button class="gran-btn${CPR_GRAN==='monthly'?' active':''}" onclick="_cprSetGran('monthly')">Monthly</button>
+      </div>
+    </div>
+    <div style="position:relative;width:100%;height:260px"><canvas id="cprChart"></canvas></div>
+  </div>`;
+
+  // ── Studio summary table ──────────────────────────────────────────────────
+  h+=`<div class="chart-card" style="margin-top:20px"><div class="chart-card-title">Studio Summary</div><div style="overflow-x:auto">
+    <table class="data-table" style="width:100%"><thead><tr>
+      <th>Studio</th><th class="num">Leads</th><th class="num">New Sales</th>
+      <th class="num">Google Ads</th><th class="num">Meta Ads</th><th class="num">LT Fee</th>
+      <th class="num">Total Spend</th><th class="num">Cost/Lead</th><th class="num">Cost/Sale</th>
+    </tr></thead><tbody>`;
+  let tMeta=0,tGoogle=0,tLt=0,tLeads=0,tSales=0;
+  activeStudios.forEach(studio=>{
+    const sm=_cprMetaSpend([studio],from,to),sg=_cprGoogleSpend([studio],from,to),slt=_cprLtFee([studio],from,to);
+    const sp=(CPR_META?sm:0)+(CPR_GOOGLE?sg:0)+(CPR_LT?slt:0);
+    const sl=_cprLeads(from,to,[studio],selSrc),ss=_cprSales(from,to,[studio],selSrc);
+    tMeta+=sm;tGoogle+=sg;tLt+=slt;tLeads+=sl;tSales+=ss;
+    h+=`<tr><td>${studio.replace('SWEAT440 ','')}</td>
+      <td class="num">${fN(sl)}</td><td class="num">${fN(ss)}</td>
+      <td class="num">${f$(sg)}</td><td class="num">${f$(sm)}</td><td class="num">${f$(slt)}</td>
+      <td class="num">${f$(sp)}</td>
+      <td class="num">${sl>0?f$2(sp/sl):'—'}</td>
+      <td class="num">${ss>0?f$2(sp/ss):'—'}</td></tr>`;
+  });
+  const tActive=(CPR_META?tMeta:0)+(CPR_GOOGLE?tGoogle:0)+(CPR_LT?tLt:0);
+  h+=`</tbody><tfoot><tr style="font-weight:700;background:#f4f9fd">
+    <td>Total</td><td class="num">${fN(tLeads)}</td><td class="num">${fN(tSales)}</td>
+    <td class="num">${f$(tGoogle)}</td><td class="num">${f$(tMeta)}</td><td class="num">${f$(tLt)}</td>
+    <td class="num">${f$(tActive)}</td>
+    <td class="num">${tLeads>0?f$2(tActive/tLeads):'—'}</td>
+    <td class="num">${tSales>0?f$2(tActive/tSales):'—'}</td>
+  </tr></tfoot></table></div></div>`;
+
+  el.innerHTML=h;
+
+  if(_cprChart){_cprChart.destroy();_cprChart=null;}
+  const ctx=document.getElementById('cprChart');if(!ctx)return;
+  _cprChart=new Chart(ctx,{type:'line',data:{labels:chartLabels,datasets:[
+    {label:'Cost per Lead',data:cplData,borderColor:'#00A3E0',backgroundColor:'rgba(0,163,224,.1)',fill:true,tension:.3,spanGaps:true,pointRadius:3,borderWidth:2},
+    {label:'Cost per Sale',data:cpsData,borderColor:'#DDFF00',backgroundColor:'rgba(221,255,0,.08)',fill:true,tension:.3,spanGaps:true,pointRadius:3,borderWidth:2},
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{position:'bottom',labels:{font:{family:'Oswald',size:12,style:'italic'},usePointStyle:true,padding:16,color:'#1a1a2e'}},
+      tooltip:{callbacks:{label:c=>`${c.dataset.label}: $${Number(c.raw||0).toFixed(2)}`}}
+    },
+    scales:{
+      x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',maxRotation:0,maxTicksLimit:14}},
+      y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',callback:v=>'$'+v.toLocaleString()},min:0}
+    }
+  }});
+}
+function _cprToggleDs(btn,idx){
+  if(!_cprChart)return;
+  const meta=_cprChart.getDatasetMeta(idx);
+  meta.hidden=!meta.hidden;
+  btn.classList.toggle('on',!meta.hidden);
+  _cprChart.update();
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -4055,6 +4285,8 @@ async function init(){
     if(_sum2Tab)_sum2Tab.remove();
     const _sc2Tab=document.getElementById('navTabScorecard2');
     if(_sc2Tab)_sc2Tab.remove();
+    const _cprTab=document.getElementById('navTabCpr');
+    if(_cprTab)_cprTab.remove();
   }
 
   // Load all data files
