@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-08-27",
+      "pr_number": 256,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/256",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix NSO ad media sync — cache Meta creatives to avoid rate limits, fix image download 403 errors",
+      "summary": "Reduced daily Meta creative API calls from ~1,500 to ~20-30 (new ads only) by caching already-known thumbnails. Fixed image download failures caused by emg1 proxy URLs and missing image hashes in sync_ad_media.py."
+    },
+    {
       "date": "2026-08-26",
       "pr_number": 255,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/255",
