@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-27",
+      "pr_number": 257,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/257",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO Dashboard — Blended CPR tab (admin-only alpha)",
+      "summary": "Adds a new Blended CPR tab to the NSO dashboard for admin users, showing blended cost per lead and cost per sale across Meta Ads, Google Ads, and Leadteam Fee, with OS-style spend breakdown and time-series chart."
+    },
+    {
+      "date": "2026-08-27",
       "pr_number": 256,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/256",
       "author": "Sebastian Arango",
