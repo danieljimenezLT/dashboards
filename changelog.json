@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-28",
+      "pr_number": 263,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/263",
+      "author": "Sebastian Arango",
+      "categories": [
+        "Campaign Dashboard"
+      ],
+      "title": "Add 2 Weeks for $40 campaign tab to Campaign Dashboard",
+      "summary": "Integrates the summer 2026 \"2 Weeks for $40\" promotion as a new campaign button with dedicated Summary and Ads Report views, including adset-level Meta spend split by studio and Meta leads data from Snowflake."
+    },
+    {
+      "date": "2026-08-28",
       "pr_number": 262,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/262",
       "author": "danieljimenezLT",
