@@ -25,12 +25,6 @@ const USERS = {
     studios: null,
     role: 'admin'
   },
-  'jamie.westall@leadteam.com': {
-    passwordHash: 'd51efb736aca536431204927a0dc30e4909d49b809733b7ac6b1227610b6e679',
-    name: 'Jamie Westall',
-    studios: null,
-    role: 'admin'
-  },
   'sebastian.arango@leadteam.com': {
     passwordHash: '82251cee9a5262e36d13362d1b86e38fb0fb3314570ace33171d7aa3f08c33de',
     name: 'Sebastian Arango',
