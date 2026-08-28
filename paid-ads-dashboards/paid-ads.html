@@ -21,13 +21,13 @@
   :root {
     --brand-blue: #00A3E0;
     --brand-blue-deep: #0084B5;
-    --ink: #0F172A;
-    --ink-soft: #475569;
-    --border: #E2E8F0;
-    --bg: #F8FAFC;
+    --ink: #1a1a2e;
+    --ink-soft: #5a7a8a;
+    --border: #dde8ef;
+    --bg: #f4f9fd;
     --card: #FFFFFF;
-    --good: #16A34A;
-    --bad: #DC2626;
+    --good: #0a8a4a;
+    --bad: #d32f2f;
   }
   * { box-sizing: border-box; }
   body {
@@ -38,28 +38,36 @@
     font-size: 14px;
   }
   h1, h2, h3 { font-family: 'Oswald', sans-serif; font-weight: 600; letter-spacing: .5px; }
-  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
-  header.topbar {
-    display: flex; align-items: center; justify-content: space-between;
+
+  .page-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
     gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
   }
-  header.topbar h1 {
-    margin: 0; font-size: 28px; text-transform: uppercase;
-    color: var(--brand-blue-deep);
+  .page-header h1 {
+    margin: 0; font-size: 22px; font-style: italic; text-transform: uppercase;
+    letter-spacing: .5px; color: var(--ink);
   }
-  header.topbar .meta { color: var(--ink-soft); font-size: 12px; }
-  .campaign-picker {
-    display: flex; align-items: center; gap: 10px;
-  }
-  .campaign-picker select {
-    font-family: inherit; font-size: 14px; padding: 8px 12px;
-    border: 1px solid var(--border); border-radius: 6px; background: #fff;
-    min-width: 280px;
-  }
-  .period { color: var(--ink-soft); font-size: 12px; }
+  .page-header .meta { color: var(--ink-soft); font-size: 12px; text-align: right; }
 
   .dashboard-subtitle {
     font-size: 13px; color: var(--ink-soft); margin-top: 2px;
+  }
+
+  /* Keep a control's label glued to its input so they wrap to the next
+     line together instead of splitting apart. */
+  .ctrl-group {
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* Center the nav tabs in the top blue bar (desktop only — mobile keeps the
+     shared dropdown behavior from shared/style.css) */
+  @media (min-width: 769px) {
+    .nav-tabs {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
   }
 
   /* KPI grid */
@@ -69,14 +77,16 @@
     margin-bottom: 24px;
   }
   .kpi {
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-    padding: 14px 16px; position: relative;
+    background: var(--card); border: 0.5px solid var(--border); border-radius: 10px;
+    padding: 18px 16px; position: relative;
   }
   .kpi .label {
-    font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
-    color: var(--ink-soft); font-weight: 600;
+    font-family: 'Oswald', sans-serif; font-style: italic;
+    font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--ink-soft);
     display: flex; align-items: center; gap: 5px;
     padding-right: 18px; /* keep room for the info icon */
+    margin-bottom: 6px;
   }
   .kpi-info {
     display: inline-flex; align-items: center; justify-content: center;
@@ -116,10 +126,10 @@
   }
   .kpi-modal-close:hover { color: var(--ink); }
   .kpi .value {
-    font-family: 'Oswald', sans-serif; font-size: 28px; font-weight: 600;
-    color: var(--ink); margin-top: 2px;
+    font-family: 'Open Sans', sans-serif; font-size: 26px; font-weight: 600;
+    font-style: normal; color: var(--ink); line-height: 1;
   }
-  .kpi .sub { font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+  .kpi .sub { font-size: 11px; font-weight: 600; color: var(--ink-soft); margin-top: 5px; }
   .kpi.accent { border-left: 4px solid var(--brand-blue); }
 
   /* Section cards */
@@ -176,26 +186,7 @@
     font-weight: 600; margin-right: 4px;
   }
 
-  /* Tabs */
-  .tab-bar {
-    display: flex; gap: 2px; flex-wrap: wrap;
-    border-bottom: 2px solid var(--border);
-    margin-bottom: 20px;
-  }
-  .tab {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 13px; font-weight: 600;
-    padding: 10px 18px; border: none; background: transparent;
-    color: var(--ink-soft); cursor: pointer;
-    text-transform: uppercase; letter-spacing: .5px;
-    border-bottom: 2px solid transparent; margin-bottom: -2px;
-    transition: color .15s, border-color .15s;
-  }
-  .tab:hover:not(.active) { color: var(--ink); }
-  .tab.active {
-    color: var(--brand-blue-deep);
-    border-bottom-color: var(--brand-blue);
-  }
+  /* Tab panels (tabs themselves are styled by shared/style.css .nav-tab) */
   .tab-panel.hidden { display: none; }
 
   /* ── AI Analysis tab ─────────────────────────────────────────────────── */
@@ -328,26 +319,7 @@
     border-radius: 50%; flex-shrink: 0;
   }
 
-  /* Filter bar */
-  .filter-bar {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 14px;
-    padding: 10px 12px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-  }
-  .filter-bar > label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    color: var(--ink-soft);
-    font-weight: 700;
-    margin-right: 6px;
-  }
+  /* Period preset pills (live inside .controls-inner) */
   .preset-btn {
     font-family: 'Open Sans', sans-serif;
     font-size: 12px;
@@ -402,8 +374,7 @@
     background: #fff;
     min-width: 200px;
   }
-  .filter-bar .range-info {
-    margin-left: auto;
+  .range-info {
     font-size: 12px;
     color: var(--ink-soft);
   }
@@ -411,24 +382,31 @@
 </head>
 
 <body>
-<div class="container">
-  <header class="topbar">
-    <div>
-      <h1>Meta Ads Dashboard - Open Studios</h1>
-      <div class="dashboard-subtitle">This is an internal-use dashboard for the Growth Marketing Manager and the Creative Director.</div>
-      <div class="meta">
-        <span id="generatedAt">Loading…</span>
-      </div>
-    </div>
-    <div class="campaign-picker">
-      <label for="campaignSelect" style="font-weight:600;color:var(--ink-soft);">Campaign:</label>
+
+<nav class="nav">
+  <a class="nav-logo" href="../home.html"><img src="../logo.png" alt="SWEAT440"/></a>
+  <div class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" data-tab="overview">Overview</button>
+    <button class="nav-tab" data-tab="audiences">Audiences</button>
+    <button class="nav-tab" data-tab="pillars">Pillars</button>
+    <button class="nav-tab" data-tab="concepts">Ads</button>
+    <button class="nav-tab" data-tab="mediatype">Static vs Video</button>
+    <button class="nav-tab" data-tab="ai-analysis">AI Analysis</button>
+  </div>
+  <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Toggle navigation">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="controls-bar">
+  <button class="controls-toggle" id="ctrlToggle" onclick="toggleControls()">Filters ▾</button>
+  <div class="controls-inner" id="ctrlInner">
+    <div class="ctrl-group">
+      <span class="ctrl-label">Campaign</span>
       <select id="campaignSelect"></select>
     </div>
-  </header>
-
-  <!-- Filter bar (period + studio — afecta TODO el dashboard) -->
-  <div class="filter-bar">
-    <label>Period:</label>
+    <div class="ctrl-sep"></div>
+    <span class="ctrl-label">Period</span>
     <button class="preset-btn active" data-preset="all">Full campaign</button>
     <button class="preset-btn" data-preset="7">Last 7 days</button>
     <button class="preset-btn" data-preset="30">Last 30 days</button>
@@ -440,21 +418,27 @@
       <input type="date" id="dateEnd">
       <button class="apply-btn" id="applyCustom">Apply</button>
     </div>
-    <label style="margin-left:18px;">Studio:</label>
-    <select id="studioFilterSelect" class="studio-filter-select">
-      <option value="">All studios</option>
-    </select>
-    <span class="range-info" id="rangeInfo"></span>
+    <div class="ctrl-sep"></div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Studio</span>
+      <select id="studioFilterSelect" class="studio-filter-select">
+        <option value="">All studios</option>
+      </select>
+    </div>
   </div>
+</div>
 
-  <!-- Tab bar -->
-  <div class="tab-bar">
-    <button class="tab active" data-tab="overview">Overview</button>
-    <button class="tab" data-tab="audiences">Audiences</button>
-    <button class="tab" data-tab="pillars">Pillars</button>
-    <button class="tab" data-tab="concepts">Ads</button>
-    <button class="tab" data-tab="mediatype">Static vs Video</button>
-    <button class="tab" data-tab="ai-analysis">&#128200; AI Analysis</button>
+<div class="main">
+
+  <div class="page-header">
+    <div>
+      <h1>Meta Ads Dashboard - Open Studios</h1>
+      <div class="dashboard-subtitle">This is an internal-use dashboard for the Growth Marketing Manager and the Creative Director.</div>
+    </div>
+    <div class="meta">
+      <div id="generatedAt">Loading…</div>
+      <div class="range-info" id="rangeInfo"></div>
+    </div>
   </div>
 
   <!-- ── Overview tab ─────────────────────────────────────────── -->
@@ -696,7 +680,7 @@
   </div>
   <!-- ──────────────────────────────────────────────────────────────────────── -->
 
-</div><!-- /.container -->
+</div><!-- /.main -->
 
 <script>
 let DATA = null;
@@ -748,6 +732,11 @@ const fmtMoney = n => "$" + (Number(n) || 0).toLocaleString("en-US", { minimumFr
 const fmtInt   = n => (Number(n) || 0).toLocaleString("en-US");
 const fmtPct   = n => (Number(n) || 0).toFixed(2) + "%";
 
+// Date formatting — same convention as the other SWEAT440 dashboards (fmDay/fmMo)
+const fmDay = iso => new Date(iso + "T00:00:00Z").toLocaleString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+const fmMo  = iso => new Date(iso + "T00:00:00Z").toLocaleString("en-US", { month: "short", year: "2-digit", timeZone: "UTC" });
+const fmDateTime = iso => new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+
 async function bootstrap() {
   // Load creative map (non-blocking — silently ignored if file doesn't exist yet)
   try {
@@ -766,7 +755,7 @@ async function bootstrap() {
     if (!res.ok) throw new Error("HTTP " + res.status);
     DATA = await res.json();
   } catch (e) {
-    document.body.innerHTML = `<div class="container"><div class="card" style="color:var(--bad)">
+    document.body.innerHTML = `<div class="main"><div class="card" style="color:var(--bad)">
       <h2>Could not load daniel-paid-ads-data.json</h2>
       <pre style="color:var(--ink-soft);font-size:12px">${String(e)}</pre>
     </div></div>`;
@@ -774,7 +763,7 @@ async function bootstrap() {
   }
 
   document.getElementById("generatedAt").textContent =
-    "Updated " + new Date(DATA.generated_at).toLocaleString();
+    "Updated " + fmDateTime(DATA.generated_at);
 
   const sel = document.getElementById("campaignSelect");
   DATA.campaigns_index.forEach(ci => {
@@ -868,18 +857,29 @@ function initFilters() {
 }
 
 function initTabs() {
-  document.querySelectorAll(".tab").forEach(btn => {
+  document.querySelectorAll(".nav-tab").forEach(btn => {
     btn.addEventListener("click", () => {
       const target = btn.dataset.tab;
-      document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".nav-tab").forEach(b => b.classList.remove("active"));
       document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
       btn.classList.add("active");
       const panel = document.getElementById("panel-" + target);
       if (panel) panel.classList.remove("hidden");
       Object.values(charts).forEach(ch => { if (ch) ch.resize(); });
       if (target === "ai-analysis") renderAnalysis();
+      document.getElementById("navTabs").classList.remove("open");
     });
   });
+}
+
+function toggleNav() {
+  document.getElementById("navTabs").classList.toggle("open");
+}
+
+function toggleControls() {
+  const el = document.getElementById("ctrlInner");
+  el.classList.toggle("open");
+  document.getElementById("ctrlToggle").textContent = el.classList.contains("open") ? "Filters ▴" : "Filters ▾";
 }
 
 function inDateRange(dateStr, start, end) {
@@ -1087,7 +1087,7 @@ function render() {
   const ri = document.getElementById("rangeInfo");
   if (ri) {
     ri.textContent = view._filtered
-      ? "Showing " + view._range.start + " → " + view._range.end + " (filtered from daily series)"
+      ? "Showing " + fmDay(view._range.start) + " → " + fmDay(view._range.end) + " (filtered from daily series)"
       : "Showing full campaign window";
   }
 
@@ -1219,10 +1219,8 @@ function aggregateByGran(daily, gran) {
 }
 
 function formatGranLabel(dateStr, gran) {
-  const dt = new Date(dateStr + "T00:00:00Z");
-  if (gran === "weekly")  return "Wk " + (dt.getUTCMonth() + 1) + "/" + dt.getUTCDate();
-  if (gran === "monthly") return dt.toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
-  return dateStr;
+  if (gran === "monthly") return fmMo(dateStr);
+  return fmDay(dateStr); // daily and weekly (week-start date) — same as other dashboards
 }
 
 function renderDailyChart(daily) {
@@ -1606,7 +1604,7 @@ function renderLineTab(opts) {
   // Only update the date-range note and chart title on a full (non-sort) render
   if (!opts._sortOnly) {
     const rangeTxt = window && window.window_start && window.window_end
-      ? `${window.window_start} – ${window.window_end}` : "";
+      ? `${fmDay(window.window_start)} – ${fmDay(window.window_end)}` : "";
     if (noteEl) noteEl.textContent = rangeTxt;
   }
 
@@ -1930,7 +1928,7 @@ function renderAnalysis() {
   // Header
   const windowLabel = ANALYSIS.window_label ? " · " + ANALYSIS.window_label : "";
   document.getElementById("aiGenAt").textContent =
-    "Generated " + new Date(ANALYSIS.generated_at).toLocaleString() + windowLabel;
+    "Generated " + fmDateTime(ANALYSIS.generated_at) + windowLabel;
   document.getElementById("aiHighBadge").textContent = campData.high_count ?? campData.alerts_count;
   document.getElementById("aiWarnBadge").textContent  = campData.medium_count ?? 0;
   document.getElementById("aiOppBadge").textContent   = campData.opportunities_count;
