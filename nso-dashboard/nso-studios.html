@@ -4226,7 +4226,7 @@ function renderInstagram(){
       const vidBadge=isVid?'<div style="position:absolute;bottom:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;border-radius:3px;font-size:9px;padding:1px 4px">&#9654;</div>':'';
       const _igSrc=p.image_url?(p.image_url.startsWith('http')?p.image_url:p.image_url.replace(/^nso-dashboard\//,'')):''
       const imgInner=_igSrc
-        ?`<img class="soc-thumb" src="${_igSrc}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="soc-thumb-ph" style="display:none">${isVid?'&#9654;':'&#128247;'}</div>`
+        ?`<img class="soc-thumb lazy-ig" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="${_igSrc}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="soc-thumb-ph" style="display:none">${isVid?'&#9654;':'&#128247;'}</div>`
         :`<div class="soc-thumb-ph">${isVid?'&#9654;':'&#128247;'}</div>`;
       const img=p.permalink
         ?`<a href="${p.permalink}" target="_blank" rel="noopener" style="position:relative;display:block;width:60px">${imgInner}${vidBadge}</a>`
@@ -4247,7 +4247,31 @@ function renderInstagram(){
         <td class="num">${er}</td>
       </tr>`;
     });
+    _igInitLazy();
   }
+}
+
+function _igInitLazy(){
+  const tbody=document.querySelector('#ig-posts-table tbody');
+  if(!tbody)return;
+  // Observe new lazy images whenever the table re-renders (e.g. sort)
+  if(!tbody._lazyObserver){
+    tbody._lazyObserver=new MutationObserver(()=>_igAttachLazy());
+    tbody._lazyObserver.observe(tbody,{childList:true});
+  }
+  _igAttachLazy();
+}
+
+function _igAttachLazy(){
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(!e.isIntersecting)return;
+      const img=e.target;
+      img.src=img.dataset.src;
+      io.unobserve(img);
+    });
+  },{rootMargin:'300px'});
+  document.querySelectorAll('#ig-posts-table .lazy-ig[data-src]').forEach(img=>io.observe(img));
 }
 
 function _drawIgChart(filtered){

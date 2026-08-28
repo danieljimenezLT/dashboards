@@ -23,6 +23,71 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+# Google Drive upload (optional — only active when service_account.json is present)
+DRIVE_ROOT_FOLDER  = "1XZPoMSawhnnF8YIJHkeGywe5VeNNCROd"
+DRIVE_BASE         = "https://www.googleapis.com/drive/v3"
+DRIVE_UPLOAD       = "https://www.googleapis.com/upload/drive/v3"
+
+class _DriveClient:
+    def __init__(self, sa_file: Path):
+        from google.auth.transport.requests import Request as _GReq
+        from google.oauth2 import service_account as _SA
+        self._creds = _SA.Credentials.from_service_account_file(
+            str(sa_file), scopes=["https://www.googleapis.com/auth/drive"]
+        )
+        self._GReq = _GReq
+
+    def _token(self):
+        if not self._creds.valid:
+            self._creds.refresh(self._GReq())
+        return self._creds.token
+
+    def _h(self):
+        return {"Authorization": f"Bearer {self._token()}"}
+
+    def get_or_create_folder(self, name: str, parent_id: str) -> str:
+        q = (f"name='{name}' and mimeType='application/vnd.google-apps.folder'"
+             f" and '{parent_id}' in parents and trashed=false")
+        r = requests.get(f"{DRIVE_BASE}/files",
+            params={"q": q, "fields": "files(id)", "pageSize": 1,
+                    "supportsAllDrives": "true", "includeItemsFromAllDrives": "true"},
+            headers=self._h(), timeout=30)
+        r.raise_for_status()
+        files = r.json().get("files", [])
+        if files:
+            return files[0]["id"]
+        r = requests.post(f"{DRIVE_BASE}/files",
+            params={"supportsAllDrives": "true"},
+            headers={**self._h(), "Content-Type": "application/json"},
+            json={"name": name, "mimeType": "application/vnd.google-apps.folder",
+                  "parents": [parent_id]},
+            timeout=30)
+        r.raise_for_status()
+        return r.json()["id"]
+
+    def upload(self, data: bytes, filename: str, parent_id: str) -> str:
+        meta_bytes = json.dumps({"name": filename, "parents": [parent_id]}).encode()
+        boundary = b"xbnd"
+        body = (b"--" + boundary + b"\r\nContent-Type: application/json\r\n\r\n"
+                + meta_bytes
+                + b"\r\n--" + boundary + b"\r\nContent-Type: image/jpeg\r\n\r\n"
+                + data + b"\r\n--" + boundary + b"--")
+        for attempt in range(4):
+            r = requests.post(f"{DRIVE_UPLOAD}/files",
+                params={"uploadType": "multipart", "fields": "id", "supportsAllDrives": "true"},
+                headers={**self._h(), "Content-Type": "multipart/related; boundary=xbnd"},
+                data=body, timeout=300)
+            if r.status_code in (429, 503) or (r.status_code == 403 and "userRateLimit" in r.text):
+                time.sleep(2 ** attempt * 5)
+                continue
+            r.raise_for_status()
+            break
+        fid = r.json()["id"]
+        requests.post(f"{DRIVE_BASE}/files/{fid}/permissions",
+            headers={**self._h(), "Content-Type": "application/json"},
+            json={"type": "anyone", "role": "reader"}, timeout=30)
+        return fid
+
 load_dotenv(Path(__file__).parent.parent / ".env")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
@@ -423,48 +488,49 @@ def main():
             final_ig.append(data)
     output["instagram"] = final_ig
 
-    # ── Download thumbnails and replace image_url with local paths ────────
-    # Instagram/Facebook CDN URLs expire in ~24h. We download each post's
-    # thumbnail as a static file so GitHub Pages serves them with no expiry.
-    # Saved to: nso-dashboard/thumbnails/{code}/{post_slug}.jpg
-    # JSON stores the repo-relative path so the dashboard can load them directly.
-    thumbs_root = out_path.parent / "thumbnails"
+    # ── Upload thumbnails to Google Drive ─────────────────────────────────
+    # Instagram/Facebook CDN URLs expire in ~24h. We upload each post's
+    # thumbnail to Google Drive so the dashboard can load them with no expiry.
+    # Requires: nso-dashboard/credentials/service_account.json
+    sa_file = out_path.parent / "credentials" / "service_account.json"
     print(f"\n{'=' * 60}")
-    print("Downloading thumbnails...")
-    total_ok = total_fail = total_skip = 0
+    if not sa_file.exists():
+        print("WARNING: service_account.json not found — skipping thumbnail upload.")
+        print("  Thumbnails will remain as CDN URLs (expire in ~24h).")
+    else:
+        print("Uploading thumbnails to Google Drive...")
+        drive = _DriveClient(sa_file)
+        ig_folder = drive.get_or_create_folder("instagram", DRIVE_ROOT_FOLDER)
+        studio_folders: dict = {}
+        total_ok = total_fail = total_skip = 0
 
-    for studio in output["instagram"]:
-        code = studio.get("code", "unknown")
-        studio_dir = thumbs_root / code
-        studio_dir.mkdir(parents=True, exist_ok=True)
-        for post in studio.get("posts", []):
-            url = post.get("image_url", "")
-            if not url:
-                continue
-            # Already saved from a previous run — skip re-download
-            if url.startswith("nso-dashboard/thumbnails/"):
-                total_skip += 1
-                continue
-            slug = ""
-            permalink = post.get("permalink", "")
-            if permalink:
-                slug = permalink.rstrip("/").split("/")[-1]
-            if not slug:
-                slug = post.get("date", "unknown").replace("-", "") + "_" + str(total_ok + total_fail)
-            local_path = studio_dir / f"{slug}.jpg"
-            try:
-                r = requests.get(url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
-                r.raise_for_status()
-                with open(local_path, "wb") as f:
-                    f.write(r.content)
-                post["image_url"] = f"nso-dashboard/thumbnails/{code}/{slug}.jpg"
-                total_ok += 1
-            except Exception as e:
-                print(f"  WARNING thumbnail {slug}: {e}")
-                post["image_url"] = ""
-                total_fail += 1
+        for studio in output["instagram"]:
+            code = studio.get("code", "unknown")
+            for post in studio.get("posts", []):
+                url = post.get("image_url", "")
+                if not url:
+                    continue
+                # Already on Drive — skip
+                if url.startswith("https://drive.google.com/thumbnail"):
+                    total_skip += 1
+                    continue
+                permalink = post.get("permalink", "")
+                slug = permalink.rstrip("/").split("/")[-1] if permalink else \
+                       post.get("date", "unknown").replace("-", "") + "_" + str(total_ok + total_fail)
+                if code not in studio_folders:
+                    studio_folders[code] = drive.get_or_create_folder(code, ig_folder)
+                try:
+                    r = requests.get(url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
+                    r.raise_for_status()
+                    fid = drive.upload(r.content, f"{slug}.jpg", studio_folders[code])
+                    post["image_url"] = f"https://drive.google.com/thumbnail?id={fid}&sz=w400"
+                    total_ok += 1
+                except Exception as e:
+                    print(f"  WARNING thumbnail {code}/{slug}: {e}")
+                    post["image_url"] = ""
+                    total_fail += 1
 
-    print(f"  Downloaded: {total_ok}  Failed/cleared: {total_fail}  Skipped (existing): {total_skip}")
+        print(f"  Uploaded: {total_ok}  Failed/cleared: {total_fail}  Skipped (existing): {total_skip}")
 
     # Summary
     print("\n" + "=" * 60)
