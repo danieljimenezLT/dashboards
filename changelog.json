@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-28",
+      "pr_number": 264,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/264",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Fixed a duplicate report card that reappeared under Staging Reports",
+      "summary": "A merge from another branch accidentally brought back an old duplicate of the OS Dashboard Agency Spend card inside Staging Reports; removed it so it only appears once, on the main Admin Reports page."
+    },
+    {
+      "date": "2026-08-28",
       "pr_number": 263,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/263",
       "author": "Sebastian Arango",
