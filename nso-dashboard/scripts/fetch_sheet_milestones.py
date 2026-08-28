@@ -9,7 +9,7 @@ Run from the nso-dashboard/ folder:
     python scripts/fetch_sheet_milestones.py
 """
 import json, re, math
-from datetime import datetime
+from datetime import datetime, timedelta
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
@@ -24,6 +24,10 @@ _COL_CODE  = 1
 _COL_TIER1 = 3
 _COL_TIER2 = 4
 _COL_TIER3 = 5
+
+# Studios that show Preview Week + Grand Opening milestone cards.
+# Add a studio code here when it's approaching its opening date.
+PREVIEW_WEEK_STUDIOS = {"VA-001"}  # Reston
 
 # Pre-launch milestone columns (ordered by appearance in the pre-launch timeline).
 # Each entry: (key, sheet_header_name)
@@ -263,6 +267,28 @@ for row in data_rows:
     open_date   = norm_date(_hcell(row, "Target Opening Date"))
     goal_ann    = norm_float(_hcell(row, "Goal to Announce Opening"))
 
+    # Derive Preview Week (opening_date - 7 days) and Grand Opening from sheet
+    # Only for studios in PREVIEW_WEEK_STUDIOS (e.g. Reston approaching opening)
+    if open_date and code in PREVIEW_WEEK_STUDIOS:
+        go_dt  = datetime.strptime(open_date, "%Y-%m-%d")
+        pw_dt  = go_dt - timedelta(days=7)
+        pw_end = go_dt - timedelta(days=1)
+        pw_lbl = (f"{pw_dt.strftime('%b')} {pw_dt.day}"
+                  f" – {pw_end.strftime('%b')} {pw_end.day}, {pw_end.year}")
+        milestones.append({
+            "key":      "preview_week",
+            "label":    "Preview Week",
+            "subtitle": pw_lbl,
+            "date":     pw_dt.strftime("%Y-%m-%d"),
+        })
+        milestones.append({
+            "key":      "grand_opening",
+            "label":    "Grand Opening",
+            "subtitle": "Doors open to the public",
+            "date":     open_date,
+        })
+        milestones.sort(key=lambda m: m["date"])
+
     cpl_raw  = (_hcell(row, "CPL Range") or "").strip() or None
     cpa_raw  = (_hcell(row, "CPA Range") or "").strip() or None
     cr_raw   = norm_float(_hcell(row, "Conversion Rate"))
@@ -308,7 +334,10 @@ for studio in sc.get("studios", []):
         studio.setdefault("milestones", [])
         continue
 
-    studio["milestones"] = info["milestones"]
+    # Merge: sheet milestones win; preserve any manually-set keys not in the sheet
+    sheet_keys = {m["key"] for m in info["milestones"]}
+    preserved  = [m for m in (studio.get("milestones") or []) if m["key"] not in sheet_keys]
+    studio["milestones"] = sorted(info["milestones"] + preserved, key=lambda m: m["date"])
     studio["sku_map"]    = info["sku_map"]
 
     # Patch Week 1 date_start to match "Week 1 Start" from sheet

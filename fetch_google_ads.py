@@ -49,6 +49,8 @@ OUT_PATH  = REPO_ROOT / "google-ads-data.json"
 
 # Daily window: current Q + previous Q; anything older → monthly only
 DAILY_WINDOW_DAYS = 180  # ~2 quarters
+# Rolling window kept in output — older daily rows trimmed on write
+DAILY_KEEP_DAYS = 90
 
 logging.basicConfig(
     level=logging.INFO,
@@ -515,6 +517,49 @@ def run():
             "cost_per_opp":  round(spend / opp, 2) if opp > 0 else 0,
         })
 
+    # ---- Fold days about to be trimmed off "daily" into "monthly" ----
+    # daily_rows spans the full query window (current Q + previous Q), but only
+    # the last DAILY_KEEP_DAYS are kept in the output below. Without this, a
+    # day's spend would vanish the moment it ages past the keep window instead
+    # of surviving until it naturally rolls into the monthly query range.
+    keep_from = (today - timedelta(days=DAILY_KEEP_DAYS)).isoformat()
+    aged_out  = [r for r in daily_rows if r["date"] < keep_from]
+    if aged_out:
+        aged_monthly: dict[tuple, dict] = {}
+        for r in aged_out:
+            key = (r["studio"], r["date"][:7] + "-01")
+            if key not in aged_monthly:
+                aged_monthly[key] = {"spend": 0.0, "impressions": 0, "clicks": 0,
+                                      "leads": 0, "calls": 0, "directions": 0}
+            m = aged_monthly[key]
+            m["spend"]       += r["spend"]
+            m["impressions"] += r["impressions"]
+            m["clicks"]      += r["clicks"]
+            m["leads"]       += r["leads"]
+            m["calls"]       += r["calls"]
+            m["directions"]  += r["directions"]
+
+        existing_monthly_keys = {(r["studio"], r["month"]) for r in monthly_rows}
+        for (studio, month_str), m in sorted(aged_monthly.items()):
+            if (studio, month_str) in existing_monthly_keys:
+                continue  # already supplied by the monthly query window
+            spend = round(m["spend"], 2)
+            opp   = compute_opportunities(m["leads"], m["calls"], m["directions"])
+            monthly_rows.append({
+                "month":         month_str,
+                "studio":        studio,
+                "spend":         spend,
+                "impressions":   m["impressions"],
+                "clicks":        m["clicks"],
+                "leads":         m["leads"],
+                "calls":         m["calls"],
+                "directions":    m["directions"],
+                "opportunities": round(opp, 2),
+                "cost_per_opp":  round(spend / opp, 2) if opp > 0 else 0,
+            })
+        monthly_rows.sort(key=lambda r: (r["month"], r["studio"]))
+        log.info(f"  Folded {len(aged_monthly)} aged-out (studio, month) pairs into monthly")
+
     # ---- De-duplicate and aggregate asset lists ----
     def _dedup_assets(assets: list[dict]) -> list[dict]:
         agg: dict[str, dict] = {}
@@ -567,7 +612,7 @@ def run():
     output = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "date_windows": {
-            "daily_from":   windows["daily_from"].isoformat(),
+            "daily_from":   keep_from,  # output "daily" is trimmed to the last DAILY_KEEP_DAYS
             "daily_to":     windows["daily_to"].isoformat(),
             "monthly_from": windows["monthly_from"].isoformat(),
             "monthly_to":   windows["monthly_to"].isoformat(),
@@ -583,8 +628,8 @@ def run():
             "opportunities": round(total_opp, 2),
             "cost_per_opp": round(total_spend / total_opp, 2) if total_opp else 0,
         },
-        # Daily rows: current Q + previous Q, one row per studio per day
-        "daily":   daily_rows,
+        # Daily rows: 90-day rolling window, one row per studio per day
+        "daily":   [r for r in daily_rows if r["date"] >= (today - timedelta(days=DAILY_KEEP_DAYS)).isoformat()],
         # Monthly rows: older history (3yr cap), one row per studio per month
         "monthly": monthly_rows,
         # Asset performance tables (monthly, not date-filterable)

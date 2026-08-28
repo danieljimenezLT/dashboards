@@ -1,0 +1,103 @@
+name: Recalculate Meta Leads
+
+on:
+  workflow_dispatch:
+    inputs:
+      os_start:
+        description: 'OS dashboard start date (YYYY-MM-DD). Default: 90 days ago.'
+        required: false
+        default: ''
+      nso_start:
+        description: 'NSO dashboard start date (YYYY-MM-DD). Default: 2026-04-01.'
+        required: false
+        default: '2026-04-01'
+
+permissions:
+  contents: write
+
+jobs:
+  recalc:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ADMIN_PUSH_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests python-dotenv
+          pip install google-ads gspread google-auth
+
+      - name: Set date variables
+        run: |
+          YESTERDAY=$(date -u -d '1 day ago' +%Y-%m-%d)
+          echo "YESTERDAY=$YESTERDAY" >> $GITHUB_ENV
+
+          if [ -n "${{ github.event.inputs.os_start }}" ]; then
+            echo "OS_START=${{ github.event.inputs.os_start }}" >> $GITHUB_ENV
+          else
+            echo "OS_START=$(date -u -d '90 days ago' +%Y-%m-%d)" >> $GITHUB_ENV
+          fi
+
+          if [ -n "${{ github.event.inputs.nso_start }}" ]; then
+            echo "NSO_START=${{ github.event.inputs.nso_start }}" >> $GITHUB_ENV
+          else
+            echo "NSO_START=2026-04-01" >> $GITHUB_ENV
+          fi
+
+      # ── OS DASHBOARD ───────────────────────────────────────────────
+      - name: Recalculate Meta Ads — OS dashboard (meta-ads-data.json)
+        env:
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+        run: python fetch_meta_ads.py --start $OS_START
+        continue-on-error: true
+
+      # ── NSO DASHBOARD ──────────────────────────────────────────────
+      - name: Write Google service account credentials
+        run: |
+          mkdir -p nso-dashboard/credentials
+          printf '%s' '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > nso-dashboard/credentials/service_account.json
+
+      - name: Recalculate Meta Ads — NSO dashboard (marketing_data.json)
+        env:
+          META_ACCESS_TOKEN:              ${{ secrets.META_TOKEN }}
+          META_APP_ID:                    ${{ secrets.META_APP_ID }}
+          META_APP_SECRET:                ${{ secrets.META_APP_SECRET }}
+          GOOGLE_ADS_DEVELOPER_TOKEN:     ${{ secrets.GOOGLE_ADS_DEVELOPER_TOKEN }}
+          GOOGLE_ADS_CLIENT_ID:           ${{ secrets.GOOGLE_ADS_CLIENT_ID }}
+          GOOGLE_ADS_CLIENT_SECRET:       ${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}
+          GOOGLE_ADS_REFRESH_TOKEN:       ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}
+          GOOGLE_ADS_MCC_ID:              "6055462417"
+          GOOGLE_SERVICE_ACCOUNT_KEY_PATH: nso-dashboard/credentials/service_account.json
+        run: |
+          python nso-dashboard/scripts/fetch_all_marketing.py \
+            --start $NSO_START \
+            --end   $YESTERDAY \
+            --output nso-dashboard/marketing_all_new.json \
+            --ad-meta-output nso-dashboard/nso_ad_meta.json
+          python nso-dashboard/scripts/merge_array_json.py \
+            --existing nso-dashboard/marketing_data.json \
+            --new      nso-dashboard/marketing_all_new.json \
+            --keys     meta_ads ga4_traffic
+          rm -f nso-dashboard/marketing_all_new.json
+        continue-on-error: true
+
+      # ── COMMIT ─────────────────────────────────────────────────────
+      - name: Commit recalculated data files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add meta-ads-data.json
+          git add nso-dashboard/marketing_data.json
+          git add nso-dashboard/nso_ad_meta.json
+          git diff --cached --quiet || \
+            git commit -m "chore: recalc meta leads from $NSO_START / OS from $OS_START"
+          git pull --rebase origin main
+          git push

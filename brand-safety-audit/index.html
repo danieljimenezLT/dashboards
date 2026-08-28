@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SWEAT440 — Brand Safety Audit</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#00A3E0;--blue-dark:#0084B5;--blue-pale:#D2EFFF;--bg:#f5f6f7;--surface:#fff;--border:rgba(0,0,0,.08);--text:#1a1a1a;--text-2:#555;--text-3:#888;--red:#C0392B;--red-pale:#FEF0F0;--amber:#D97706;--amber-pale:#FFF8ED;--sky:#2563EB;--sky-pale:#EBF4FD;--green:#2E9B5F;--green-pale:#EDFAF4;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.07)}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+.topbar{background:var(--blue);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.topbar-logo{height:28px;width:auto;flex-shrink:0}
+.nav-logo{display:flex;align-items:center;flex-shrink:0}
+.topbar-meta{font-size:12px;color:rgba(255,255,255,.75)}
+.topbar-badge{background:rgba(255,255,255,.18);color:#fff;font-size:11px;padding:3px 10px;border-radius:999px;font-weight:500;flex-shrink:0}
+.container{max-width:960px;margin:0 auto;padding:2rem 1.5rem}
+.page-header{margin-bottom:1.75rem}
+.page-title{font-family:'Inter Tight',sans-serif;font-size:22px;font-weight:700;margin-bottom:4px}
+.page-subtitle{font-size:13px;color:var(--text-2)}
+.tabs{display:flex;margin-bottom:1.75rem;border-bottom:2px solid var(--border)}
+.tab-btn{font-family:'Inter',sans-serif;font-size:13px;font-weight:500;padding:8px 18px;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;color:var(--text-3);transition:all .15s}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.75rem}
+.metric{background:var(--surface);border-radius:var(--radius);padding:1rem 1.125rem;border:1px solid var(--border);box-shadow:var(--shadow)}
+.metric-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:6px}
+.metric-value{font-family:'Inter Tight',sans-serif;font-size:28px;font-weight:700;line-height:1}
+.mv-blue{color:var(--blue)}.mv-red{color:var(--red)}.mv-amber{color:var(--amber)}.mv-green{color:var(--green)}
+.metric-sub{font-size:11px;color:var(--text-3);margin-top:4px}
+.filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
+.filter-label{font-size:12px;color:var(--text-3);margin-right:4px}
+.filter-btn{font-size:12px;font-weight:500;padding:5px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.filter-btn:hover{border-color:rgba(0,0,0,.2)}
+.fb-all{background:var(--blue)!important;color:#fff!important;border-color:var(--blue)!important}
+.fb-medium{background:var(--amber-pale)!important;color:var(--amber)!important;border-color:var(--amber)!important}
+.fb-low{background:var(--sky-pale)!important;color:var(--sky)!important;border-color:var(--sky)!important}
+.fb-clean{background:var(--green-pale)!important;color:var(--green)!important;border-color:var(--green)!important}
+.studio-list{display:flex;flex-direction:column;gap:8px}
+.studio-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;transition:border-color .15s}
+.studio-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.studio-card.expanded{border-color:var(--blue)}
+.studio-header{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.25rem;cursor:pointer;user-select:none;gap:12px}
+.studio-left{display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Inter Tight',sans-serif;font-weight:700;font-size:12px;flex-shrink:0}
+.av-high{background:var(--red-pale);color:var(--red)}
+.av-medium{background:var(--amber-pale);color:var(--amber)}
+.av-low{background:var(--sky-pale);color:var(--sky)}
+.av-clean{background:var(--green-pale);color:var(--green)}
+.studio-name{font-weight:600;font-size:14px}
+.studio-sub{font-size:12px;color:var(--text-3);margin-top:1px}
+.studio-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px}
+.badge-high{background:var(--red-pale);color:var(--red)}
+.badge-medium{background:var(--amber-pale);color:var(--amber)}
+.badge-low{background:var(--sky-pale);color:var(--sky)}
+.badge-clean{background:var(--green-pale);color:var(--green)}
+.flag-count{font-size:11px;color:var(--text-3);min-width:40px;text-align:right}
+.chevron{width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--text-3);transition:transform .2s}
+.chevron svg{width:14px;height:14px}
+.studio-card.expanded .chevron{transform:rotate(180deg)}
+.detail-panel{display:none;border-top:1px solid var(--border);padding:1rem 1.25rem 1.25rem;background:#fafafa}
+.studio-card.expanded .detail-panel{display:block}
+.flag-row{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.flag-row:last-child{border-bottom:none;padding-bottom:0}
+.flag-bar{width:4px;border-radius:2px;align-self:stretch;flex-shrink:0;min-height:44px}
+.fbar-medium{background:var(--amber)}.fbar-low{background:var(--sky)}.fbar-high{background:var(--red)}
+.flag-body{flex:1}
+.flag-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.flag-cat{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-2)}
+.flag-conf{font-size:11px;color:var(--text-3)}
+.post-type{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:4px;background:#F0F4FF;color:#3B5BDB}
+.pt-visual{background:#EDFAF4;color:#2E9B5F}
+.flag-caption{font-size:13px;line-height:1.5;margin-bottom:5px;font-style:italic}
+.flag-why{font-size:12px;color:var(--text-2);line-height:1.5;margin-bottom:6px}
+.flag-action-text{font-size:12px;color:var(--text-3);display:flex;gap:4px;margin-bottom:8px}
+.flag-action-text::before{content:'→';flex-shrink:0}
+.ig-link{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--blue-dark);background:var(--blue-pale);padding:4px 10px;border-radius:6px;text-decoration:none;transition:background .15s;margin-right:8px}
+.ig-link:hover{background:#b3e3f7}
+.ig-link svg{width:10px;height:10px}
+.status-btn{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;padding:5px 12px;border-radius:6px;cursor:pointer;border:1px solid transparent;transition:all .15s}
+.st-pending{background:var(--amber-pale);color:var(--amber);border-color:rgba(217,119,6,.3)}
+.st-ops{background:var(--sky-pale);color:var(--sky);border-color:rgba(37,99,235,.3)}
+.st-cleared{background:var(--green-pale);color:var(--green);border-color:rgba(46,155,95,.3)}
+.status-meta{font-size:10px;color:var(--text-3);margin-left:8px}
+.clean-state{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--green);padding:2px 0}
+.clean-state::before{content:'✓';width:20px;height:20px;background:var(--green-pale);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.criteria-intro{font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:1.25rem;background:var(--surface);border-radius:var(--radius);padding:1rem 1.125rem;border:1px solid var(--border);box-shadow:var(--shadow)}
+.criteria-title{font-family:'Inter Tight',sans-serif;font-size:16px;font-weight:700;margin:1.5rem 0 .75rem;padding-bottom:.5rem;border-bottom:2px solid var(--border)}
+.criteria-table{width:100%;border-collapse:collapse;font-size:12px;background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.criteria-table th{background:#f0f2f5;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+.criteria-table td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5}
+.criteria-table tr:last-child td{border-bottom:none}
+.do-flag{color:var(--red);font-weight:600}
+.dont-flag{color:var(--green);font-weight:600}
+.conf-pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px}
+.cp-high{background:var(--red-pale);color:var(--red)}
+.cp-med{background:var(--amber-pale);color:var(--amber)}
+.cp-low{background:var(--sky-pale);color:var(--sky)}
+.score-row{display:flex;align-items:flex-start;gap:10px;background:var(--surface);border-radius:var(--radius);padding:.75rem 1rem;border:1px solid var(--border);margin-bottom:8px;font-size:12.5px}
+.score-badge{flex-shrink:0;padding:3px 12px;border-radius:999px;font-size:11px;font-weight:700}
+.publish-box{background:var(--surface);border-radius:var(--radius);padding:.75rem 1.125rem;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:1.25rem}
+.publish-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.publish-row+.publish-row{margin-top:8px}
+.publish-label{font-size:12px;font-weight:600;color:var(--text-2);min-width:170px}
+.publish-msg{font-size:11px;color:var(--text-3)}
+.cycle-picker{display:flex;align-items:center;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.cycle-picker select,.cycle-picker input[type=date]{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}
+.cycle-picker .sep{color:var(--text-3);font-size:12px}
+.footer{margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text-3);flex-wrap:wrap;gap:8px}
+.empty{text-align:center;padding:3rem 1rem;color:var(--text-3);font-size:13px}
+@media(max-width:640px){.metrics{grid-template-columns:repeat(2,1fr)}.topbar-meta{display:none}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="nav-logo" href="../home.html"><img class="topbar-logo" src="data:image/png;base64,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" alt="SWEAT440"></a>
+  <div class="topbar-meta" id="topbarMeta">Brand Safety Audit</div>
+  <span class="topbar-badge">Live · Buffer data</span>
+</div>
+
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">Brand Safety Audit</h1>
+    <p class="page-subtitle" id="pageSubtitle">SWEAT440 network · Instagram brand safety audit · Caption + visual creative analysis — human review required on all flagged items</p>
+  </div>
+
+  <div class="publish-box" id="publishBox">
+    <div class="publish-row">
+      <span class="publish-label" id="coverageLabel">Data reviewed: —</span>
+    </div>
+    <div class="publish-row" id="statusSaveRow" style="display:none">
+      <span class="publish-label">Status changes: <span id="statusDirtyCount">0</span> unsaved</span>
+      <button class="status-btn st-ops" id="saveStatusBtn" onclick="saveStatusChanges()">Save status changes</button>
+      <span class="publish-msg" id="statusSaveMsg"></span>
+    </div>
+    <div class="publish-row">
+      <span class="publish-label">1. Get posts from:</span>
+      <input type="date" id="downloadFrom">
+      <span style="font-size:12px;color:var(--text-3)">to</span>
+      <input type="date" id="downloadTo">
+      <button class="status-btn st-ops" id="downloadBtn" onclick="downloadPosts()">Download posts</button>
+      <span class="publish-msg" id="downloadMsg"></span>
+    </div>
+    <div class="publish-row">
+      <span class="publish-label">2. Publish Claude's result:</span>
+      <input type="file" id="publishFile" accept="application/json">
+      <button class="status-btn st-ops" id="publishBtn" onclick="publishCycle()">Publish</button>
+      <span class="publish-msg" id="publishMsg"></span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('audit',this)">Audit Results</button>
+    <button class="tab-btn" onclick="switchTab('criteria',this)">Evaluation Criteria</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-audit">
+    <div class="cycle-picker">
+      <span class="filter-label">Filter by post date (all cycles):</span>
+      <input type="date" id="postDateFrom">
+      <span class="sep">to</span>
+      <input type="date" id="postDateTo">
+      <button class="filter-btn" id="applyDateFilterBtn" onclick="applyPostDateFilter()">Apply</button>
+      <button class="filter-btn" id="clearDateFilterBtn" style="display:none" onclick="clearPostDateFilter()">Clear</button>
+      <span class="publish-msg" id="dateFilterMsg"></span>
+    </div>
+    <div class="metrics" id="metricsRow"></div>
+    <div class="filter-bar" id="filterBar" style="display:none">
+      <span class="filter-label">Show:</span>
+      <button class="filter-btn fb-all" data-f="all" onclick="setFilter('all',this)">All accounts</button>
+      <button class="filter-btn" data-f="medium" onclick="setFilter('medium',this)">MEDIUM</button>
+      <button class="filter-btn" data-f="low" onclick="setFilter('low',this)">LOW</button>
+      <button class="filter-btn" data-f="clean" onclick="setFilter('clean',this)">Clean</button>
+    </div>
+    <div class="studio-list" id="studioList"><div class="empty">Pick a date range above and click Apply to see posts from that period.</div></div>
+  </div>
+
+  <div class="tab-panel" id="tab-criteria">
+    <div class="criteria-intro">This audit evaluates SWEAT440 Instagram content against 6 brand-safety categories. It is a <strong>triage tool</strong> — its output is a flag-and-review queue for human adjudication. It surfaces genuine risk, not aesthetic preferences. The only strict visual rule is logo integrity. Use the status button on each flag to track its lifecycle: <strong>Pending review → Reported to Ops → Cleared</strong>. Status changes are kept in this session until you click <strong>Save status changes</strong> at the top — that's what actually publishes them for everyone.</div>
+    <div class="score-row"><span class="score-badge" style="background:var(--red-pale);color:var(--red)">HIGH</span><div><strong>Clear, unambiguous violation.</strong> Logo recolored or distorted; explicit lyric soundtrack confirmed; active alcohol consumption on camera; overt political endorsement. Immediate action.</div></div>
+    <div class="score-row"><span class="score-badge" style="background:var(--amber-pale);color:var(--amber)">MEDIUM</span><div><strong>Likely violation, context-dependent.</strong> Suggestive pose; unconfirmed explicit audio; external partnership without documented approval. Review this week.</div></div>
+    <div class="score-row"><span class="score-badge" style="background:var(--sky-pale);color:var(--sky)">LOW</span><div><strong>Borderline — quick human glance.</strong> Cultural/social messaging short of a violation; loose brand formatting. Confirm or dismiss.</div></div>
+    <div class="criteria-title">The 6 Evaluation Categories</div>
+    <table class="criteria-table">
+      <thead><tr><th style="width:19%">Category</th><th style="width:33%">Flag if you see this</th><th style="width:33%">Do NOT flag this</th><th style="width:15%">Typical confidence</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1. Political or religious messaging</strong></td><td class="do-flag">Candidate endorsement, partisan statements, proselytizing content, divisive legislation stances</td><td class="dont-flag">Cultural holiday acknowledgment, general inclusivity language, community appreciation</td><td><span class="conf-pill cp-high">HIGH</span> if overt · <span class="conf-pill cp-med">MED</span> if ambiguous</td></tr>
+        <tr><td><strong>2. Explicit lyrics in audio</strong></td><td class="do-flag">Reels where the soundtrack contains confirmed explicit lyrics</td><td class="dont-flag">Energetic music without confirmed explicit content; instrumentals</td><td><span class="conf-pill cp-high">HIGH</span> confirmed · <span class="conf-pill cp-med">MED</span> suspected</td></tr>
+        <tr><td><strong>3. Overly sexualized content</strong></td><td class="do-flag">Deliberate sexualization beyond fitness norms; suggestive posing unrelated to exercise</td><td class="dont-flag">Athletic bodies, gym wear, sports bras, sweat, exertion — standard fitness content</td><td><span class="conf-pill cp-med">MED</span> or <span class="conf-pill cp-low">LOW</span> — gradient</td></tr>
+        <tr><td><strong>4. Active alcohol consumption</strong></td><td class="do-flag">Alcohol actively consumed on camera; "happy hour" language with alcohol emojis</td><td class="dont-flag">Background presence only; non-alcoholic beverage partnerships</td><td><span class="conf-pill cp-high">HIGH</span> if shown · <span class="conf-pill cp-low">LOW</span> if presence</td></tr>
+        <tr><td><strong>5. Logo misuse</strong></td><td class="do-flag">Any modification of the official mark: recoloring, distortion, stretching, unofficial fonts, unapproved backgrounds</td><td class="dont-flag">Official logo used correctly with approved colors and backgrounds</td><td><span class="conf-pill cp-high">HIGH</span> — binary, zero tolerance</td></tr>
+        <tr><td><strong>6. Loose brand adherence</strong></td><td class="do-flag">Unapproved external partnerships in-studio; third-party medical providers without documented approval; major brand voice departure</td><td class="dont-flag">Minor caption formatting; emoji use; slight tone variation; aligned community events</td><td><span class="conf-pill cp-med">MED</span> or <span class="conf-pill cp-low">LOW</span> — light touch</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <span id="footerLeft">SWEAT440 · Brand Safety Audit · Confidential — Internal Use Only</span>
+    <span>Triage tool only — human review required on all flagged items</span>
+  </div>
+</div>
+
+<script src="../users.js"></script>
+<script src="../shared/auth.js"></script>
+<script>
+// Admin-only, same pattern as admin-reports/add-studio.html: checkAuth()
+// redirects to ../login.html if not signed in at all; the role check below
+// additionally kicks out any signed-in non-admin back to the home page.
+const _authUser = checkAuth();
+if (_authUser && _authUser.role !== 'admin') {
+  location.replace('../home.html');
+}
+
+// ═══════════════ CONFIG ═══════════════
+// Same Cloudflare Worker + shared secret already used by home.html and
+// admin-reports/add-studio.html — holds BUFFER_API_TOKEN and GITHUB_TOKEN
+// server-side so neither ever reaches this page. See refresh-proxy/worker.js.
+const _PROXY_URL = 'https://sweat440-refresh-proxy.sweat440.workers.dev';
+const _PROXY_SECRET = 'AnwxoPAsDK9vUXVY';
+// ══════════════════════════════════════
+
+const IG_ICON='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3H3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V9"/><polyline points="10 1 15 1 15 6"/><line x1="15" y1="1" x2="7" y2="9"/></svg>';
+const STATUS_FLOW=["pending","ops","cleared"];
+const STATUS_LABEL={pending:"⏳ Pending review",ops:"📤 Reported to Ops",cleared:"✓ Cleared"};
+const STATUS_CLASS={pending:"st-pending",ops:"st-ops",cleared:"st-cleared"};
+
+let AUDIT=null,LATEST_AUDIT=null,statuses={},currentFilter="all",expanded=null,dateFilterActive=false,DATE_FILTER_RESULTS=[];
+let dirtyStatusIds=new Set();
+
+// Flag statuses (Pending review / Reported to Ops / Cleared) live in
+// data/statuses.json, committed to the repo via the Worker — shared across
+// every reviewer/device. Clicking a flag's status button only changes it
+// locally (tracked in dirtyStatusIds); "Save status changes" is what
+// actually publishes it for everyone else.
+async function loadStatuses(){
+  try{
+    const r=await fetch("data/statuses.json?cb="+Date.now());
+    statuses=r.ok?await r.json():{};
+  }catch(e){statuses={};}
+}
+function cycleStatus(flagId){
+  const cur=(statuses[flagId]&&statuses[flagId].status)||"pending";
+  const next=STATUS_FLOW[(STATUS_FLOW.indexOf(cur)+1)%STATUS_FLOW.length];
+  statuses[flagId]={status:next,updated:new Date().toISOString().slice(0,10)};
+  dirtyStatusIds.add(flagId);
+  updateStatusSaveUI();
+  render();
+}
+function updateStatusSaveUI(){
+  const n=dirtyStatusIds.size;
+  document.getElementById("statusSaveRow").style.display=n?"":"none";
+  document.getElementById("statusDirtyCount").textContent=n;
+}
+async function saveStatusChanges(){
+  const btn=document.getElementById("saveStatusBtn");
+  const msg=document.getElementById("statusSaveMsg");
+  btn.disabled=true;msg.textContent="Saving…";
+  try{
+    await callProxy({action:"save_brand_audit_statuses",statuses:statuses});
+  }catch(e){
+    msg.textContent="Save failed — "+e.message;
+    btn.disabled=false;
+    return;
+  }
+  dirtyStatusIds.clear();
+  updateStatusSaveUI();
+  btn.disabled=false;
+  msg.textContent="Saved — visible to everyone now.";
+  setTimeout(()=>{msg.textContent="";},6000);
+}
+
+function switchTab(name,btn){
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("tab-"+name).classList.add("active");
+}
+function setFilter(f,btn){
+  currentFilter=f;expanded=null;
+  document.querySelectorAll(".filter-btn").forEach(b=>{b.className="filter-btn";});
+  btn.classList.add("fb-"+f);
+  render();
+}
+function toggleCard(i){expanded=expanded===i?null:i;render();}
+function ini(n){return n.split(" ").filter(Boolean).map(w=>w[0]).join("").toUpperCase().slice(0,2);}
+function topLevel(a){
+  if(!a.flags.length)return"clean";
+  if(a.flags.some(f=>f.level==="high"))return"high";
+  if(a.flags.some(f=>f.level==="medium"))return"medium";
+  return"low";
+}
+
+function renderMetrics(){
+  if(!AUDIT){document.getElementById("metricsRow").innerHTML="";return;}
+  const accounts=AUDIT.accounts;
+  const high=accounts.reduce((n,a)=>n+a.flags.filter(f=>f.level==="high").length,0);
+  const med=accounts.reduce((n,a)=>n+a.flags.filter(f=>f.level==="medium").length,0);
+  const clean=accounts.filter(a=>!a.flags.length).length;
+  document.getElementById("metricsRow").innerHTML=
+    '<div class="metric"><div class="metric-label">Accounts reviewed</div><div class="metric-value mv-blue">'+accounts.length+'</div><div class="metric-sub">'+AUDIT.postsReviewed+' posts · '+AUDIT.period+'</div></div>'
+    +'<div class="metric"><div class="metric-label">HIGH flags</div><div class="metric-value mv-red">'+high+'</div><div class="metric-sub">'+(high?"Immediate action":"No immediate actions")+'</div></div>'
+    +'<div class="metric"><div class="metric-label">MEDIUM flags</div><div class="metric-value mv-amber">'+med+'</div><div class="metric-sub">Review this week</div></div>'
+    +'<div class="metric"><div class="metric-label">Clean accounts</div><div class="metric-value mv-green">'+clean+'</div><div class="metric-sub">No flags detected</div></div>';
+}
+
+function render(){
+  const filterBar=document.getElementById("filterBar");
+  // dateFilterActive must be checked BEFORE !AUDIT — the date-filtered view
+  // works off DATE_FILTER_RESULTS, not AUDIT, and AUDIT is null by design
+  // whenever no cycle has been explicitly published/loaded this session.
+  // Checking !AUDIT first short-circuited every date-filter render.
+  if(dateFilterActive){filterBar.style.display="";renderDateFilteredList();return;}
+  if(!AUDIT){filterBar.style.display="none";return;}
+  filterBar.style.display="";
+  const list=document.getElementById("studioList");
+  const items=AUDIT.accounts.filter(a=>{
+    const lvl=topLevel(a);
+    if(currentFilter==="all")return true;
+    if(currentFilter==="clean")return lvl==="clean";
+    return lvl===currentFilter;
+  });
+  if(!items.length){list.innerHTML='<div class="empty">No accounts match this filter.</div>';return;}
+  list.innerHTML=items.map(a=>{
+    const idx=AUDIT.accounts.indexOf(a);
+    const isExp=expanded===idx;
+    const lvl=topLevel(a);
+    const badgeLabel={high:"HIGH",medium:"MEDIUM",low:"LOW",clean:"Clean"}[lvl];
+    const fc=a.flags.length?a.flags.length+" flag"+(a.flags.length>1?"s":""):"";
+    const detail=!a.flags.length
+      ?'<div class="clean-state">Reviewed — no flags detected in '+AUDIT.period+' ('+a.posts+' posts).</div>'
+      :a.flags.map(f=>{
+        const st=(statuses[f.id]&&statuses[f.id].status)||"pending";
+        const stDate=statuses[f.id]&&statuses[f.id].updated?statuses[f.id].updated:"";
+        return '<div class="flag-row">'
+          +'<div class="flag-bar fbar-'+f.level+'"></div>'
+          +'<div class="flag-body">'
+            +'<div class="flag-top">'
+              +'<span class="flag-cat">'+f.category+'</span>'
+              +'<span class="flag-conf">· '+f.confidence+' confidence</span>'
+              +'<span class="flag-conf">· '+f.date+'</span>'
+              +'<span class="post-type">'+f.postType+'</span>'
+              +(f.visualReviewed?'<span class="post-type pt-visual">✓ Visual reviewed</span>':"")
+            +'</div>'
+            +'<div class="flag-caption">&ldquo;'+f.caption+'&rdquo;</div>'
+            +'<div class="flag-why">'+f.why+'</div>'
+            +'<div class="flag-action-text">'+f.action+'</div>'
+            +'<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">'
+              +'<a class="ig-link" href="'+f.link+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+IG_ICON+' View post on Instagram</a>'
+              +'<button class="status-btn '+STATUS_CLASS[st]+'" onclick="event.stopPropagation();cycleStatus(\''+f.id+'\')" title="Click to change status">'+STATUS_LABEL[st]+'</button>'
+              +(stDate?'<span class="status-meta">updated '+stDate+'</span>':"")
+            +'</div>'
+          +'</div>'
+        +'</div>';
+      }).join("");
+    return '<div class="studio-card'+(isExp?" expanded":"")+'">'
+      +'<div class="studio-header" onclick="toggleCard('+idx+')">'
+        +'<div class="studio-left">'
+          +'<div class="avatar av-'+lvl+'">'+ini(a.name)+'</div>'
+          +'<div><div class="studio-name">'+a.name+'</div><div class="studio-sub">@'+a.handle+' · '+a.posts+' posts · '+AUDIT.period+'</div></div>'
+        +'</div>'
+        +'<div class="studio-right">'
+          +'<span class="badge badge-'+lvl+'">'+badgeLabel+'</span>'
+          +'<span class="flag-count">'+fc+'</span>'
+          +'<div class="chevron"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 6 8 10 12 6"/></svg></div>'
+        +'</div>'
+      +'</div>'
+      +'<div class="detail-panel">'+detail+'</div>'
+    +'</div>';
+  }).join("");
+}
+
+// Fetches EVERY published cycle (data/<cycle>.json) and flattens their
+// accounts' postLog into one list, tagged with which cycle each post came
+// from. Searches the full accumulated history, not just the latest cycle
+// shown by default. Cycles published before postLog existed fall back to
+// "flags" (flagged posts only — clean posts from those cycles have no
+// recorded date and can't be recovered).
+async function collectAllHistoricalPosts(){
+  const cycles=await listCycles();
+  const out=[];
+  for(const cycle of cycles){
+    try{
+      const r=await fetch("data/"+cycle+".json?cb="+Date.now());
+      if(!r.ok)continue;
+      const data=await r.json();
+      // Label with the human-readable period ("August 1-4, 2026") when the
+      // cycle has one, since "cycle" alone (e.g. "2026-08") is no longer
+      // unique — a month can now hold several separately-published runs.
+      const label=data.period||cycle;
+      for(const a of(data.accounts||[])){
+        if(Array.isArray(a.postLog)){
+          for(const p of a.postLog)out.push(Object.assign({accountName:a.name,accountHandle:a.handle,cycle:label},p));
+        }else{
+          for(const f of(a.flags||[])){
+            out.push({accountName:a.name,accountHandle:a.handle,cycle:label,id:f.id,date:f.date,postType:f.postType,caption:f.caption,link:f.link,flagged:true,level:f.level,category:f.category,legacy:true});
+          }
+        }
+      }
+    }catch(e){/* one bad/missing cycle file shouldn't fail the whole search */}
+  }
+  return out;
+}
+
+function resetDateFilterState(){
+  dateFilterActive=false;
+  document.getElementById("postDateFrom").value="";
+  document.getElementById("postDateTo").value="";
+  document.getElementById("clearDateFilterBtn").style.display="none";
+  document.getElementById("dateFilterMsg").textContent="";
+  document.getElementById("filterBar").style.display="";
+}
+
+function clearPostDateFilter(){
+  resetDateFilterState();
+  render();
+}
+
+async function applyPostDateFilter(){
+  const msg=document.getElementById("dateFilterMsg");
+  const btn=document.getElementById("applyDateFilterBtn");
+  const fromVal=document.getElementById("postDateFrom").value;
+  const toVal=document.getElementById("postDateTo").value;
+  if(!fromVal||!toVal){msg.textContent="Pick both dates first.";return;}
+  if(fromVal>toVal){msg.textContent='"From" must not be after "To".';return;}
+  btn.disabled=true;msg.textContent="Searching across all cycles…";
+  try{
+    DATE_FILTER_RESULTS=await collectAllHistoricalPosts();
+  }catch(e){
+    msg.textContent="Search failed — "+e.message;
+    btn.disabled=false;
+    return;
+  }
+  btn.disabled=false;msg.textContent="";
+  dateFilterActive=true;
+  document.getElementById("clearDateFilterBtn").style.display="";
+  render();
+}
+
+// Filters the already-fetched cross-cycle results by the post's OWN publish
+// date (sentAt/dueAt, carried through verbatim from Buffer) — not the date
+// any audit was run. Renders a flat list across every cycle and account,
+// since a date range can span multiple studios and multiple review runs.
+function renderDateFilteredList(){
+  const list=document.getElementById("studioList");
+  if(!DATE_FILTER_RESULTS.length){
+    list.innerHTML='<div class="empty">No historical post data found across any published cycle.</div>';
+    return;
+  }
+  const fromVal=document.getElementById("postDateFrom").value;
+  const toVal=document.getElementById("postDateTo").value;
+  const from=new Date(fromVal+"T00:00:00Z");
+  const to=new Date(toVal+"T23:59:59Z");
+  const inRange=DATE_FILTER_RESULTS.filter(p=>{
+    const d=new Date(p.date);
+    return !isNaN(d.getTime())&&d>=from&&d<=to;
+  }).sort((x,y)=>new Date(x.date)-new Date(y.date));
+  const anyLegacy=DATE_FILTER_RESULTS.some(p=>p.legacy);
+  const legacyNote=anyLegacy?'<div class="empty" style="padding:.75rem 1rem;text-align:left;margin-bottom:8px">Cycles published before per-post date tracking only recorded dates for flagged posts — clean posts from those cycles can\'t appear here.</div>':"";
+  if(!inRange.length){
+    list.innerHTML=legacyNote+'<div class="empty">No posts in that date range.</div>';
+    return;
+  }
+  // Same Show: All/MEDIUM/LOW/Clean buttons used by the by-account view —
+  // applied here by each post's own level instead of an account's overall level.
+  const filtered=inRange.filter(p=>{
+    const lvl=p.flagged?p.level:"clean";
+    if(currentFilter==="all")return true;
+    if(currentFilter==="clean")return lvl==="clean";
+    return lvl===currentFilter;
+  });
+  if(!filtered.length){
+    list.innerHTML=legacyNote+'<div class="empty">No posts match this filter in that date range.</div>';
+    return;
+  }
+  list.innerHTML=legacyNote+filtered.map(p=>{
+    const lvl=p.flagged?p.level:"clean";
+    const badgeLabel=p.flagged?p.category:"Clean";
+    const st=(statuses[p.id]&&statuses[p.id].status)||"pending";
+    const stDate=statuses[p.id]&&statuses[p.id].updated?statuses[p.id].updated:"";
+    const statusRow=p.flagged
+      ?'<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:6px">'
+        +'<button class="status-btn '+STATUS_CLASS[st]+'" onclick="cycleStatus(\''+p.id+'\')" title="Click to change status">'+STATUS_LABEL[st]+'</button>'
+        +(stDate?'<span class="status-meta">updated '+stDate+'</span>':"")
+      +'</div>'
+      :"";
+    return '<div class="studio-card">'
+      +'<div class="studio-header" style="cursor:default">'
+        +'<div class="studio-left">'
+          +'<div class="avatar av-'+lvl+'">'+ini(p.accountName)+'</div>'
+          +'<div><div class="studio-name">'+p.accountName+'</div><div class="studio-sub">@'+p.accountHandle+' · '+p.date+' · '+p.postType+' · '+p.cycle+'</div></div>'
+        +'</div>'
+        +'<div class="studio-right">'
+          +'<span class="badge badge-'+lvl+'">'+badgeLabel+'</span>'
+          +(p.link?'<a class="ig-link" href="'+p.link+'" target="_blank" rel="noopener">'+IG_ICON+' View</a>':"")
+        +'</div>'
+      +'</div>'
+      +(p.caption||statusRow?'<div class="detail-panel" style="display:block">'+(p.caption?'<div class="flag-caption">&ldquo;'+p.caption+'&rdquo;</div>':"")+statusRow+'</div>':"")
+    +'</div>';
+  }).join("");
+}
+
+// Plain fallback: data/latest.json is kept in sync with whichever cycle
+// covers the most recent dates (see the Worker's publish handler), so a
+// direct fetch is a reasonable single-cycle view when the merged load below
+// can't run (e.g. the cycle-listing call fails).
+async function loadAudit(){
+  const r=await fetch("data/latest.json?cb="+Date.now());
+  return await r.json();
+}
+
+function refreshHeader(){
+  if(!AUDIT)return;
+  document.getElementById("topbarMeta").textContent="Brand Safety Audit · "+AUDIT.accounts.length+" accounts · "+AUDIT.period+" · "+AUDIT.postsReviewed+" posts reviewed";
+  document.getElementById("pageSubtitle").textContent="SWEAT440 network · "+AUDIT.period+" · "+AUDIT.postsReviewed+" posts pulled live from Buffer · Caption + visual creative analysis — human review required on all flagged items";
+  document.getElementById("footerLeft").textContent="SWEAT440 · Brand Safety Audit · "+AUDIT.period+" · Data pulled live from Buffer · Confidential — Internal Use Only";
+}
+
+// Always keyed off LATEST_AUDIT (the true latest published cycle), never off
+// whatever cycle is currently being browsed via the cycle picker — otherwise
+// browsing an old month would corrupt the "reviewed through" date and cause
+// the next Download to re-pull/re-analyze already-reviewed posts.
+function updateCoverageUI(){
+  const coverage=LATEST_AUDIT&&LATEST_AUDIT.coverage;
+  const label=document.getElementById("coverageLabel");
+  const fromInput=document.getElementById("downloadFrom");
+  const toInput=document.getElementById("downloadTo");
+  const todayStr=new Date().toISOString().slice(0,10);
+  toInput.value=todayStr;
+
+  if(coverage&&coverage.to){
+    label.textContent="Data reviewed: "+(coverage.from||coverage.to)+" – "+coverage.to;
+    const next=new Date(coverage.to+"T00:00:00Z");
+    next.setUTCDate(next.getUTCDate()+1);
+    fromInput.value=next.toISOString().slice(0,10);
+  }else{
+    label.textContent=LATEST_AUDIT?"Data reviewed: unknown (older cycle — no coverage recorded)":"Data reviewed: no cycles published yet";
+    const weekAgo=new Date();
+    weekAgo.setDate(weekAgo.getDate()-7);
+    fromInput.value=weekAgo.toISOString().slice(0,10);
+  }
+}
+
+// Lists archived cycle files (data/2026-06.json, data/2026-08.json, ...) so
+// the post-date filter can search all of them. The repo is private, so this
+// goes through the Worker (which holds GITHUB_TOKEN) rather than hitting the
+// GitHub Contents API directly from the browser — an unauthenticated call
+// 404s even though the path exists.
+async function listCycles(){
+  try{
+    const data=await callProxy({action:"list_brand_audit_cycles"});
+    return Array.isArray(data.cycles)?data.cycles:[];
+  }catch(e){
+    return[];
+  }
+}
+
+// Validate the bare minimum shape before accepting a file — catches a
+// malformed Claude response or a wrong file before it reaches the sheet.
+const ISO_DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
+
+function validateAuditShape(data){
+  if(!data||!Array.isArray(data.accounts))return"Missing \"accounts\" array.";
+  // "coverage" is required — the Worker picks which cycle becomes latest.json
+  // by comparing coverage.to across every published cycle, and this has
+  // twice now been silently omitted by the manual review flow, causing a
+  // publish to succeed but the dashboard to keep showing an older cycle.
+  if(!data.coverage||!ISO_DATE_RE.test(data.coverage.from||"")||!ISO_DATE_RE.test(data.coverage.to||"")){
+    return"Missing or invalid \"coverage\" — needs {from, to} as YYYY-MM-DD for the actual date range reviewed. Without it this cycle can silently fail to become the latest shown on the dashboard.";
+  }
+  for(const a of data.accounts){
+    if(typeof a.handle!=="string"||!Array.isArray(a.flags)){
+      return"Account \""+(a.name||"?")+"\" is missing \"handle\" or \"flags\".";
+    }
+  }
+  return null;
+}
+
+async function callProxy(payload){
+  const res=await fetch(_PROXY_URL,{method:"POST",headers:{"Content-Type":"application/json","X-App-Secret":_PROXY_SECRET},body:JSON.stringify(payload)});
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok||!data.ok)throw new Error(data.error||("HTTP "+res.status));
+  return data;
+}
+
+// Pulls Static/Carousel posts for the selected date range live from Buffer
+// (via the Worker — the Buffer token never reaches this page) and downloads
+// them as a file ready to upload to a Claude.ai chat/Project for analysis.
+async function downloadPosts(){
+  const btn=document.getElementById("downloadBtn");
+  const msg=document.getElementById("downloadMsg");
+  const fromVal=document.getElementById("downloadFrom").value;
+  const toVal=document.getElementById("downloadTo").value;
+  if(!fromVal||!toVal){msg.textContent="Pick both dates first.";return;}
+  if(fromVal>toVal){msg.textContent='"From" must not be after "To".';return;}
+
+  btn.disabled=true;btn.textContent="Downloading…";msg.textContent="";
+  try{
+    const data=await callProxy({action:"export_brand_audit_posts",startDate:fromVal,endDate:toVal});
+    const blob=new Blob([JSON.stringify(data.export,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;a.download=fromVal+"_to_"+toVal+"-posts.json";
+    document.body.appendChild(a);a.click();a.remove();
+    URL.revokeObjectURL(url);
+    msg.textContent="Downloaded ("+data.export.note+")";
+  }catch(e){
+    msg.textContent="Download failed — "+e.message;
+  }finally{
+    btn.disabled=false;btn.textContent="Download posts";
+  }
+}
+
+async function publishCycle(){
+  const msg=document.getElementById("publishMsg");
+  const btn=document.getElementById("publishBtn");
+  const input=document.getElementById("publishFile");
+  const file=input.files&&input.files[0];
+  if(!file){msg.textContent="Choose a JSON file first.";return;}
+
+  let payload;
+  try{
+    payload=JSON.parse(await file.text());
+  }catch(e){msg.textContent="That file isn't valid JSON.";return;}
+
+  const problem=validateAuditShape(payload);
+  if(problem){msg.textContent="Not publishing — "+problem;return;}
+
+  btn.disabled=true;msg.textContent="Publishing…";
+  try{
+    await callProxy({action:"publish_brand_audit_cycle",payload:payload});
+  }catch(e){
+    msg.textContent="Publish failed — "+e.message;
+    btn.disabled=false;
+    return;
+  }
+
+  // Show the just-published cycle directly as instant confirmation — this
+  // does NOT become the default view on a future page load (that stays
+  // empty until a date filter is applied), it's only shown here because
+  // publishing is an explicit action, not a default landing state.
+  resetDateFilterState();
+  AUDIT=payload;
+  try{
+    LATEST_AUDIT=await loadAudit();
+  }catch(e){
+    LATEST_AUDIT=payload;
+  }
+  refreshHeader();
+  updateCoverageUI();
+  renderMetrics();
+  render();
+  input.value="";
+  btn.disabled=false;
+  msg.textContent="Published — committed to the repo, and shown here now.";
+  setTimeout(()=>{msg.textContent="";},6000);
+}
+
+// No default view on load — the results area stays on its "pick a date
+// range" prompt until the reviewer applies a filter, per how this dashboard
+// is meant to be used now that it covers 44 accounts (loading everything at
+// once by default was too much). LATEST_AUDIT is still fetched quietly so
+// "Data reviewed" / the Download date pickers work correctly.
+async function init(){
+  try{
+    LATEST_AUDIT=await loadAudit();
+  }catch(e){
+    LATEST_AUDIT=null;
+  }
+  updateCoverageUI();
+  await loadStatuses();
+  renderMetrics();
+  render();
+}
+init();
+</script>
+</body>
+</html>

@@ -33,6 +33,7 @@ function sortableTable(tableId, data, renderRow, totalsRow) {
     });
     if (totalsRow) tfoot.innerHTML = totalsRow(sorted);
   }
+  state._render = render;
   ths.forEach(th => {
     th.classList.add('sortable');
     if (!th._sortableTableBound) {
@@ -40,7 +41,7 @@ function sortableTable(tableId, data, renderRow, totalsRow) {
       th.addEventListener('click', () => {
         const col = th.dataset.sort;
         if (state.col === col) { state.asc = !state.asc; } else { state.col = col; state.asc = true; }
-        render();
+        state._render();
       });
     }
   });
@@ -65,7 +66,9 @@ const SRC_COLOR_MAP = {
   'Website (unattributed)':  '#2ECC71',  // web green
   'SWEAT440 App':            '#F39C12',  // app amber
   'MindBody App':            '#8E44AD',  // MindBody purple
-  'Business Mode':           '#E74C3C',  // red
+  'Business Mode':           '#E74C3C',  // red (legacy — kept for backwards compat)
+  'Business Mode / App':     '#E74C3C',  // red
+  'Public API':              '#C0392B',  // dark red
   'Print Ads / Signs':       '#2980B9',  // print blue
   'N/A':                     '#7F8C8D',  // grey
   'Other':                   '#BDC3C7',  // light grey
@@ -97,7 +100,7 @@ const STUDIO_COLOR_MAP = {
 
   // Erika Sanchez (2) — magentas
   'Coral Gables':               '#880E4F',  // dark magenta
-  'Naples - Mercato':           '#F06292',  // medium pink (NSO)
+  'Naples - Mercato':           '#F06292',  // medium pink
 
   // Max Gelrud (1)
   'South Miami':                '#4E342E',  // dark brown
@@ -176,9 +179,12 @@ function googleStudioName(raw) { return GOOGLE_STUDIO_ALIAS[raw] || raw; }
 // studios.json by loadStudiosRegistry().
 const META_CODE_TO_STUDIO = {};
 
+// studio code -> Facebook Page ID. Populated from studios.json by loadStudiosRegistry().
+const META_CODE_TO_PAGE_ID = {};
+
 // Fetches studios.json and populates DEFAULT_EXCL_STUDIOS / NSO_STUDIOS /
-// CLOSED_STUDIOS / META_CODE_TO_STUDIO in place. Call once per page load,
-// before buildMultiSelect() or any META_CODE_TO_STUDIO lookup.
+// CLOSED_STUDIOS / META_CODE_TO_STUDIO / META_CODE_TO_PAGE_ID in place.
+// Call once per page load, before buildMultiSelect() or any lookup.
 async function loadStudiosRegistry(basePath = '') {
   let registry = { studios: [] };
   try {
@@ -191,11 +197,13 @@ async function loadStudiosRegistry(basePath = '') {
   NSO_STUDIOS.length = 0;
   CLOSED_STUDIOS.length = 0;
   for (const key of Object.keys(META_CODE_TO_STUDIO)) delete META_CODE_TO_STUDIO[key];
+  for (const key of Object.keys(META_CODE_TO_PAGE_ID)) delete META_CODE_TO_PAGE_ID[key];
   for (const s of (registry.studios || [])) {
     if (s.excluded_default) { DEFAULT_EXCL_STUDIOS.push(s.name); DEFAULT_EXCL_STUDIOS.push('- ' + s.name); }
     if (s.status === 'nso')    { NSO_STUDIOS.push(s.name);     NSO_STUDIOS.push('- ' + s.name); }
     if (s.status === 'closed') { CLOSED_STUDIOS.push(s.name);  CLOSED_STUDIOS.push('- ' + s.name); }
     if (s.code) META_CODE_TO_STUDIO[s.code] = s.name;
+    if (s.code && s.meta && s.meta.page_id) META_CODE_TO_PAGE_ID[s.code] = s.meta.page_id;
   }
   return registry;
 }
@@ -375,9 +383,8 @@ function updateGranButtons(from, to) {
   // Daily data covers: start of current year → today
   // We check if the requested range overlaps with our daily data window at all
   const { dailyFrom, dailyTo } = getQuarterBounds();
-  // Allow daily if there's any overlap between [from,to] and [dailyFrom, dailyTo]
-  const hasDaily  = from <= dailyTo && to >= dailyFrom;
-  // Weekly requires the full range to be within the daily window — mixing monthly rows into weekly buckets creates misleading spikes
+  // Daily and Weekly require the full range to start within the daily data window
+  const hasDaily  = from >= dailyFrom;
   const hasWeekly = from >= dailyFrom;
   const daysDiff  = (to - from) / 86400000;
   const btnD = document.getElementById('granDaily');
@@ -462,8 +469,7 @@ function toTimeSeries(dailyRows, monthlyRows) {
     const map = {};
     [...dailyRows,...monthlyRows].forEach(r => {
       const d = new Date((r.date||r.month)+'T00:00:00Z');
-      const day = d.getUTCDay()||7;
-      const ws = new Date(d); ws.setUTCDate(d.getUTCDate()-day+1);
+      const ws = new Date(d); ws.setUTCDate(d.getUTCDate()-d.getUTCDay());
       const key = ws.toISOString().slice(0,10);
       if (!map[key]) map[key]={key,label:fmtDayLabel(key),signups:0,first_visits:0,first_activations:0};
       map[key].signups+=r.signups||0; map[key].first_visits+=r.first_visits||0; map[key].first_activations+=r.first_activations||0;
@@ -595,22 +601,60 @@ function _isFullMonths(from, to) {
   return firstOfMonth && lastOfMonth;
 }
 
-function kpiCard(label,val,pp,py,fmt,info){
+// Partial-period warning line. `kind` is 'period' or 'year' — controls the
+// label text and the popup copy. `tag`/`cls` let callers reuse this for
+// either kpi-card divs or the funnel bars' <span class="delta"> markup.
+function _partialPeriodInfoBtn(kind) {
+  const label = kind === 'year' ? 'prev year' : 'prev period';
+  const desc  = 'This range doesn\'t cover complete calendar months, so the '+label+' comparison can\'t be shown reliably. Select a date range from the 1st through the last day of the month(s) to see it.';
+  return {
+    label,
+    btn: '<button class="kpi-info-btn kpi-info-inline" onclick="showKpiInfo(this,event)" data-title="Partial Period" data-desc="'+_esc(desc)+'" data-date="">i</button>'
+  };
+}
+function _partialPeriodWarn(kind) {
+  const {label, btn} = _partialPeriodInfoBtn(kind);
+  return '<div class="kpi-card-delta neu">&#9888; '+label+' - partial period'+btn+'</div>';
+}
+function _partialPeriodWarnSpan(kind) {
+  const {label, btn} = _partialPeriodInfoBtn(kind);
+  return '<span class="delta neu">&#9888; '+label+' - partial period'+btn+'</span>';
+}
+
+function kpiCard(label,val,pp,py,fmt,info,extraHtml){
   const f=fmt||(v=>Number.isFinite(v)?v.toLocaleString():v);
   const dpp=pp!=null&&pp!==0?(val-pp)/pp*100:null;
   const dpy=py!=null&&py!==0?(val-py)/py*100:null;
-  const warnPP='<div class="kpi-card-delta neu" title="Select complete calendar months for period comparisons">⚠ partial period</div>';
-  const warnPY='<div class="kpi-card-delta neu" title="Select complete calendar months for year-over-year comparisons">⚠ partial period</div>';
   const ppH = _partialPeriod.pp
-    ? (dpp!=null ? warnPP : '')
+    ? (dpp!=null ? _partialPeriodWarn('period') : '')
     : (dpp!=null?'<div class="kpi-card-delta '+(dpp>=0?'pos':'neg')+'">'+(dpp>=0?'&#9650;':'&#9660;')+' '+Math.abs(dpp).toFixed(1)+'% prev period</div>':'');
   const pyH = _partialPeriod.py
-    ? (dpy!=null ? warnPY : '')
+    ? (dpy!=null ? _partialPeriodWarn('year') : '')
     : (dpy!=null?'<div class="kpi-card-delta '+(dpy>=0?'pos':'neg')+'">'+(dpy>=0?'&#9650;':'&#9660;')+' '+Math.abs(dpy).toFixed(1)+'% prev year</div>':'');
   const infoBtn = info ? '<button class="kpi-info-btn" onclick="showKpiInfo(this,event)" data-title="'+_esc(info.title||label)+'" data-desc="'+_esc(info.desc)+'" data-date="'+_esc(info.date||'')+'">i</button>' : '';
-  return '<div class="kpi-card">'+infoBtn+'<div class="kpi-card-label">'+label+'</div><div class="kpi-card-val">'+f(val)+'</div>'+ppH+pyH+'</div>';
+  return '<div class="kpi-card">'+infoBtn+'<div class="kpi-card-label">'+label+'</div><div class="kpi-card-val">'+f(val)+'</div>'+ppH+pyH+(extraHtml||'')+'</div>';
 }
 function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function _csvField(v) {
+  const s = v == null ? '' : String(v);
+  return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+
+// Builds a CSV from a header row + array of row arrays, triggers a browser
+// download via a Blob + synthetic <a download>, and revokes the object URL.
+function downloadCSV(filename, header, rows) {
+  const csv = [header, ...rows].map(r => r.map(_csvField).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
 function toSourceTimeSeries(dailyRows,monthlyRows,gran){
   const g=gran||GRAN;
@@ -619,7 +663,7 @@ function toSourceTimeSeries(dailyRows,monthlyRows,gran){
   allRows.forEach(r=>{
     let key;
     if(g==='daily')key=r.date;
-    else if(g==='weekly'){const d=new Date((r.date||r.month)+'T00:00:00Z');const day=d.getUTCDay()||7;const ws=new Date(d);ws.setUTCDate(d.getUTCDate()-day+1);key=ws.toISOString().slice(0,10);}
+    else if(g==='weekly'){const d=new Date((r.date||r.month)+'T00:00:00Z');const ws=new Date(d);ws.setUTCDate(d.getUTCDate()-d.getUTCDay());key=ws.toISOString().slice(0,10);}
     else key=(r.date||r.month).slice(0,7)+'-01';
     const mk=key+'|'+r.source;
     if(!map[mk])map[mk]={key,source:r.source,signups:0,first_visits:0,first_activations:0};
@@ -628,20 +672,89 @@ function toSourceTimeSeries(dailyRows,monthlyRows,gran){
   return Object.values(map).sort((a,b)=>a.key.localeCompare(b.key));
 }
 
-function cprKpiCard(label,val,pp,py,fmt,info){
+function cprKpiCard(label,val,pp,py,fmt,info,extraHtml){
   const f=fmt||(v=>Number.isFinite(v)?v.toLocaleString():v);
   const dpp=pp!=null&&pp!==0?(val-pp)/pp*100:null;
   const dpy=py!=null&&py!==0?(val-py)/py*100:null;
-  const warnPP='<div class="kpi-card-delta neu" title="Select complete calendar months for period comparisons">⚠ partial period</div>';
-  const warnPY='<div class="kpi-card-delta neu" title="Select complete calendar months for year-over-year comparisons">⚠ partial period</div>';
   const ppH=_partialPeriod.pp
-    ? (dpp!=null ? warnPP : '')
+    ? (dpp!=null ? _partialPeriodWarn('period') : '')
     : (dpp!=null?'<div class="kpi-card-delta '+(dpp<=0?'pos':'neg')+'">'+(dpp<=0?'&#9660;':'&#9650;')+' '+Math.abs(dpp).toFixed(1)+'% prev period</div>':'');
   const pyH=_partialPeriod.py
-    ? (dpy!=null ? warnPY : '')
+    ? (dpy!=null ? _partialPeriodWarn('year') : '')
     : (dpy!=null?'<div class="kpi-card-delta '+(dpy<=0?'pos':'neg')+'">'+(dpy<=0?'&#9660;':'&#9650;')+' '+Math.abs(dpy).toFixed(1)+'% prev year</div>':'');
   const infoBtn = info ? '<button class="kpi-info-btn" onclick="showKpiInfo(this,event)" data-title="'+_esc(info.title||label)+'" data-desc="'+_esc(info.desc)+'" data-date="'+_esc(info.date||'')+'">i</button>' : '';
-  return '<div class="kpi-card">'+infoBtn+'<div class="kpi-card-label">'+label+'</div><div class="kpi-card-val">'+f(val)+'</div>'+ppH+pyH+'</div>';
+  return '<div class="kpi-card">'+infoBtn+'<div class="kpi-card-label">'+label+'</div><div class="kpi-card-val">'+f(val)+'</div>'+ppH+pyH+(extraHtml||'')+'</div>';
+}
+
+// -- Network average comparison -----------------------------------------
+// Renders a single "vs network average" delta line appended to a kpi-card,
+// with an (i) button explaining how the average was calculated. The network
+// average itself is computed by the caller (per-studio maps live in each
+// dashboard's data, not in utils.js) and passed in as avgPerStudio.
+//   actual       — the card's current value for the selected studios
+//   avgPerStudio — average value per network studio (population and
+//                  zero-handling are the caller's call — see index.html)
+//   netCount     — how many studios avgPerStudio was averaged across
+//   selCount     — how many studios are currently selected
+//   fmt          — value formatter (same as kpiCard's fmt)
+//   invert       — true when lower is better (CPL/CPFT/CPA), matching
+//                  cprKpiCard's color logic
+//   scale        — true to project avgPerStudio * selCount (additive
+//                  metrics like Leads/Spend); false to use avgPerStudio
+//                  as-is (blended ratio metrics like CPL, which don't
+//                  scale with studio count)
+//   info         — {label, costBased, ratioDesc} describing the metric for
+//                  the (i) popup copy:
+//                    label      — metric name, e.g. 'leads', 'Meta Ads Spend', 'CPL'
+//                    costBased  — true if the population is "studios with
+//                                 real digital ads spend during this period"
+//                                 (all cost cards) rather than every open
+//                                 network studio (volume cards)
+//                    ratioDesc  — for scale=false only, e.g. 'total spend ÷ total leads'
+function _netAvgCore(actual, avgPerStudio, netCount, selCount, scale, invert) {
+  if (!netCount || selCount <= 0) return null;
+  const projected = scale ? avgPerStudio * selCount : avgPerStudio;
+  if (!(projected > 0)) return null;
+  const delta = (actual - projected) / projected * 100;
+  const cls   = invert ? (delta <= 0 ? 'pos' : 'neg') : (delta >= 0 ? 'pos' : 'neg');
+  const arrow = invert ? (delta <= 0 ? '&#9660;' : '&#9650;') : (delta >= 0 ? '&#9650;' : '&#9660;');
+  return {projected, delta, cls, arrow};
+}
+
+function _netAvgInfoBtn(avgPerStudio, netCount, selCount, projected, scale, fmt, info) {
+  const f = fmt || (v => Number.isFinite(v) ? v.toLocaleString() : v);
+  const label       = (info && info.label) || 'value';
+  const studioWord  = netCount === 1 ? 'studio' : 'studios';
+  const spendPhrase = ' with real digital ads spend during this period';
+
+  const population = (info && info.costBased) ? (netCount+' '+studioWord+spendPhrase) : (netCount+' '+studioWord);
+  let desc;
+  if (scale) {
+    desc = 'Network average '+label+' is calculated across '+population+': '+f(avgPerStudio)+' per studio.';
+    if (selCount > 1) {
+      desc += '\nFor your '+selCount+' selected studios, the expected value is '+f(projected)+'.';
+    }
+  } else {
+    const ratioDesc = (info && info.ratioDesc) || 'total ÷ total';
+    desc = 'Network average '+label+' is calculated as a blended ratio ('+ratioDesc+') across '+population+': '+f(avgPerStudio)+'.';
+  }
+  return '<button class="kpi-info-btn kpi-info-inline" onclick="showKpiInfo(this,event)" data-title="Network Average" data-desc="'+_esc(desc)+'" data-date="">i</button>';
+}
+
+function netAvgHtml(actual, avgPerStudio, netCount, selCount, fmt, invert, scale, info) {
+  const core = _netAvgCore(actual, avgPerStudio, netCount, selCount, scale, invert);
+  if (!core) return '';
+  const infoBtn = _netAvgInfoBtn(avgPerStudio, netCount, selCount, core.projected, scale, fmt, info);
+  return '<div class="kpi-card-delta '+core.cls+'">'+core.arrow+' '+Math.abs(core.delta).toFixed(1)+'% vs network avg'+infoBtn+'</div>';
+}
+
+// Same as netAvgHtml, but rendered as <span class="delta"> for the funnel
+// bars, which use a flex-column of <span> deltas instead of kpi-card divs.
+function netAvgSpan(actual, avgPerStudio, netCount, selCount, fmt, invert, scale, info) {
+  const core = _netAvgCore(actual, avgPerStudio, netCount, selCount, scale, invert);
+  if (!core) return '';
+  const infoBtn = _netAvgInfoBtn(avgPerStudio, netCount, selCount, core.projected, scale, fmt, info);
+  return '<span class="delta '+core.cls+'">'+core.arrow+' '+Math.abs(core.delta).toFixed(1)+'% vs network avg'+infoBtn+'</span>';
 }
 
 function getMock() {
@@ -650,7 +763,7 @@ function getMock() {
     'SWEAT440 Coral Gables','SWEAT440 Doral','SWEAT440 Miami Lakes'
   ];
   const sources = [
-    'Website (unattributed)','Business Mode','Meta Ads','Google Ads',
+    'Website (unattributed)','Business Mode / App','Public API','Meta Ads','Google Ads',
     'SWEAT440 App','MindBody App','Social Media Organic','Local Listings',
     'Word of Mouth','Print Ads / Signs','N/A','Other'
   ];

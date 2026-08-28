@@ -34,7 +34,7 @@ CREATIVE_FIELDS = [
     "id", "name", "object_type", "thumbnail_url", "image_url",
     "image_hash", "video_id",
     "object_story_spec{video_data{image_url},link_data{picture,image_hash},photo_data{image_hash}}",
-    "asset_feed_spec{images{url},videos{thumbnail_url}}",
+    "asset_feed_spec{images{url,hash},videos{thumbnail_url}}",
 ]
 
 AD_FIELDS = "id,name,status,creative{id},effective_object_story_id,preview_shareable_link"
@@ -57,10 +57,11 @@ def _action_value(row: dict, action_types: list[str]) -> int:
 
 
 def leads_of(row: dict) -> int:
-    return _action_value(row, [
-        "lead", "onsite_conversion.lead_grouped",
-        "offsite_conversion.fb_pixel_lead",
-    ])
+    return _action_value(row, ["lead"])
+
+
+def offsite_leads_of(row: dict) -> int:
+    return _action_value(row, ["offsite_conversion.fb_pixel_lead"])
 
 
 def trials_of(row: dict) -> int:

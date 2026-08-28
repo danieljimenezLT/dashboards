@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ADMIN_PUSH_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -20,18 +22,31 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install requests pyyaml
+        run: pip install requests pyyaml python-dotenv google-auth
 
       - name: Fetch Meta Ads (Santi - account view)
         env:
           META_TOKEN: ${{ secrets.META_TOKEN }}
         run: python fetch_meta_ads.py
 
+      - name: Write Google service account credentials
+        run: |
+          mkdir -p nso-dashboard/credentials
+          printf '%s' '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > nso-dashboard/credentials/service_account.json
+
+      - name: Sync OS ad thumbnails/videos to Drive
+        env:
+          META_ACCESS_TOKEN:               ${{ secrets.META_TOKEN }}
+          GOOGLE_SERVICE_ACCOUNT_KEY_PATH: nso-dashboard/credentials/service_account.json
+        run: python sync_ad_media.py --dashboard os --max-new-images 300 --max-new-videos 200
+        continue-on-error: true
+
       - name: Commit updated data file
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add meta-ads-data.json
+          git add os_media_cache.json 2>/dev/null || true
           git diff --cached --quiet || git commit -m "chore: refresh Meta Ads data $(date -u '+%Y-%m-%d %H:%M UTC')"
           git pull --rebase origin main
           git push

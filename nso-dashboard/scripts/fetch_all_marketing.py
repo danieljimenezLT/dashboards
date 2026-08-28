@@ -25,6 +25,32 @@ if not os.environ.get("META_ACCESS_TOKEN"):
     load_dotenv(Path.cwd() / ".env")
 
 
+def _public_thumb(url: str) -> str:
+    """Return url only if it's a publicly accessible CDN URL.
+    emg1/external- proxy URLs are IP-bound, but they often wrap a real
+    facebook.com/ads/image/?d=... URL in their ?url= param — extract that
+    instead of discarding the thumbnail entirely (e.g. SHARE-type ads)."""
+    if not url:
+        return ""
+    if "external-" in url or "/emg1/" in url:
+        import urllib.parse as _up
+        inner = _up.parse_qs(_up.urlparse(url).query).get("url", [""])[0]
+        if inner and "facebook.com/ads/image/" in inner:
+            return inner
+        return ""
+    return url
+
+
+import re as _re
+
+def _is_small_thumb(url: str) -> bool:
+    """Return True if the URL is a tiny Meta CDN thumbnail (< 300px)."""
+    if not url:
+        return True
+    m = _re.search(r'[_/]p(\d+)x\d+', url)
+    return bool(m and int(m.group(1)) < 300)
+
+
 def safe(val, default=0):
     try:
         return float(val) if val is not None else default
@@ -35,11 +61,12 @@ def safe(val, default=0):
 # ════════════════════════════════════════════════════════════════════════════
 # META ADS  (uses meta_client.py from repo root — has retry on rate limits)
 # ════════════════════════════════════════════════════════════════════════════
-def fetch_meta_ads(start_date, end_date):
+def fetch_meta_ads(start_date, end_date, existing_ad_meta=None):
     import sys
     from pathlib import Path
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
     from meta_client import MetaClient
+    import studios as studios_registry
 
     print("\n>> META ADS")
     token = os.environ.get("META_ACCESS_TOKEN")
@@ -80,22 +107,42 @@ def fetch_meta_ads(start_date, end_date):
     # get_creatives_by_ids() chunks by 10 and halves on failure — no single
     # bad creative kills the whole batch.
     if cids_per_name:
-        unique_cids = list({c for c in cids_per_name.values()})
+        cache = existing_ad_meta or {}
+        # Skip creatives already cached with a valid (non-proxy) thumbnail URL.
+        # Active ads with no cached thumbnail still get fetched so new creatives are picked up.
         cid_to_names: dict[str, list[str]] = {}
         for name, cid in cids_per_name.items():
-            cid_to_names.setdefault(cid, []).append(name)
+            cached_thumb = _public_thumb(cache.get(name, {}).get("thumbnail_url", ""))
+            if not cached_thumb:
+                cid_to_names.setdefault(cid, []).append(name)
+            else:
+                # Pre-populate from cache so the merge step has data without an API call.
+                entry = creatives.setdefault(name, {
+                    "thumbnail_url": "", "image_url": "", "preview_link": "",
+                    "object_type": "", "effective_status": "",
+                })
+                entry["thumbnail_url"] = cached_thumb
+                for field in ("image_url", "object_type", "video_id", "post_url"):
+                    if cache[name].get(field):
+                        entry[field] = cache[name][field]
 
-        print(f"  Fetching {len(unique_cids)} creatives in batch...", flush=True)
+        unique_cids = list(cid_to_names.keys())
+        skipped = len(cids_per_name) - len(cid_to_names)
+        if skipped:
+            print(f"  {skipped} creatives skipped (cached); fetching {len(unique_cids)} new/uncached...", flush=True)
+        else:
+            print(f"  Fetching {len(unique_cids)} creatives in batch...", flush=True)
         try:
             cdetails = meta.get_creatives_by_ids(unique_cids)
             for cid, cdata in cdetails.items():
-                # Cascade through creative shapes to find thumbnail (same logic as Open Studios)
+                # Cascade through creative shapes to find a publicly accessible thumbnail.
+                # link_data.picture is intentionally omitted — Facebook returns IP-bound
+                # emg1/external- proxy URLs there that 403 in the browser.
                 thumb = (
-                    cdata.get("thumbnail_url") or
-                    cdata.get("image_url") or
-                    ((cdata.get("object_story_spec") or {}).get("video_data") or {}).get("image_url") or
-                    ((cdata.get("object_story_spec") or {}).get("link_data") or {}).get("picture") or
-                    (((cdata.get("asset_feed_spec") or {}).get("images") or [{}])[0]).get("url") or ""
+                    _public_thumb(cdata.get("thumbnail_url")) or
+                    _public_thumb(cdata.get("image_url")) or
+                    _public_thumb(((cdata.get("object_story_spec") or {}).get("video_data") or {}).get("image_url")) or
+                    _public_thumb((((cdata.get("asset_feed_spec") or {}).get("images") or [{}])[0]).get("url")) or ""
                 )
                 obj_type = cdata.get("object_type", "")
                 for name in cid_to_names.get(cid, []):
@@ -107,6 +154,23 @@ def fetch_meta_ads(start_date, end_date):
                         entry["thumbnail_url"] = thumb
                     if obj_type:
                         entry["object_type"] = obj_type
+                    vid = cdata.get("video_id", "")
+                    if vid:
+                        entry["video_id"] = vid
+                    # image_hash lets sync_ad_media call the adimages API for a
+                    # permanent facebook.com/ads/image/ URL that works from any IP.
+                    ih = (
+                        cdata.get("image_hash") or
+                        ((cdata.get("object_story_spec") or {}).get("link_data") or {}).get("image_hash") or
+                        ((cdata.get("object_story_spec") or {}).get("photo_data") or {}).get("image_hash") or
+                        (((cdata.get("asset_feed_spec") or {}).get("images") or [{}])[0]).get("hash") or ""
+                    )
+                    if ih:
+                        entry["image_hash"] = ih
+                    eso = cdata.get("effective_object_story_id", "")
+                    if eso and "_" in eso and obj_type == "SHARE":
+                        page_id, post_id = eso.split("_", 1)
+                        entry["post_url"] = f"https://www.facebook.com/{page_id}/posts/{post_id}/"
             print(f"  {len(cdetails)} creatives fetched", flush=True)
         except Exception as e:
             print(f"  WARNING: Could not fetch creatives: {e}", flush=True)
@@ -129,10 +193,14 @@ def fetch_meta_ads(start_date, end_date):
             }],
         )
         for row in raw_rows:
-            leads, cost_per_lead = 0, 0.0
+            leads, offsite_leads, cost_per_lead = 0, 0, 0.0
             for action in (row.get("actions") or []):
-                if action.get("action_type") in ("lead", "offsite_conversion.fb_pixel_lead"):
-                    leads += int(float(action.get("value", 0)))
+                at = action.get("action_type")
+                v  = int(float(action.get("value", 0)))
+                if at == "lead":
+                    leads += v
+                elif at == "offsite_conversion.fb_pixel_lead":
+                    offsite_leads += v
             for cpa in (row.get("cost_per_action_type") or []):
                 if cpa.get("action_type") in ("lead", "offsite_conversion.fb_pixel_lead"):
                     cost_per_lead = float(cpa.get("value", 0))
@@ -151,6 +219,7 @@ def fetch_meta_ads(start_date, end_date):
                 "ctr":           round(safe(row.get("ctr")), 2),
                 "cpc":           round(safe(row.get("cpc")), 2),
                 "leads":         leads,
+                "offsite_leads": offsite_leads,
                 "cost_per_lead": round(cost_per_lead, 2),
                 "thumbnail_url": creative.get("thumbnail_url", ""),
                 "image_url":     creative.get("image_url", ""),
@@ -160,6 +229,59 @@ def fetch_meta_ads(start_date, end_date):
         print(f"  {len(rows)} ad-day rows fetched", flush=True)
     except Exception as e:
         print(f"  ERROR: Meta Ads insights failed: {e}", flush=True)
+
+    # ── 4. Dedicated per-studio accounts (account-level spend only) ────────
+    # Studios that migrated off the shared account onto their own — 100% of an
+    # account's spend belongs to that studio, so no name-matching is needed.
+    # Account-level only for now (no ad list/creatives): one row per day,
+    # tagged with an explicit studio_code that nso-studios.html's metaFilter()
+    # matches on directly instead of scanning campaign_name.
+    for studio in studios_registry.meta_dedicated_accounts():
+        code, name, account_id = studio["code"], studio["name"], studio["account_id"]
+        print(f"  Fetching account-level data from {account_id} ({name})...", flush=True)
+        try:
+            raw_account_rows = meta.get_insights(
+                account_id,
+                level="account",
+                date_start=start_date,
+                date_end=end_date,
+                time_increment=1,
+            )
+        except Exception as e:
+            print(f"  WARNING: account-level insights failed for {name} ({account_id}): {e}", flush=True)
+            continue
+
+        for row in raw_account_rows:
+            leads, offsite_leads = 0, 0
+            for action in (row.get("actions") or []):
+                at = action.get("action_type")
+                v  = int(float(action.get("value", 0)))
+                if at == "lead":
+                    leads += v
+                elif at == "offsite_conversion.fb_pixel_lead":
+                    offsite_leads += v
+            spend = round(safe(row.get("spend")), 2)
+            rows.append({
+                "date":          row.get("date_start", ""),
+                "campaign_name": "",
+                "campaign_id":   "",
+                "adset_name":    "",
+                "ad_name":       "",
+                "studio_code":   code,
+                "spend":         spend,
+                "impressions":   int(safe(row.get("impressions"))),
+                "clicks":        int(safe(row.get("clicks"))),
+                "ctr":           0,
+                "cpc":           0,
+                "leads":         leads,
+                "offsite_leads": offsite_leads,
+                "cost_per_lead": round(spend / leads, 2) if leads else 0,
+                "thumbnail_url": "",
+                "image_url":     "",
+                "preview_link":  "",
+                "object_type":   "",
+            })
+        print(f"  {len(raw_account_rows)} account-day rows fetched for {name}", flush=True)
 
     return rows, creatives
 
@@ -219,11 +341,24 @@ def fetch_google_ads(start_date, end_date):
         print(f"  ERROR listing accounts: {e}")
         return []
 
-    # Now query each account for campaign performance
+    # Lead classification + Opportunities formula, matching the Open Studio
+    # dashboard's fetch_google_ads.py so both dashboards report the same way.
+    LEAD_KEYWORDS = ["lead", "form", "submit", "signup", "sign up", "contact",
+                     "prospect", "inquiry", "enquiry", "registration", "register"]
+    EXCLUDE_KEYWORDS = ["call", "direction", "store visit", "visit", "purchase"]
+
+    def _is_lead_action(name):
+        n = (name or "").lower()
+        return any(k in n for k in LEAD_KEYWORDS) and not any(k in n for k in EXCLUDE_KEYWORDS)
+
+    def _opportunities(leads, calls, directions):
+        return leads + 0.3 * directions + 0.4 * calls
+
+    # Now query each account for campaign performance + calls + directions + leads
     all_rows = []
     for acct in accounts:
         cid = acct["id"]
-        query = f"""
+        perf_query = f"""
             SELECT
                 segments.date,
                 campaign.name,
@@ -236,41 +371,105 @@ def fetch_google_ads(start_date, end_date):
                 metrics.ctr,
                 metrics.average_cpc,
                 metrics.conversions,
-                metrics.cost_per_conversion
+                metrics.cost_per_conversion,
+                metrics.phone_calls
             FROM campaign
             WHERE segments.date BETWEEN '{start_date}' AND '{end_date}'
                 AND campaign.status != 'REMOVED'
             ORDER BY segments.date DESC
         """
-        try:
-            response = ga_service.search_stream(customer_id=cid, query=query)
-            count = 0
-            for batch in response:
-                for row in batch.results:
-                    spend = row.metrics.cost_micros / 1_000_000
-                    avg_cpc = row.metrics.average_cpc / 1_000_000 if row.metrics.average_cpc else 0
-                    cost_per_conv = row.metrics.cost_per_conversion / 1_000_000 if row.metrics.cost_per_conversion else 0
+        # "Get Directions" clicks on the ad / Maps listing
+        direction_query = f"""
+            SELECT
+                segments.date,
+                campaign.id,
+                segments.click_type,
+                metrics.clicks
+            FROM campaign
+            WHERE segments.date BETWEEN '{start_date}' AND '{end_date}'
+                AND segments.click_type = 'GET_DIRECTIONS'
+                AND campaign.status != 'REMOVED'
+        """
+        # Form-submission / lead-style conversion actions (leads counted
+        # separately from calls and directions, per the Opportunities formula)
+        lead_query = f"""
+            SELECT
+                segments.date,
+                campaign.id,
+                segments.conversion_action_name,
+                metrics.conversions
+            FROM campaign
+            WHERE segments.date BETWEEN '{start_date}' AND '{end_date}'
+                AND campaign.status != 'REMOVED'
+        """
 
-                    all_rows.append({
-                        "date": row.segments.date,
-                        "account_name": row.customer.descriptive_name,
-                        "account_id": cid,
-                        "campaign_name": row.campaign.name,
-                        "campaign_id": str(row.campaign.id),
-                        "status": row.campaign.status.name,
-                        "spend": round(spend, 2),
-                        "impressions": row.metrics.impressions,
-                        "clicks": row.metrics.clicks,
-                        "ctr": round(row.metrics.ctr * 100, 2),
-                        "avg_cpc": round(avg_cpc, 2),
-                        "conversions": round(row.metrics.conversions, 1),
-                        "cost_per_conversion": round(cost_per_conv, 2),
-                    })
-                    count += 1
-            if count > 0:
-                print(f"  OK {acct['name']}: {count} rows")
+        perf_rows = []
+        try:
+            response = ga_service.search_stream(customer_id=cid, query=perf_query)
+            for batch in response:
+                perf_rows.extend(batch.results)
         except Exception as e:
             print(f"  SKIP {acct['name']} ({cid}): {e}")
+            continue
+        if not perf_rows:
+            continue
+
+        directions_map = {}
+        try:
+            response = ga_service.search_stream(customer_id=cid, query=direction_query)
+            for batch in response:
+                for row in batch.results:
+                    key = (row.segments.date, str(row.campaign.id))
+                    directions_map[key] = directions_map.get(key, 0) + int(row.metrics.clicks)
+        except Exception as e:
+            print(f"  WARNING directions query failed for {acct['name']}: {e}")
+
+        leads_map = {}
+        try:
+            response = ga_service.search_stream(customer_id=cid, query=lead_query)
+            for batch in response:
+                for row in batch.results:
+                    if not _is_lead_action(row.segments.conversion_action_name):
+                        continue
+                    key = (row.segments.date, str(row.campaign.id))
+                    leads_map[key] = leads_map.get(key, 0) + int(float(row.metrics.conversions))
+        except Exception as e:
+            print(f"  WARNING lead-conversion query failed for {acct['name']}: {e}")
+
+        count = 0
+        for row in perf_rows:
+            spend = row.metrics.cost_micros / 1_000_000
+            avg_cpc = row.metrics.average_cpc / 1_000_000 if row.metrics.average_cpc else 0
+            cost_per_conv = row.metrics.cost_per_conversion / 1_000_000 if row.metrics.cost_per_conversion else 0
+            key = (row.segments.date, str(row.campaign.id))
+            calls = int(row.metrics.phone_calls)
+            directions = directions_map.get(key, 0)
+            leads = leads_map.get(key, 0)
+            opportunities = round(_opportunities(leads, calls, directions), 2)
+
+            all_rows.append({
+                "date": row.segments.date,
+                "account_name": row.customer.descriptive_name,
+                "account_id": cid,
+                "campaign_name": row.campaign.name,
+                "campaign_id": str(row.campaign.id),
+                "status": row.campaign.status.name,
+                "spend": round(spend, 2),
+                "impressions": row.metrics.impressions,
+                "clicks": row.metrics.clicks,
+                "ctr": round(row.metrics.ctr * 100, 2),
+                "avg_cpc": round(avg_cpc, 2),
+                "conversions": round(row.metrics.conversions, 1),
+                "cost_per_conversion": round(cost_per_conv, 2),
+                "leads": leads,
+                "calls": calls,
+                "directions": directions,
+                "opportunities": opportunities,
+                "cost_per_opp": round(spend / opportunities, 2) if opportunities > 0 else 0,
+            })
+            count += 1
+        if count > 0:
+            print(f"  OK {acct['name']}: {count} rows")
 
     print(f"  Total: {len(all_rows)} Google Ads rows")
     return all_rows
@@ -540,7 +739,16 @@ def main():
     }
 
     if args.source in ("meta", "all"):
-        output["meta_ads"], ad_meta = fetch_meta_ads(start_date, end_date)
+        existing_ad_meta = {}
+        if args.ad_meta_output:
+            ad_meta_path = Path(args.ad_meta_output)
+            if ad_meta_path.exists():
+                try:
+                    with open(ad_meta_path, encoding="utf-8") as f:
+                        existing_ad_meta = json.load(f).get("ad_meta", {})
+                except Exception:
+                    pass
+        output["meta_ads"], ad_meta = fetch_meta_ads(start_date, end_date, existing_ad_meta)
         output["ad_meta"] = ad_meta
     else:
         ad_meta = {}
@@ -637,8 +845,10 @@ def main():
             merged[name] = {
                 **prev,
                 **meta,
-                # Keep previous thumbnail_url if the new one is empty (deleted/archived ad)
-                "thumbnail_url": meta.get("thumbnail_url") or prev.get("thumbnail_url", ""),
+                # Keep previous thumbnail_url if the new one is empty (deleted/archived ad).
+                # _public_thumb filters out emg1/external- proxy URLs on both sides so
+                # stale broken URLs from prior runs are replaced on the next refresh.
+                "thumbnail_url": _public_thumb(meta.get("thumbnail_url")) or _public_thumb(prev.get("thumbnail_url", "")),
             }
 
         ad_meta_out = {

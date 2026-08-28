@@ -188,6 +188,22 @@ STUDIOS = [
         "gads_cid":  None,
         "gbp_id":    "9821491381105118276",
     },
+    {
+        "name": "Long Beach", "code": "NY-005", "state": "NY",
+        "week0":    date(2026,  8, 20),
+        "week1":    date(2026,  8, 21),
+        "co_date":  date(2027,  1,  9), "co_week":  21,
+        "go_date":  date(2027,  2,  6), "go_week":  25,
+        "tier_move": None,
+        "leads": 1257, "presales": 440, "rmr": 55560,
+        "cpl": "30 - 41", "cpa": "82 - 116", "conv_rate": 35,
+        "fb_page":   None,
+        "ig_id":     "17841411727425800",
+        "grassroots": "https://docs.google.com/spreadsheets/d/1bjQSpTsmpi53l6JY6mLNReyaFBNZEJN5JzNhI4hmCbg/edit?usp=sharing",
+        "sf_id":     5755749,
+        "gads_cid":  "330-965-6191",
+        "gbp_id":    "7629344561899220561",
+    },
 ]
 
 # ── Column widths (one per field in order) ────────────────────────────────────

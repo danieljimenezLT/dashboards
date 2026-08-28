@@ -1,0 +1,48 @@
+name: NSO Pre-Weeks Refresh
+
+on:
+  schedule:
+    - cron: '30 9 * * *'   # 5:30 AM Eastern — after main NSO refresh (9:10 UTC) so data.json is current
+  workflow_dispatch:        # Manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ADMIN_PUSH_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r nso-dashboard/requirements.txt
+
+      - name: Write Google service account credentials
+        run: |
+          mkdir -p nso-dashboard/credentials
+          printf '%s' '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > nso-dashboard/credentials/service_account.json
+
+      - name: Build pre-weeks data
+        run: |
+          python nso-dashboard/scripts/fetch_pre_weeks.py \
+            --output nso-dashboard/nso_pre_weeks_data.json
+        continue-on-error: false
+
+      - name: Commit updated pre-weeks data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add nso-dashboard/nso_pre_weeks_data.json
+          git diff --cached --quiet || \
+            git commit -m "chore: refresh nso_pre_weeks_data $(date -u +%Y-%m-%d)"
+          git pull --rebase origin main
+          git push

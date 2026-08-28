@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ADMIN_PUSH_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -136,6 +138,7 @@ jobs:
           META_APP_SECRET:   ${{ secrets.META_APP_SECRET }}
         run: |
           python nso-dashboard/scripts/fetch_social_insights.py \
+            --days 90 \
             --output nso-dashboard/social_insights.json
         continue-on-error: true
 

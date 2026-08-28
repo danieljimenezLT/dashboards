@@ -14,7 +14,8 @@
       "excluded_default": false,
       "meta": {
         "match": "Highland",
-        "page_id": "351629338025804"
+        "page_id": "351629338025804",
+        "ad_account_id": "act_1360692008741848"
       },
       "google_ads": {
         "match": "ighland"
@@ -108,8 +109,7 @@
       "status": "nso",
       "excluded_default": true,
       "meta": {
-        "page_id": null,
-        "instagram_account_id": "17841416960489049"
+        "page_id": "1222433990955477"
       },
       "google_ads": {},
       "ga4": {
@@ -144,6 +144,26 @@
       "snowflake_id": null,
       "social_slug": "noda",
       "tier_pricing": null
+    },
+    {
+      "name": "Charlotte - South End",
+      "code": "NC-002",
+      "state": "NC",
+      "status": "nso",
+      "excluded_default": true,
+      "meta": {},
+      "google_ads": {},
+      "ga4": {
+        "studio_page_path": "/gyms/locations-north-carolina-charlotte-south-end/"
+      },
+      "gbp": {},
+      "snowflake_id": 5755905,
+      "social_slug": "south-end",
+      "tier_pricing": {
+        "tier1_price": 99,
+        "tier2_price": 129,
+        "tier3_price": 149
+      }
     },
     {
       "name": "Coral Gables",
@@ -199,7 +219,8 @@
       "excluded_default": false,
       "meta": {
         "match": "Prestonwood",
-        "page_id": "845182982009071"
+        "page_id": "845182982009071",
+        "ad_account_id": "act_901653169105027"
       },
       "google_ads": {
         "match": "Prestonwood"
@@ -222,9 +243,12 @@
       "status": "nso",
       "excluded_default": true,
       "meta": {
-        "page_id": "1013504171849728"
+        "page_id": "1013504171849728",
+        "ad_account_id": "act_907636075750262"
       },
-      "google_ads": {},
+      "google_ads": {
+        "match": "Dallas Uptown"
+      },
       "ga4": {},
       "gbp": {
         "location_id": null
@@ -289,10 +313,9 @@
       "status": "nso",
       "excluded_default": true,
       "meta": {
-        "page_id": "1119194191285831",
-        "instagram_account_id": "17841422592958602"
+        "page_id": "1119194191285831"
       },
-      "google_ads": {},
+      "google_ads": {"match": "Dunwoody"},
       "ga4": {},
       "gbp": {
         "location_id": "14348234584447062751",
@@ -354,14 +377,18 @@
       "state": "FL",
       "status": "nso",
       "excluded_default": true,
-      "meta": {},
-      "google_ads": {},
+      "meta": {
+        "page_id": "1218885824631723"
+      },
+      "google_ads": {
+        "match": "Fort Myers"
+      },
       "ga4": {},
       "gbp": {
         "location_id": "2005684758562901799",
         "code": "S440-FortMyers"
       },
-      "snowflake_id": null,
+      "snowflake_id": 5754665,
       "social_slug": "fortmyers",
       "tier_pricing": null
     },
@@ -372,7 +399,8 @@
       "status": "nso",
       "excluded_default": true,
       "meta": {
-        "page_id": "1016504601542354"
+        "page_id": "1016504601542354",
+        "ad_account_id": "act_28850449604546812"
       },
       "google_ads": {
         "match": "Herriman",
@@ -407,6 +435,28 @@
       "gbp": {},
       "snowflake_id": null,
       "social_slug": null,
+      "tier_pricing": null
+    },
+    {
+      "name": "Long Beach",
+      "code": "NY-005",
+      "state": "NY",
+      "status": "nso",
+      "excluded_default": true,
+      "meta": {
+        "instagram_account_id": "17841411727425800"
+      },
+      "google_ads": {
+        "customer_id": "330-965-6191"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/locations-new-york-long-beach/"
+      },
+      "gbp": {
+        "location_id": "7629344561899220561"
+      },
+      "snowflake_id": 5755749,
+      "social_slug": "longbeachny",
       "tier_pricing": null
     },
     {
@@ -573,10 +623,9 @@
       "status": "nso",
       "excluded_default": true,
       "meta": {
-        "page_id": "1138263712703066",
-        "instagram_account_id": "17841434822163164"
+        "page_id": "1138263712703066"
       },
-      "google_ads": {},
+      "google_ads": {"match": "Middletown"},
       "ga4": {},
       "gbp": {
         "location_id": "9688833394650228159",
@@ -695,7 +744,8 @@
       "name": "Naples - Mercato",
       "code": "FL-019",
       "state": "FL",
-      "status": "nso",
+      "status": "open",
+      "nso_track": true,
       "excluded_default": true,
       "meta": {
         "match": "Naples"
@@ -746,7 +796,9 @@
       "meta": {
         "page_id": "1145229115329264"
       },
-      "google_ads": {},
+      "google_ads": {
+        "match": "North Miami"
+      },
       "ga4": {},
       "gbp": {
         "location_id": null
@@ -756,6 +808,28 @@
       "tier_pricing": {
         "tier1_price": 129,
         "tier2_price": 149
+      }
+    },
+    {
+      "name": "OKC - Rose Creek",
+      "code": "OK-001",
+      "state": "OK",
+      "status": "nso",
+      "excluded_default": true,
+      "meta": {},
+      "google_ads": {
+        "customer_id": "8408533799"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "9431067527342434273"
+      },
+      "snowflake_id": 5755839,
+      "social_slug": "rose-creek",
+      "tier_pricing": {
+        "tier1_price": 99,
+        "tier2_price": 129,
+        "tier3_price": 149
       }
     },
     {
@@ -787,9 +861,10 @@
       "status": "nso",
       "excluded_default": true,
       "meta": {
+        "page_id": "1094938857031042",
         "instagram_account_id": "17841439161726674"
       },
-      "google_ads": {},
+      "google_ads": {"match": "Old Bridge"},
       "ga4": {},
       "gbp": {
         "location_id": null

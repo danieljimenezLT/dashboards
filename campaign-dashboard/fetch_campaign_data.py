@@ -36,6 +36,24 @@ CAMPAIGNS = [
         "date_to":       "2026-05-26",
         "post_promo_to": "2026-06-30",
     },
+    {
+        "id":            "summer-pass",
+        "name":          "Summer Pass",
+        "product":       "3 Month Summer Pass",
+        "date_from":     "2026-05-15",
+        "date_to":       "2026-06-15",
+        "post_promo_to": "2026-08-15",
+    },
+    {
+        "id":            "33-percent-off",
+        "name":          "33% Off",
+        "product":       "Summer 33% off 10 and 20 pack",
+        "filter_col":    "PROMOTION_NAME",   # filter by promotion, not product
+        "filter_value":  "Summer 33% off 10 and 20 pack",
+        "date_from":     "2026-07-01",
+        "date_to":       "2026-07-31",
+        "post_promo_to": "2026-08-15",
+    },
 ]
 
 # ── Source attribution (mirrors MARKETING_REPORTS.PUBLIC.LEADS view) ────────
@@ -144,8 +162,12 @@ def qall(cur, sql, params=()):
 
 
 def build_campaign(cur, camp):
-    p, frm, to = camp["product"], camp["date_from"], camp["date_to"]
+    frm, to = camp["date_from"], camp["date_to"]
     ppt = camp.get("post_promo_to", "2099-12-31")
+    fc  = camp.get("filter_col", "PRODUCT_DESCRIPTION")     # column to filter on
+    p   = camp.get("filter_value", camp["product"])          # value to match
+    filt     = f"{fc} = %s"                                  # positive filter
+    neg_filt = f"({fc} != %s OR {fc} IS NULL)" if fc != "PRODUCT_DESCRIPTION" else f"{fc} != %s"
 
     # ── 1. Basic KPIs ───────────────────────────────────────────────────────
     r = q1(cur, f"""
@@ -157,7 +179,7 @@ def build_campaign(cur, camp):
         FROM (
             SELECT CLIENT_ID, PAYMENTAMT_LOCAL
             FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s
+            WHERE {filt}
               AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         )
@@ -169,7 +191,7 @@ def build_campaign(cur, camp):
         WITH deduped AS (
             SELECT CLIENT_ID, SALE_DATE
             FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s AND SALE_DATE BETWEEN %s AND %s
+            WHERE {filt} AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         ),
         promo_first AS (
@@ -217,7 +239,7 @@ def build_campaign(cur, camp):
     r2 = q1(cur, f"""
         WITH deduped AS (
             SELECT * FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s AND SALE_DATE BETWEEN %s AND %s
+            WHERE {filt} AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         ),
         pu AS (
@@ -232,7 +254,7 @@ def build_campaign(cur, camp):
             JOIN {SALES} sd
                 ON pu.CLIENT_ID = sd.CLIENT_ID AND pu.STUDIO_ID = sd.STUDIO_ID
                AND sd.SALE_DATE > pu.PD AND sd.SALE_DATE <= %s
-               AND sd.PRODUCT_DESCRIPTION != %s AND sd.PAYMENTAMT_LOCAL > 0
+               AND {neg_filt} AND sd.PAYMENTAMT_LOCAL > 0
         ),
         pp AS (
             SELECT CLIENT_ID, STUDIO_ID, REVENUE_CATEGORY, PRODUCT_DESCRIPTION,
@@ -287,7 +309,7 @@ def build_campaign(cur, camp):
         {_CLIENTS_SRC_CTE},
         deduped AS (
             SELECT * FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s AND SALE_DATE BETWEEN %s AND %s
+            WHERE {filt} AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         )
         SELECT
@@ -315,7 +337,7 @@ def build_campaign(cur, camp):
         deduped AS (
             SELECT CLIENT_ID, STUDIO_ID, EMAIL_ID, SALE_DATE
             FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s AND SALE_DATE BETWEEN %s AND %s
+            WHERE {filt} AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         ),
         promo_first AS (
@@ -368,7 +390,7 @@ def build_campaign(cur, camp):
         {_CLIENTS_SRC_CTE},
         deduped AS (
             SELECT * FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s AND SALE_DATE BETWEEN %s AND %s
+            WHERE {filt} AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         ),
         promo_first AS (
@@ -424,7 +446,7 @@ def build_campaign(cur, camp):
     rows = qall(cur, f"""
         WITH deduped AS (
             SELECT * FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s AND SALE_DATE BETWEEN %s AND %s
+            WHERE {filt} AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         ),
         pu AS (
@@ -439,7 +461,7 @@ def build_campaign(cur, camp):
             JOIN {SALES} sd
                 ON pu.CLIENT_ID = sd.CLIENT_ID AND pu.STUDIO_ID = sd.STUDIO_ID
                AND sd.SALE_DATE > pu.PD AND sd.SALE_DATE <= %s
-               AND sd.PRODUCT_DESCRIPTION != %s AND sd.PAYMENTAMT_LOCAL > 0
+               AND {neg_filt} AND sd.PAYMENTAMT_LOCAL > 0
         ),
         pp AS (
             SELECT CLIENT_ID, STUDIO_ID, REVENUE_CATEGORY, PRODUCT_DESCRIPTION,
@@ -481,7 +503,7 @@ def build_campaign(cur, camp):
         SELECT COALESCE(SOURCE_CHANNEL, 'Unknown'), COUNT(*), COUNT(DISTINCT CLIENT_ID)
         FROM (
             SELECT SOURCE_CHANNEL, CLIENT_ID FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s AND SALE_DATE BETWEEN %s AND %s
+            WHERE {filt} AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         )
         GROUP BY 1 ORDER BY 2 DESC
@@ -494,7 +516,7 @@ def build_campaign(cur, camp):
         {_CLIENTS_SRC_CTE},
         deduped AS (
             SELECT * FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s AND SALE_DATE BETWEEN %s AND %s
+            WHERE {filt} AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         ),
         pu AS (
@@ -509,7 +531,7 @@ def build_campaign(cur, camp):
             JOIN {SALES} sd
                 ON pu.CLIENT_ID = sd.CLIENT_ID AND pu.STUDIO_ID = sd.STUDIO_ID
                AND sd.SALE_DATE > pu.PD AND sd.SALE_DATE <= %s
-               AND sd.PRODUCT_DESCRIPTION != %s AND sd.PAYMENTAMT_LOCAL > 0
+               AND {neg_filt} AND sd.PAYMENTAMT_LOCAL > 0
                AND {_QUALITY_FILTER}
         ),
         pp AS (
@@ -542,7 +564,7 @@ def build_campaign(cur, camp):
         {_CLIENTS_SRC_CTE},
         deduped AS (
             SELECT * FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s AND SALE_DATE BETWEEN %s AND %s
+            WHERE {filt} AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         ),
         pu AS (
@@ -557,7 +579,7 @@ def build_campaign(cur, camp):
             JOIN {SALES} sd
                 ON pu.CLIENT_ID = sd.CLIENT_ID AND pu.STUDIO_ID = sd.STUDIO_ID
                AND sd.SALE_DATE > pu.PD AND sd.SALE_DATE <= %s
-               AND sd.PRODUCT_DESCRIPTION != %s AND sd.PAYMENTAMT_LOCAL > 0
+               AND {neg_filt} AND sd.PAYMENTAMT_LOCAL > 0
                AND {_QUALITY_FILTER}
         ),
         pp AS (
@@ -591,7 +613,7 @@ def build_campaign(cur, camp):
     rows = qall(cur, f"""
         WITH deduped AS (
             SELECT * FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s AND SALE_DATE BETWEEN %s AND %s
+            WHERE {filt} AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         ),
         pu AS (
@@ -605,7 +627,7 @@ def build_campaign(cur, camp):
             FROM pu
             JOIN {SALES} sd ON pu.CLIENT_ID = sd.CLIENT_ID AND pu.STUDIO_ID = sd.STUDIO_ID
                AND sd.SALE_DATE > pu.PD AND sd.SALE_DATE <= %s
-               AND sd.PRODUCT_DESCRIPTION != %s AND sd.PAYMENTAMT_LOCAL > 0
+               AND {neg_filt} AND sd.PAYMENTAMT_LOCAL > 0
                AND sd.IS_RETURNED = 0
                AND {_QUALITY_FILTER}
         )
@@ -631,7 +653,7 @@ def build_campaign(cur, camp):
     rows = qall(cur, f"""
         WITH deduped AS (
             SELECT * FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s AND SALE_DATE BETWEEN %s AND %s
+            WHERE {filt} AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         ),
         pu AS (
@@ -645,7 +667,7 @@ def build_campaign(cur, camp):
             FROM pu
             JOIN {SALES} sd ON pu.CLIENT_ID = sd.CLIENT_ID AND pu.STUDIO_ID = sd.STUDIO_ID
                AND sd.SALE_DATE > pu.PD AND sd.SALE_DATE <= %s
-               AND sd.PRODUCT_DESCRIPTION != %s AND sd.PAYMENTAMT_LOCAL > 0
+               AND {neg_filt} AND sd.PAYMENTAMT_LOCAL > 0
                AND sd.IS_RETURNED = 0
                AND {_QUALITY_FILTER}
         )
@@ -680,7 +702,7 @@ def build_campaign(cur, camp):
         SELECT SALE_DATE, COUNT(*), COALESCE(SUM(PAYMENTAMT_LOCAL), 0)
         FROM (
             SELECT SALE_DATE, PAYMENTAMT_LOCAL FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s AND SALE_DATE BETWEEN %s AND %s
+            WHERE {filt} AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         )
         GROUP BY 1 ORDER BY 1
@@ -696,7 +718,7 @@ def build_campaign(cur, camp):
         SELECT REPLACE(STUDIO_NAME, 'SWEAT440 ', ''), SALE_DATE, COUNT(*), COALESCE(SUM(PAYMENTAMT_LOCAL), 0)
         FROM (
             SELECT SALE_DATE, STUDIO_NAME, PAYMENTAMT_LOCAL FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s AND SALE_DATE BETWEEN %s AND %s
+            WHERE {filt} AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         )
         GROUP BY 1, 2
@@ -714,7 +736,7 @@ def build_campaign(cur, camp):
         WITH deduped AS (
             SELECT CLIENT_ID, STUDIO_ID, EMAIL_ID, SALE_DATE
             FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s AND SALE_DATE BETWEEN %s AND %s
+            WHERE {filt} AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         ),
         pu AS (
@@ -751,7 +773,7 @@ def build_campaign(cur, camp):
             JOIN {SALES} sd
                 ON pu.CLIENT_ID = sd.CLIENT_ID AND pu.STUDIO_ID = sd.STUDIO_ID
                AND sd.SALE_DATE > pu.promo_date AND sd.SALE_DATE <= %s
-               AND sd.PRODUCT_DESCRIPTION != %s AND sd.PAYMENTAMT_LOCAL > 0
+               AND {neg_filt} AND sd.PAYMENTAMT_LOCAL > 0
                AND {_QUALITY_FILTER}
         ),
         pp AS (
@@ -791,7 +813,7 @@ def build_campaign(cur, camp):
         WITH deduped AS (
             SELECT CLIENT_ID, STUDIO_ID, STUDIO_NAME, EMAIL_ID, SALE_DATE
             FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s AND SALE_DATE BETWEEN %s AND %s
+            WHERE {filt} AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         ),
         pu AS (
@@ -828,7 +850,7 @@ def build_campaign(cur, camp):
             JOIN {SALES} sd
                 ON pu.CLIENT_ID = sd.CLIENT_ID AND pu.STUDIO_ID = sd.STUDIO_ID
                AND sd.SALE_DATE > pu.promo_date AND sd.SALE_DATE <= %s
-               AND sd.PRODUCT_DESCRIPTION != %s AND sd.PAYMENTAMT_LOCAL > 0
+               AND {neg_filt} AND sd.PAYMENTAMT_LOCAL > 0
                AND {_QUALITY_FILTER}
         ),
         pp AS (
@@ -869,7 +891,7 @@ def build_campaign(cur, camp):
         WITH deduped AS (
             SELECT CLIENT_ID, EMAIL_ID, FIRST_NAME, LAST_NAME, STUDIO_ID, STUDIO_NAME, SALE_DATE
             FROM {SALES}
-            WHERE PRODUCT_DESCRIPTION = %s AND SALE_DATE BETWEEN %s AND %s
+            WHERE {filt} AND SALE_DATE BETWEEN %s AND %s
             QUALIFY ROW_NUMBER() OVER (PARTITION BY SALE_ID, STUDIO_ID ORDER BY SALE_ID) = 1
         )
         SELECT

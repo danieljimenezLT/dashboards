@@ -72,6 +72,98 @@ def discover_ig_ids(studios, user_token):
     print(f"  {found}/{len(studios)} studios have a linked Instagram account\n")
 
 
+def _month_key(date_str):
+    """Return 'YYYY-MM-01' for a given date string, or '' on error."""
+    try:
+        d = datetime.strptime(date_str, "%Y-%m-%d")
+        return f"{d.year}-{d.month:02d}-01"
+    except (ValueError, TypeError):
+        return ""
+
+
+def build_monthly_aggregates(daily_rows, posts, before_date_str):
+    """
+    Aggregate daily rows into monthly summaries for complete calendar months
+    that fall entirely before before_date_str (the rolling window start).
+    Only months where the last day < before_date_str are included, ensuring
+    partial boundary months are never archived prematurely.
+    Returns {month_key: aggregate_dict}.
+    """
+    import statistics
+    from calendar import monthrange
+    cutoff = datetime.strptime(before_date_str, "%Y-%m-%d")
+    monthly = {}
+    # reach by date — needed to estimate reach per post
+    reach_by_date = {}
+
+    for row in daily_rows:
+        try:
+            d = datetime.strptime(row["date"], "%Y-%m-%d")
+        except (ValueError, KeyError):
+            continue
+        last_day = datetime(d.year, d.month, monthrange(d.year, d.month)[1])
+        if last_day >= cutoff:
+            continue  # month not yet fully outside the rolling window
+        mk = f"{d.year}-{d.month:02d}-01"
+        if mk not in monthly:
+            monthly[mk] = {"month": mk, "reach": 0, "accounts_engaged": 0,
+                           "total_interactions": 0, "days_with_data": 0, "post_count": 0,
+                           "median_likes": None, "median_reach_per_post": None,
+                           "_likes": [], "_reach_per_post": []}
+        m = monthly[mk]
+        m["reach"] += row.get("reach") or 0
+        m["accounts_engaged"] += row.get("accounts_engaged") or 0
+        m["total_interactions"] += row.get("total_interactions") or 0
+        m["days_with_data"] += 1
+        reach_by_date[row["date"]] = row.get("reach") or 0
+        # Track last known follower_count in the month
+        fc = row.get("follower_count")
+        if fc is not None:
+            if m.get("followers") is None or row["date"] > m.get("_last_fc_date", ""):
+                m["followers"] = fc
+                m["_last_fc_date"] = row["date"]
+
+    # Count posts per date to estimate per-post reach
+    posts_per_date = {}
+    valid_posts = []
+    for post in posts:
+        try:
+            d = datetime.strptime(post.get("date", ""), "%Y-%m-%d")
+        except (ValueError, TypeError):
+            continue
+        last_day = datetime(d.year, d.month, monthrange(d.year, d.month)[1])
+        if last_day >= cutoff:
+            continue
+        posts_per_date[post["date"]] = posts_per_date.get(post["date"], 0) + 1
+        valid_posts.append(post)
+
+    for post in valid_posts:
+        mk = f"{post['date'][:7]}-01"
+        if mk not in monthly:
+            continue
+        m = monthly[mk]
+        m["post_count"] += 1
+        likes = post.get("likes")
+        if likes is not None:
+            m["_likes"].append(int(likes))
+        n = posts_per_date.get(post["date"], 1)
+        reach = reach_by_date.get(post["date"], 0)
+        if n > 0 and reach > 0:
+            m["_reach_per_post"].append(reach // n)
+
+    # Compute medians and remove temp fields
+    for m in monthly.values():
+        if m["_likes"]:
+            m["median_likes"] = int(statistics.median(m["_likes"]))
+        if m["_reach_per_post"]:
+            m["median_reach_per_post"] = int(statistics.median(m["_reach_per_post"]))
+        del m["_likes"]
+        del m["_reach_per_post"]
+        m.pop("_last_fc_date", None)
+
+    return monthly
+
+
 def date_chunks(start_date, end_date, chunk_days=28):
     """Split a date range into chunks of max chunk_days days."""
     start = datetime.strptime(start_date, "%Y-%m-%d")
@@ -141,28 +233,6 @@ def fetch_instagram_insights(ig_id, studio_name, start_date, end_date, user_toke
         except Exception as e:
             print(f"    WARNING IG reach chunk: {e}")
 
-        # Interactions (metric_type=total_value)
-        for metric_name in ("accounts_engaged", "total_interactions"):
-            try:
-                r = requests.get(f"{BASE}/{ig_id}/insights", params={
-                    "metric": metric_name,
-                    "period": "day",
-                    "metric_type": "total_value",
-                    "since": chunk_start,
-                    "until": chunk_end,
-                    "access_token": user_token,
-                })
-                data = r.json()
-                if "error" not in data:
-                    for metric_obj in data.get("data", []):
-                        for val in metric_obj.get("values", []):
-                            day = val["end_time"][:10]
-                            if start_date <= day <= end_date:
-                                if day not in daily_map:
-                                    daily_map[day] = {"date": day}
-                                daily_map[day][metric_name] = val["value"]
-            except Exception as e:
-                print(f"    WARNING IG {metric_name} chunk: {e}")
 
     # ── follower_count daily (last 30 days only) ──
     try:
@@ -234,7 +304,7 @@ def fetch_instagram_insights(ig_id, studio_name, start_date, end_date, user_toke
 
 def main():
     parser = argparse.ArgumentParser(description="Fetch Instagram insights for all SWEAT440 studios")
-    parser.add_argument("--days", type=int, default=30)
+    parser.add_argument("--days", type=int, default=90)
     parser.add_argument("--start", help="YYYY-MM-DD")
     parser.add_argument("--end", help="YYYY-MM-DD")
     parser.add_argument("--output", default="social_insights.json")
@@ -314,13 +384,30 @@ def main():
         old_daily = {r["date"]: r for r in old.get("daily", [])}
         new_daily = {r["date"]: r for r in new_data.get("daily", [])}
         old_daily.update(new_daily)
-        new_data["daily"] = sorted(old_daily.values(), key=lambda x: x["date"])
+        all_daily = sorted(old_daily.values(), key=lambda x: x["date"])
 
         # Posts: dedup by permalink, new API data wins for engagement counts
         old_posts = {p["permalink"]: p for p in old.get("posts", []) if p.get("permalink")}
         new_posts = {p["permalink"]: p for p in new_data.get("posts", []) if p.get("permalink")}
         old_posts.update(new_posts)
-        new_data["posts"] = sorted(old_posts.values(), key=lambda x: x.get("date", ""), reverse=True)
+        all_posts = sorted(old_posts.values(), key=lambda x: x.get("date", ""), reverse=True)
+
+        # Monthly aggregates: compute from full accumulated data for complete months
+        # entirely before the 90-day window. Existing stored months are preserved;
+        # recomputed months (still in accumulated daily data) overwrite the stored value.
+        new_monthly = build_monthly_aggregates(all_daily, all_posts, start_date)
+        old_monthly = {m["month"]: m for m in old.get("monthly", [])}
+        old_monthly.update(new_monthly)
+        new_data["monthly"] = sorted(old_monthly.values(), key=lambda x: x["month"])
+
+        # Prune daily rows and posts from months that are now fully archived.
+        # Boundary months (partially in the 90-day window) are kept intact so
+        # they can be correctly aggregated when they eventually fall out.
+        archived_keys = set(new_monthly.keys())
+        new_data["daily"] = [r for r in all_daily
+                             if _month_key(r["date"]) not in archived_keys]
+        new_data["posts"] = [p for p in all_posts
+                             if _month_key(p.get("date", "")) not in archived_keys]
 
         ig_map[studio_name] = new_data
 

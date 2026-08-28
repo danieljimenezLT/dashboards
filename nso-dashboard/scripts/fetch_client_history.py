@@ -38,7 +38,10 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+
+ET = ZoneInfo("America/New_York")
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -52,6 +55,51 @@ import studios as studios_registry
 
 NSO_STUDIOS = studios_registry.nso_studios_by_snowflake_id()
 ID_LIST = ",".join(str(i) for i in NSO_STUDIOS)
+
+# Studios that are open and sell real memberships (not just presales)
+MEMBERSHIP_STUDIOS = {5751381}  # Naples - Mercato
+MEM_ID_LIST = ",".join(str(i) for i in MEMBERSHIP_STUDIOS)
+
+# ---------------------------------------------------------------------------
+# Lead-source attribution CASE — mirrors fetch_nso_sales.py exactly
+# ---------------------------------------------------------------------------
+_SOURCE_CASE = """
+    CASE
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) = 'facebook lead ad'    THEN 'Meta Ads'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) = 'instagram'            THEN 'Meta Ads'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) LIKE '%facebook%'
+         AND LOWER(TRIM(l.LEAD_SOURCE)) LIKE '%lead%'            THEN 'Meta Ads'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) LIKE '%instagram%'       THEN 'Meta Ads'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) = 'meta ads'            THEN 'Meta Ads'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) = 'google ads'          THEN 'Google Ads'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) = 'tiktok ads'          THEN 'TikTok Ads'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) = 'local listings'      THEN 'Local Listings'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) = 'internet / ai search' THEN
+             IFF(CAST(c.SIGNEDUP_DATE AS DATE) < '2026-03-18'::DATE, 'Google Ads', 'Internet / AI Search')
+        WHEN LOWER(TRIM(c.REFERRED_BY)) = 'local event'         THEN 'Grassroots'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) = 'print ads / signs'   THEN 'Print Ads / Signs'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) = 'social media'        THEN 'Social Media Organic'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) = 'branded web app (bwa)'
+                                                                 THEN 'Website (unattributed)'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('branded mobile app (bma)','consumer mode')
+                                                                 THEN 'SWEAT440 App'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('business app','business mode')
+                                                                 THEN 'Business Mode / App'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('public api')        THEN 'Public API'
+        WHEN LOWER(TRIM(l.LEAD_SOURCE)) IN ('mindbody app','mindbody web')
+                                                                 THEN 'MindBody App'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('another client','word of mouth')
+                                                                 THEN 'Word of Mouth'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('classpass','wellhub','wellness passport')
+                                                                 THEN 'ClassPass / Platforms'
+        WHEN LOWER(TRIM(c.REFERRED_BY)) IN ('drive by','flyer','frederick',
+                                             'holly met outside of gym.','internet','n/a',
+                                             'newspaper','other','radio','tv / streaming')
+                                                                 THEN 'Other'
+        ELSE 'N/A'
+    END
+"""
+
 
 # ---------------------------------------------------------------------------
 # SOURCE_CHANNEL → human-readable "sold by" label
@@ -126,6 +174,45 @@ phones AS (
         COALESCE(NULLIF(TRIM(CELLPHONE),''), NULLIF(TRIM(HOMEPHONE),''), NULLIF(TRIM(WORKPHONE),'')) AS phone
     FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_CLIENTS
     WHERE STUDIO_ID IN ({ID_LIST})
+),
+leads_src AS (
+    SELECT
+        LOWER(TRIM(CLIENT_EMAIL)) AS email,
+        STUDIO_ID,
+        LEAD_SOURCE,
+        ROW_NUMBER() OVER (
+            PARTITION BY LOWER(TRIM(CLIENT_EMAIL)), STUDIO_ID
+            ORDER BY
+                CASE
+                    WHEN LOWER(TRIM(LEAD_SOURCE)) = 'facebook lead ad'              THEN 0
+                    WHEN LOWER(TRIM(LEAD_SOURCE)) LIKE '%instagram%'                THEN 0
+                    WHEN LOWER(TRIM(LEAD_SOURCE)) LIKE '%facebook%'
+                     AND LOWER(TRIM(LEAD_SOURCE)) LIKE '%lead%'                     THEN 0
+                    WHEN LOWER(TRIM(LEAD_SOURCE)) LIKE '%google%'                   THEN 0
+                    WHEN LEAD_SOURCE = 'public api'                                  THEN 3
+                    WHEN LEAD_SOURCE IS NULL                                          THEN 2
+                    ELSE 1
+                END,
+                STAGE_START ASC
+        ) AS rn
+    FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_LEADS_LOG
+    WHERE STUDIO_ID IN ({ID_LIST})
+),
+clients_src AS (
+    SELECT
+        LOWER(TRIM(EMAIL_ID)) AS email,
+        STUDIO_ID,
+        REFERRED_BY,
+        CAST(SIGNEDUP_DATE AS DATE) AS SIGNEDUP_DATE,
+        ROW_NUMBER() OVER (
+            PARTITION BY LOWER(TRIM(EMAIL_ID)), STUDIO_ID
+            ORDER BY SIGNEDUP_DATE ASC
+        ) AS rn
+    FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_CLIENTS
+    WHERE STUDIO_ID IN ({ID_LIST})
+      AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%sweat440%'
+      AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%leadteam%'
+      AND LOWER(TRIM(EMAIL_ID)) NOT LIKE 'test%'
 )
 SELECT
     f.STUDIO_ID,
@@ -138,43 +225,147 @@ SELECT
     f.ONLINE_FLAG,
     COALESCE(f.SOURCE_CHANNEL, '')                  AS source_channel,
     CASE WHEN f.QUANTITY = 1 AND f.IS_RETURN = 0 THEN 'sale' ELSE 'cancel' END AS txn_type,
-    f.amount
+    f.amount,
+    COALESCE({_SOURCE_CASE}, 'N/A')                 AS lead_source
 FROM filtered f
-LEFT JOIN phones p ON p.CLIENT_ID = f.CLIENT_ID AND p.STUDIO_ID = f.STUDIO_ID
+LEFT JOIN phones     p ON p.CLIENT_ID             = f.CLIENT_ID
+                      AND p.STUDIO_ID             = f.STUDIO_ID
+LEFT JOIN leads_src  l ON LOWER(TRIM(f.email))   = l.email
+                      AND f.STUDIO_ID             = l.STUDIO_ID AND l.rn = 1
+LEFT JOIN clients_src c ON LOWER(TRIM(f.email))  = c.email
+                      AND f.STUDIO_ID             = c.STUDIO_ID AND c.rn = 1
 ORDER BY f.STUDIO_ID, f.sale_date DESC, f.created_utc DESC
 """
 
 
-def fetch_all() -> dict:
-    conn = get_conn()
-    cur = conn.cursor()
-    print("Running client history query...")
-    cur.execute(QUERY)
-    rows = cur.fetchall()
-    cols = [d[0] for d in cur.description]
-    cur.close()
-    conn.close()
-    print(f"  {len(rows)} records fetched")
+# ---------------------------------------------------------------------------
+# Open-studio membership query — runs only for MEMBERSHIP_STUDIOS
+# Pulls real membership buys/cancels (not presales) so they appear in
+# Client History alongside the presale records for open studios.
+# ---------------------------------------------------------------------------
+MEMBERSHIP_QUERY = f"""
+WITH filtered AS (
+    SELECT
+        s.STUDIO_ID,
+        s.CLIENT_ID,
+        s.CLIENT_FULL_NAME                          AS client_name,
+        s.EMAIL_ID                                  AS email,
+        s.PRODUCT_DESCRIPTION                       AS product,
+        s.SALE_DATE::DATE                           AS sale_date,
+        s.CREATED_DATE_TIME_UTC                     AS created_utc,
+        s.ONLINE_FLAG,
+        s.SOURCE_CHANNEL,
+        s.QUANTITY,
+        s.IS_RETURN,
+        COALESCE(s.GROSS_PAYMENTAMT_LOCAL, 0)       AS amount
+    FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS s
+    WHERE s.STUDIO_ID IN ({MEM_ID_LIST})
+      AND s.ITEM_TYPE = 'Pricing Option'
+      AND s.REVENUE_CATEGORY = 'Memberships'
+      AND LOWER(s.PRODUCT_DESCRIPTION) NOT LIKE '%pre%sale%'
+      AND LOWER(s.PRODUCT_DESCRIPTION) NOT LIKE '%employee%'
+      AND LOWER(s.PRODUCT_DESCRIPTION) NOT LIKE '%family%'
+      AND LOWER(s.PRODUCT_DESCRIPTION) NOT LIKE '%complimentary%'
+      AND LOWER(s.PRODUCT_DESCRIPTION) NOT LIKE '%guest%pass%'
+      AND LOWER(s.PRODUCT_DESCRIPTION) NOT LIKE '%aescape%'
+      AND LOWER(s.PRODUCT_DESCRIPTION) NOT LIKE '%massage%'
+      AND LOWER(s.PRODUCT_DESCRIPTION) NOT LIKE '%wellhub%'
+      AND LOWER(s.PRODUCT_DESCRIPTION) NOT LIKE '%wellness%passport%'
+      AND LOWER(s.PRODUCT_DESCRIPTION) NOT LIKE '%classpass%'
+      AND LOWER(s.PRODUCT_DESCRIPTION) NOT LIKE '%class pass%'
+      AND (s.EMAIL_ID IS NULL OR (
+          LOWER(TRIM(s.EMAIL_ID)) NOT LIKE 'test%'
+      AND LOWER(TRIM(s.EMAIL_ID)) NOT LIKE '%sweat440%'
+      AND LOWER(TRIM(s.EMAIL_ID)) NOT LIKE '%leadteam%'
+      ))
+),
+phones AS (
+    SELECT
+        CLIENT_ID,
+        STUDIO_ID,
+        COALESCE(NULLIF(TRIM(CELLPHONE),''), NULLIF(TRIM(HOMEPHONE),''), NULLIF(TRIM(WORKPHONE),'')) AS phone
+    FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_CLIENTS
+    WHERE STUDIO_ID IN ({MEM_ID_LIST})
+),
+leads_src AS (
+    SELECT
+        LOWER(TRIM(CLIENT_EMAIL)) AS email,
+        STUDIO_ID,
+        LEAD_SOURCE,
+        ROW_NUMBER() OVER (
+            PARTITION BY LOWER(TRIM(CLIENT_EMAIL)), STUDIO_ID
+            ORDER BY
+                CASE
+                    WHEN LOWER(TRIM(LEAD_SOURCE)) = 'facebook lead ad'              THEN 0
+                    WHEN LOWER(TRIM(LEAD_SOURCE)) LIKE '%instagram%'                THEN 0
+                    WHEN LOWER(TRIM(LEAD_SOURCE)) LIKE '%facebook%'
+                     AND LOWER(TRIM(LEAD_SOURCE)) LIKE '%lead%'                     THEN 0
+                    WHEN LOWER(TRIM(LEAD_SOURCE)) LIKE '%google%'                   THEN 0
+                    WHEN LEAD_SOURCE = 'public api'                                  THEN 3
+                    WHEN LEAD_SOURCE IS NULL                                          THEN 2
+                    ELSE 1
+                END,
+                STAGE_START ASC
+        ) AS rn
+    FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_LEADS_LOG
+    WHERE STUDIO_ID IN ({MEM_ID_LIST})
+),
+clients_src AS (
+    SELECT
+        LOWER(TRIM(EMAIL_ID)) AS email,
+        STUDIO_ID,
+        REFERRED_BY,
+        CAST(SIGNEDUP_DATE AS DATE) AS SIGNEDUP_DATE,
+        ROW_NUMBER() OVER (
+            PARTITION BY LOWER(TRIM(EMAIL_ID)), STUDIO_ID
+            ORDER BY SIGNEDUP_DATE ASC
+        ) AS rn
+    FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_CLIENTS
+    WHERE STUDIO_ID IN ({MEM_ID_LIST})
+      AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%sweat440%'
+      AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%leadteam%'
+      AND LOWER(TRIM(EMAIL_ID)) NOT LIKE 'test%'
+)
+SELECT
+    f.STUDIO_ID,
+    f.client_name,
+    f.email,
+    COALESCE(p.phone, '')                           AS phone,
+    f.product,
+    f.sale_date,
+    f.created_utc,
+    f.ONLINE_FLAG,
+    COALESCE(f.SOURCE_CHANNEL, '')                  AS source_channel,
+    CASE WHEN f.QUANTITY = 1 AND f.IS_RETURN = 0 THEN 'sale' ELSE 'cancel' END AS txn_type,
+    f.amount,
+    COALESCE({_SOURCE_CASE}, 'N/A')                 AS lead_source
+FROM filtered f
+LEFT JOIN phones     p ON p.CLIENT_ID             = f.CLIENT_ID
+                      AND p.STUDIO_ID             = f.STUDIO_ID
+LEFT JOIN leads_src  l ON LOWER(TRIM(f.email))   = l.email
+                      AND f.STUDIO_ID             = l.STUDIO_ID AND l.rn = 1
+LEFT JOIN clients_src c ON LOWER(TRIM(f.email))  = c.email
+                      AND f.STUDIO_ID             = c.STUDIO_ID AND c.rn = 1
+ORDER BY f.STUDIO_ID, f.sale_date DESC, f.created_utc DESC
+"""
 
-    # Group by studio
-    studio_records: dict[int, list] = {}
+
+def _parse_rows(rows, cols) -> list[dict]:
+    out = []
     for r in rows:
         row = dict(zip(cols, r))
         sid = row["STUDIO_ID"]
-        if sid not in studio_records:
-            studio_records[sid] = []
-
-        # Parse time from CREATED_DATE_TIME_UTC
         time_str = ""
         if row["CREATED_UTC"]:
             try:
                 dt = row["CREATED_UTC"]
                 if hasattr(dt, "strftime"):
-                    time_str = dt.strftime("%H:%M")
+                    dt_et = dt.replace(tzinfo=timezone.utc).astimezone(ET)
+                    time_str = dt_et.strftime("%H:%M")
             except Exception:
                 pass
-
-        studio_records[sid].append({
+        out.append({
+            "_sid":        sid,
             "type":        row["TXN_TYPE"],
             "client_name": row["CLIENT_NAME"] or "",
             "email":       row["EMAIL"] or "",
@@ -185,7 +376,40 @@ def fetch_all() -> dict:
             "platform":    row["SOURCE_CHANNEL"] or "",
             "sold_by":     _sold_by(row["SOURCE_CHANNEL"], row["ONLINE_FLAG"]),
             "amount":      float(row["AMOUNT"] or 0),
+            "source":      row["LEAD_SOURCE"] or "N/A",
         })
+    return out
+
+
+def fetch_all() -> dict:
+    conn = get_conn()
+    cur = conn.cursor()
+
+    print("Running presale client history query...")
+    cur.execute(QUERY)
+    rows = cur.fetchall()
+    cols = [d[0] for d in cur.description]
+    print(f"  {len(rows)} presale records fetched")
+    all_records = _parse_rows(rows, cols)
+
+    if MEMBERSHIP_STUDIOS:
+        print("Running open-studio membership query...")
+        cur.execute(MEMBERSHIP_QUERY)
+        mem_rows = cur.fetchall()
+        mem_cols = [d[0] for d in cur.description]
+        print(f"  {len(mem_rows)} membership records fetched")
+        all_records += _parse_rows(mem_rows, mem_cols)
+
+    cur.close()
+    conn.close()
+
+    # Group by studio; sort combined records newest-first
+    studio_records: dict[int, list] = {}
+    for rec in sorted(all_records, key=lambda x: (x["date"], x["time"]), reverse=True):
+        sid = rec.pop("_sid")
+        if sid not in studio_records:
+            studio_records[sid] = []
+        studio_records[sid].append(rec)
 
     studios_out = []
     for sid, info in NSO_STUDIOS.items():

@@ -1,0 +1,7 @@
+# Local environment credentials — never commit
+.env
+
+# Weekly export files for manual Claude.ai review — transient working files,
+# not meant to be committed (unlike data/*.json, which IS the dashboard's
+# source of truth and should be committed).
+exports/

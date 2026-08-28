@@ -105,25 +105,19 @@ def price_to_tier(price, pricing):
 
 def fetch_daily_sales(cur, studio_id, end_date):
     """
-    CLIENT-LEVEL approach matching fetch_nso_sales.py methodology exactly:
-    group by (client, product) — no price split — so the same client is never
-    counted in multiple tier buckets due to loc1/loc98 price rounding differences
-    or tier upgrades.  Includes $0 presales (comps/staff) to match the scorecard.
+    TRANSACTION-LEVEL approach — no email dedup, matches fetch_nso_sales.py exactly.
+    Groups by (CLIENT_ID, PRODUCT_DESCRIPTION) so every raw MindBody transaction
+    is counted independently.
 
-    end_date: only include records with SALE_DATE <= end_date (same cutoff as
-    fetch_nso_sales.py so both scripts always cover the same date range).
-
-    For each (client, product_description):
+    For each (CLIENT_ID, PRODUCT_DESCRIPTION):
       - net = total_buys - total_cancels
-      - net > 0 → client ACTIVE: emit +1 on first_buy_date
-      - net = 0 → bought then fully cancelled: emit +1 on first_buy, -1 on last_cancel
+      - net > 0 → active: emit +net on first_buy_date
+      - net = 0 → bought then cancelled: emit +buys on first_buy, -cancels on last_cancel
       - net < 0 → data anomaly: skip
-
-    price = AVG of positive-amount buy records (used only for tier assignment).
     """
-    # ── Query 1: per-client, per-product buy summary (no price split) ─────
+    # ── Query 1: buys per (CLIENT_ID, PRODUCT_DESCRIPTION) ───────────────
     cur.execute(f"""
-        SELECT CLIENT_ID, EMAIL_ID, PRODUCT_DESCRIPTION,
+        SELECT CLIENT_ID, PRODUCT_DESCRIPTION,
                COALESCE(ROUND(AVG(CASE WHEN GROSS_PAYMENTAMT_LOCAL > 0
                                        THEN GROSS_PAYMENTAMT_LOCAL END), 0), 0) AS price,
                COUNT(*)               AS total_buys,
@@ -139,11 +133,11 @@ def fetch_daily_sales(cur, studio_id, end_date):
               AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%sweat440%'
               AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%leadteam%'
           ))
-        GROUP BY 1, 2, 3
+        GROUP BY 1, 2
     """)
-    buy_rows_raw = cur.fetchall()  # [(client_id, email, prod_desc, price, total_buys, first_buy), ...]
+    buy_rows = cur.fetchall()  # [(client_id, prod_desc, price, total_buys, first_buy), ...]
 
-    # ── Query 2: cancel counts per (client, product) ──────────────────────────
+    # ── Query 2: cancels per (CLIENT_ID, PRODUCT_DESCRIPTION) ────────────
     cur.execute(f"""
         SELECT CLIENT_ID, PRODUCT_DESCRIPTION,
                COUNT(*)             AS total_cancels,
@@ -160,25 +154,6 @@ def fetch_daily_sales(cur, studio_id, end_date):
         (str(r[0]), str(r[1])): {"n": int(r[2]), "date": str(r[3])}
         for r in cur.fetchall()
     }
-
-    # Deduplicate by email: same email = same person, keep ACTIVE record first,
-    # then earliest first_buy. Fixes duplicate-CLIENT_ID cases where the older
-    # account was cancelled but the newer one is still active.
-    def _is_cancelled(client_id, prod_desc, total_buys):
-        return cancel_map.get((client_id, prod_desc), {"n": 0})["n"] >= total_buys
-
-    _seen_email_prod = {}
-    buy_rows = []
-    # Sort: active first (0), then by first_buy ascending
-    for row in sorted(buy_rows_raw,
-                      key=lambda r: (_is_cancelled(str(r[0]), str(r[2]), int(r[4])), r[5])):
-        client_id, email_id, prod_desc = str(row[0]), (row[1] or '').lower().strip(), str(row[2])
-        key = (email_id, prod_desc)
-        if email_id and key in _seen_email_prod:
-            continue
-        if email_id:
-            _seen_email_prod[key] = True
-        buy_rows.append((client_id, prod_desc, row[3], row[4], row[5]))  # drop email_id
 
     # ── Build time-series events in Python ────────────────────────────────
     from collections import defaultdict
@@ -274,14 +249,6 @@ for studio in sc.get("studios", []):
     daily = fetch_daily_sales(cur, sid, YESTERDAY)
 
     tier_rmr = build_tier_rmr(daily, weeks, pricing, sku_map, code)
-
-    # Manual corrections for known Snowflake discrepancies
-    if code == "VA-001":
-        # W25 (5/4-5/10): one T1 ($129) member confirmed but excluded by deduplication
-        for r in tier_rmr:
-            if r["week"] == 25:
-                r["t1"] = 89
-                break
 
     studio["tier_rmr_by_week"] = tier_rmr
 

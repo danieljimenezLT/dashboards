@@ -1,0 +1,67 @@
+name: Backfill Google Ads Spend (Manual)
+
+# Manual-only: recovers a Google Ads spend gap left by the 90-day rolling
+# window trim (or upgrades a range to real daily granularity, e.g. Jan-Mar)
+# by calling backfill_google_range.py directly with an arbitrary date range —
+# bypasses fetch_google_ads.py's normal quarter-relative query window, which
+# is a self-imposed restriction, not a Google Ads API limitation.
+#
+# To run this against staging instead of main, pick "staging" in the
+# "Use workflow from" branch dropdown when dispatching — the job checks out
+# and commits back to whichever branch it's run from.
+
+on:
+  workflow_dispatch:
+    inputs:
+      date_from:
+        description: "Start date (YYYY-MM-DD)"
+        required: true
+        default: "2026-04-01"
+      date_to:
+        description: "End date (YYYY-MM-DD)"
+        required: true
+        default: "2026-05-05"
+
+permissions:
+  contents: write
+
+jobs:
+  backfill-google:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ADMIN_PUSH_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install google-ads
+
+      - name: Backfill Google Ads spend for date range
+        env:
+          GOOGLE_ADS_DEVELOPER_TOKEN:   ${{ secrets.GOOGLE_ADS_DEVELOPER_TOKEN }}
+          GOOGLE_ADS_CLIENT_ID:         ${{ secrets.GOOGLE_ADS_CLIENT_ID }}
+          GOOGLE_ADS_CLIENT_SECRET:     ${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}
+          GOOGLE_ADS_REFRESH_TOKEN:     ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}
+          GOOGLE_ADS_LOGIN_CUSTOMER_ID: ${{ secrets.GOOGLE_ADS_LOGIN_CUSTOMER_ID }}
+        run: |
+          python backfill_google_range.py \
+            "${{ github.event.inputs.date_from }}" \
+            "${{ github.event.inputs.date_to }}"
+
+      - name: Rebuild spend-data.json
+        run: python build_spend_data.py
+
+      - name: Commit results
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add google-ads-baked.json spend-data.json
+          git diff --cached --quiet || git commit -m "chore(google-ads): backfill spend ${{ github.event.inputs.date_from }} to ${{ github.event.inputs.date_to }}"
+          git push

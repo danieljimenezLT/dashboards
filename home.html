@@ -126,7 +126,6 @@ if (user) {
   document.getElementById('welcomeName').textContent = user.name;
   if (user.role === 'admin') document.getElementById('adminActions').style.display = '';
   if (user.role !== 'admin' && user.role !== 'corporate') {
-    document.getElementById('osDashCard').remove();
     document.getElementById('corpDashCard').remove();
   }
   if (user.role !== 'admin') {

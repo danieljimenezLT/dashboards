@@ -1,0 +1,40 @@
+name: Deploy Pages (prod + staging)
+
+on:
+  push:
+    branches: [main, staging]
+
+permissions:
+  contents: write
+
+# Two pushes landing on the same branch seconds apart (e.g. a merge commit
+# immediately followed by changelog.yml's own follow-up commit) used to race
+# on the gh-pages push. Each deploy always rebuilds gh-pages from that push's
+# full state, so a superseded run carries no information the newer one
+# lacks — safe to cancel it rather than let both push at once.
+concurrency:
+  group: pages-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy main to root
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          personal_token: ${{ secrets.ADMIN_PUSH_TOKEN }}
+          publish_dir: .
+          keep_files: true
+
+      - name: Deploy staging to /staging subfolder
+        if: github.ref == 'refs/heads/staging'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          personal_token: ${{ secrets.ADMIN_PUSH_TOKEN }}
+          publish_dir: .
+          destination_dir: staging
+          keep_files: true

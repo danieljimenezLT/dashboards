@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ADMIN_PUSH_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -32,6 +34,22 @@ jobs:
         run: python fetch_meta_ads.py
         continue-on-error: true
 
+      - name: Write Google service account credentials
+        run: |
+          mkdir -p nso-dashboard/credentials
+          printf '%s' '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > nso-dashboard/credentials/service_account.json
+
+      - name: Fetch Marketing Spend Adjustments (Leadteam Discount / External Agency)
+        run: python fetch_agency_overrides.py
+        continue-on-error: true
+
+      - name: Sync OS ad thumbnails/videos to Drive
+        env:
+          META_ACCESS_TOKEN:               ${{ secrets.META_TOKEN }}
+          GOOGLE_SERVICE_ACCOUNT_KEY_PATH: nso-dashboard/credentials/service_account.json
+        run: python sync_ad_media.py --dashboard os --max-new-images 300 --max-new-videos 200
+        continue-on-error: true
+
       - name: Fetch Google Ads data
         env:
           GOOGLE_ADS_DEVELOPER_TOKEN:   ${{ secrets.GOOGLE_ADS_DEVELOPER_TOKEN }}
@@ -40,6 +58,10 @@ jobs:
           GOOGLE_ADS_REFRESH_TOKEN:     ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}
           GOOGLE_ADS_LOGIN_CUSTOMER_ID: ${{ secrets.GOOGLE_ADS_LOGIN_CUSTOMER_ID }}
         run: python fetch_google_ads.py
+        continue-on-error: true
+
+      - name: Build spend-data.json (Meta + Google combined)
+        run: python build_spend_data.py
         continue-on-error: true
 
       - name: Fetch Instagram insights (all studios)
@@ -74,10 +96,12 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add meta-ads-data.json google-ads-data.json
+          git add meta-ads-data.json google-ads-data.json spend-data.json
+          git add agency-spend-overrides.json 2>/dev/null || true
           git add nso-dashboard/social_insights.json
           git add nso-dashboard/gbp_data.json
           git add nso-dashboard/thumbnails/ 2>/dev/null || true
+          git add os_media_cache.json 2>/dev/null || true
           git diff --cached --quiet || git commit -m "chore: refresh data $(date -u '+%Y-%m-%d %H:%M UTC')"
           git pull --rebase origin main
           git push

@@ -53,6 +53,18 @@ def meta_studio_rows() -> list[dict]:
     return rows
 
 
+def meta_dedicated_accounts() -> list[dict]:
+    """Studios with their own Meta ad account (migrated off the shared corporate
+    account). All spend/leads in that account belong 100% to the studio — no
+    name-matching needed. Shape: {code, name, account_id}."""
+    rows = []
+    for s in load_studios():
+        acct = s.get("meta", {}).get("ad_account_id")
+        if acct:
+            rows.append({"code": s.get("code"), "name": s["name"], "account_id": acct})
+    return rows
+
+
 def google_ads_campaign_map() -> list[tuple[re.Pattern, str]]:
     """Shape expected by fetch_google_ads.py's studio_from_campaign(): [(compiled_regex, canonical_name)].
 
@@ -127,13 +139,14 @@ def snowflake_id_by_code() -> dict[str, int]:
 
 
 def nso_studios_by_snowflake_id() -> dict[int, dict]:
-    """{snowflake_id: {name: "SWEAT440 X", code}} for fetch_nso_sales.py's NSO_STUDIOS,
-    restricted to status == 'nso' studios with a known snowflake_id (matches the
-    original hand-picked NSO_STUDIOS roster, which never included 'open' studios)."""
+    """{snowflake_id: {name: "SWEAT440 X", code}} for fetch_nso_sales.py's NSO_STUDIOS.
+    Includes status=='nso' studios plus any open studio with nso_track==true (studios
+    that graduated from presale but still need tracking in the NSO dashboard)."""
     return {
         s["snowflake_id"]: {"name": f"SWEAT440 {s['name']}", "code": s["code"]}
         for s in load_studios()
-        if s.get("status") == "nso" and s.get("snowflake_id") and s.get("code")
+        if (s.get("status") == "nso" or s.get("nso_track"))
+        and s.get("snowflake_id") and s.get("code")
     }
 
 

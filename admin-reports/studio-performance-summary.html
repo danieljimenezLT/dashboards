@@ -61,8 +61,7 @@
 <script src="../shared/utils.js"></script>
 <script>
 let RAW = null;
-let META_ADS_RAW = null;
-let GOOGLE_ADS_RAW = null;
+let SPEND_RAW = null;
 
 // GOOGLE_STUDIO_ALIAS / googleStudioName() and META_CODE_TO_STUDIO now live in
 // shared/utils.js, populated from studios.json via loadStudiosRegistry() (called
@@ -74,10 +73,9 @@ async function loadData() {
   if (_authUser.role !== 'admin') { location.replace('../home.html'); return; }
   renderAuthNav(_authUser);
 
-  const [rawRes, metaRes, googleRes] = await Promise.allSettled([
-    fetch('../data.json?_='            + Date.now()),
-    fetch('../meta-ads-data.json?_='   + Date.now()),
-    fetch('../google-ads-data.json?_=' + Date.now()),
+  const [rawRes, spendRes] = await Promise.allSettled([
+    fetch('../data.json?_='       + Date.now()),
+    fetch('../spend-data.json?_=' + Date.now()),
   ]);
   try {
     RAW = await rawRes.value.json();
@@ -86,8 +84,7 @@ async function loadData() {
   } catch(e) {
     console.warn('Using mock data:', e); RAW = getMock();
   }
-  try { META_ADS_RAW   = await metaRes.value.json();   } catch(e) { console.warn('meta-ads-data.json unavailable:', e); }
-  try { GOOGLE_ADS_RAW = await googleRes.value.json(); } catch(e) { console.warn('google-ads-data.json unavailable:', e); }
+  try { SPEND_RAW = await spendRes.value.json(); } catch(e) { console.warn('spend-data.json unavailable:', e); }
 
   // Default date range: last month
   const _today = new Date();
@@ -161,41 +158,32 @@ function _adminMonthList(from, to) {
   return months;
 }
 
-function _adminGoogleSpend(studio, f, t) {
-  if (!GOOGLE_ADS_RAW) return 0;
+// Same definition as spendFor() in index.html — reads spend-data.json
+// (daily rows cover all of 2026, monthly rows cover pre-2026).
+function _adminSpendFor(studio, f, t) {
+  if (!SPEND_RAW) return {meta:0, google:0};
   const fT = f.getTime(), tT = t.getTime();
-  const dailyMonths = new Set((GOOGLE_ADS_RAW.daily||[]).map(r => r.date.slice(0,7)));
-  const rows = [...(GOOGLE_ADS_RAW.daily||[]), ...(GOOGLE_ADS_RAW.monthly||[]).filter(r => !dailyMonths.has(r.month.slice(0,7)))];
-  return rows.reduce((s,r) => {
-    const d = new Date((r.date||r.month)+'T00:00:00Z').getTime();
-    if (d < fT || d > tT) return s;
-    if (googleStudioName(r.studio) !== studio) return s;
-    return s + (r.spend||0);
-  }, 0);
-}
-
-function _adminMetaSpend(studio, f, t) {
-  if (!META_ADS_RAW) return 0;
-  const fT = f.getTime(), tT = t.getTime();
-  let tot = 0;
-  const liveCovered = new Set();
-  for (const row of (META_ADS_RAW.studio_daily||[])) {
-    const d = new Date(row.date+'T00:00:00Z').getTime();
+  let meta = 0, google = 0;
+  const dailyCovered = new Set();
+  for (const r of (SPEND_RAW.daily||[])) {
+    const d = new Date(r.date+'T00:00:00Z').getTime();
     if (d < fT || d > tT) continue;
-    const nm = META_CODE_TO_STUDIO[row.studio_code] || row.studio_code;
+    const nm = META_CODE_TO_STUDIO[r.studio_code] || r.studio_code;
     if (nm !== studio) continue;
-    tot += row.spend||0;
-    liveCovered.add(row.studio_code+'|'+row.date.slice(0,7));
+    meta   += r.meta_spend   || 0;
+    google += r.google_spend || 0;
+    dailyCovered.add(r.studio_code+'|'+r.date.slice(0,7));
   }
-  for (const row of (META_ADS_RAW.studio_monthly||[])) {
-    const d = new Date(row.month+'T00:00:00Z').getTime();
+  for (const r of (SPEND_RAW.monthly||[])) {
+    const d = new Date(r.month+'T00:00:00Z').getTime();
     if (d < fT || d > tT) continue;
-    const nm = META_CODE_TO_STUDIO[row.studio_code] || row.studio_code;
+    if (dailyCovered.has(r.studio_code+'|'+r.month.slice(0,7))) continue;
+    const nm = META_CODE_TO_STUDIO[r.studio_code] || r.studio_code;
     if (nm !== studio) continue;
-    if (liveCovered.has(row.studio_code+'|'+row.month.slice(0,7))) continue;
-    tot += row.spend||0;
+    meta   += r.meta_spend   || 0;
+    google += r.google_spend || 0;
   }
-  return tot;
+  return {meta: Math.round(meta*100)/100, google: Math.round(google*100)/100};
 }
 
 function _adminLeadteamFee(f, t) {
@@ -221,8 +209,7 @@ function buildStudioPerformanceTable() {
     const daily   = filterRows(RAW.daily_detail||[],   mFrom, mTo, [studio], selSources);
     const monthly = filterRows(RAW.monthly_detail||[], mFrom, mTo, [studio], selSources);
     const {leads, ft, mem} = sumRows([...daily, ...monthly]);
-    const google    = _adminGoogleSpend(studio, mFrom, mTo);
-    const meta      = _adminMetaSpend(studio, mFrom, mTo);
+    const {meta, google} = _adminSpendFor(studio, mFrom, mTo);
     const leadteam  = _adminLeadteamFee(mFrom, mTo);
     const spend = google + meta + leadteam;
     return {

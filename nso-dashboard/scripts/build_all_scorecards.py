@@ -39,8 +39,10 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 LEADTEAM_MONTHLY = 1200.0  # $1,200/month, prorated daily
 NSO_CONFIG_SHEET_URL = "https://docs.google.com/spreadsheets/d/1Ku0VSwOY6HVXuqucduWlsbKIiNzb0ojL21rozaPpHHU"
 
-# Calendar week 1 = Dec 29, 2025 (Mon); week N Monday = CAL_WEEK1_START + (N-1) weeks
-CAL_WEEK1_START = date(2025, 12, 29)
+# Scorecard weeks: Week 1 starts on the configured week1_start date (any day), ends the
+# following Saturday. All subsequent weeks run Sunday–Saturday. Charts independently use
+# the same convention (Sunday start via getUTCDay() in _periodKey).
+CAL_WEEK1_START = date(2025, 12, 28)  # Dec 28, 2025 = Sunday (reference only, not used in computation)
 
 # NSO Config sheet fixed column indices (0-based) — only for columns that never shift.
 # Scheduling and targets columns use header-name lookup via _ch() in load_studio_config().
@@ -67,6 +69,10 @@ EVENTS_SPEND_STUDIO_MAP = {
     "dunwoody": "GA-001",
     "middletown": "NJ-005",
     "fort myers": "FL-022",
+    "rose creek": "OK-001",
+    "okc - rose creek": "OK-001",
+    "south end": "NC-002",
+    "charlotte - south end": "NC-002",
 }
 
 
@@ -127,25 +133,27 @@ SHEET_CONFIG = {
     },
 }
 
-# Naples irregular week date bounds (weeks 1-10 are fixed; 11+ continue Mon-Sun from 4/20)
+# Naples irregular week date bounds (weeks 1-10 are fixed; 11+ continue Sun-Sat from 4/19)
+# Week 1 starts Feb 9 (Mon, "Ads Go Live") and ends Sat Feb 14.
+# All subsequent weeks run Sunday–Saturday.
 NAPLES_EXPLICIT_WEEKS = {
-    0:  (None,               date(2026, 2,  8)),
-    1:  (date(2026, 2,  9),  date(2026, 2, 15)),
-    2:  (date(2026, 2, 16),  date(2026, 2, 22)),
-    3:  (date(2026, 2, 23),  date(2026, 3,  1)),
-    4:  (date(2026, 3,  2),  date(2026, 3,  8)),
-    5:  (date(2026, 3,  9),  date(2026, 3, 15)),
-    6:  (date(2026, 3, 16),  date(2026, 3, 22)),
-    7:  (date(2026, 3, 23),  date(2026, 3, 29)),
-    8:  (date(2026, 3, 30),  date(2026, 4,  5)),
-    9:  (date(2026, 4,  6),  date(2026, 4, 12)),
-    10: (date(2026, 4, 13),  date(2026, 4, 19)),
+    0:  (None,               date(2026, 2,  8)),  # Pre Feb 9 (ends Sun Feb 8)
+    1:  (date(2026, 2,  9),  date(2026, 2, 14)),  # Mon Feb 9  – Sat Feb 14
+    2:  (date(2026, 2, 15),  date(2026, 2, 21)),  # Sun Feb 15 – Sat Feb 21
+    3:  (date(2026, 2, 22),  date(2026, 2, 28)),  # Sun Feb 22 – Sat Feb 28
+    4:  (date(2026, 3,  1),  date(2026, 3,  7)),  # Sun Mar 1  – Sat Mar 7
+    5:  (date(2026, 3,  8),  date(2026, 3, 14)),  # Sun Mar 8  – Sat Mar 14
+    6:  (date(2026, 3, 15),  date(2026, 3, 21)),  # Sun Mar 15 – Sat Mar 21
+    7:  (date(2026, 3, 22),  date(2026, 3, 28)),  # Sun Mar 22 – Sat Mar 28
+    8:  (date(2026, 3, 29),  date(2026, 4,  4)),  # Sun Mar 29 – Sat Apr 4
+    9:  (date(2026, 4,  5),  date(2026, 4, 11)),  # Sun Apr 5  – Sat Apr 11
+    10: (date(2026, 4, 12),  date(2026, 4, 18)),  # Sun Apr 12 – Sat Apr 18
 }
 NAPLES_SPECIAL_LABELS = {
     0:  "Pre 2/10",
-    1:  "Ads Go Live 2/10 - 2/15",
-    24: "Target C/O 7/20 - 7/26",
-    27: "Target Grand Open 8/10 - 8/16",
+    1:  "Ads Go Live 2/10 - 2/14",
+    24: "Target C/O 7/19 - 7/25",
+    27: "Target Grand Open 8/9 - 8/15",
 }
 
 
@@ -254,7 +262,28 @@ def load_studio_config(gc):
         cpl_raw      = _ch(row, "cpl range") or None
         cpa_raw      = _ch(row, "cpa range") or None
         conv_rate    = _parse_float(_ch(row, "conversion rate"))
-        mkt_budget   = _parse_float(_ch(row, "marketing budget"))
+        mkt_budget      = _parse_float(_ch(row, "marketing budget"))
+        goal_announce   = _parse_float(_ch(row, "goal to announce opening", "goal to announce")) or None
+
+        # Milestone dates from Scheduling columns
+        _MILESTONE_COLS = [
+            ("early_lead_date",       "early lead date",                  "Early Lead Date",                    "Landing page & early interest list"),
+            ("mbo_date",              "full marketing build out complete", "Full Marketing Build Out Complete",  "Lead form live on website"),
+            ("paid_presales_start_date", "paid presales start date",       "Paid Presales Start Date",           "Presales campaign begins"),
+            ("paid_lead_gen_date",    "paid lead gen date",               "Paid Lead Gen Start",                "Meta / Google paid ads begin"),
+        ]
+        milestones = []
+        for key, col_name, label, subtitle in _MILESTONE_COLS:
+            d = _parse_date(_ch(row, col_name))
+            if d:
+                milestones.append({"key": key, "label": label, "subtitle": subtitle, "date": d.isoformat()})
+        milestones.sort(key=lambda m: m["date"])
+        # Reston fixed milestones (Preview Week + Grand Opening) — not in the Sheet
+        if code == "VA-001":
+            milestones += [
+                {"key": "preview_week",  "label": "Preview Week",  "subtitle": "Aug 29 – Sep 4, 2026", "date": "2026-08-29"},
+                {"key": "grand_opening", "label": "Grand Opening", "subtitle": "Doors open to the public",  "date": "2026-09-05"},
+            ]
 
         # Platform IDs — found by header name (columns may vary)
         ig_id      = _ch(row, "instagram id") or None
@@ -295,7 +324,9 @@ def load_studio_config(gc):
             "ig_id":           ig_id,
             "sheet_url":       sheet_url,
             "snowflake_id":    snowflake_id,
-            "gads_account_id": gads_cid.replace("-", "") if gads_cid else None,
+            "gads_account_id":      gads_cid.replace("-", "") if gads_cid else None,
+            "goal_announce_target": goal_announce,
+            "milestones":           milestones,
         })
 
     return studios
@@ -308,8 +339,8 @@ def load_studio_config(gc):
 def make_naples_bounds(num_weeks):
     bounds = []
     explicit = NAPLES_EXPLICIT_WEEKS
-    last_end = date(2026, 4, 19)   # Week 10 end
-    next_mon = last_end + timedelta(days=1)  # 4/20 = Monday
+    last_end = date(2026, 4, 18)   # Week 10 end (Saturday)
+    next_sun = last_end + timedelta(days=1)  # 4/19 = Sunday
 
     bounds.append((0, explicit[0][0], explicit[0][1]))
     for wn in range(1, num_weeks + 1):
@@ -317,17 +348,26 @@ def make_naples_bounds(num_weeks):
             bounds.append((wn, explicit[wn][0], explicit[wn][1]))
         else:
             offset = wn - 11
-            ws = next_mon + timedelta(weeks=offset)
-            we = ws + timedelta(days=6)
+            ws = next_sun + timedelta(weeks=offset)
+            we = ws + timedelta(days=6)  # Saturday
             bounds.append((wn, ws, we))
     return bounds
 
 
-def make_mon_sun_bounds(week1_start, num_weeks):
+def make_sun_sat_bounds(week1_start, num_weeks):
+    """Build week bounds: Week 1 starts on week1_start (any day) and ends on the
+    first Saturday on or after it. All subsequent weeks run Sunday–Saturday."""
+    # Saturday = weekday 5 (Mon=0 … Sat=5, Sun=6)
+    days_to_sat = (5 - week1_start.weekday()) % 7
+    week1_end = week1_start + timedelta(days=days_to_sat)
+
     bounds = [(0, None, week1_start - timedelta(days=1))]
-    for i in range(1, num_weeks + 1):
-        ws = week1_start + timedelta(weeks=i - 1)
-        we = ws + timedelta(days=6)
+    bounds.append((1, week1_start, week1_end))
+
+    next_sun = week1_end + timedelta(days=1)
+    for i in range(2, num_weeks + 1):
+        ws = next_sun + timedelta(weeks=i - 2)
+        we = ws + timedelta(days=6)  # Saturday
         bounds.append((i, ws, we))
     return bounds
 
@@ -435,9 +475,11 @@ def load_ig_followers(social_raw):
 def load_meta_spend(meta_rows):
     """Build {code: {date_str: spend}} from marketing_data.json meta_ads.
 
-    Meta campaigns use studio names in their names (e.g. 'Dr Phillips'), not codes.
-    Match using EVENTS_SPEND_STUDIO_MAP aliases (longest first to avoid false positives),
-    falling back to the studio code itself.
+    Two attribution paths:
+    1. Dedicated-account rows: have studio_code set explicitly (no campaign_name).
+       Attributed directly by code — no name matching needed.
+    2. Shared-account rows: campaign_name contains studio keyword.
+       Matched via EVENTS_SPEND_STUDIO_MAP aliases (longest first).
     """
     all_codes = [cfg["code"] for cfg in _STUDIO_CFG_CACHE]
 
@@ -453,10 +495,18 @@ def load_meta_spend(meta_rows):
 
     by = defaultdict(lambda: defaultdict(float))
     for r in meta_rows:
-        cname = str(r.get("campaign_name", "")).lower()
         d = str(r.get("date", ""))[:10]
         spend = float(r.get("spend") or 0)
         if spend <= 0 or len(d) < 10:
+            continue
+        # Path 1: dedicated account row tagged with studio_code
+        studio_code = r.get("studio_code", "")
+        if studio_code and studio_code in all_codes:
+            by[studio_code][d] += spend
+            continue
+        # Path 2: shared account — match by campaign name
+        cname = str(r.get("campaign_name", "")).lower()
+        if not cname:
             continue
         for code, keywords in match_list:
             if any(kw in cname for kw in keywords):
@@ -483,13 +533,41 @@ def load_google_spend(gads_rows):
 
 
 
-def load_events_spend_from_nso_config(gc):
+def load_events_spend_from_nso_config(gc, studio_cfgs=None):
     """Read 'Weekly Events & Spend' tab from NSO Config sheet.
-    Returns {code: (spend_by_week, events_by_week, other_by_week)} keyed by studio week number (int).
-    'Week 1' in the sheet = studio Week 1, mapped directly without date conversion."""
+
+    Returns {code: (spend_by_week, events_by_week, other_by_week)} keyed by
+    SCORECARD week number.  The sheet stores values under its own 'Week 1 Start
+    Date' (Mon–Sun), which may differ from the scorecard's Sun–Sat boundaries.
+    We convert each sheet week column to a date (sheet_w1 + (N-1)*7 days) and
+    look it up in the studio's scorecard bounds to get the real week number.
+    """
     result = {}
     if not gc:
         return result
+
+    # Build date-string → scorecard week-number lookup per studio code.
+    sc_date_to_wk: dict[str, dict[str, int]] = {}
+    if studio_cfgs:
+        for cfg in studio_cfgs:
+            code = cfg["code"]
+            w1   = cfg["week1_start"]
+            if code == "FL-019":
+                bounds = make_naples_bounds(70)
+            elif w1:
+                bounds = make_sun_sat_bounds(w1, 70)
+            else:
+                continue
+            date_wk: dict[str, int] = {}
+            for wn, ws_d, we_d in bounds:
+                if ws_d is None:
+                    continue
+                d = ws_d
+                while d <= we_d:
+                    date_wk[d.isoformat()] = wn
+                    d += timedelta(days=1)
+            sc_date_to_wk[code] = date_wk
+
     try:
         sh = gc.open_by_url(NSO_CONFIG_SHEET_URL)
         ws = sh.worksheet("Weekly Events & Spend")
@@ -501,23 +579,28 @@ def load_events_spend_from_nso_config(gc):
     if len(all_rows) < 3:
         return result
 
-    # Row index 1 = column headers: "Name", "Metric", "Week 1", "Week 2", ..., "Total"
+    # Row 1 = headers: "Name", "Week 1 Start Date", "Metric", "Week 1", "Week 2", ...
+    # Use \s*$ so "Week 1 Start Date" is NOT matched (doesn't end with a digit).
     header_row = all_rows[1]
-    col_to_week_num = {}
+    col_to_sheet_wk: dict[int, int] = {}
     for col_i, hdr in enumerate(header_row):
-        m = re.match(r"Week\s+(\d+)", str(hdr).strip(), re.IGNORECASE)
+        m = re.match(r"Week\s+(\d+)\s*$", str(hdr).strip(), re.IGNORECASE)
         if m:
-            col_to_week_num[col_i] = int(m.group(1))
+            col_to_sheet_wk[col_i] = int(m.group(1))
 
-    current_code = None
+    current_code:    str | None  = None
+    current_sheet_w1             = None   # date of the sheet's own Week 1
+
     for row in all_rows[2:]:
         if not row:
             continue
-        name_cell   = str(row[0]).strip().lower() if row[0] else ""
-        metric_cell = str(row[1]).strip().lower() if len(row) > 1 else ""
+        name_cell    = str(row[0]).strip().lower() if row[0] else ""
+        w1_date_cell = str(row[1]).strip()          if len(row) > 1 else ""
+        metric_cell  = str(row[2]).strip().lower()  if len(row) > 2 else ""
 
         if name_cell:
-            current_code = EVENTS_SPEND_STUDIO_MAP.get(name_cell)
+            current_code     = EVENTS_SPEND_STUDIO_MAP.get(name_cell)
+            current_sheet_w1 = _parse_sheet_date(w1_date_cell) if w1_date_cell else None
             if current_code and current_code not in result:
                 result[current_code] = (defaultdict(float), defaultdict(int), defaultdict(float))
 
@@ -529,25 +612,40 @@ def load_events_spend_from_nso_config(gc):
         is_other_spend = "other" in metric_cell and "$" in metric_cell
         is_events      = "events" in metric_cell or "#" in metric_cell
 
-        for col_i, wk_num in col_to_week_num.items():
+        if not (is_spend or is_other_spend or is_events):
+            continue
+
+        date_wk = sc_date_to_wk.get(current_code, {})
+
+        for col_i, sheet_wn in col_to_sheet_wk.items():
             if col_i >= len(row):
                 continue
             val = str(row[col_i]).strip()
             if not val or val == "-":
                 continue
+
+            # Map sheet week number → scorecard week number via date.
+            if current_sheet_w1 and date_wk:
+                sheet_wk_start = current_sheet_w1 + timedelta(days=(sheet_wn - 1) * 7)
+                sc_wn = date_wk.get(sheet_wk_start.isoformat())
+                if sc_wn is None:
+                    continue  # before W0 (pre-weeks) or beyond loaded range
+            else:
+                sc_wn = sheet_wn  # fallback: no bounds available
+
             if is_spend:
                 amt = _parse_amount(val)
                 if amt > 0:
-                    spend_d[wk_num] += amt
+                    spend_d[sc_wn] += amt
             elif is_other_spend:
                 amt = _parse_amount(val)
                 if amt > 0:
-                    other_d[wk_num] += amt
+                    other_d[sc_wn] += amt
             elif is_events:
                 try:
                     cnt = int(re.sub(r"[^\d]", "", val))
                     if cnt > 0:
-                        events_d[wk_num] += cnt
+                        events_d[sc_wn] += cnt
                 except (ValueError, TypeError):
                     pass
 
@@ -790,7 +888,7 @@ def main():
 
     # Load grassroots spend + community events + other spend from NSO Config "Weekly Events & Spend" tab.
     print("\nLoading grassroots/events/other spend data from NSO Config sheet...")
-    nso_config_gr = load_events_spend_from_nso_config(gc)
+    nso_config_gr = load_events_spend_from_nso_config(gc, studio_cfgs)
 
     gr_spend_by_code    = {}
     events_by_code      = {}
@@ -815,10 +913,12 @@ def main():
         go_wk = cfg["go_week"] or 28
         co_wk = cfg["co_week"]
         num_weeks = max(go_wk + 3, 28)
-        # Studios with no confirmed opening date (e.g. Reston): extend to cover
-        # the current week + 3-week buffer so new weeks auto-populate from APIs.
-        if cfg["week1_start"] and not cfg["opening_date"]:
-            weeks_elapsed = max(0, (TODAY - cfg["week1_start"]).days // 7)
+        # Always extend to current week + 3-week buffer so data keeps flowing
+        # after opening day. Naples has no week1_start in config — use its
+        # hard-coded Week 1 date (Feb 9, 2026) as the base.
+        _w1 = cfg["week1_start"] or (NAPLES_EXPLICIT_WEEKS[1][0] if cfg["code"] == "FL-019" else None)
+        if _w1:
+            weeks_elapsed = max(0, (TODAY - _w1).days // 7)
             num_weeks = max(num_weeks, weeks_elapsed + 3)
 
         print(f"\n{'='*60}\n  {full}  (data_name={dname!r})\n{'='*60}")
@@ -831,7 +931,7 @@ def main():
             print(f"  Skipping {full}: no week1_start configured in NSO Config sheet")
             continue
         else:
-            bounds = make_mon_sun_bounds(cfg["week1_start"], num_weeks)
+            bounds = make_sun_sat_bounds(cfg["week1_start"], num_weeks)
 
         ig_fc_studio    = ig_by_code.get(code, {})
         meta_spend_d    = meta_by_code.get(code, {})
@@ -1007,16 +1107,18 @@ def main():
                     print(f"  IG gap {gap} added to Week 0 (total {cf_total}, accounted {accounted})")
 
         studio_entry = {
-            "name":          cfg["name"],
-            "code":          code,
-            "full_name":     full,
-            "data_name":     cfg["data_name"],
-            "targets":       cfg["targets"],
-            "co_week":       co_wk,
-            "go_week":       go_wk,
-            "opening_date":  cfg["opening_date"].isoformat() if cfg["opening_date"] else None,
-            "current_week":  cw_num,
-            "weeks":         weeks_out,
+            "name":                 cfg["name"],
+            "code":                 code,
+            "full_name":            full,
+            "data_name":            cfg["data_name"],
+            "targets":              cfg["targets"],
+            "co_week":              co_wk,
+            "go_week":              go_wk,
+            "opening_date":         cfg["opening_date"].isoformat() if cfg["opening_date"] else None,
+            "goal_announce_target": cfg.get("goal_announce_target"),
+            "milestones":           cfg.get("milestones", []),
+            "current_week":         cw_num,
+            "weeks":                weeks_out,
         }
         output_studios.append(studio_entry)
 
