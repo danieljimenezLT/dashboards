@@ -12,6 +12,9 @@ build/
 .venv/
 venv/
 
+# Instagram thumbnails — served from Google Drive, not the repo
+nso-dashboard/thumbnails/
+
 # macOS / Windows
 .DS_Store
 Thumbs.db
