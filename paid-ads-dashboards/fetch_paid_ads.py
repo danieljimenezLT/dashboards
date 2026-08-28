@@ -1,4 +1,4 @@
-"""
+﻿"""
 fetch_paid_ads.py
 ─────────────────────────────────────────────────────────────
 ETL Meta Ads → paid-ads-data.json
@@ -23,7 +23,7 @@ sys.path.insert(0, str(REPO_ROOT.parent))
 import studios as studios_registry
 
 CONFIG_PATH = REPO_ROOT / "config.yaml"
-OUT_PATH = REPO_ROOT / "paid-ads-data.json"
+OUT_PATH = REPO_ROOT / "daniel-paid-ads-data.json"
 
 
 def resolve_campaign_studios(c: dict) -> list[dict]:
