@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-31",
+      "pr_number": 271,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/271",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO Funnel — gráfica de Lead→Net Sale Conversion Rate",
+      "summary": "Agrega KPI card y gráfica de Lead→Net Sale conversion rate al tab de Funnel del NSO dashboard, con toggle y granularidad Daily/Weekly/Monthly."
+    },
+    {
+      "date": "2026-08-31",
       "pr_number": 270,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/270",
       "author": "Santiago Estrada",
