@@ -94,12 +94,22 @@ def run():
         meta_monthly[k] = meta_monthly.get(k, 0) + (r.get("spend") or 0)
 
     # ── 2. Collect Meta daily rows (Apr 2026+) ───────────────────────
+    # meta_dedicated tracks the subset of meta_daily that came from a studio's
+    # own dedicated ad account rather than the shared corporate one — those
+    # rows carry ad_id "ACCOUNT_TOTAL" (see fetch_meta_ads.py step 3b). Kept
+    # separate so consumers (e.g. admin-reports/meta-spend-corporate.html) can
+    # net it out of meta_spend to get corporate-only spend, without needing to
+    # know which studios have migrated or when.
     meta_daily: dict[tuple, float] = {}
+    meta_dedicated: dict[tuple, float] = {}
     for r in meta_live.get("ad_daily", []):
         d = r.get("date", "")
         if d[:4] == str(DAILY_START_YEAR) and d >= f"{DAILY_START_YEAR}-04-01":
             k = (d, r["studio_code"])
-            meta_daily[k] = meta_daily.get(k, 0) + (r.get("spend") or 0)
+            spend = r.get("spend") or 0
+            meta_daily[k] = meta_daily.get(k, 0) + spend
+            if r.get("ad_id") == "ACCOUNT_TOTAL":
+                meta_dedicated[k] = meta_dedicated.get(k, 0) + spend
 
     # Baked real daily rows — e.g. a one-time backfill_meta_month.py run, or a
     # user-supplied import for a range that aged out of ad_daily's 90-day
@@ -153,10 +163,11 @@ def run():
     existing_out = load_json(OUT_PATH)
     daily_out: dict[tuple, dict] = {
         (r["date"], r["studio_code"]): {
-            "date":         r["date"],
-            "studio_code":  r["studio_code"],
-            "meta_spend":   r.get("meta_spend", 0.0),
-            "google_spend": r.get("google_spend", 0.0),
+            "date":                r["date"],
+            "studio_code":         r["studio_code"],
+            "meta_spend":          r.get("meta_spend", 0.0),
+            "meta_spend_dedicated": r.get("meta_spend_dedicated", 0.0),
+            "google_spend":        r.get("google_spend", 0.0),
         }
         for r in existing_out.get("daily", [])
     }
@@ -164,7 +175,10 @@ def run():
     def row(date_str, code):
         k = (date_str, code)
         if k not in daily_out:
-            daily_out[k] = {"date": date_str, "studio_code": code, "meta_spend": 0.0, "google_spend": 0.0}
+            daily_out[k] = {
+                "date": date_str, "studio_code": code,
+                "meta_spend": 0.0, "meta_spend_dedicated": 0.0, "google_spend": 0.0,
+            }
         return daily_out[k]
 
     # Jan–Mar 2026 from Meta monthly, distributed across days (only for
@@ -191,6 +205,13 @@ def run():
     # Apr 2026+ Meta daily (live ad_daily + baked real-daily, combined above)
     for (d, code), spend in meta_daily.items():
         row(d, code)["meta_spend"] = round(spend, 4)
+
+    # Dedicated-account portion of the above, when any (see meta_dedicated
+    # comment in step 2). Baked studio_daily rows have no such distinction —
+    # they predate any account migration — so this only ever comes from live
+    # ad_daily and is 0.0 (untouched default) everywhere else.
+    for (d, code), spend in meta_dedicated.items():
+        row(d, code)["meta_spend_dedicated"] = round(spend, 4)
 
     # Apr 2026+ Google daily (live daily + baked real-daily, combined above)
     for (d, code), spend in google_daily.items():
