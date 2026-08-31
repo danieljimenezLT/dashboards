@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-31",
+      "pr_number": 270,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/270",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Fixed the Meta Ads Spend (Corporate Account) report to correctly handle studios that moved to their own ad account\r",
+      "summary": "The report was dropping a studio's entire spend history if it later moved to its own dedicated Meta ad account, even for months before the move. It now shows the real corporate-account spend up to each studio's migration date and nets to $0 automatically afterward, with no manual configuration needed.\r"
+    },
+    {
+      "date": "2026-08-31",
       "pr_number": 269,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/269",
       "author": "Sebastian Arango",
