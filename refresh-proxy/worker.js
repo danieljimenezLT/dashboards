@@ -10,6 +10,7 @@ const REPO = 'dev-leadteam/dashboards';
 // VS Code's Live Server default port, so features can be tested before merge.
 const ALLOWED_ORIGINS = [
   'https://reports.sweat440.com',
+  'https://dev-leadteam.github.io',
   'http://localhost:8080',
   'http://127.0.0.1:8080',
   'http://localhost:5500',
@@ -89,12 +90,17 @@ async function dispatchWorkflows(body, env, headers) {
 // registry has the same shape.
 function normalizeStudio(studio) {
   const str = v => (typeof v === 'string' && v.trim()) ? v.trim() : null;
+  const tp = studio.tier_pricing || {};
+  const tierKeys = ['tier0_price','tier1_price','tier2_price','tier3_price'];
+  const tierObj = {};
+  for (const k of tierKeys) if (tp[k] != null && tp[k] !== '') tierObj[k] = Number(tp[k]);
   return {
     name: str(studio.name),
     code: str(studio.code),
     state: str(studio.state),
     status: str(studio.status) || 'nso',
     excluded_default: !!studio.excluded_default,
+    nso_track: studio.nso_track ? true : undefined,
     meta: {
       match: str(studio.meta && studio.meta.match),
       ad_account_id: str(studio.meta && studio.meta.ad_account_id),
@@ -103,13 +109,14 @@ function normalizeStudio(studio) {
     },
     google_ads: {
       match: str(studio.google_ads && studio.google_ads.match),
+      pattern: str(studio.google_ads && studio.google_ads.pattern),
       customer_id: str(studio.google_ads && studio.google_ads.customer_id),
     },
     ga4: { studio_page_path: str(studio.ga4 && studio.ga4.studio_page_path) },
     gbp: { location_id: str(studio.gbp && studio.gbp.location_id) },
     snowflake_id: studio.snowflake_id ? Number(studio.snowflake_id) : null,
     social_slug: str(studio.social_slug),
-    tier_pricing: (studio.tier_pricing && Object.keys(studio.tier_pricing).length) ? studio.tier_pricing : null,
+    tier_pricing: Object.keys(tierObj).length ? tierObj : null,
   };
 }
 
@@ -133,8 +140,10 @@ function mergeStudio(existing, patch) {
       page_id: keep(existing.meta.page_id, patch.meta.page_id),
       instagram_account_id: keep(existing.meta.instagram_account_id, patch.meta.instagram_account_id),
     },
+    nso_track: patch.nso_track || existing.nso_track || undefined,
     google_ads: {
       match: keep(existing.google_ads.match, patch.google_ads.match),
+      pattern: keep(existing.google_ads.pattern, patch.google_ads.pattern),
       customer_id: keep(existing.google_ads.customer_id, patch.google_ads.customer_id),
     },
     ga4: { studio_page_path: keep(existing.ga4.studio_page_path, patch.ga4.studio_page_path) },

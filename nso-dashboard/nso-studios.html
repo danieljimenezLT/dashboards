@@ -67,6 +67,10 @@
 .soc-caption a{color:#1a4d6e;text-decoration:none}.soc-caption a:hover{color:var(--c-leads);text-decoration:underline}
 .soc-date{font-size:11px;color:#8aaabb;font-weight:600}
 .soc-studio-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;font-family:'Oswald',sans-serif;letter-spacing:.04em;margin-top:3px}
+.alpha-warning{display:none;background:#fff8e6;border:1.5px solid #f0c040;border-radius:8px;padding:10px 16px;font-size:13px;color:#7a5500;line-height:1.5;margin:12px 24px 0}
+.alpha-warning.visible{display:flex;align-items:flex-start;gap:10px}
+.alpha-warning-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.alpha-warning b{font-weight:700}
 @media(max-width:640px){.soc-row.soc-ig{grid-template-columns:56px 56px 1fr 48px 48px}.soc-row.soc-ig .soc-cell:nth-child(n+6){display:none}.soc-row.soc-ig.soc-th .soc-cell:nth-child(n+6){display:none}.soc-row.soc-ig.soc-th .soc-cell:nth-child(n+6){display:none}.soc-row.soc-fb{grid-template-columns:56px 56px 1fr}.soc-row.soc-fb .soc-cell:nth-child(n+4){display:none}}
 #leadsRingLeg,#newsalesRingLeg,#cancRingLeg{display:flex!important;flex-direction:column;gap:10px;font-size:13px;line-height:1.4;width:auto}
 #leadsRingLeg .ring-legend-item,#newsalesRingLeg .ring-legend-item,#cancRingLeg .ring-legend-item{display:flex!important;align-items:center;gap:0;width:auto}
@@ -152,6 +156,10 @@
 </div>
 
 <div class="data-freshness-note" id="dataFreshnessNote"></div>
+<div class="alpha-warning" id="alphaWarning">
+  <span class="alpha-warning-icon">⚠️</span>
+  <span><b>Alpha — for testing purposes only.</b> The data on this tab is still being validated and may not be fully accurate. Please treat it as a preview before official launch and avoid using it for critical decisions.</span>
+</div>
 
 <div class="main">
 
@@ -378,6 +386,8 @@ function switchTab(id,btn){
   btn.classList.add('active');
   document.getElementById('navTabs').classList.remove('open');
   document.querySelector('.controls-bar').style.display=(id==='summary'||id==='scorecard'||id==='summary2'||id==='scorecard2')?'none':'';
+  const _alphaTabs=['summary2','scorecard2','cpr','instagram','definitions'];
+  document.getElementById('alphaWarning').classList.toggle('visible',_alphaTabs.includes(id));
   // "Download Leads" only makes sense on the Leads tab
   const showDownload = id === 'leads';
   document.getElementById('downloadLeadsBtn').style.display = showDownload ? '' : 'none';
