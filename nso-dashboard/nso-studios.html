@@ -2712,7 +2712,15 @@ function _cprMonthlyFee(category,studios,from,to){
     const es=new Date(e.start+'T00:00:00Z'),ee=new Date(e.end+'T00:00:00Z');
     const olS=new Date(Math.max(f,es)),olE=new Date(Math.min(t,ee));
     if(olS>olE)continue;
-    total+=e.monthly*((Math.round((olE-olS)/864e5)+1)/30.4375);
+    // Pro-rate by actual days in each calendar month (31-day months ÷ 31, 30 ÷ 30, etc.)
+    let cur=new Date(Date.UTC(olS.getUTCFullYear(),olS.getUTCMonth(),1));
+    while(cur<=olE){
+      const mEnd=new Date(Date.UTC(cur.getUTCFullYear(),cur.getUTCMonth()+1,0));
+      const daysInMonth=mEnd.getUTCDate();
+      const segS=new Date(Math.max(olS,cur)),segE=new Date(Math.min(olE,mEnd));
+      if(segS<=segE) total+=e.monthly*(Math.round((segE-segS)/864e5)+1)/daysInMonth;
+      cur=new Date(Date.UTC(cur.getUTCFullYear(),cur.getUTCMonth()+1,1));
+    }
   }
   return total;
 }
