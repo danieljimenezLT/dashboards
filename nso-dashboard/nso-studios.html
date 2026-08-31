@@ -206,6 +206,18 @@
       </div>
       <div style="position:relative;width:100%;height:300px"><canvas id="trendChart"></canvas></div>
     </div>
+
+    <!-- Conversion Rates -->
+    <div id="cvr-kpis" class="kpi-grid three" style="margin-top:16px"></div>
+    <div class="chart-card">
+      <div class="chart-card-title">Conversion Rates Over Time</div>
+      <div class="toggle-group" id="cvr-toggles" style="margin-bottom:16px">
+        <button class="tog-btn on" onclick="_cvrTog(this,0)" style="border-color:#00A3E0;background:#00A3E0;color:#000"><span class="dot" style="background:#000"></span>Lead → First Timer</button>
+        <button class="tog-btn on" onclick="_cvrTog(this,1)" style="border-color:#00FFC2;background:#00FFC2;color:#000"><span class="dot" style="background:#000"></span>First Timer → Net Sale</button>
+        <button class="tog-btn on" onclick="_cvrTog(this,2)" style="border-color:#DDFF00;background:#DDFF00;color:#000"><span class="dot" style="background:#000"></span>Lead → Net Sale</button>
+      </div>
+      <div style="position:relative;width:100%;height:300px"><canvas id="cvrChart"></canvas></div>
+    </div>
   </div>
 
   <!-- LEADS -->
@@ -1496,6 +1508,43 @@ function renderFunnel(){
   el.innerHTML=h;
 }
 
+/* ── CONVERSION RATE CHART ─────────────────────────────────────────────── */
+let _cvrChart=null;
+function _cvrTog(btn,idx){
+  btn.classList.toggle('on');const on=btn.classList.contains('on');
+  const c=btn.style.borderColor;btn.style.background=on?c:'';btn.style.color=on?'#000':'';
+  if(_cvrChart){_cvrChart.data.datasets[idx].hidden=!on;_cvrChart.update();}
+}
+function _cvrCard(label,curr,pp,py){
+  const fmt=v=>v!=null&&isFinite(v)?v.toFixed(1)+'%':'—';
+  const diff=(a,b)=>a!=null&&isFinite(a)&&b!=null&&isFinite(b)?a-b:null;
+  const dH=(d,lbl)=>{if(d==null)return'';const cl=d>=0?'pos':'neg';const s=d>=0?'▲':'▼';return`<div class="kpi-card-delta ${cl}">${s} ${Math.abs(d).toFixed(1)}pp ${lbl}</div>`;};
+  return`<div class="kpi-card"><div class="kpi-card-label">${label}</div><div class="kpi-card-val">${fmt(curr)}</div>${dH(diff(curr,pp),'vs prev period')}${dH(diff(curr,py),'vs prev year')}</div>`;
+}
+function buildCvrChart(leadsTS,newSalesByPeriod,cancByPeriod){
+  const el=document.getElementById('cvrChart');if(!el)return;
+  const pts=leadsTS.map(p=>{
+    const leads=p.signups||0,ft=p.first_visits||0;
+    const ns=Math.max(0,(newSalesByPeriod[p.key]||0)-(cancByPeriod[p.key]||0));
+    return{label:p.label,l2ft:leads>0?ft/leads*100:null,ft2ns:ft>0?ns/ft*100:null,l2ns:leads>0?ns/leads*100:null};
+  });
+  const mkDs=(key,color,lbl)=>({label:lbl,borderColor:color,backgroundColor:'transparent',
+    data:pts.map(p=>p[key]!=null?+p[key].toFixed(2):null),tension:0.3,pointRadius:3,fill:false,spanGaps:false});
+  const togs=document.querySelectorAll('#cvr-toggles .tog-btn');
+  const datasets=[mkDs('l2ft','#00A3E0','Lead → First Timer'),mkDs('ft2ns','#00FFC2','First Timer → Net Sale'),mkDs('l2ns','#DDFF00','Lead → Net Sale')]
+    .map((ds,i)=>({...ds,hidden:togs[i]?!togs[i].classList.contains('on'):false}));
+  if(_cvrChart)_cvrChart.destroy();
+  _cvrChart=new Chart(el,{type:'line',data:{labels:pts.map(p=>p.label),datasets},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{grid:{color:'#1a3040'},ticks:{color:'#8aaabb',font:{family:'Open Sans',size:10}}},
+        y:{grid:{color:'#1a3040'},ticks:{color:'#8aaabb',font:{family:'Open Sans',size:10},callback:v=>v+'%'},min:0},
+      },
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y!=null?ctx.parsed.y.toFixed(1)+'%':'—'}`}}},
+    }
+  });
+}
+
 function applyFilters(){
   if(!RAW)return;
   const st=_getSel('studioMenu'),sr=_getSel('sourceMenu');
@@ -1522,6 +1571,14 @@ function applyFilters(){
   buildTrend(toTS(curr.daily,curr.monthly),newSalesByPeriod,cancByPeriod);
   const fkpi=document.getElementById('funnel-kpis');
   if(fkpi)fkpi.innerHTML=kpiCard('Total Leads (New Accounts Created)',cS.leads,pS.leads,yS.leads,null,GLOSSARY.leads)+kpiCard('Total New Sales',nsC,nsP||null,nsY||null,null,GLOSSARY.nso_new_sale)+kpiCard('Total Cancellations',cnC,cnP||null,cnY||null,null,GLOSSARY.nso_cancel)+kpiCard('Total Net Sales',smC,smP||null,smY||null,null,GLOSSARY.nso_sale);
+  // Conversion rate KPIs + chart
+  const _cvr=(n,d)=>d>0?n/d*100:null;
+  const cvrL2FT_c=_cvr(cS.ft,cS.leads),cvrL2FT_p=_cvr(pS.ft,pS.leads),cvrL2FT_y=_cvr(yS.ft,yS.leads);
+  const cvrFT2NS_c=_cvr(smC,cS.ft),cvrFT2NS_p=_cvr(smP,pS.ft),cvrFT2NS_y=_cvr(smY,yS.ft);
+  const cvrL2NS_c=_cvr(smC,cS.leads),cvrL2NS_p=_cvr(smP,pS.leads),cvrL2NS_y=_cvr(smY,yS.leads);
+  const cvrKpis=document.getElementById('cvr-kpis');
+  if(cvrKpis)cvrKpis.innerHTML=_cvrCard('Lead → First Timer',cvrL2FT_c,cvrL2FT_p,cvrL2FT_y)+_cvrCard('First Timer → Net Sale',cvrFT2NS_c,cvrFT2NS_p,cvrFT2NS_y)+_cvrCard('Lead → Net Sale',cvrL2NS_c,cvrL2NS_p,cvrL2NS_y);
+  buildCvrChart(toTS(curr.daily,curr.monthly),newSalesByPeriod,cancByPeriod);
   document.getElementById('leads-kpis').innerHTML=kpiCard('Total Leads (New Accounts Created)',cS.leads,pS.leads,yS.leads,null,GLOSSARY.leads);
   const leadsSeries=toSrcTSGran(curr.daily,curr.monthly);
   const activeSrcLeads=(sr||[]).filter(s=>leadsSeries.some(r=>r.source===s&&(r.signups||0)>0));
