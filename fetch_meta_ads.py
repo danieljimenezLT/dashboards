@@ -10,7 +10,8 @@ Output shape
 
   "ad_daily":       [{date, studio_code, ad_id, ad_name,
                        spend, impressions, clicks, leads, trials}, ...]
-                    // rolling 90-day window; upsert on (date, studio_code, ad_id)
+                    // rolling 90-day window; upsert on (date, ad_id) — see the
+                    // key-shape comment at ad_daily_idx's definition below
 
   "studio_daily":   [{date, studio_code, impressions, clicks, leads, trials}, ...]
                     // studio-level, NO spend (spend lives only in the spend
@@ -352,12 +353,18 @@ def run(start_override: str | None = None):
             library_id_by_ad[ad_id] = eosi
 
     # ── 3. Process daily ad rows → ad_daily ──────────────────────────
-    # Index bucket keyed by (date, studio_code, ad_id)
+    # Index bucket keyed by (date, ad_id) — deliberately NOT studio_code. An ad
+    # belongs to exactly one studio on a given day; if a re-fetch resolves it to
+    # a different studio than before (adset renamed/reassigned, or a one-off bad
+    # match from Meta's API), this key shape means the new attribution REPLACES
+    # the old one instead of sitting alongside it. Keying by (date, studio_code,
+    # ad_id) previously let both linger forever once written, double-counting
+    # that ad's spend across two studios for as long as both entries existed.
     ad_daily_idx: dict[tuple, dict] = {}
 
     # Seed from existing data (will be overwritten for dates we're refetching)
     for r in existing_ad_daily:
-        k = (r["date"], r["studio_code"], r["ad_id"])
+        k = (r["date"], r["ad_id"])
         ad_daily_idx[k] = r
 
     # Track ad name per ad_id (for ad_meta, in case list_ads_for_account failed)
@@ -366,6 +373,7 @@ def run(start_override: str | None = None):
 
     rows_written = 0
     rows_skipped = 0
+    rows_reattributed = 0
 
     for row in raw_daily_ad:
         ad_id     = row.get("ad_id")
@@ -392,8 +400,16 @@ def run(start_override: str | None = None):
         ad_name_seen[ad_id]  = ad_name
         ad_studio_seen[ad_id] = sc
 
-        # ad_daily upsert
-        ak = (d, sc, ad_id)
+        # ad_daily upsert — (date, ad_id) only, see key-shape comment above.
+        ak = (d, ad_id)
+        prev = ad_daily_idx.get(ak)
+        if prev and prev.get("studio_code") and prev["studio_code"] != sc:
+            log.warning(
+                f"  ⚠ ad {ad_id} ({ad_name!r}) on {d} matched to {sc}, was "
+                f"{prev['studio_code']} — adset renamed/reassigned, or a stale/"
+                f"inconsistent match. Verify against the ad account if unexpected."
+            )
+            rows_reattributed += 1
         ad_daily_idx[ak] = {
             "date":          d,
             "studio_code":   sc,
@@ -410,13 +426,18 @@ def run(start_override: str | None = None):
         rows_written += 1
 
     log.info(f"  processed: {rows_written} matched, {rows_skipped} skipped (no studio match)")
-    log.info(f"  ad_daily:  {len(ad_daily_idx)} total (date×studio×ad) rows")
+    if rows_reattributed:
+        log.warning(f"  ⚠ {rows_reattributed} (date, ad_id) rows changed studio attribution this run — see warnings above")
+    log.info(f"  ad_daily:  {len(ad_daily_idx)} total (date×ad) rows")
 
     # ── 3b. Dedicated per-studio accounts (account-level spend only) ──
     # Studios that migrated off the shared account onto their own — 100% of an
     # account's spend belongs to that studio, so no name-matching is needed.
     # Account-level only for now (no ad list/creatives), one synthetic row per
-    # day keyed by a fixed ad_id so build_spend_data.py's per-studio_code sum
+    # day keyed by a per-studio ad_id ("ACCOUNT_TOTAL:<code>", not the shared
+    # literal "ACCOUNT_TOTAL" — ad_daily_idx is now keyed by (date, ad_id) only,
+    # so a shared literal would let one dedicated studio's row overwrite
+    # another's for the same day) so build_spend_data.py's per-studio_code sum
     # picks it up like any other ad_daily row.
     for studio in dedicated_accounts:
         code, name, account_id = studio["code"], studio["name"], studio["account_id"]
@@ -439,10 +460,11 @@ def run(start_override: str | None = None):
             d = row.get("date_start")
             if not d:
                 continue
-            ad_daily_idx[(d, code, "ACCOUNT_TOTAL")] = {
+            account_ad_id = f"ACCOUNT_TOTAL:{code}"
+            ad_daily_idx[(d, account_ad_id)] = {
                 "date":          d,
                 "studio_code":   code,
-                "ad_id":         "ACCOUNT_TOTAL",
+                "ad_id":         account_ad_id,
                 "ad_name":       "(account-level total)",
                 "spend":         round(safe_float(row.get("spend")), 2),
                 "impressions":   int(safe_float(row.get("impressions"))),
