@@ -206,6 +206,22 @@
       </div>
       <div style="position:relative;width:100%;height:300px"><canvas id="trendChart"></canvas></div>
     </div>
+
+    <!-- Conversion Rate: Lead → Net Sale -->
+    <div id="cvr-kpis" class="kpi-grid three" style="margin-top:16px"></div>
+    <div class="chart-card"><div class="chart-card-title">Lead → Net Sale Conversion Rate Over Time</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div class="toggle-group" style="margin-bottom:0">
+          <button class="tog-btn on" onclick="_cvrTog(this)" style="border-color:#00FFC2;background:#00FFC2;color:#000"><span class="dot" style="background:#000"></span>Lead → Net Sale</button>
+        </div>
+        <div class="gran-group">
+          <button class="gran-btn active" id="granDailyCvr" onclick="setGran('daily')">Daily</button>
+          <button class="gran-btn" id="granWeeklyCvr" onclick="setGran('weekly')">Weekly</button>
+          <button class="gran-btn" id="granMonthlyCvr" onclick="setGran('monthly')">Monthly</button>
+        </div>
+      </div>
+      <div style="position:relative;width:100%;height:300px"><canvas id="cvrChart"></canvas></div>
+    </div>
   </div>
 
   <!-- LEADS -->
@@ -582,7 +598,7 @@ function renderDefinitionsTab(){
 }
 renderDefinitionsTab();
 
-function setGran(g){GRAN=g;['Daily','Weekly','Monthly'].forEach(x=>{['gran'+x,'gran'+x+'L','gran'+x+'S','gran'+x+'C'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.toggle('active',x.toLowerCase()===g)})});applyFilters()}
+function setGran(g){GRAN=g;['Daily','Weekly','Monthly'].forEach(x=>{['gran'+x,'gran'+x+'L','gran'+x+'S','gran'+x+'C','gran'+x+'Cvr'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.toggle('active',x.toLowerCase()===g)})});applyFilters()}
 function toggleDs(btn,i){if(!trendChart)return;const ds=trendChart.data.datasets[i];ds.hidden=!ds.hidden;btn.classList.toggle('on');const cs=['#00A3E0','#00FFC2','#ff6b6b'],tc=['#000','#000','#fff'];if(btn.classList.contains('on')){btn.style.background=cs[i]||cs[0];btn.style.borderColor=cs[i]||cs[0];btn.style.color=tc[i]||'#000'}else{btn.style.background='#f4f9fd';btn.style.borderColor='#c0d4df';btn.style.color='#5a7a8a'}trendChart.update()}
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -1496,6 +1512,43 @@ function renderFunnel(){
   el.innerHTML=h;
 }
 
+/* ── CONVERSION RATE CHART ─────────────────────────────────────────────── */
+let _cvrChart=null;
+function _cvrTog(btn){
+  btn.classList.toggle('on');const on=btn.classList.contains('on');
+  if(on){btn.style.background='#00FFC2';btn.style.borderColor='#00FFC2';btn.style.color='#000';}
+  else{btn.style.background='#f4f9fd';btn.style.borderColor='#c0d4df';btn.style.color='#5a7a8a';}
+  if(_cvrChart){_cvrChart.data.datasets[0].hidden=!on;_cvrChart.update();}
+}
+function _cvrCard(label,curr,pp,py){
+  const fmt=v=>v!=null&&isFinite(v)?v.toFixed(1)+'%':'—';
+  const diff=(a,b)=>a!=null&&isFinite(a)&&b!=null&&isFinite(b)?a-b:null;
+  const dH=(d,lbl)=>{if(d==null)return'';const cl=d>=0?'pos':'neg';const s=d>=0?'▲':'▼';return`<div class="kpi-card-delta ${cl}">${s} ${Math.abs(d).toFixed(1)}pp ${lbl}</div>`;};
+  return`<div class="kpi-card"><div class="kpi-card-label">${label}</div><div class="kpi-card-val">${fmt(curr)}</div>${dH(diff(curr,pp),'vs prev period')}${dH(diff(curr,py),'vs prev year')}</div>`;
+}
+function buildCvrChart(leadsTS,newSalesByPeriod,cancByPeriod){
+  const el=document.getElementById('cvrChart');if(!el)return;
+  const isMob=window.innerWidth<=768;
+  const pts=leadsTS.map(p=>{
+    const leads=p.signups||0;
+    const ns=Math.max(0,(newSalesByPeriod[p.key]||0)-(cancByPeriod[p.key]||0));
+    const wl=GRAN!=='monthly'?_wkLabel(p.key):'';
+    return{label:wl?[p.label,wl]:p.label,val:leads>0?+(ns/leads*100).toFixed(2):null};
+  });
+  const data={labels:pts.map(p=>p.label),datasets:[{label:'Lead → Net Sale',data:pts.map(p=>p.val),
+    borderColor:'#00FFC2',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.4,fill:false,spanGaps:false}]};
+  if(_cvrChart){_cvrChart.data=data;_cvrChart.update();return;}
+  _cvrChart=new Chart(el,{type:'line',data,
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:ctx=>`Lead → Net Sale: ${ctx.parsed.y!=null?ctx.parsed.y.toFixed(1)+'%':'—'}`}}},
+      scales:{
+        x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',autoSkip:true,maxTicksLimit:isMob?5:12,maxRotation:0}},
+        y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',callback:v=>v+'%'},min:0},
+      },
+    }
+  });
+}
+
 function applyFilters(){
   if(!RAW)return;
   const st=_getSel('studioMenu'),sr=_getSel('sourceMenu');
@@ -1522,6 +1575,12 @@ function applyFilters(){
   buildTrend(toTS(curr.daily,curr.monthly),newSalesByPeriod,cancByPeriod);
   const fkpi=document.getElementById('funnel-kpis');
   if(fkpi)fkpi.innerHTML=kpiCard('Total Leads (New Accounts Created)',cS.leads,pS.leads,yS.leads,null,GLOSSARY.leads)+kpiCard('Total New Sales',nsC,nsP||null,nsY||null,null,GLOSSARY.nso_new_sale)+kpiCard('Total Cancellations',cnC,cnP||null,cnY||null,null,GLOSSARY.nso_cancel)+kpiCard('Total Net Sales',smC,smP||null,smY||null,null,GLOSSARY.nso_sale);
+  // Conversion rate: Lead → Net Sale
+  const _cvr=(n,d)=>d>0?n/d*100:null;
+  const cvrL2NS_c=_cvr(smC,cS.leads),cvrL2NS_p=_cvr(smP,pS.leads),cvrL2NS_y=_cvr(smY,yS.leads);
+  const cvrKpis=document.getElementById('cvr-kpis');
+  if(cvrKpis)cvrKpis.innerHTML=_cvrCard('Lead → Net Sale Conversion Rate',cvrL2NS_c,cvrL2NS_p,cvrL2NS_y);
+  buildCvrChart(toTS(curr.daily,curr.monthly),newSalesByPeriod,cancByPeriod);
   document.getElementById('leads-kpis').innerHTML=kpiCard('Total Leads (New Accounts Created)',cS.leads,pS.leads,yS.leads,null,GLOSSARY.leads);
   const leadsSeries=toSrcTSGran(curr.daily,curr.monthly);
   const activeSrcLeads=(sr||[]).filter(s=>leadsSeries.some(r=>r.source===s&&(r.signups||0)>0));
