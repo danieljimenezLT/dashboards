@@ -2,7 +2,8 @@ name: Refresh Snowflake Data
 
 on:
   schedule:
-    - cron: "0 7 * * *"   # 3:00 AM Eastern (EDT=UTC-4; drifts to 2:00 AM during EST/winter) — runs 1hr before "Refresh Dashboard Data"
+    - cron: "0 7 * * *"   # Primary:  3:00 AM ET — main daily run
+    - cron: "0 9 * * *"   # Fallback: 5:00 AM ET — retries if primary was delayed (skips if data already fresh)
   workflow_dispatch:
 
 permissions:
@@ -22,23 +23,51 @@ jobs:
         with:
           token: ${{ secrets.ADMIN_PUSH_TOKEN }}
 
+      - name: Check data freshness (skip if already updated today)
+        id: freshness
+        run: |
+          python3 -c "
+          import json
+          from datetime import datetime, timezone
+          try:
+              d = json.load(open('data.json'))
+              ts = d.get('generated_at', '')
+              dt = datetime.fromisoformat(ts.replace('Z', '+00:00'))
+              age_h = (datetime.now(timezone.utc) - dt).total_seconds() / 3600
+              print(f'data.json age: {age_h:.1f}h')
+              if age_h < 2:
+                  print('Data is fresh — skipping refresh')
+                  print('skip=true')
+              else:
+                  print('Data is stale — running refresh')
+                  print('skip=false')
+          except Exception as e:
+              print(f'Could not read data.json ({e}) — running refresh')
+              print('skip=false')
+          " | tee /tmp/freshness_out.txt
+          grep '^skip=' /tmp/freshness_out.txt >> $GITHUB_OUTPUT
+
       - name: Set up Python
+        if: steps.freshness.outputs.skip != 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install dependencies
+        if: steps.freshness.outputs.skip != 'true'
         run: |
           pip install snowflake-connector-python
           pip install -r nso-dashboard/requirements.txt
 
       - name: Set date variables
+        if: steps.freshness.outputs.skip != 'true'
         run: |
           echo "YESTERDAY=$(date -u -d '1 day ago' +%Y-%m-%d)"     >> $GITHUB_ENV
           echo "TWO_DAYS_AGO=$(date -u -d '2 days ago' +%Y-%m-%d)" >> $GITHUB_ENV
 
       # ── OPEN STUDIO DASHBOARD ─────────────────────────────────────────────
       - name: Refresh Open Studio data (Snowflake → data.json)
+        if: steps.freshness.outputs.skip != 'true'
         env:
           SF_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
           SF_USER:      ${{ secrets.SF_USER }}
@@ -51,6 +80,7 @@ jobs:
 
       # ── NSO DASHBOARD ─────────────────────────────────────────────────────
       - name: Refresh NSO Sales (Snowflake → nso_sales_data.json)
+        if: steps.freshness.outputs.skip != 'true'
         env:
           SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
           SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
@@ -65,6 +95,7 @@ jobs:
         continue-on-error: true
 
       - name: Rebuild Scorecards (Snowflake → nso_scorecard_data.json)
+        if: steps.freshness.outputs.skip != 'true'
         env:
           SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
           SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
@@ -76,6 +107,7 @@ jobs:
         continue-on-error: true
 
       - name: Calculate tier RMR (Snowflake → patches scorecard)
+        if: steps.freshness.outputs.skip != 'true'
         env:
           SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
           SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
@@ -88,6 +120,7 @@ jobs:
 
       # ── COMMIT ────────────────────────────────────────────────────────────
       - name: Commit updated data files
+        if: steps.freshness.outputs.skip != 'true'
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
