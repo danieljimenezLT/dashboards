@@ -321,7 +321,7 @@
 const NSO=['SWEAT440 Aventura','SWEAT440 Burlington','SWEAT440 Charlotte - South End','SWEAT440 Dallas - Uptown','SWEAT440 Dunwoody','SWEAT440 Fort Myers','SWEAT440 Herriman','SWEAT440 Long Beach','SWEAT440 Middletown','SWEAT440 Naples - Mercato','SWEAT440 North Miami','SWEAT440 OKC - Rose Creek','SWEAT440 Old Bridge','SWEAT440 Orlando - Dr Phillips','SWEAT440 Reston'];
 const EXCL_SRC=['ClassPass / Platforms'];
 
-let RAW=null,SC=null,SC2=null,PRE_WEEKS=null,GRS_SPEND=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},VIDEO_DRIVE_LINKS={},CH_RAW=null;const _ch={};let _chDupOnly=false;
+let RAW=null,SC=null,SC2=null,PRE_WEEKS=null,GRS_SPEND=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},VIDEO_DRIVE_LINKS={},CH_RAW=null,OTHER_COSTS=null;const _ch={};let _chDupOnly=false;
 let CUR_USER=null,_allowedStudios=null;const isAdminUser=()=>CUR_USER&&CUR_USER.role==='admin';
 let _sumView='cum',_sumStudio=null,_scStudio=null,_dataThruLabel='',_sumD7End=null;
 const TODAY=new Date(),fom=new Date(TODAY.getFullYear(),TODAY.getMonth(),1),lpm=new Date(fom.getTime()-864e5),fpm=new Date(lpm.getFullYear(),lpm.getMonth(),1);
@@ -2666,9 +2666,18 @@ function drawScCumChart(sc,weeks){
 /* ══════════════════════════════════════════════════════════════════════════
    BLENDED CPR TAB
    ══════════════════════════════════════════════════════════════════════════ */
-let CPR_META=true,CPR_GOOGLE=true,CPR_LT=true,CPR_GRAN='weekly',_cprChart=null;
+let CPR_META=true,CPR_GOOGLE=true,CPR_LT=true,CPR_GRASSROOTS=true,CPR_PRINT=true,CPR_PR=true,CPR_EXT=true,CPR_GRAN='weekly',_cprChart=null;
 
-function _cprToggle(type){if(type==='meta')CPR_META=!CPR_META;else if(type==='google')CPR_GOOGLE=!CPR_GOOGLE;else CPR_LT=!CPR_LT;renderCPR();}
+function _cprToggle(type){
+  if(type==='meta')CPR_META=!CPR_META;
+  else if(type==='google')CPR_GOOGLE=!CPR_GOOGLE;
+  else if(type==='lt')CPR_LT=!CPR_LT;
+  else if(type==='grs')CPR_GRASSROOTS=!CPR_GRASSROOTS;
+  else if(type==='print')CPR_PRINT=!CPR_PRINT;
+  else if(type==='pr')CPR_PR=!CPR_PR;
+  else if(type==='ext')CPR_EXT=!CPR_EXT;
+  renderCPR();
+}
 function _cprSetGran(g){CPR_GRAN=g;renderCPR();}
 
 function _cprMetaSpend(studios,from,to){
@@ -2677,15 +2686,62 @@ function _cprMetaSpend(studios,from,to){
 function _cprGoogleSpend(studios,from,to){
   return studios.reduce((s,st)=>s+googleFilter(st,from,to).reduce((a,r)=>a+(r.spend||0),0),0);
 }
+
+// ── Other costs helpers (from nso_other_costs.json) ──────────────────────────
+function _cprAdhoc(category,studios,from,to){
+  if(!OTHER_COSTS||!from||!to)return 0;
+  const f=new Date(from+'T00:00:00Z'),t=new Date(to+'T00:00:00Z');
+  let total=0;
+  for(const e of OTHER_COSTS.adhoc||[]){
+    if(e.category!==category)continue;
+    if(!studios.includes(e.studio_key))continue;
+    const es=new Date(e.start+'T00:00:00Z'),ee=new Date(e.end+'T00:00:00Z');
+    const olS=new Date(Math.max(f,es)),olE=new Date(Math.min(t,ee));
+    if(olS>olE)continue;
+    total+=e.daily_rate*(Math.round((olE-olS)/864e5)+1);
+  }
+  return total;
+}
+function _cprMonthlyFee(category,studios,from,to){
+  if(!OTHER_COSTS||!from||!to)return 0;
+  const f=new Date(from+'T00:00:00Z'),t=new Date(to+'T00:00:00Z');
+  let total=0;
+  for(const e of OTHER_COSTS.monthly||[]){
+    if(e.category!==category)continue;
+    if(!studios.includes(e.studio_key))continue;
+    const es=new Date(e.start+'T00:00:00Z'),ee=new Date(e.end+'T00:00:00Z');
+    const olS=new Date(Math.max(f,es)),olE=new Date(Math.min(t,ee));
+    if(olS>olE)continue;
+    total+=e.monthly*((Math.round((olE-olS)/864e5)+1)/30.4375);
+  }
+  return total;
+}
+function _cprGrassrootsSpend(studios,from,to){return _cprAdhoc('Grassroots',studios,from,to);}
+function _cprPrintSpend(studios,from,to){return _cprAdhoc('Print Ads / Signs',studios,from,to);}
+function _cprPRSpend(studios,from,to){return _cprAdhoc('PR',studios,from,to);}
+function _cprExtAgency(studios,from,to){
+  return _cprAdhoc('External agency',studios,from,to)+_cprMonthlyFee('External agency',studios,from,to);
+}
+
 function _cprLtFee(studios,from,to){
   if(!from||!to||!studios.length)return 0;
   const days=Math.round((new Date(to+'T00:00:00Z')-new Date(from+'T00:00:00Z'))/(864e5))+1;
-  return studios.length*1200*(days/30.4375);
+  let total=0;
+  for(const st of studios){
+    const base=1200*(days/30.4375);
+    const discount=_cprMonthlyFee('Leadteam Discount',[st],from,to);
+    total+=Math.max(0,base-discount);
+  }
+  return total;
 }
 function _cprTotalSpend(studios,from,to){
-  return(CPR_META?_cprMetaSpend(studios,from,to):0)
-        +(CPR_GOOGLE?_cprGoogleSpend(studios,from,to):0)
-        +(CPR_LT?_cprLtFee(studios,from,to):0);
+  return(CPR_META       ?_cprMetaSpend(studios,from,to):0)
+        +(CPR_GOOGLE    ?_cprGoogleSpend(studios,from,to):0)
+        +(CPR_LT        ?_cprLtFee(studios,from,to):0)
+        +(CPR_GRASSROOTS?_cprGrassrootsSpend(studios,from,to):0)
+        +(CPR_PRINT     ?_cprPrintSpend(studios,from,to):0)
+        +(CPR_PR        ?_cprPRSpend(studios,from,to):0)
+        +(CPR_EXT       ?_cprExtAgency(studios,from,to):0);
 }
 function _cprLeads(from,to,studios,sources){
   const f=from?new Date(from+'T00:00:00Z'):null,t=to?new Date(to+'T23:59:59Z'):new Date();
@@ -2742,6 +2798,10 @@ function renderCPR(){
   const totalMeta=_cprMetaSpend(activeStudios,from,to);
   const totalGoogle=_cprGoogleSpend(activeStudios,from,to);
   const totalLt=_cprLtFee(activeStudios,from,to);
+  const totalGrs=_cprGrassrootsSpend(activeStudios,from,to);
+  const totalPrint=_cprPrintSpend(activeStudios,from,to);
+  const totalPR=_cprPRSpend(activeStudios,from,to);
+  const totalExt=_cprExtAgency(activeStudios,from,to);
   const totalSpend=_cprTotalSpend(activeStudios,from,to);
   const totalLeads=_cprLeads(from,to,activeStudios,selSrc);
   const totalSales=_cprSales(from,to,activeStudios,selSrc);
@@ -2753,9 +2813,17 @@ function renderCPR(){
   const ppMeta=ppFrom?_cprMetaSpend(activeStudios,ppFrom,ppTo):0;
   const ppGoogle=ppFrom?_cprGoogleSpend(activeStudios,ppFrom,ppTo):0;
   const ppLt=ppFrom?_cprLtFee(activeStudios,ppFrom,ppTo):0;
+  const ppGrs=ppFrom?_cprGrassrootsSpend(activeStudios,ppFrom,ppTo):0;
+  const ppPrint=ppFrom?_cprPrintSpend(activeStudios,ppFrom,ppTo):0;
+  const ppPR=ppFrom?_cprPRSpend(activeStudios,ppFrom,ppTo):0;
+  const ppExt=ppFrom?_cprExtAgency(activeStudios,ppFrom,ppTo):0;
   const pyMeta=pyFrom?_cprMetaSpend(activeStudios,pyFrom,pyTo):0;
   const pyGoogle=pyFrom?_cprGoogleSpend(activeStudios,pyFrom,pyTo):0;
   const pyLt=pyFrom?_cprLtFee(activeStudios,pyFrom,pyTo):0;
+  const pyGrs=pyFrom?_cprGrassrootsSpend(activeStudios,pyFrom,pyTo):0;
+  const pyPrint=pyFrom?_cprPrintSpend(activeStudios,pyFrom,pyTo):0;
+  const pyPR=pyFrom?_cprPRSpend(activeStudios,pyFrom,pyTo):0;
+  const pyExt=pyFrom?_cprExtAgency(activeStudios,pyFrom,pyTo):0;
   const ppSpend=ppFrom?_cprTotalSpend(activeStudios,ppFrom,ppTo):0;
   const pySpend=pyFrom?_cprTotalSpend(activeStudios,pyFrom,pyTo):0;
   const ppLeads=ppFrom?_cprLeads(ppFrom,ppTo,activeStudios,selSrc):0;
@@ -2776,27 +2844,39 @@ function renderCPR(){
 
   let h='';
 
-  // ── Cost source toggles (OS-style pill buttons) ──────────────────────────
+  // ── Cost source toggles ──────────────────────────────────────────────────
+  const _tog=(flag,type,label,color)=>
+    `<button class="cpr-tog${flag?' on':''}" onclick="_cprToggle('${type}')" style="${flag?`border-color:${color};background:${color}`:''}">
+      ${label}</button>`;
   h+=`<div class="chart-card" style="margin-bottom:20px">
     <div class="chart-card-title">Cost sources</div>
     <div class="cpr-filter">
       <span style="font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;color:#5a7a8a;text-transform:uppercase;letter-spacing:1px">Include:</span>
-      <button class="cpr-tog${CPR_GOOGLE?' on':''}" onclick="_cprToggle('google')" style="${CPR_GOOGLE?'border-color:#34A853;background:#34A853':''}">Google Ads</button>
-      <button class="cpr-tog${CPR_META?' on':''}" onclick="_cprToggle('meta')" style="${CPR_META?'border-color:#1877F2;background:#1877F2':''}">Meta Ads</button>
-      <button class="cpr-tog${CPR_LT?' on':''}" onclick="_cprToggle('lt')" style="${CPR_LT?'border-color:#FF6B35;background:#FF6B35':''}">Leadteam Fee</button>
+      ${_tog(CPR_GOOGLE,'google','Google Ads','#34A853')}
+      ${_tog(CPR_META,'meta','Meta Ads','#1877F2')}
+      ${_tog(CPR_LT,'lt','LeadTeam Fee','#FF6B35')}
+      ${_tog(CPR_GRASSROOTS,'grs','Grassroots','#8B5E3C')}
+      ${_tog(CPR_PRINT,'print','Print / Signs','#9B59B6')}
+      ${_tog(CPR_PR,'pr','PR','#E91E63')}
+      ${_tog(CPR_EXT,'ext','External Agency','#00897B')}
     </div>
   </div>`;
 
-  // ── Spend breakdown (OS-style kpi-card with colored top border + separators) ──
+  // ── Spend breakdown cards ─────────────────────────────────────────────────
   const _spendCard=(label,v,vPp,vPy,color)=>{
     const ppH=vPp>0?_deltaH(v,vPp):'';
     const pyH=vPy>0?_deltaYH(v,vPy):'';
-    return`<div class="kpi-card" style="flex:1;min-width:140px;border-top:3px solid ${color}"><div class="kpi-card-label">${label}</div><div class="kpi-card-val">${f$(v)}</div>${ppH}${pyH}</div>`;
+    return`<div class="kpi-card" style="flex:1;min-width:130px;border-top:3px solid ${color}"><div class="kpi-card-label">${label}</div><div class="kpi-card-val">${f$(v)}</div>${ppH}${pyH}</div>`;
   };
+  const _plus='<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">+</span>';
   const spCards=[];
-  if(CPR_GOOGLE){spCards.push('');spCards.push(_spendCard('Google Ads',totalGoogle,ppGoogle,pyGoogle,'#34A853'));}
-  if(CPR_META){if(spCards.length)spCards.push('<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">+</span>');spCards.push(_spendCard('Meta Ads',totalMeta,ppMeta,pyMeta,'#1877F2'));}
-  if(CPR_LT){if(spCards.length)spCards.push('<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">+</span>');spCards.push(_spendCard('Leadteam Fee',totalLt,ppLt,pyLt,'#FF6B35'));}
+  if(CPR_GOOGLE){spCards.push(_spendCard('Google Ads',totalGoogle,ppGoogle,pyGoogle,'#34A853'));}
+  if(CPR_META){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('Meta Ads',totalMeta,ppMeta,pyMeta,'#1877F2'));}
+  if(CPR_LT){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('LeadTeam Fee',totalLt,ppLt,pyLt,'#FF6B35'));}
+  if(CPR_GRASSROOTS){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('Grassroots',totalGrs,ppGrs,pyGrs,'#8B5E3C'));}
+  if(CPR_PRINT){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('Print / Signs',totalPrint,ppPrint,pyPrint,'#9B59B6'));}
+  if(CPR_PR){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('PR',totalPR,ppPR,pyPR,'#E91E63'));}
+  if(CPR_EXT){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('Ext. Agency',totalExt,ppExt,pyExt,'#00897B'));}
   if(spCards.length){
     spCards.push('<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">=</span>');
     spCards.push(_spendCard('Total Spend',totalSpend,ppSpend,pySpend,'#1a1a2e'));
@@ -2834,26 +2914,45 @@ function renderCPR(){
   h+=`<div class="chart-card" style="margin-top:20px"><div class="chart-card-title">Studio Summary</div><div style="overflow-x:auto">
     <table class="data-table" style="width:100%"><thead><tr>
       <th>Studio</th><th class="num">Leads</th><th class="num">Net Sales</th>
-      <th class="num">Google Ads</th><th class="num">Meta Ads</th><th class="num">LT Fee</th>
+      ${CPR_GOOGLE?'<th class="num">Google Ads</th>':''}
+      ${CPR_META?'<th class="num">Meta Ads</th>':''}
+      ${CPR_LT?'<th class="num">LT Fee</th>':''}
+      ${CPR_GRASSROOTS?'<th class="num">Grassroots</th>':''}
+      ${CPR_PRINT?'<th class="num">Print/Signs</th>':''}
+      ${CPR_PR?'<th class="num">PR</th>':''}
+      ${CPR_EXT?'<th class="num">Ext. Agency</th>':''}
       <th class="num">Total Spend</th><th class="num">Cost/Lead</th><th class="num">Cost/Net Sale</th>
     </tr></thead><tbody>`;
-  let tMeta=0,tGoogle=0,tLt=0,tLeads=0,tSales=0;
+  let tMeta=0,tGoogle=0,tLt=0,tGrs=0,tPrint=0,tPR=0,tExt=0,tLeads=0,tSales=0;
   activeStudios.forEach(studio=>{
     const sm=_cprMetaSpend([studio],from,to),sg=_cprGoogleSpend([studio],from,to),slt=_cprLtFee([studio],from,to);
-    const sp=(CPR_META?sm:0)+(CPR_GOOGLE?sg:0)+(CPR_LT?slt:0);
+    const sgrs=_cprGrassrootsSpend([studio],from,to),spr=_cprPrintSpend([studio],from,to),sprr=_cprPRSpend([studio],from,to),sext=_cprExtAgency([studio],from,to);
+    const sp=(CPR_META?sm:0)+(CPR_GOOGLE?sg:0)+(CPR_LT?slt:0)+(CPR_GRASSROOTS?sgrs:0)+(CPR_PRINT?spr:0)+(CPR_PR?sprr:0)+(CPR_EXT?sext:0);
     const sl=_cprLeads(from,to,[studio],selSrc),ss=_cprSales(from,to,[studio],selSrc);
-    tMeta+=sm;tGoogle+=sg;tLt+=slt;tLeads+=sl;tSales+=ss;
+    tMeta+=sm;tGoogle+=sg;tLt+=slt;tGrs+=sgrs;tPrint+=spr;tPR+=sprr;tExt+=sext;tLeads+=sl;tSales+=ss;
     h+=`<tr><td>${studio.replace('SWEAT440 ','')}</td>
       <td class="num">${fN(sl)}</td><td class="num">${fN(ss)}</td>
-      <td class="num">${f$(sg)}</td><td class="num">${f$(sm)}</td><td class="num">${f$(slt)}</td>
+      ${CPR_GOOGLE?`<td class="num">${f$(sg)}</td>`:''}
+      ${CPR_META?`<td class="num">${f$(sm)}</td>`:''}
+      ${CPR_LT?`<td class="num">${f$(slt)}</td>`:''}
+      ${CPR_GRASSROOTS?`<td class="num">${f$(sgrs)}</td>`:''}
+      ${CPR_PRINT?`<td class="num">${f$(spr)}</td>`:''}
+      ${CPR_PR?`<td class="num">${f$(sprr)}</td>`:''}
+      ${CPR_EXT?`<td class="num">${f$(sext)}</td>`:''}
       <td class="num">${f$(sp)}</td>
       <td class="num">${sl>0?f$2(sp/sl):'—'}</td>
       <td class="num">${ss>0?f$2(sp/ss):'—'}</td></tr>`;
   });
-  const tActive=(CPR_META?tMeta:0)+(CPR_GOOGLE?tGoogle:0)+(CPR_LT?tLt:0);
+  const tActive=(CPR_META?tMeta:0)+(CPR_GOOGLE?tGoogle:0)+(CPR_LT?tLt:0)+(CPR_GRASSROOTS?tGrs:0)+(CPR_PRINT?tPrint:0)+(CPR_PR?tPR:0)+(CPR_EXT?tExt:0);
   h+=`</tbody><tfoot><tr style="font-weight:700;background:#f4f9fd">
     <td>Total</td><td class="num">${fN(tLeads)}</td><td class="num">${fN(tSales)}</td>
-    <td class="num">${f$(tGoogle)}</td><td class="num">${f$(tMeta)}</td><td class="num">${f$(tLt)}</td>
+    ${CPR_GOOGLE?`<td class="num">${f$(tGoogle)}</td>`:''}
+    ${CPR_META?`<td class="num">${f$(tMeta)}</td>`:''}
+    ${CPR_LT?`<td class="num">${f$(tLt)}</td>`:''}
+    ${CPR_GRASSROOTS?`<td class="num">${f$(tGrs)}</td>`:''}
+    ${CPR_PRINT?`<td class="num">${f$(tPrint)}</td>`:''}
+    ${CPR_PR?`<td class="num">${f$(tPR)}</td>`:''}
+    ${CPR_EXT?`<td class="num">${f$(tExt)}</td>`:''}
     <td class="num">${f$(tActive)}</td>
     <td class="num">${tLeads>0?f$2(tActive/tLeads):'—'}</td>
     <td class="num">${tSales>0?f$2(tActive/tSales):'—'}</td>
@@ -4324,7 +4423,7 @@ async function init(){
   }
 
   // Load all data files
-  const [dataRes,scRes,sc2Res,mktRes,dashRes,gadsRes,socialRes,salesRes,gbpRes,adMetaRes,chRes,pwRes,grRes,vdlRes]=await Promise.allSettled([
+  const [dataRes,scRes,sc2Res,mktRes,dashRes,gadsRes,socialRes,salesRes,gbpRes,adMetaRes,chRes,pwRes,grRes,vdlRes,ocRes]=await Promise.allSettled([
     fetch('../data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('nso_scorecard_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('nso_scorecard_data2.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
@@ -4339,6 +4438,7 @@ async function init(){
     fetch('nso_pre_weeks_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('nso_grassroots_spend.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('../video_drive_links.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
+    fetch('nso_other_costs.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
   ]);
 
   if(dataRes.status==='fulfilled'){RAW=dataRes.value;if(!RAW.daily_detail)RAW.daily_detail=[];if(!RAW.monthly_detail)RAW.monthly_detail=[]
@@ -4399,6 +4499,9 @@ async function init(){
 
   if(vdlRes.status==='fulfilled'){VIDEO_DRIVE_LINKS=vdlRes.value||{}}
   else{console.warn('video_drive_links.json not found — Drive links unavailable')}
+
+  if(ocRes.status==='fulfilled'){OTHER_COSTS=ocRes.value}
+  else{console.warn('nso_other_costs.json not found — other cost sources unavailable');OTHER_COSTS=null}
 
   renderFreshnessNote('dataFreshnessNote', [
     {raw: dataRes.status==='fulfilled'   ? dataRes.value   : null, lagDays: 2},
