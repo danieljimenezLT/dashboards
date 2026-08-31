@@ -10,7 +10,8 @@ Output shape
 
   "ad_daily":       [{date, studio_code, ad_id, ad_name,
                        spend, impressions, clicks, leads, trials}, ...]
-                    // rolling 90-day window; upsert on (date, studio_code, ad_id)
+                    // rolling 90-day window; upsert on (date, ad_id) — see the
+                    // key-shape comment at ad_daily_idx's definition below
 
   "studio_daily":   [{date, studio_code, impressions, clicks, leads, trials}, ...]
                     // studio-level, NO spend (spend lives only in the spend
@@ -40,6 +41,8 @@ from meta_client import MetaClient, leads_of, offsite_leads_of, purchases_of, tr
 # ── paths ────────────────────────────────────────────────────────────
 REPO_ROOT      = Path(__file__).resolve().parent
 OUT_PATH       = REPO_ROOT / "meta-ads-data.json"
+DQ_ALERTS_PATH = REPO_ROOT / "data-quality-alerts.json"
+DQ_ALERTS_MAX_AGE_DAYS = 90  # prune alerts older than this so the file doesn't grow forever
 # Studio-level spend lives in meta-ads-baked.json + spend-data.json, not here —
 # see build_spend_data.py, backfill_meta_month.py, import_meta_daily_csv.py.
 
@@ -282,6 +285,13 @@ def run(start_override: str | None = None):
     existing_ad_daily = existing.get("ad_daily", [])
     existing_ad_meta  = existing.get("ad_meta",  {})
 
+    existing_dq_alerts: list[dict] = []
+    if DQ_ALERTS_PATH.exists():
+        try:
+            existing_dq_alerts = json.loads(DQ_ALERTS_PATH.read_text(encoding="utf-8")).get("alerts", [])
+        except Exception:
+            pass
+
     meta = MetaClient()
 
     # ── 1. Fetch daily ad-level insights (account level) ─────────────
@@ -352,12 +362,18 @@ def run(start_override: str | None = None):
             library_id_by_ad[ad_id] = eosi
 
     # ── 3. Process daily ad rows → ad_daily ──────────────────────────
-    # Index bucket keyed by (date, studio_code, ad_id)
+    # Index bucket keyed by (date, ad_id) — deliberately NOT studio_code. An ad
+    # belongs to exactly one studio on a given day; if a re-fetch resolves it to
+    # a different studio than before (adset renamed/reassigned, or a one-off bad
+    # match from Meta's API), this key shape means the new attribution REPLACES
+    # the old one instead of sitting alongside it. Keying by (date, studio_code,
+    # ad_id) previously let both linger forever once written, double-counting
+    # that ad's spend across two studios for as long as both entries existed.
     ad_daily_idx: dict[tuple, dict] = {}
 
     # Seed from existing data (will be overwritten for dates we're refetching)
     for r in existing_ad_daily:
-        k = (r["date"], r["studio_code"], r["ad_id"])
+        k = (r["date"], r["ad_id"])
         ad_daily_idx[k] = r
 
     # Track ad name per ad_id (for ad_meta, in case list_ads_for_account failed)
@@ -366,6 +382,8 @@ def run(start_override: str | None = None):
 
     rows_written = 0
     rows_skipped = 0
+    rows_reattributed = 0
+    dq_alerts_new: list[dict] = []  # new reattributions found THIS run; merged into DQ_ALERTS_PATH below
 
     for row in raw_daily_ad:
         ad_id     = row.get("ad_id")
@@ -392,8 +410,26 @@ def run(start_override: str | None = None):
         ad_name_seen[ad_id]  = ad_name
         ad_studio_seen[ad_id] = sc
 
-        # ad_daily upsert
-        ak = (d, sc, ad_id)
+        # ad_daily upsert — (date, ad_id) only, see key-shape comment above.
+        ak = (d, ad_id)
+        prev = ad_daily_idx.get(ak)
+        if prev and prev.get("studio_code") and prev["studio_code"] != sc:
+            log.warning(
+                f"  ⚠ ad {ad_id} ({ad_name!r}) on {d} matched to {sc}, was "
+                f"{prev['studio_code']} — adset renamed/reassigned, or a stale/"
+                f"inconsistent match. Verify against the ad account if unexpected."
+            )
+            rows_reattributed += 1
+            dq_alerts_new.append({
+                "id":           f"{d}:{ad_id}:{prev['studio_code']}:{sc}",
+                "type":         "meta_ad_reattribution",
+                "date":         d,
+                "ad_id":        ad_id,
+                "ad_name":      ad_name,
+                "from_studio":  prev["studio_code"],
+                "to_studio":    sc,
+                "detected_at":  datetime.now(timezone.utc).isoformat(),
+            })
         ad_daily_idx[ak] = {
             "date":          d,
             "studio_code":   sc,
@@ -410,13 +446,18 @@ def run(start_override: str | None = None):
         rows_written += 1
 
     log.info(f"  processed: {rows_written} matched, {rows_skipped} skipped (no studio match)")
-    log.info(f"  ad_daily:  {len(ad_daily_idx)} total (date×studio×ad) rows")
+    if rows_reattributed:
+        log.warning(f"  ⚠ {rows_reattributed} (date, ad_id) rows changed studio attribution this run — see warnings above")
+    log.info(f"  ad_daily:  {len(ad_daily_idx)} total (date×ad) rows")
 
     # ── 3b. Dedicated per-studio accounts (account-level spend only) ──
     # Studios that migrated off the shared account onto their own — 100% of an
     # account's spend belongs to that studio, so no name-matching is needed.
     # Account-level only for now (no ad list/creatives), one synthetic row per
-    # day keyed by a fixed ad_id so build_spend_data.py's per-studio_code sum
+    # day keyed by a per-studio ad_id ("ACCOUNT_TOTAL:<code>", not the shared
+    # literal "ACCOUNT_TOTAL" — ad_daily_idx is now keyed by (date, ad_id) only,
+    # so a shared literal would let one dedicated studio's row overwrite
+    # another's for the same day) so build_spend_data.py's per-studio_code sum
     # picks it up like any other ad_daily row.
     for studio in dedicated_accounts:
         code, name, account_id = studio["code"], studio["name"], studio["account_id"]
@@ -439,10 +480,11 @@ def run(start_override: str | None = None):
             d = row.get("date_start")
             if not d:
                 continue
-            ad_daily_idx[(d, code, "ACCOUNT_TOTAL")] = {
+            account_ad_id = f"ACCOUNT_TOTAL:{code}"
+            ad_daily_idx[(d, account_ad_id)] = {
                 "date":          d,
                 "studio_code":   code,
-                "ad_id":         "ACCOUNT_TOTAL",
+                "ad_id":         account_ad_id,
                 "ad_name":       "(account-level total)",
                 "spend":         round(safe_float(row.get("spend")), 2),
                 "impressions":   int(safe_float(row.get("impressions"))),
@@ -552,6 +594,28 @@ def run(start_override: str | None = None):
         f"Wrote {OUT_PATH} ({OUT_PATH.stat().st_size:,} bytes) — "
         f"{len(ad_daily_out)} ad_daily, {len(studio_daily_out)} studio_daily, {len(ad_meta)} ad_meta"
     )
+
+    # Data quality alerts — accumulated across runs (keyed by id, so a re-run
+    # never adds the same reattribution twice), pruned past DQ_ALERTS_MAX_AGE_DAYS
+    # so the file doesn't grow forever once something's had plenty of time to be
+    # seen. home.html reads this and shows a banner for admin users; dismissal
+    # is tracked client-side (localStorage), not here — this file only tracks
+    # what's been *found*, not what's been *seen*.
+    dq_alerts_by_id = {a["id"]: a for a in existing_dq_alerts if a.get("id")}
+    for a in dq_alerts_new:
+        dq_alerts_by_id[a["id"]] = a
+    dq_cutoff = (datetime.now(timezone.utc) - timedelta(days=DQ_ALERTS_MAX_AGE_DAYS)).isoformat()
+    dq_alerts_out = sorted(
+        (a for a in dq_alerts_by_id.values() if a.get("detected_at", "") >= dq_cutoff),
+        key=lambda a: a["detected_at"],
+        reverse=True,
+    )
+    DQ_ALERTS_PATH.write_text(
+        json.dumps({"generated_at": output["generated_at"], "alerts": dq_alerts_out}, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    if dq_alerts_new:
+        log.warning(f"  ⚠ {len(dq_alerts_new)} new alert(s) this run, {len(dq_alerts_out)} total in {DQ_ALERTS_PATH.name}")
 
 
 if __name__ == "__main__":

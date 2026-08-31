@@ -96,10 +96,14 @@ def run():
     # ── 2. Collect Meta daily rows (Apr 2026+) ───────────────────────
     # meta_dedicated tracks the subset of meta_daily that came from a studio's
     # own dedicated ad account rather than the shared corporate one — those
-    # rows carry ad_id "ACCOUNT_TOTAL" (see fetch_meta_ads.py step 3b). Kept
-    # separate so consumers (e.g. admin-reports/meta-spend-corporate.html) can
-    # net it out of meta_spend to get corporate-only spend, without needing to
-    # know which studios have migrated or when.
+    # rows carry an ad_id of "ACCOUNT_TOTAL:<code>" (see fetch_meta_ads.py step
+    # 3b; the code suffix keeps it unique per studio since ad_daily_idx there is
+    # keyed by (date, ad_id) only). Also accepts the older bare "ACCOUNT_TOTAL"
+    # sentinel (no suffix) for backward compat until the next live fetch run
+    # rewrites meta-ads-data.json with the new per-studio form. Kept separate so
+    # consumers (e.g. admin-reports/meta-spend-corporate.html) can net it out of
+    # meta_spend to get corporate-only spend, without needing to know which
+    # studios have migrated or when.
     meta_daily: dict[tuple, float] = {}
     meta_dedicated: dict[tuple, float] = {}
     for r in meta_live.get("ad_daily", []):
@@ -108,7 +112,8 @@ def run():
             k = (d, r["studio_code"])
             spend = r.get("spend") or 0
             meta_daily[k] = meta_daily.get(k, 0) + spend
-            if r.get("ad_id") == "ACCOUNT_TOTAL":
+            ad_id_val = r.get("ad_id") or ""
+            if ad_id_val == "ACCOUNT_TOTAL" or ad_id_val.startswith("ACCOUNT_TOTAL:"):
                 meta_dedicated[k] = meta_dedicated.get(k, 0) + spend
 
     # Baked real daily rows — e.g. a one-time backfill_meta_month.py run, or a
