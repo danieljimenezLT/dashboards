@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-31",
+      "pr_number": 269,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/269",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Blended CPR tab — lead fix, net sales, new cost sources (Grassroots, Print, PR, External Agency, Other)",
+      "summary": "Fixed lead double-counting and gross-vs-net sales in Blended CPR. Added 5 new cost source toggles (Grassroots, Print/Signs, PR, External Agency, Other Marketing Spend) sourced from a Google Sheet. CPR chart now shows lines only with no bottom legend. Monthly fees pro-rated by actual calendar days."
+    },
+    {
+      "date": "2026-08-31",
       "pr_number": 265,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/265",
       "author": "Sebastian Arango",
