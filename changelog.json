@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-31",
+      "pr_number": 273,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/273",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Added a data-quality alert banner to the dashboards home screen\r",
+      "summary": "Admin users now see a red banner on the home screen whenever a Meta ad's studio attribution unexpectedly changed between data refreshes, instead of a discrepancy sitting undetected until someone manually compares a number against the real ad account.\r"
+    },
+    {
+      "date": "2026-08-31",
       "pr_number": 272,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/272",
       "author": "Santiago Estrada",
