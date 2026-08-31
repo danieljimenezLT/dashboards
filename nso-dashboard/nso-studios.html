@@ -2819,7 +2819,7 @@ function renderCPR(){
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
       <div class="toggle-group" style="margin-bottom:0">
         <button class="tog-btn on" id="cprDsCpl" onclick="_cprToggleDs(this,0)" style="border-color:#00A3E0;background:#00A3E0;color:#000"><span class="dot" style="background:#000"></span>Blended CPL</button>
-        <button class="tog-btn on" id="cprDsCps" onclick="_cprToggleDs(this,1)" style="border-color:#DDFF00;background:#DDFF00;color:#000"><span class="dot" style="background:#000"></span>Blended CPS (Net)</button>
+        <button class="tog-btn on" id="cprDsCps" onclick="_cprToggleDs(this,1)" style="border-color:#00FFC2;background:#00FFC2;color:#000"><span class="dot" style="background:#000"></span>Blended CPS (Net)</button>
       </div>
       <div class="gran-group">
         <button class="gran-btn${CPR_GRAN==='daily'?' active':''}" onclick="_cprSetGran('daily')">Daily</button>
@@ -2865,11 +2865,11 @@ function renderCPR(){
   const ctx=document.getElementById('cprChart');if(!ctx)return;
   _cprChart=new Chart(ctx,{type:'line',data:{labels:chartLabels,datasets:[
     {label:'Cost per Lead',data:cplData,borderColor:'#00A3E0',backgroundColor:'rgba(0,163,224,.1)',fill:true,tension:.3,spanGaps:true,pointRadius:3,borderWidth:2},
-    {label:'Cost per Net Sale',data:cpsData,borderColor:'#DDFF00',backgroundColor:'rgba(221,255,0,.08)',fill:true,tension:.3,spanGaps:true,pointRadius:3,borderWidth:2},
+    {label:'Cost per Net Sale',data:cpsData,borderColor:'#00FFC2',backgroundColor:'rgba(0,255,194,.08)',fill:true,tension:.3,spanGaps:true,pointRadius:3,borderWidth:2},
   ]},options:{responsive:true,maintainAspectRatio:false,
     interaction:{mode:'index',intersect:false},
     plugins:{
-      legend:{position:'bottom',labels:{font:{family:'Oswald',size:12,style:'italic'},usePointStyle:true,padding:16,color:'#1a1a2e'}},
+      legend:{display:false},
       tooltip:{callbacks:{label:c=>`${c.dataset.label}: $${Number(c.raw||0).toFixed(2)}`}}
     },
     scales:{
