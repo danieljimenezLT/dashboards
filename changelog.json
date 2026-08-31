@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-31",
+      "pr_number": 274,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/274",
+      "author": "Santiago Estrada",
+      "categories": [
+        "Paid Ads Dashboard"
+      ],
+      "title": "Fixed a Meta ad spend double-counting bug in the paid ads dashboards\r",
+      "summary": "paid-ads-dashboards had its own independent copy of the same double-counting bug just fixed in the main data pipeline. An ad that got re-matched to a different studio between runs could have its spend counted twice. Now fixed there too, and both pipelines share the same data-quality alert feed.\r"
+    },
+    {
+      "date": "2026-08-31",
       "pr_number": 273,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/273",
       "author": "Santiago Estrada",
