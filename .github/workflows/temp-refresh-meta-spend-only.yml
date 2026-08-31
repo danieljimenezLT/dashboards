@@ -1,0 +1,50 @@
+name: TEMP - Refresh Meta Spend Only
+
+# TEMPORARY workflow, meant to be deleted once used. Created to verify the
+# ad-attribution-dedupe fix (fetch_meta_ads.py + build_spend_data.py) without
+# waiting on the full "Refresh Dashboard Data" run (~1h+, mostly spent on
+# Google Ads, Instagram, GBP, and the thumbnail/video-to-Drive sync — none of
+# which this fix touches). Runs only the two scripts needed and commits their
+# three output files.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ADMIN_PUSH_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests python-dotenv
+
+      - name: Fetch Meta Ads (Santi - account view)
+        env:
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+        run: python fetch_meta_ads.py
+
+      - name: Build spend-data.json (Meta + Google combined)
+        run: python build_spend_data.py
+
+      - name: Commit updated data files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add meta-ads-data.json spend-data.json
+          git add data-quality-alerts.json 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "chore: refresh Meta spend only (temp workflow) $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git pull --rebase origin main
+          git push
