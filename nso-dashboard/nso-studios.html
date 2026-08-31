@@ -2864,8 +2864,8 @@ function renderCPR(){
   if(_cprChart){_cprChart.destroy();_cprChart=null;}
   const ctx=document.getElementById('cprChart');if(!ctx)return;
   _cprChart=new Chart(ctx,{type:'line',data:{labels:chartLabels,datasets:[
-    {label:'Cost per Lead',data:cplData,borderColor:'#00A3E0',backgroundColor:'rgba(0,163,224,.1)',fill:true,tension:.3,spanGaps:true,pointRadius:3,borderWidth:2},
-    {label:'Cost per Net Sale',data:cpsData,borderColor:'#00FFC2',backgroundColor:'rgba(0,255,194,.08)',fill:true,tension:.3,spanGaps:true,pointRadius:3,borderWidth:2},
+    {label:'Cost per Lead',data:cplData,borderColor:'#00A3E0',fill:false,tension:.3,spanGaps:true,pointRadius:3,borderWidth:2},
+    {label:'Cost per Net Sale',data:cpsData,borderColor:'#00FFC2',fill:false,tension:.3,spanGaps:true,pointRadius:3,borderWidth:2},
   ]},options:{responsive:true,maintainAspectRatio:false,
     interaction:{mode:'index',intersect:false},
     plugins:{
