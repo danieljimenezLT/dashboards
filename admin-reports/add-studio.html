@@ -3,58 +3,79 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SWEAT440 — Add Studio</title>
+<title>SWEAT440 — Add / Edit Studio</title>
 <link rel="icon" href="../favicon.jpg"/>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Open Sans',sans-serif;background:#0084B5;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 24px 80px}
 
-.back-link{position:fixed;top:24px;left:24px;display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.65);font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;text-decoration:none;transition:color .15s}
+.back-link{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.65);font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;text-decoration:none;transition:color .15s;margin-bottom:24px;align-self:flex-start;max-width:640px;width:100%}
 .back-link:hover{color:#fff}
 
-.logo-wrap{margin-bottom:32px;text-align:center}
-.logo-wrap img{height:42px}
+.logo-wrap{margin-bottom:28px;text-align:center}
+.logo-wrap img{height:40px}
 
 .page-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:28px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#fff;text-align:center;margin-bottom:8px}
-.page-sub{font-size:13px;color:rgba(255,255,255,.75);text-align:center;margin-bottom:32px;max-width:520px;line-height:1.6}
 
-.card{background:#fff;border-radius:20px;padding:40px 40px 36px;width:100%;max-width:640px;box-shadow:0 20px 60px rgba(0,0,0,.22)}
-
-.section-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#00A3E0;margin:28px 0 14px;padding-top:20px;border-top:1px solid #edf3f7}
-.section-title:first-child{margin-top:0;padding-top:0;border-top:none}
-.section-hint{font-size:12px;color:#8aaabb;margin:-8px 0 14px;line-height:1.5}
-
-.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.row.three{grid-template-columns:1fr 1fr 1fr}
-.form-group{margin-bottom:16px}
-label{display:block;font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#5a7a8a;margin-bottom:6px}
-label .opt{color:#b7cbd6;text-transform:none;font-style:normal;letter-spacing:0}
-input,select{width:100%;padding:10px 14px;border:1.5px solid #c0d4df;border-radius:8px;font-size:14px;font-family:'Open Sans',sans-serif;color:#1a1a2e;outline:none;transition:border-color .15s;background:#fff}
-input:focus,select:focus{border-color:#00A3E0}
-.checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:16px}
-.checkbox-row input{width:auto}
-.checkbox-row label{margin:0;font-size:13px;text-transform:none;font-style:normal;color:#1a1a2e;letter-spacing:0;font-family:'Open Sans',sans-serif}
-
-.submit-btn{width:100%;padding:13px;background:#00A3E0;color:#fff;border:none;border-radius:8px;font-family:'Oswald',sans-serif;font-style:italic;font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;margin-top:8px;transition:background .15s}
-.submit-btn:hover{background:#0084B5}
-.submit-btn:disabled{background:#a0c8df;cursor:not-allowed}
-
-.msg{display:none;border-radius:8px;padding:12px 16px;font-size:13px;margin-top:16px;line-height:1.6}
-.msg.show{display:block}
-.msg.error{background:#fff0f0;border:1px solid #f5c6c6;color:#c0392b}
-.msg.success{background:#e8faf0;border:1px solid #a8e6c3;color:#0a8a4a}
-.msg.success a{color:#0a8a4a;font-weight:700;text-decoration:underline}
-
-.mode-toggle{display:flex;gap:8px;width:100%;max-width:640px;margin-bottom:24px}
+.mode-toggle{display:flex;gap:8px;width:100%;max-width:640px;margin-bottom:20px}
 .mode-btn{flex:1;padding:11px;border:1.5px solid rgba(255,255,255,.4);border-radius:8px;background:transparent;color:rgba(255,255,255,.85);font-family:'Oswald',sans-serif;font-style:italic;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .15s}
 .mode-btn.active{background:#fff;color:#0084B5;border-color:#fff}
 .mode-btn:not(.active):hover{border-color:#fff;color:#fff}
 
+.info-banner{width:100%;max-width:640px;border-radius:10px;padding:13px 16px;font-size:12.5px;line-height:1.6;margin-bottom:16px;display:none}
+.info-banner.show{display:block}
+.info-banner.add-info{background:rgba(255,255,255,.12);color:rgba(255,255,255,.9)}
+.info-banner.edit-info{background:rgba(255,255,255,.12);color:rgba(255,255,255,.9)}
+.info-banner b{font-weight:700}
+
+.card{background:#fff;border-radius:20px;padding:36px 36px 32px;width:100%;max-width:640px;box-shadow:0 20px 60px rgba(0,0,0,.22)}
+
+.section-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#00A3E0;margin:26px 0 12px;padding-top:18px;border-top:1.5px solid #edf3f7;display:flex;align-items:center;gap:8px}
+.section-title:first-child{margin-top:0;padding-top:0;border-top:none}
+.section-tag{font-size:10px;font-family:'Open Sans',sans-serif;font-style:normal;font-weight:600;letter-spacing:.5px;padding:2px 7px;border-radius:4px;text-transform:uppercase}
+.section-tag.os{background:#e6f7ff;color:#0084B5}
+.section-tag.nso{background:#fff3e0;color:#e07000}
+.section-tag.both{background:#f0f8e8;color:#3a7a00}
+.section-hint{font-size:12px;color:#8aaabb;margin:-6px 0 12px;line-height:1.5}
+
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.row.three{grid-template-columns:1fr 1fr 1fr}
+.row.four{grid-template-columns:1fr 1fr 1fr 1fr}
+.form-group{margin-bottom:14px}
+label{display:block;font-family:'Oswald',sans-serif;font-style:italic;font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#5a7a8a;margin-bottom:5px}
+label .opt{color:#b7cbd6;text-transform:none;font-style:normal;letter-spacing:0;font-size:11px}
+label .req{color:#e05000;font-style:normal}
+input,select,textarea{width:100%;padding:9px 12px;border:1.5px solid #c0d4df;border-radius:7px;font-size:13.5px;font-family:'Open Sans',sans-serif;color:#1a1a2e;outline:none;transition:border-color .15s;background:#fff}
+input:focus,select:focus,textarea:focus{border-color:#00A3E0}
+textarea{resize:vertical;min-height:60px;font-size:13px}
+input::placeholder,textarea::placeholder{color:#b0c4cc}
+
+.checkbox-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;padding:10px 12px;background:#f7fbfd;border-radius:7px;border:1.5px solid #e0ecf2}
+.checkbox-row input[type=checkbox]{width:16px;height:16px;margin-top:2px;flex-shrink:0;accent-color:#00A3E0;cursor:pointer}
+.checkbox-row .cb-label{font-size:13px;color:#2a3a44;line-height:1.4;cursor:pointer}
+.checkbox-row .cb-label b{font-weight:700;display:block;margin-bottom:1px}
+.checkbox-row .cb-label small{color:#7a9aaa;font-size:11.5px}
+
+.slug-hint{font-size:11px;color:#8aaabb;margin-top:4px;line-height:1.4}
+
+.submit-btn{width:100%;padding:13px;background:#00A3E0;color:#fff;border:none;border-radius:8px;font-family:'Oswald',sans-serif;font-style:italic;font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;margin-top:10px;transition:background .15s}
+.submit-btn:hover{background:#0084B5}
+.submit-btn:disabled{background:#a0c8df;cursor:not-allowed}
+
+.msg{display:none;border-radius:8px;padding:12px 16px;font-size:13px;margin-top:14px;line-height:1.6}
+.msg.show{display:block}
+.msg.error{background:#fff0f0;border:1px solid #f5c6c6;color:#c0392b}
+.msg.success{background:#e8faf0;border:1px solid #a8e6c3;color:#0a8a4a}
+.msg.success a{color:#0a8a4a;font-weight:700}
+
+.req-note{font-size:11.5px;color:rgba(255,255,255,.7);text-align:center;margin-bottom:16px}
+.req-note span{color:#DDFF00;font-weight:700}
+
 @media(max-width:600px){
-  .row,.row.three{grid-template-columns:1fr}
-  .card{padding:28px 22px 24px}
-  .back-link{position:static;margin-bottom:20px}
+  .row,.row.three,.row.four{grid-template-columns:1fr}
+  .card{padding:24px 18px 20px}
+  .back-link{position:static}
 }
 </style>
 </head>
@@ -66,91 +87,143 @@ input:focus,select:focus{border-color:#00A3E0}
   <img src="../logo.png" alt="SWEAT440"/>
 </div>
 
-<div class="page-title">Add Studio</div>
-<div class="page-sub" id="pageSubAdd">Opens a pull request adding a new entry to <code>studios.json</code>, the canonical studio registry every dashboard and data pipeline reads from. A teammate reviews and merges it before it affects any live pipeline.</div>
-<div class="page-sub" id="pageSubEdit" style="display:none">Opens a pull request updating an existing entry in <code>studios.json</code> — blank optional fields are left unchanged, so you can fill in just what's missing without disturbing the rest. A teammate reviews and merges it before it affects any live pipeline.</div>
+<div class="page-title">Studio Registry</div>
+<p class="req-note">Fields marked <span>*</span> are required</p>
 
 <div class="mode-toggle">
   <button type="button" id="modeAddBtn" class="mode-btn active" onclick="setMode('add')">Add New Studio</button>
   <button type="button" id="modeEditBtn" class="mode-btn" onclick="setMode('edit')">Edit Existing Studio</button>
 </div>
 
-<div class="card">
-  <form id="addStudioForm" onsubmit="handleSubmit(event)">
+<div class="info-banner add-info show" id="bannerAdd">
+  <b>How it works:</b> Opens a pull request adding the studio to <code>studios.json</code>. A teammate reviews and merges before it affects any pipeline.<br>
+  <b>OS Dashboard</b> — appears automatically once Snowflake has data; no config needed here.<br>
+  <b>NSO Dashboard</b> — requires Status = NSO + Snowflake ID + Code. Set those three and the studio appears after the next data refresh.
+</div>
+<div class="info-banner edit-info" id="bannerEdit">
+  <b>Partial edits are safe:</b> blank optional fields are left unchanged, so you can fill in just one missing field without disturbing the rest.<br>
+  Opens a pull request — changes take effect after a teammate merges it.
+</div>
 
+<div class="card">
+  <form id="studioForm" onsubmit="handleSubmit(event)">
+
+    <!-- Edit mode picker -->
     <div class="form-group" id="editPickerGroup" style="display:none">
-      <label for="f_pick_existing">Select studio to edit</label>
+      <label for="f_pick_existing">Select studio to edit <span class="req">*</span></label>
       <select id="f_pick_existing" onchange="loadExistingStudio()">
         <option value="">— choose a studio —</option>
       </select>
     </div>
 
-    <div class="section-title">Identity</div>
+    <!-- ── IDENTITY ─────────────────────────────────────────────── -->
+    <div class="section-title">Identity <span class="section-tag both">OS + NSO</span></div>
+
     <div class="row">
       <div class="form-group">
-        <label for="f_name">Studio name *</label>
+        <label for="f_name">Studio name <span class="req">*</span></label>
         <input type="text" id="f_name" required placeholder="e.g. Dallas - Uptown"/>
       </div>
       <div class="form-group">
-        <label for="f_state">State *</label>
-        <input type="text" id="f_state" required maxlength="2" placeholder="e.g. TX" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase(); suggestCode()"/>
+        <label for="f_state">State <span class="req">*</span></label>
+        <input type="text" id="f_state" required maxlength="2" placeholder="TX" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase();suggestCode()"/>
       </div>
     </div>
+
     <div class="row">
       <div class="form-group">
-        <label for="f_code">Code <span class="opt">(auto-suggested, editable)</span></label>
+        <label for="f_code">Code <span class="opt">(auto-suggested)</span></label>
         <input type="text" id="f_code" placeholder="e.g. TX-005"/>
       </div>
       <div class="form-group">
         <label for="f_status">Status</label>
-        <select id="f_status">
-          <option value="nso" selected>NSO (new studio opening)</option>
+        <select id="f_status" onchange="onStatusChange()">
+          <option value="nso" selected>NSO — new studio opening</option>
           <option value="open">Open</option>
           <option value="closed">Closed</option>
         </select>
       </div>
     </div>
+
     <div class="checkbox-row">
       <input type="checkbox" id="f_excluded" checked/>
-      <label for="f_excluded">Exclude from OS dashboards by default (typical for a new studio opening - NSO)</label>
+      <label class="cb-label" for="f_excluded">
+        <b>Exclude from OS Dashboard by default</b>
+        <small>Typical for NSO studios — franchise owners and leadership can still un-filter them manually.</small>
+      </label>
     </div>
 
-    <div class="section-title">Meta Ads</div>
-    <div class="section-hint">Leave blank if the studio isn't running Meta campaigns yet — fill in later.</div>
+    <div class="checkbox-row" id="nsoTrackRow" style="display:none">
+      <input type="checkbox" id="f_nso_track"/>
+      <label class="cb-label" for="f_nso_track">
+        <b>Keep in NSO Dashboard after opening</b>
+        <small>Check if this studio should remain in the NSO tab even after its status changes to "Open".</small>
+      </label>
+    </div>
+
+    <!-- ── NSO REQUIREMENTS ──────────────────────────────────────── -->
+    <div class="section-title">Snowflake &amp; Social <span class="section-tag nso">NSO required</span></div>
+    <div class="section-hint">Required for the NSO Dashboard to show sales, clients, and Instagram data.</div>
+
     <div class="row">
       <div class="form-group">
-        <label for="f_meta_match">Campaign/adset name match <span class="opt">(optional)</span></label>
-        <input type="text" id="f_meta_match" placeholder="e.g. Uptown"/>
+        <label for="f_snowflake_id">Snowflake studio ID <span class="opt">(required for NSO)</span></label>
+        <input type="number" id="f_snowflake_id" placeholder="e.g. 5753491"/>
       </div>
       <div class="form-group">
-        <label for="f_meta_ad_account">Ad account ID <span class="opt">(optional, defaults to corporate)</span></label>
+        <label for="f_social_slug">Social slug <span class="opt">(required for Instagram)</span></label>
+        <input type="text" id="f_social_slug" placeholder="e.g. coconutgrove"/>
+        <div class="slug-hint">Lowercase, no spaces. Used to fetch Instagram posts and brand audit data. If blank, the studio won't appear in social insights.</div>
+      </div>
+    </div>
+
+    <!-- ── META ADS ──────────────────────────────────────────────── -->
+    <div class="section-title">Meta Ads <span class="section-tag both">OS + NSO</span></div>
+    <div class="section-hint">Leave blank if the studio isn't running Meta campaigns yet — fill in later via Edit.</div>
+
+    <div class="row">
+      <div class="form-group">
+        <label for="f_meta_match">Campaign / adset name match <span class="opt">(optional)</span></label>
+        <input type="text" id="f_meta_match" placeholder="e.g. Coral Gables"/>
+      </div>
+      <div class="form-group">
+        <label for="f_meta_ad_account">Ad account ID <span class="opt">(optional — defaults to corporate)</span></label>
         <input type="text" id="f_meta_ad_account" placeholder="act_..."/>
       </div>
     </div>
     <div class="row">
       <div class="form-group">
         <label for="f_meta_page">Facebook page ID <span class="opt">(optional)</span></label>
-        <input type="text" id="f_meta_page"/>
+        <input type="text" id="f_meta_page" placeholder="e.g. 1013504171849728"/>
       </div>
       <div class="form-group">
         <label for="f_meta_ig">Instagram account ID <span class="opt">(optional)</span></label>
-        <input type="text" id="f_meta_ig"/>
+        <input type="text" id="f_meta_ig" placeholder="e.g. 17841406944098426"/>
       </div>
     </div>
 
-    <div class="section-title">Google Ads</div>
+    <!-- ── GOOGLE ADS ─────────────────────────────────────────────── -->
+    <div class="section-title">Google Ads <span class="section-tag both">OS + NSO</span></div>
+
     <div class="row">
       <div class="form-group">
         <label for="f_gads_match">Campaign name match <span class="opt">(optional)</span></label>
-        <input type="text" id="f_gads_match" placeholder="e.g. Uptown"/>
+        <input type="text" id="f_gads_match" placeholder="e.g. Coral Gables"/>
       </div>
       <div class="form-group">
         <label for="f_gads_cid">Customer ID <span class="opt">(optional)</span></label>
         <input type="text" id="f_gads_cid" placeholder="e.g. 385-801-4125"/>
       </div>
     </div>
+    <div class="form-group">
+      <label for="f_gads_pattern">Regex pattern <span class="opt">(advanced — use instead of match for ambiguous names)</span></label>
+      <input type="text" id="f_gads_pattern" placeholder="e.g. NoDa|noda|NODA"/>
+      <div class="slug-hint">Only fill this if the simple name match above would incorrectly match other studios. Supports standard JavaScript regex syntax.</div>
+    </div>
 
-    <div class="section-title">GA4 / GBP / Snowflake</div>
+    <!-- ── GA4 / GBP ─────────────────────────────────────────────── -->
+    <div class="section-title">GA4 &amp; Google Business Profile <span class="section-tag both">OS + NSO</span></div>
+
     <div class="row">
       <div class="form-group">
         <label for="f_ga4_path">GA4 page path <span class="opt">(optional)</span></label>
@@ -158,26 +231,29 @@ input:focus,select:focus{border-color:#00A3E0}
       </div>
       <div class="form-group">
         <label for="f_gbp_loc">GBP location ID <span class="opt">(optional)</span></label>
-        <input type="text" id="f_gbp_loc"/>
+        <input type="text" id="f_gbp_loc" placeholder="e.g. 11402535545027699120"/>
       </div>
-    </div>
-    <div class="form-group">
-      <label for="f_snowflake_id">Snowflake studio ID <span class="opt">(optional — usually not known yet at NSO stage)</span></label>
-      <input type="text" id="f_snowflake_id" placeholder="e.g. 5753491"/>
     </div>
 
-    <div class="section-title">Presale tier pricing <span class="opt" style="text-transform:none">(optional)</span></div>
-    <div class="row three">
+    <!-- ── PRESALE TIER PRICING ───────────────────────────────────── -->
+    <div class="section-title">Presale Tier Pricing <span class="section-tag nso">NSO</span></div>
+    <div class="section-hint">Only for studios running tiered presale memberships. Leave blank if not applicable.</div>
+
+    <div class="row four">
       <div class="form-group">
-        <label for="f_tier1">Tier 1 price</label>
-        <input type="number" id="f_tier1" placeholder="99"/>
+        <label for="f_tier0">Tier 0 <span class="opt">($)</span></label>
+        <input type="number" id="f_tier0" placeholder="99"/>
       </div>
       <div class="form-group">
-        <label for="f_tier2">Tier 2 price</label>
-        <input type="number" id="f_tier2" placeholder="129"/>
+        <label for="f_tier1">Tier 1 <span class="opt">($)</span></label>
+        <input type="number" id="f_tier1" placeholder="129"/>
       </div>
       <div class="form-group">
-        <label for="f_tier3">Tier 3 price</label>
+        <label for="f_tier2">Tier 2 <span class="opt">($)</span></label>
+        <input type="number" id="f_tier2" placeholder="149"/>
+      </div>
+      <div class="form-group">
+        <label for="f_tier3">Tier 3 <span class="opt">($)</span></label>
         <input type="number" id="f_tier3" placeholder="149"/>
       </div>
     </div>
@@ -191,43 +267,43 @@ input:focus,select:focus{border-color:#00A3E0}
 <script src="../shared/auth.js"></script>
 <script>
 const user = checkAuth();
-if (user) {
-  if (user.role !== 'admin') location.replace('../home.html');
-}
+if (user && user.role !== 'admin') location.replace('../home.html');
 
 const _PROXY_URL    = 'https://sweat440-refresh-proxy.sweat440.workers.dev';
 const _PROXY_SECRET = 'AnwxoPAsDK9vUXVY';
 
 let _studiosCache = null;
-let _mode = 'add'; // 'add' | 'edit'
+let _mode = 'add';
 let _editingOriginalName = null;
 
-async function loadStudiosForSuggest() {
+async function loadStudios() {
   try {
     const res = await fetch('../studios.json?_=' + Date.now());
     _studiosCache = await res.json();
-  } catch (e) {
-    console.warn('studios.json unavailable:', e);
+  } catch(e) {
     _studiosCache = { studios: [] };
   }
   populateExistingPicker();
 }
-loadStudiosForSuggest();
+loadStudios();
 
 function suggestCode() {
-  if (_mode === 'edit') return; // code is prefilled from the picked studio, not auto-suggested
+  if (_mode === 'edit') return;
   const state = document.getElementById('f_state').value.trim().toUpperCase();
   const codeInput = document.getElementById('f_code');
   if (!state || !_studiosCache || codeInput.dataset.userEdited === 'true') return;
   const nums = (_studiosCache.studios || [])
-    .map(s => s.code)
-    .filter(c => c && c.startsWith(state + '-'))
-    .map(c => parseInt(c.split('-')[1], 10))
-    .filter(n => !isNaN(n));
+    .map(s => s.code).filter(c => c && c.startsWith(state + '-'))
+    .map(c => parseInt(c.split('-')[1], 10)).filter(n => !isNaN(n));
   const next = nums.length ? Math.max(...nums) + 1 : 1;
-  codeInput.value = `${state}-${String(next).padStart(3, '0')}`;
+  codeInput.value = `${state}-${String(next).padStart(3,'0')}`;
 }
-document.getElementById('f_code').addEventListener('input', function() { this.dataset.userEdited = 'true'; });
+document.getElementById('f_code').addEventListener('input', function(){ this.dataset.userEdited='true'; });
+
+function onStatusChange() {
+  const status = document.getElementById('f_status').value;
+  document.getElementById('nsoTrackRow').style.display = status === 'open' ? '' : 'none';
+}
 
 function showMsg(text, cls) {
   const el = document.getElementById('msg');
@@ -237,20 +313,21 @@ function showMsg(text, cls) {
 
 function populateExistingPicker() {
   const sel = document.getElementById('f_pick_existing');
-  const studios = ((_studiosCache && _studiosCache.studios) || []).slice().sort((a, b) => a.name.localeCompare(b.name));
+  const studios = ((_studiosCache && _studiosCache.studios) || []).slice().sort((a,b) => a.name.localeCompare(b.name));
   sel.innerHTML = '<option value="">— choose a studio —</option>';
   for (const s of studios) {
     const opt = document.createElement('option');
     opt.value = s.name;
-    opt.textContent = s.name + (s.code ? ` (${s.code})` : '');
+    opt.textContent = s.name + (s.code ? ` (${s.code})` : '') + (s.status === 'nso' ? ' · NSO' : '');
     sel.appendChild(opt);
   }
 }
 
 function resetForm() {
-  document.getElementById('addStudioForm').reset();
+  document.getElementById('studioForm').reset();
   document.getElementById('f_code').dataset.userEdited = 'false';
   document.getElementById('f_pick_existing').value = '';
+  document.getElementById('nsoTrackRow').style.display = 'none';
   _editingOriginalName = null;
   document.getElementById('msg').className = 'msg';
 }
@@ -260,8 +337,8 @@ function setMode(mode) {
   document.getElementById('modeAddBtn').classList.toggle('active', mode === 'add');
   document.getElementById('modeEditBtn').classList.toggle('active', mode === 'edit');
   document.getElementById('editPickerGroup').style.display = mode === 'edit' ? '' : 'none';
-  document.getElementById('pageSubAdd').style.display = mode === 'add' ? '' : 'none';
-  document.getElementById('pageSubEdit').style.display = mode === 'edit' ? '' : 'none';
+  document.getElementById('bannerAdd').classList.toggle('show', mode === 'add');
+  document.getElementById('bannerEdit').classList.toggle('show', mode === 'edit');
   document.getElementById('submitBtn').textContent = mode === 'add' ? 'Open Pull Request' : 'Open Update Pull Request';
   resetForm();
   populateExistingPicker();
@@ -274,25 +351,36 @@ function loadExistingStudio() {
   if (!s) return;
   _editingOriginalName = s.name;
 
-  document.getElementById('f_name').value = s.name || '';
-  document.getElementById('f_state').value = s.state || '';
-  document.getElementById('f_code').value = s.code || '';
+  document.getElementById('f_name').value            = s.name || '';
+  document.getElementById('f_state').value           = s.state || '';
+  document.getElementById('f_code').value            = s.code || '';
   document.getElementById('f_code').dataset.userEdited = 'true';
-  document.getElementById('f_status').value = s.status || 'nso';
-  document.getElementById('f_excluded').checked = !!s.excluded_default;
-  document.getElementById('f_meta_match').value = (s.meta && s.meta.match) || '';
+  document.getElementById('f_status').value          = s.status || 'nso';
+  document.getElementById('f_excluded').checked      = !!s.excluded_default;
+  document.getElementById('f_nso_track').checked     = !!s.nso_track;
+  document.getElementById('nsoTrackRow').style.display = s.status === 'open' ? '' : 'none';
+
+  document.getElementById('f_snowflake_id').value    = s.snowflake_id != null ? s.snowflake_id : '';
+  document.getElementById('f_social_slug').value     = s.social_slug || '';
+
+  document.getElementById('f_meta_match').value      = (s.meta && s.meta.match) || '';
   document.getElementById('f_meta_ad_account').value = (s.meta && s.meta.ad_account_id) || '';
-  document.getElementById('f_meta_page').value = (s.meta && s.meta.page_id) || '';
-  document.getElementById('f_meta_ig').value = (s.meta && s.meta.instagram_account_id) || '';
-  document.getElementById('f_gads_match').value = (s.google_ads && s.google_ads.match) || '';
-  document.getElementById('f_gads_cid').value = (s.google_ads && s.google_ads.customer_id) || '';
-  document.getElementById('f_ga4_path').value = (s.ga4 && s.ga4.studio_page_path) || '';
-  document.getElementById('f_gbp_loc').value = (s.gbp && s.gbp.location_id) || '';
-  document.getElementById('f_snowflake_id').value = (s.snowflake_id != null) ? s.snowflake_id : '';
+  document.getElementById('f_meta_page').value       = (s.meta && s.meta.page_id) || '';
+  document.getElementById('f_meta_ig').value         = (s.meta && s.meta.instagram_account_id) || '';
+
+  document.getElementById('f_gads_match').value      = (s.google_ads && s.google_ads.match) || '';
+  document.getElementById('f_gads_pattern').value    = (s.google_ads && s.google_ads.pattern) || '';
+  document.getElementById('f_gads_cid').value        = (s.google_ads && s.google_ads.customer_id) || '';
+
+  document.getElementById('f_ga4_path').value        = (s.ga4 && s.ga4.studio_page_path) || '';
+  document.getElementById('f_gbp_loc').value         = (s.gbp && s.gbp.location_id) || '';
+
   const tp = s.tier_pricing || {};
-  document.getElementById('f_tier1').value = (tp.tier1_price != null) ? tp.tier1_price : '';
-  document.getElementById('f_tier2').value = (tp.tier2_price != null) ? tp.tier2_price : '';
-  document.getElementById('f_tier3').value = (tp.tier3_price != null) ? tp.tier3_price : '';
+  document.getElementById('f_tier0').value = tp.tier0_price != null ? tp.tier0_price : '';
+  document.getElementById('f_tier1').value = tp.tier1_price != null ? tp.tier1_price : '';
+  document.getElementById('f_tier2').value = tp.tier2_price != null ? tp.tier2_price : '';
+  document.getElementById('f_tier3').value = tp.tier3_price != null ? tp.tier3_price : '';
+
   document.getElementById('msg').className = 'msg';
 }
 
@@ -301,12 +389,9 @@ async function handleSubmit(e) {
   const btn = document.getElementById('submitBtn');
   const name  = document.getElementById('f_name').value.trim();
   const state = document.getElementById('f_state').value.trim().toUpperCase();
-  const code  = document.getElementById('f_code').value.trim().toUpperCase();
-
   if (!name || !state) return;
   if (_mode === 'edit' && !_editingOriginalName) {
-    showMsg('Pick a studio to edit first.', 'error');
-    return;
+    showMsg('Pick a studio to edit first.', 'error'); return;
   }
 
   const btnLabel = _mode === 'add' ? 'Open Pull Request' : 'Open Update Pull Request';
@@ -315,39 +400,42 @@ async function handleSubmit(e) {
     : `Open a pull request updating "${_editingOriginalName}" in studios.json?`;
   if (!confirm(confirmText)) return;
 
+  const t0 = document.getElementById('f_tier0').value;
+  const t1 = document.getElementById('f_tier1').value;
+  const t2 = document.getElementById('f_tier2').value;
+  const t3 = document.getElementById('f_tier3').value;
+  const tierObj = {};
+  if (t0) tierObj.tier0_price = Number(t0);
+  if (t1) tierObj.tier1_price = Number(t1);
+  if (t2) tierObj.tier2_price = Number(t2);
+  if (t3) tierObj.tier3_price = Number(t3);
+
   const studio = {
-    name, state, code: code || null,
-    status: document.getElementById('f_status').value,
+    name, state,
+    code:             document.getElementById('f_code').value.trim().toUpperCase() || null,
+    status:           document.getElementById('f_status').value,
     excluded_default: document.getElementById('f_excluded').checked,
+    nso_track:        document.getElementById('f_nso_track').checked || undefined,
+    snowflake_id:     document.getElementById('f_snowflake_id').value.trim() || null,
+    social_slug:      document.getElementById('f_social_slug').value.trim() || null,
     meta: {
-      match: document.getElementById('f_meta_match').value.trim() || null,
-      ad_account_id: document.getElementById('f_meta_ad_account').value.trim() || null,
-      page_id: document.getElementById('f_meta_page').value.trim() || null,
-      instagram_account_id: document.getElementById('f_meta_ig').value.trim() || null,
+      match:               document.getElementById('f_meta_match').value.trim() || null,
+      ad_account_id:       document.getElementById('f_meta_ad_account').value.trim() || null,
+      page_id:             document.getElementById('f_meta_page').value.trim() || null,
+      instagram_account_id:document.getElementById('f_meta_ig').value.trim() || null,
     },
     google_ads: {
-      match: document.getElementById('f_gads_match').value.trim() || null,
+      match:       document.getElementById('f_gads_match').value.trim() || null,
+      pattern:     document.getElementById('f_gads_pattern').value.trim() || null,
       customer_id: document.getElementById('f_gads_cid').value.trim() || null,
     },
     ga4: { studio_page_path: document.getElementById('f_ga4_path').value.trim() || null },
     gbp: { location_id: document.getElementById('f_gbp_loc').value.trim() || null },
-    snowflake_id: document.getElementById('f_snowflake_id').value.trim() || null,
-    social_slug: null,
-    tier_pricing: (function() {
-      const t1 = document.getElementById('f_tier1').value;
-      const t2 = document.getElementById('f_tier2').value;
-      const t3 = document.getElementById('f_tier3').value;
-      if (!t1 && !t2 && !t3) return null;
-      const out = {};
-      if (t1) out.tier1_price = Number(t1);
-      if (t2) out.tier2_price = Number(t2);
-      if (t3) out.tier3_price = Number(t3);
-      return out;
-    })(),
+    tier_pricing: Object.keys(tierObj).length ? tierObj : null,
   };
 
   btn.disabled = true;
-  btn.textContent = _mode === 'add' ? 'Opening pull request…' : 'Opening update pull request…';
+  btn.textContent = _mode === 'add' ? 'Opening pull request…' : 'Updating…';
   document.getElementById('msg').className = 'msg';
 
   const payload = _mode === 'add'
@@ -355,7 +443,7 @@ async function handleSubmit(e) {
     : { action: 'update_studio', originalName: _editingOriginalName, studio };
 
   try {
-    const res = await fetch(_PROXY_URL, {
+    const res  = await fetch(_PROXY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-App-Secret': _PROXY_SECRET },
       body: JSON.stringify(payload),
@@ -364,26 +452,21 @@ async function handleSubmit(e) {
 
     if (res.ok && data.ok && data.prUrl) {
       btn.textContent = '✓ Pull request opened';
-      const safeUrl = String(data.prUrl);
       const a = document.createElement('a');
-      a.href = safeUrl; a.textContent = safeUrl; a.target = '_blank'; a.rel = 'noopener';
+      a.href = String(data.prUrl); a.textContent = data.prUrl; a.target = '_blank'; a.rel = 'noopener';
       const wrap = document.createElement('span');
-      wrap.textContent = 'Pull request opened: ';
-      wrap.appendChild(a);
+      wrap.textContent = 'Pull request opened: '; wrap.appendChild(a);
       const msgEl = document.getElementById('msg');
-      msgEl.innerHTML = '';
-      msgEl.appendChild(wrap);
+      msgEl.innerHTML = ''; msgEl.appendChild(wrap);
       msgEl.className = 'msg show success';
-      setTimeout(() => { btn.disabled = false; btn.textContent = btnLabel; }, 4000);
+      setTimeout(() => { btn.disabled = false; btn.textContent = btnLabel; }, 5000);
     } else {
-      btn.disabled = false;
-      btn.textContent = btnLabel;
-      showMsg(data.error || `Failed to open pull request (${res.status}).`, 'error');
+      btn.disabled = false; btn.textContent = btnLabel;
+      showMsg(data.error || `Error ${res.status} — check the browser console for details.`, 'error');
     }
-  } catch (e) {
-    btn.disabled = false;
-    btn.textContent = btnLabel;
-    showMsg('Failed to reach refresh service: ' + e.message, 'error');
+  } catch(err) {
+    btn.disabled = false; btn.textContent = btnLabel;
+    showMsg('Could not reach the proxy service: ' + err.message, 'error');
   }
 }
 </script>
