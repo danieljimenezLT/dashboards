@@ -41,6 +41,8 @@ from meta_client import MetaClient, leads_of, offsite_leads_of, purchases_of, tr
 # ── paths ────────────────────────────────────────────────────────────
 REPO_ROOT      = Path(__file__).resolve().parent
 OUT_PATH       = REPO_ROOT / "meta-ads-data.json"
+DQ_ALERTS_PATH = REPO_ROOT / "data-quality-alerts.json"
+DQ_ALERTS_MAX_AGE_DAYS = 90  # prune alerts older than this so the file doesn't grow forever
 # Studio-level spend lives in meta-ads-baked.json + spend-data.json, not here —
 # see build_spend_data.py, backfill_meta_month.py, import_meta_daily_csv.py.
 
@@ -283,6 +285,13 @@ def run(start_override: str | None = None):
     existing_ad_daily = existing.get("ad_daily", [])
     existing_ad_meta  = existing.get("ad_meta",  {})
 
+    existing_dq_alerts: list[dict] = []
+    if DQ_ALERTS_PATH.exists():
+        try:
+            existing_dq_alerts = json.loads(DQ_ALERTS_PATH.read_text(encoding="utf-8")).get("alerts", [])
+        except Exception:
+            pass
+
     meta = MetaClient()
 
     # ── 1. Fetch daily ad-level insights (account level) ─────────────
@@ -374,6 +383,7 @@ def run(start_override: str | None = None):
     rows_written = 0
     rows_skipped = 0
     rows_reattributed = 0
+    dq_alerts_new: list[dict] = []  # new reattributions found THIS run; merged into DQ_ALERTS_PATH below
 
     for row in raw_daily_ad:
         ad_id     = row.get("ad_id")
@@ -410,6 +420,16 @@ def run(start_override: str | None = None):
                 f"inconsistent match. Verify against the ad account if unexpected."
             )
             rows_reattributed += 1
+            dq_alerts_new.append({
+                "id":           f"{d}:{ad_id}:{prev['studio_code']}:{sc}",
+                "type":         "meta_ad_reattribution",
+                "date":         d,
+                "ad_id":        ad_id,
+                "ad_name":      ad_name,
+                "from_studio":  prev["studio_code"],
+                "to_studio":    sc,
+                "detected_at":  datetime.now(timezone.utc).isoformat(),
+            })
         ad_daily_idx[ak] = {
             "date":          d,
             "studio_code":   sc,
@@ -574,6 +594,28 @@ def run(start_override: str | None = None):
         f"Wrote {OUT_PATH} ({OUT_PATH.stat().st_size:,} bytes) — "
         f"{len(ad_daily_out)} ad_daily, {len(studio_daily_out)} studio_daily, {len(ad_meta)} ad_meta"
     )
+
+    # Data quality alerts — accumulated across runs (keyed by id, so a re-run
+    # never adds the same reattribution twice), pruned past DQ_ALERTS_MAX_AGE_DAYS
+    # so the file doesn't grow forever once something's had plenty of time to be
+    # seen. home.html reads this and shows a banner for admin users; dismissal
+    # is tracked client-side (localStorage), not here — this file only tracks
+    # what's been *found*, not what's been *seen*.
+    dq_alerts_by_id = {a["id"]: a for a in existing_dq_alerts if a.get("id")}
+    for a in dq_alerts_new:
+        dq_alerts_by_id[a["id"]] = a
+    dq_cutoff = (datetime.now(timezone.utc) - timedelta(days=DQ_ALERTS_MAX_AGE_DAYS)).isoformat()
+    dq_alerts_out = sorted(
+        (a for a in dq_alerts_by_id.values() if a.get("detected_at", "") >= dq_cutoff),
+        key=lambda a: a["detected_at"],
+        reverse=True,
+    )
+    DQ_ALERTS_PATH.write_text(
+        json.dumps({"generated_at": output["generated_at"], "alerts": dq_alerts_out}, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    if dq_alerts_new:
+        log.warning(f"  ⚠ {len(dq_alerts_new)} new alert(s) this run, {len(dq_alerts_out)} total in {DQ_ALERTS_PATH.name}")
 
 
 if __name__ == "__main__":

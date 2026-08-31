@@ -97,6 +97,7 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add meta-ads-data.json google-ads-data.json spend-data.json
+          git add data-quality-alerts.json 2>/dev/null || true
           git add agency-spend-overrides.json 2>/dev/null || true
           git add nso-dashboard/social_insights.json
           git add nso-dashboard/gbp_data.json
