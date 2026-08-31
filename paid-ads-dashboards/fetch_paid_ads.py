@@ -24,6 +24,10 @@ import studios as studios_registry
 
 CONFIG_PATH = REPO_ROOT / "config.yaml"
 OUT_PATH = REPO_ROOT / "daniel-paid-ads-data.json"
+# Shared with the root fetch_meta_ads.py / home.html data-quality banner — one
+# file at repo root, both pipelines merge their own findings into it.
+DQ_ALERTS_PATH = REPO_ROOT.parent / "data-quality-alerts.json"
+DQ_ALERTS_MAX_AGE_DAYS = 90
 
 
 def resolve_campaign_studios(c: dict) -> list[dict]:
@@ -453,6 +457,7 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
         if ad_id:
             ad_dims[ad_id] = {
                 "studio_code": studio["code"],
+                "ad_name":     ad_name,
                 "audience":    aud,
                 "pillar":      pillar,
                 "concept":     concept if concept and concept != "(other)" else None,
@@ -655,6 +660,7 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
                 "date":        d,
                 "studio_code": sc,
                 "ad_id":       ad_id,
+                "ad_name":     ad_dims.get(ad_id, {}).get("ad_name", ""),
                 "spend":       round(b["spend"], 2),
                 "impressions": b["impressions"],
                 "clicks":      b["clicks"],
@@ -958,17 +964,71 @@ def run():
         })
 
     # Merge _das_rows from all campaigns into the existing daily_ad_studio.
-    # Key: (date, studio_code, ad_id) — new data overwrites old for same key.
+    # Key: (date, ad_id) only — deliberately NOT studio_code. An ad belongs to
+    # exactly one studio on a given day; if a re-fetch resolves it to a
+    # different studio than before (adset renamed/reassigned, or a bad match),
+    # this key shape means the new attribution REPLACES the old one instead of
+    # sitting alongside it. Keying by (date, studio_code, ad_id) previously let
+    # both linger forever once written, double-counting that ad's spend across
+    # two studios for as long as both entries existed — the same bug found and
+    # fixed in the root fetch_meta_ads.py's ad_daily_idx.
     das_index: dict[tuple, dict] = {
-        (r["date"], r["studio_code"], r["ad_id"]): r
+        (r["date"], r["ad_id"]): r
         for r in existing_das
     }
+    dq_alerts_new: list[dict] = []
     for data in campaigns_data.values():
         for r in data.pop("_das_rows", []):
-            das_index[(r["date"], r["studio_code"], r["ad_id"])] = r
+            dk = (r["date"], r["ad_id"])
+            prev = das_index.get(dk)
+            if prev and prev.get("studio_code") and prev["studio_code"] != r["studio_code"]:
+                log.warning(
+                    f"  ⚠ ad {r['ad_id']} on {r['date']} matched to {r['studio_code']}, was "
+                    f"{prev['studio_code']} — adset renamed/reassigned, or a stale/inconsistent "
+                    f"match. Verify against the ad account if unexpected."
+                )
+                dq_alerts_new.append({
+                    "id":           f"paid_ads:{r['date']}:{r['ad_id']}:{prev['studio_code']}:{r['studio_code']}",
+                    "type":         "meta_ad_reattribution",
+                    "source":       "paid_ads_daniel",
+                    "date":         r["date"],
+                    "ad_id":        r["ad_id"],
+                    "ad_name":      r.get("ad_name", ""),
+                    "from_studio":  prev["studio_code"],
+                    "to_studio":    r["studio_code"],
+                    "detected_at":  datetime.now(timezone.utc).isoformat(),
+                })
+            das_index[dk] = r
 
     daily_ad_studio = sorted(das_index.values(), key=lambda r: (r["date"], r["studio_code"], r["ad_id"]))
     log.info(f"  daily_ad_studio total rows: {len(daily_ad_studio)} (was {len(existing_das)})")
+
+    # Merge into the shared data-quality-alerts.json (see DQ_ALERTS_PATH comment
+    # above) — accumulated across runs, deduped by id, pruned past
+    # DQ_ALERTS_MAX_AGE_DAYS so it doesn't grow forever once something's had
+    # plenty of time to be seen. Mirrors fetch_meta_ads.py's own merge exactly.
+    existing_dq_alerts: list[dict] = []
+    if DQ_ALERTS_PATH.exists():
+        try:
+            existing_dq_alerts = json.loads(DQ_ALERTS_PATH.read_text(encoding="utf-8")).get("alerts", [])
+        except Exception:
+            pass
+    dq_alerts_by_id = {a["id"]: a for a in existing_dq_alerts if a.get("id")}
+    for a in dq_alerts_new:
+        dq_alerts_by_id[a["id"]] = a
+    dq_cutoff = (datetime.now(timezone.utc) - timedelta(days=DQ_ALERTS_MAX_AGE_DAYS)).isoformat()
+    dq_alerts_out = sorted(
+        (a for a in dq_alerts_by_id.values() if a.get("detected_at", "") >= dq_cutoff),
+        key=lambda a: a["detected_at"],
+        reverse=True,
+    )
+    DQ_ALERTS_PATH.write_text(
+        json.dumps({"generated_at": datetime.now(timezone.utc).isoformat(), "alerts": dq_alerts_out},
+                   indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    if dq_alerts_new:
+        log.warning(f"  ⚠ {len(dq_alerts_new)} new alert(s) this run, {len(dq_alerts_out)} total in {DQ_ALERTS_PATH.name}")
 
     output = {
         "generated_at":    datetime.now(timezone.utc).isoformat(),
