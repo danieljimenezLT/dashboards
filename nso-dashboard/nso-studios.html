@@ -2666,7 +2666,7 @@ function drawScCumChart(sc,weeks){
 /* ══════════════════════════════════════════════════════════════════════════
    BLENDED CPR TAB
    ══════════════════════════════════════════════════════════════════════════ */
-let CPR_META=true,CPR_GOOGLE=true,CPR_LT=true,CPR_GRASSROOTS=true,CPR_PRINT=true,CPR_PR=true,CPR_EXT=true,CPR_GRAN='weekly',_cprChart=null;
+let CPR_META=true,CPR_GOOGLE=true,CPR_LT=true,CPR_GRASSROOTS=true,CPR_PRINT=true,CPR_PR=true,CPR_EXT=true,CPR_OTHER=true,CPR_GRAN='weekly',_cprChart=null;
 
 function _cprToggle(type){
   if(type==='meta')CPR_META=!CPR_META;
@@ -2676,6 +2676,7 @@ function _cprToggle(type){
   else if(type==='print')CPR_PRINT=!CPR_PRINT;
   else if(type==='pr')CPR_PR=!CPR_PR;
   else if(type==='ext')CPR_EXT=!CPR_EXT;
+  else if(type==='other')CPR_OTHER=!CPR_OTHER;
   renderCPR();
 }
 function _cprSetGran(g){CPR_GRAN=g;renderCPR();}
@@ -2730,6 +2731,9 @@ function _cprPRSpend(studios,from,to){return _cprAdhoc('PR',studios,from,to);}
 function _cprExtAgency(studios,from,to){
   return _cprAdhoc('External agency',studios,from,to)+_cprMonthlyFee('External agency',studios,from,to);
 }
+function _cprOtherMkt(studios,from,to){
+  return _cprAdhoc('Other',studios,from,to)+_cprMonthlyFee('Other',studios,from,to);
+}
 
 function _cprLtFee(studios,from,to){
   if(!from||!to||!studios.length)return 0;
@@ -2749,7 +2753,8 @@ function _cprTotalSpend(studios,from,to){
         +(CPR_GRASSROOTS?_cprGrassrootsSpend(studios,from,to):0)
         +(CPR_PRINT     ?_cprPrintSpend(studios,from,to):0)
         +(CPR_PR        ?_cprPRSpend(studios,from,to):0)
-        +(CPR_EXT       ?_cprExtAgency(studios,from,to):0);
+        +(CPR_EXT       ?_cprExtAgency(studios,from,to):0)
+        +(CPR_OTHER     ?_cprOtherMkt(studios,from,to):0);
 }
 function _cprLeads(from,to,studios,sources){
   const f=from?new Date(from+'T00:00:00Z'):null,t=to?new Date(to+'T23:59:59Z'):new Date();
@@ -2810,6 +2815,7 @@ function renderCPR(){
   const totalPrint=_cprPrintSpend(activeStudios,from,to);
   const totalPR=_cprPRSpend(activeStudios,from,to);
   const totalExt=_cprExtAgency(activeStudios,from,to);
+  const totalOther=_cprOtherMkt(activeStudios,from,to);
   const totalSpend=_cprTotalSpend(activeStudios,from,to);
   const totalLeads=_cprLeads(from,to,activeStudios,selSrc);
   const totalSales=_cprSales(from,to,activeStudios,selSrc);
@@ -2825,6 +2831,7 @@ function renderCPR(){
   const ppPrint=ppFrom?_cprPrintSpend(activeStudios,ppFrom,ppTo):0;
   const ppPR=ppFrom?_cprPRSpend(activeStudios,ppFrom,ppTo):0;
   const ppExt=ppFrom?_cprExtAgency(activeStudios,ppFrom,ppTo):0;
+  const ppOther=ppFrom?_cprOtherMkt(activeStudios,ppFrom,ppTo):0;
   const pyMeta=pyFrom?_cprMetaSpend(activeStudios,pyFrom,pyTo):0;
   const pyGoogle=pyFrom?_cprGoogleSpend(activeStudios,pyFrom,pyTo):0;
   const pyLt=pyFrom?_cprLtFee(activeStudios,pyFrom,pyTo):0;
@@ -2832,6 +2839,7 @@ function renderCPR(){
   const pyPrint=pyFrom?_cprPrintSpend(activeStudios,pyFrom,pyTo):0;
   const pyPR=pyFrom?_cprPRSpend(activeStudios,pyFrom,pyTo):0;
   const pyExt=pyFrom?_cprExtAgency(activeStudios,pyFrom,pyTo):0;
+  const pyOther=pyFrom?_cprOtherMkt(activeStudios,pyFrom,pyTo):0;
   const ppSpend=ppFrom?_cprTotalSpend(activeStudios,ppFrom,ppTo):0;
   const pySpend=pyFrom?_cprTotalSpend(activeStudios,pyFrom,pyTo):0;
   const ppLeads=ppFrom?_cprLeads(ppFrom,ppTo,activeStudios,selSrc):0;
@@ -2867,6 +2875,7 @@ function renderCPR(){
       ${_tog(CPR_PRINT,'print','Print / Signs','#9B59B6')}
       ${_tog(CPR_PR,'pr','PR','#E91E63')}
       ${_tog(CPR_EXT,'ext','External Agency','#00897B')}
+      ${_tog(CPR_OTHER,'other','Other','#607D8B')}
     </div>
   </div>`;
 
@@ -2885,6 +2894,7 @@ function renderCPR(){
   if(CPR_PRINT){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('Print / Signs',totalPrint,ppPrint,pyPrint,'#9B59B6'));}
   if(CPR_PR){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('PR',totalPR,ppPR,pyPR,'#E91E63'));}
   if(CPR_EXT){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('Ext. Agency',totalExt,ppExt,pyExt,'#00897B'));}
+  if(CPR_OTHER){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('Other',totalOther,ppOther,pyOther,'#607D8B'));}
   if(spCards.length){
     spCards.push('<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">=</span>');
     spCards.push(_spendCard('Total Spend',totalSpend,ppSpend,pySpend,'#1a1a2e'));
@@ -2929,15 +2939,16 @@ function renderCPR(){
       ${CPR_PRINT?'<th class="num">Print/Signs</th>':''}
       ${CPR_PR?'<th class="num">PR</th>':''}
       ${CPR_EXT?'<th class="num">Ext. Agency</th>':''}
+      ${CPR_OTHER?'<th class="num">Other</th>':''}
       <th class="num">Total Spend</th><th class="num">Cost/Lead</th><th class="num">Cost/Net Sale</th>
     </tr></thead><tbody>`;
-  let tMeta=0,tGoogle=0,tLt=0,tGrs=0,tPrint=0,tPR=0,tExt=0,tLeads=0,tSales=0;
+  let tMeta=0,tGoogle=0,tLt=0,tGrs=0,tPrint=0,tPR=0,tExt=0,tOther=0,tLeads=0,tSales=0;
   activeStudios.forEach(studio=>{
     const sm=_cprMetaSpend([studio],from,to),sg=_cprGoogleSpend([studio],from,to),slt=_cprLtFee([studio],from,to);
-    const sgrs=_cprGrassrootsSpend([studio],from,to),spr=_cprPrintSpend([studio],from,to),sprr=_cprPRSpend([studio],from,to),sext=_cprExtAgency([studio],from,to);
-    const sp=(CPR_META?sm:0)+(CPR_GOOGLE?sg:0)+(CPR_LT?slt:0)+(CPR_GRASSROOTS?sgrs:0)+(CPR_PRINT?spr:0)+(CPR_PR?sprr:0)+(CPR_EXT?sext:0);
+    const sgrs=_cprGrassrootsSpend([studio],from,to),spr=_cprPrintSpend([studio],from,to),sprr=_cprPRSpend([studio],from,to),sext=_cprExtAgency([studio],from,to),soth=_cprOtherMkt([studio],from,to);
+    const sp=(CPR_META?sm:0)+(CPR_GOOGLE?sg:0)+(CPR_LT?slt:0)+(CPR_GRASSROOTS?sgrs:0)+(CPR_PRINT?spr:0)+(CPR_PR?sprr:0)+(CPR_EXT?sext:0)+(CPR_OTHER?soth:0);
     const sl=_cprLeads(from,to,[studio],selSrc),ss=_cprSales(from,to,[studio],selSrc);
-    tMeta+=sm;tGoogle+=sg;tLt+=slt;tGrs+=sgrs;tPrint+=spr;tPR+=sprr;tExt+=sext;tLeads+=sl;tSales+=ss;
+    tMeta+=sm;tGoogle+=sg;tLt+=slt;tGrs+=sgrs;tPrint+=spr;tPR+=sprr;tExt+=sext;tOther+=soth;tLeads+=sl;tSales+=ss;
     h+=`<tr><td>${studio.replace('SWEAT440 ','')}</td>
       <td class="num">${fN(sl)}</td><td class="num">${fN(ss)}</td>
       ${CPR_GOOGLE?`<td class="num">${f$(sg)}</td>`:''}
@@ -2947,11 +2958,12 @@ function renderCPR(){
       ${CPR_PRINT?`<td class="num">${f$(spr)}</td>`:''}
       ${CPR_PR?`<td class="num">${f$(sprr)}</td>`:''}
       ${CPR_EXT?`<td class="num">${f$(sext)}</td>`:''}
+      ${CPR_OTHER?`<td class="num">${f$(soth)}</td>`:''}
       <td class="num">${f$(sp)}</td>
       <td class="num">${sl>0?f$2(sp/sl):'—'}</td>
       <td class="num">${ss>0?f$2(sp/ss):'—'}</td></tr>`;
   });
-  const tActive=(CPR_META?tMeta:0)+(CPR_GOOGLE?tGoogle:0)+(CPR_LT?tLt:0)+(CPR_GRASSROOTS?tGrs:0)+(CPR_PRINT?tPrint:0)+(CPR_PR?tPR:0)+(CPR_EXT?tExt:0);
+  const tActive=(CPR_META?tMeta:0)+(CPR_GOOGLE?tGoogle:0)+(CPR_LT?tLt:0)+(CPR_GRASSROOTS?tGrs:0)+(CPR_PRINT?tPrint:0)+(CPR_PR?tPR:0)+(CPR_EXT?tExt:0)+(CPR_OTHER?tOther:0);
   h+=`</tbody><tfoot><tr style="font-weight:700;background:#f4f9fd">
     <td>Total</td><td class="num">${fN(tLeads)}</td><td class="num">${fN(tSales)}</td>
     ${CPR_GOOGLE?`<td class="num">${f$(tGoogle)}</td>`:''}
@@ -2961,6 +2973,7 @@ function renderCPR(){
     ${CPR_PRINT?`<td class="num">${f$(tPrint)}</td>`:''}
     ${CPR_PR?`<td class="num">${f$(tPR)}</td>`:''}
     ${CPR_EXT?`<td class="num">${f$(tExt)}</td>`:''}
+    ${CPR_OTHER?`<td class="num">${f$(tOther)}</td>`:''}
     <td class="num">${f$(tActive)}</td>
     <td class="num">${tLeads>0?f$2(tActive/tLeads):'—'}</td>
     <td class="num">${tSales>0?f$2(tActive/tSales):'—'}</td>
