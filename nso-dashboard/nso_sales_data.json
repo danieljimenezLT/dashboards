@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-08-30T13:47:26.307569",
+  "generated_at": "2026-08-31T14:05:34.913960",
   "date_range": {
     "start": "2026-01-01",
-    "end": "2026-08-28"
+    "end": "2026-08-29"
   },
   "studios": {
     "5753604": {
@@ -401,7 +401,7 @@
         },
         {
           "date": "2026-06-21",
-          "source": "Other",
+          "source": "N/A",
           "presales": 1,
           "cancellations": 0,
           "gross_revenue": 129.0,
@@ -1046,25 +1046,10 @@
         },
         {
           "date": "2026-07-27",
-          "source": "Meta Ads",
-          "presales": 1,
-          "cancellations": 0,
-          "gross_revenue": 129.0,
-          "tiers": {
-            "unl_mo": 0,
-            "unl_yr": 0,
-            "std_mil": 0,
-            "visit": 0,
-            "other": 0
-          },
-          "membership_total": 0
-        },
-        {
-          "date": "2026-07-27",
           "source": "Website (unattributed)",
-          "presales": 1,
+          "presales": 2,
           "cancellations": 0,
-          "gross_revenue": 129.0,
+          "gross_revenue": 258.0,
           "tiers": {
             "unl_mo": 0,
             "unl_yr": 0,
@@ -1362,9 +1347,24 @@
         {
           "date": "2026-08-12",
           "source": "Meta Ads",
-          "presales": 2,
+          "presales": 1,
           "cancellations": 0,
-          "gross_revenue": 258.0,
+          "gross_revenue": 129.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
+        },
+        {
+          "date": "2026-08-12",
+          "source": "Website (unattributed)",
+          "presales": 1,
+          "cancellations": 0,
+          "gross_revenue": 129.0,
           "tiers": {
             "unl_mo": 0,
             "unl_yr": 0,
@@ -1543,7 +1543,7 @@
           "date": "2026-08-19",
           "source": "Meta Ads",
           "presales": 2,
-          "cancellations": 1,
+          "cancellations": 0,
           "gross_revenue": 258.0,
           "tiers": {
             "unl_mo": 0,
@@ -1558,7 +1558,7 @@
           "date": "2026-08-19",
           "source": "Website (unattributed)",
           "presales": 2,
-          "cancellations": 0,
+          "cancellations": 1,
           "gross_revenue": 258.0,
           "tiers": {
             "unl_mo": 0,
@@ -1881,13 +1881,43 @@
             "other": 0
           },
           "membership_total": 0
+        },
+        {
+          "date": "2026-08-29",
+          "source": "Grassroots",
+          "presales": 3,
+          "cancellations": 0,
+          "gross_revenue": 297.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
+        },
+        {
+          "date": "2026-08-29",
+          "source": "Website (unattributed)",
+          "presales": 1,
+          "cancellations": 0,
+          "gross_revenue": 99.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
         }
       ],
       "totals": {
-        "presales": 6,
+        "presales": 10,
         "cancellations": 0,
-        "net_presales": 6,
-        "gross_revenue": 594.0,
+        "net_presales": 10,
+        "gross_revenue": 990.0,
         "membership_total": 0
       }
     },
@@ -3781,13 +3811,43 @@
             "other": 0
           },
           "membership_total": 0
+        },
+        {
+          "date": "2026-08-29",
+          "source": "Grassroots",
+          "presales": 1,
+          "cancellations": 0,
+          "gross_revenue": 129.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
+        },
+        {
+          "date": "2026-08-29",
+          "source": "Website (unattributed)",
+          "presales": 1,
+          "cancellations": 0,
+          "gross_revenue": 129.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
         }
       ],
       "totals": {
-        "presales": 225,
+        "presales": 227,
         "cancellations": 19,
-        "net_presales": 206,
-        "gross_revenue": 25665.0,
+        "net_presales": 208,
+        "gross_revenue": 25923.0,
         "membership_total": 0
       }
     },
@@ -4364,13 +4424,43 @@
             "other": 0
           },
           "membership_total": 0
+        },
+        {
+          "date": "2026-08-29",
+          "source": "Grassroots",
+          "presales": 1,
+          "cancellations": 0,
+          "gross_revenue": 99.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
+        },
+        {
+          "date": "2026-08-29",
+          "source": "Website (unattributed)",
+          "presales": 1,
+          "cancellations": 0,
+          "gross_revenue": 99.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
         }
       ],
       "totals": {
-        "presales": 66,
+        "presales": 68,
         "cancellations": 4,
-        "net_presales": 62,
-        "gross_revenue": 7734.0,
+        "net_presales": 64,
+        "gross_revenue": 7932.0,
         "membership_total": 0
       }
     },
@@ -4572,13 +4662,28 @@
             "other": 0
           },
           "membership_total": 0
+        },
+        {
+          "date": "2026-08-29",
+          "source": "Grassroots",
+          "presales": 4,
+          "cancellations": 0,
+          "gross_revenue": 396.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
         }
       ],
       "totals": {
-        "presales": 20,
+        "presales": 24,
         "cancellations": 0,
-        "net_presales": 20,
-        "gross_revenue": 1980.0,
+        "net_presales": 24,
+        "gross_revenue": 2376.0,
         "membership_total": 0
       }
     },
@@ -5668,7 +5773,7 @@
         },
         {
           "date": "2026-06-10",
-          "source": "N/A",
+          "source": "Other",
           "presales": 1,
           "cancellations": 0,
           "gross_revenue": 99.0,
@@ -6448,7 +6553,7 @@
         },
         {
           "date": "2026-07-29",
-          "source": "Website (unattributed)",
+          "source": "Meta Ads",
           "presales": 1,
           "cancellations": 0,
           "gross_revenue": 129.0,
@@ -7118,13 +7223,43 @@
             "other": 0
           },
           "membership_total": 0
+        },
+        {
+          "date": "2026-08-29",
+          "source": "Grassroots",
+          "presales": 35,
+          "cancellations": 0,
+          "gross_revenue": 3465.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
+        },
+        {
+          "date": "2026-08-29",
+          "source": "Website (unattributed)",
+          "presales": 4,
+          "cancellations": 0,
+          "gross_revenue": 396.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
         }
       ],
       "totals": {
-        "presales": 10,
+        "presales": 49,
         "cancellations": 0,
-        "net_presales": 10,
-        "gross_revenue": 990.0,
+        "net_presales": 49,
+        "gross_revenue": 4851.0,
         "membership_total": 0
       }
     },
@@ -7941,13 +8076,28 @@
             "other": 0
           },
           "membership_total": 0
+        },
+        {
+          "date": "2026-08-29",
+          "source": "Website (unattributed)",
+          "presales": 1,
+          "cancellations": 0,
+          "gross_revenue": 99.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
         }
       ],
       "totals": {
-        "presales": 89,
+        "presales": 90,
         "cancellations": 1,
-        "net_presales": 88,
-        "gross_revenue": 10011.0,
+        "net_presales": 89,
+        "gross_revenue": 10110.0,
         "membership_total": 0
       }
     },
@@ -16660,13 +16810,43 @@
             "other": 0
           },
           "membership_total": 0
+        },
+        {
+          "date": "2026-08-29",
+          "source": "Grassroots",
+          "presales": 4,
+          "cancellations": 0,
+          "gross_revenue": 396.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
+        },
+        {
+          "date": "2026-08-29",
+          "source": "Website (unattributed)",
+          "presales": 2,
+          "cancellations": 0,
+          "gross_revenue": 198.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
         }
       ],
       "totals": {
-        "presales": 95,
+        "presales": 101,
         "cancellations": 4,
-        "net_presales": 91,
-        "gross_revenue": 9405.0,
+        "net_presales": 97,
+        "gross_revenue": 9999.0,
         "membership_total": 0
       }
     },
@@ -20558,12 +20738,57 @@
             "other": 0
           },
           "membership_total": 0
+        },
+        {
+          "date": "2026-08-29",
+          "source": "Business Mode / App",
+          "presales": 0,
+          "cancellations": 4,
+          "gross_revenue": 0.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
+        },
+        {
+          "date": "2026-08-29",
+          "source": "Meta Ads",
+          "presales": 0,
+          "cancellations": 2,
+          "gross_revenue": 0.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
+        },
+        {
+          "date": "2026-08-29",
+          "source": "Website (unattributed)",
+          "presales": 0,
+          "cancellations": 1,
+          "gross_revenue": 0.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
         }
       ],
       "totals": {
         "presales": 327,
-        "cancellations": 74,
-        "net_presales": 253,
+        "cancellations": 81,
+        "net_presales": 246,
         "gross_revenue": 41233.0,
         "membership_total": 0
       }
