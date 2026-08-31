@@ -100,6 +100,11 @@ class MetaClient:
                         log.warning(f"Rate limit (code {code}), waiting {wait}s")
                         time.sleep(wait)
                         continue
+                    if code == 80004:
+                        wait = 90 * attempt  # ads management sliding window — back off briefly
+                        log.warning(f"Ads mgmt rate limit (code 80004), waiting {wait}s")
+                        time.sleep(wait)
+                        continue
                     raise RuntimeError(f"Meta API error: {err.get('message')} (code {code})")
                 resp.raise_for_status()
                 return data
@@ -129,6 +134,11 @@ class MetaClient:
                     if code in (17, 32, 4, 613) or err.get("is_transient"):
                         wait = RETRY_WAIT_S * attempt
                         log.warning(f"Rate limit on pagination (code {code}), waiting {wait}s")
+                        time.sleep(wait)
+                        continue
+                    if code == 80004:
+                        wait = 300 * attempt
+                        log.warning(f"Ads mgmt rate limit on pagination (code 80004), waiting {wait}s")
                         time.sleep(wait)
                         continue
                     raise RuntimeError(f"Meta pagination error: {err.get('message')} (code {code})")
@@ -191,13 +201,17 @@ class MetaClient:
                     if isinstance(cdata, dict):
                         results[cid] = cdata
             except Exception as e:
-                if len(chunk) > 1:
+                # Don't split on rate-limit errors — splitting causes a call storm
+                # against the same exhausted ad account. _get() already retried.
+                is_rate_limit = "80004" in str(e) or "too many calls" in str(e).lower()
+                if len(chunk) > 1 and not is_rate_limit:
                     mid = len(chunk) // 2
                     log.warning(f"  creatives batch of {len(chunk)} failed; splitting")
                     _fetch_chunk(chunk[:mid])
                     _fetch_chunk(chunk[mid:])
                 else:
-                    log.warning(f"  creative {chunk[0]} unfetchable: {e}")
+                    ids = chunk[0] if len(chunk) == 1 else f"{len(chunk)} creatives"
+                    log.warning(f"  {ids} unfetchable: {e}")
 
         chunk_size = 10
         for i in range(0, len(creative_ids), chunk_size):
