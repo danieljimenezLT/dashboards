@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-08-31",
+      "pr_number": 272,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/272",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Fixed a bug where an ad's spend could be counted twice if it got reattributed to a different studio\r",
+      "summary": "A small number of ads were being counted under two different studios at once for the same days, inflating both studios' totals (and the company-wide total). Found via a ~$110 July discrepancy on Reston's numbers versus the real ad account.\r"
+    },
+    {
+      "date": "2026-08-31",
       "pr_number": 271,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/271",
       "author": "Sebastian Arango",
