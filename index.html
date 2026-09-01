@@ -2277,7 +2277,7 @@ async function buildMetaTab() {
       kpiCard('Leads (Native)', leads,      null, null, v=>v,      GLOSSARY.meta_leads) +
       kpiCard('Trials',       trials,       null, null, v=>v,      GLOSSARY.meta_trials) +
       kpiCard('Cost / Lead',  cpl,          null, null, f$2,       GLOSSARY.meta_cpl) +
-      (isAdminUser() ? kpiCard('Offsite Conversions <span style="font-size:9px;font-family:Oswald,sans-serif;font-style:italic;background:#DDFF00;color:#1a3a4a;padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:4px;letter-spacing:.5px">ALPHA</span>', offsiteLeads, null, null, v=>v, GLOSSARY.meta_offsite_leads) : '');
+      ''; // Offsite Conversions hidden — data preserved in offsiteLeads, re-enable with kpiCard call above
 
     // ---- Studio table ----
     const studioRows = Object.entries(studioMap).map(([name, s]) => ({
