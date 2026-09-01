@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-09-01",
+      "pr_number": 277,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/277",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Reduce refresh lookback windows to speed up daily runs",
+      "summary": "Instagram fetch cut from ~23 min to ~2-4 min by reducing lookback from 90 to 5 days and doubling parallel workers. GBP now merges into existing history instead of re-fetching everything from 2025. Meta Ads lookback reduced to 8 days for both dashboards."
+    },
+    {
       "date": "2026-08-31",
       "pr_number": 276,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/276",
