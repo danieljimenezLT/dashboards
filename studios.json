@@ -753,7 +753,7 @@
       "state": "FL",
       "status": "open",
       "nso_track": true,
-      "excluded_default": true,
+      "excluded_default": false,
       "meta": {
         "match": "Naples"
       },
@@ -966,8 +966,8 @@
       "name": "Reston",
       "code": "VA-001",
       "state": "VA",
-      "status": "nso",
-      "excluded_default": true,
+      "status": "open",
+      "excluded_default": false,
       "meta": {
         "match": "Reston",
         "page_id": "875200972337017"
