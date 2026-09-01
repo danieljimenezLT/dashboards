@@ -101,9 +101,10 @@ class MetaClient:
                         time.sleep(wait)
                         continue
                     if code == 80004:
-                        wait = 90 * attempt  # ads management sliding window — back off briefly
-                        log.warning(f"Ads mgmt rate limit (code 80004), waiting {wait}s")
-                        time.sleep(wait)
+                        if attempt >= 2:  # 1 retry max — skip if still rate-limited
+                            raise RuntimeError(f"Meta API error: {err.get('message')} (code {code})")
+                        log.warning("Ads mgmt rate limit (code 80004), waiting 90s (1 retry)")
+                        time.sleep(90)
                         continue
                     raise RuntimeError(f"Meta API error: {err.get('message')} (code {code})")
                 resp.raise_for_status()
@@ -137,9 +138,10 @@ class MetaClient:
                         time.sleep(wait)
                         continue
                     if code == 80004:
-                        wait = 300 * attempt
-                        log.warning(f"Ads mgmt rate limit on pagination (code 80004), waiting {wait}s")
-                        time.sleep(wait)
+                        if attempt >= 2:  # 1 retry max — skip if still rate-limited
+                            raise RuntimeError(f"Meta API error: {err.get('message')} (code {code})")
+                        log.warning("Ads mgmt rate limit on pagination (code 80004), waiting 90s (1 retry)")
+                        time.sleep(90)
                         continue
                     raise RuntimeError(f"Meta pagination error: {err.get('message')} (code {code})")
                 break
