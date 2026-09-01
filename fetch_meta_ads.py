@@ -48,7 +48,7 @@ DQ_ALERTS_MAX_AGE_DAYS = 90  # prune alerts older than this so the file doesn't 
 
 # How many days back to re-fetch on each daily run.
 # Historical data outside this window is preserved via upsert from the existing file.
-DAILY_LOOKBACK_DAYS = 21
+DAILY_LOOKBACK_DAYS = 8
 
 logging.basicConfig(
     level=logging.INFO,

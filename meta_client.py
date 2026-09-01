@@ -101,9 +101,10 @@ class MetaClient:
                         time.sleep(wait)
                         continue
                     if code == 80004:
-                        wait = 90 * attempt  # ads management sliding window — back off briefly
-                        log.warning(f"Ads mgmt rate limit (code 80004), waiting {wait}s")
-                        time.sleep(wait)
+                        if attempt >= 2:  # 1 retry max — skip if still rate-limited
+                            raise RuntimeError(f"Meta API error: {err.get('message')} (code {code})")
+                        log.warning("Ads mgmt rate limit (code 80004), waiting 90s (1 retry)")
+                        time.sleep(90)
                         continue
                     raise RuntimeError(f"Meta API error: {err.get('message')} (code {code})")
                 resp.raise_for_status()
@@ -137,9 +138,10 @@ class MetaClient:
                         time.sleep(wait)
                         continue
                     if code == 80004:
-                        wait = 300 * attempt
-                        log.warning(f"Ads mgmt rate limit on pagination (code 80004), waiting {wait}s")
-                        time.sleep(wait)
+                        if attempt >= 2:  # 1 retry max — skip if still rate-limited
+                            raise RuntimeError(f"Meta API error: {err.get('message')} (code {code})")
+                        log.warning("Ads mgmt rate limit on pagination (code 80004), waiting 90s (1 retry)")
+                        time.sleep(90)
                         continue
                     raise RuntimeError(f"Meta pagination error: {err.get('message')} (code {code})")
                 break
@@ -213,8 +215,11 @@ class MetaClient:
                     ids = chunk[0] if len(chunk) == 1 else f"{len(chunk)} creatives"
                     log.warning(f"  {ids} unfetchable: {e}")
 
-        chunk_size = 10
-        for i in range(0, len(creative_ids), chunk_size):
-            _fetch_chunk(creative_ids[i : i + chunk_size])
+        chunk_size = 50
+        chunks = [creative_ids[i : i + chunk_size] for i in range(0, len(creative_ids), chunk_size)]
+        for idx, chunk in enumerate(chunks):
+            _fetch_chunk(chunk)
+            if idx < len(chunks) - 1:
+                time.sleep(0.3)
 
         return results
