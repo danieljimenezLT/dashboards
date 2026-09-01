@@ -71,7 +71,7 @@ jobs:
           META_APP_SECRET:   ${{ secrets.META_APP_SECRET }}
         run: |
           python nso-dashboard/scripts/fetch_social_insights.py \
-            --days 90 \
+            --days 5 \
             --output nso-dashboard/social_insights.json
         continue-on-error: true
 
@@ -87,7 +87,7 @@ jobs:
           GBP_REFRESH_TOKEN: ${{ secrets.GBP_REFRESH_TOKEN }}
         run: |
           python nso-dashboard/scripts/fetch_gbp.py \
-            --start 2025-01-01 \
+            --days 30 \
             --output nso-dashboard/gbp_data.json \
             --credentials nso-dashboard/credentials/service_account.json
         continue-on-error: true

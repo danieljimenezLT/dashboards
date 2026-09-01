@@ -331,7 +331,7 @@ def fetch_instagram_insights(ig_id, studio_name, start_date, end_date, user_toke
     try:
         r = requests.get(f"{BASE}/{ig_id}/media", params={
             "fields": "id,caption,timestamp,like_count,comments_count,media_type,permalink,thumbnail_url,media_url",
-            "limit": 100,
+            "limit": 25,
             "access_token": user_token,
         })
         data = r.json()
@@ -369,7 +369,7 @@ def fetch_instagram_insights(ig_id, studio_name, start_date, end_date, user_toke
 
 def main():
     parser = argparse.ArgumentParser(description="Fetch Instagram insights for all SWEAT440 studios")
-    parser.add_argument("--days", type=int, default=90)
+    parser.add_argument("--days", type=int, default=5)
     parser.add_argument("--start", help="YYYY-MM-DD")
     parser.add_argument("--end", help="YYYY-MM-DD")
     parser.add_argument("--output", default="social_insights.json")
@@ -431,10 +431,10 @@ def main():
         except Exception as e:
             print(f"\nWARNING: could not load existing {out_path}: {e}")
 
-    # Fetch all studios in parallel — 5 workers balances speed vs Meta rate limits.
+    # Fetch all studios in parallel — 10 workers balances speed vs Meta rate limits.
     ig_map = {}
-    print(f"\nFetching {len(STUDIOS)} studios with 5 parallel workers...")
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    print(f"\nFetching {len(STUDIOS)} studios with 10 parallel workers...")
+    with ThreadPoolExecutor(max_workers=10) as executor:
         futures = {executor.submit(fetch_studio, s): s for s in STUDIOS}
         for future in as_completed(futures):
             studio, ig_result = future.result()
@@ -465,14 +465,18 @@ def main():
         old_monthly.update(new_monthly)
         new_data["monthly"] = sorted(old_monthly.values(), key=lambda x: x["month"])
 
-        # Prune daily rows and posts from months that are now fully archived.
+        # Prune daily rows from months that are now fully archived (keeps JSON lean).
         # Boundary months (partially in the 90-day window) are kept intact so
         # they can be correctly aggregated when they eventually fall out.
         archived_keys = set(new_monthly.keys())
         new_data["daily"] = [r for r in all_daily
                              if _month_key(r["date"]) not in archived_keys]
+
+        # Posts are kept for a full rolling year so the Instagram tab shows
+        # 12 months of content. Older posts are already summarised in monthly[].
+        year_ago = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
         new_data["posts"] = [p for p in all_posts
-                             if _month_key(p.get("date", "")) not in archived_keys]
+                             if p.get("date", "") >= year_ago]
 
         ig_map[studio_name] = new_data
 

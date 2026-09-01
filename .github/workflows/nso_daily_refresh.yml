@@ -6,7 +6,7 @@ on:
   workflow_dispatch:        # Allow manual trigger from GitHub UI
     inputs:
       marketing_start:
-        description: 'Override Meta/Google start date (YYYY-MM-DD). Leave blank for default 14-day lookback.'
+        description: 'Override Meta/Google start date (YYYY-MM-DD). Leave blank for default 8-day lookback.'
         required: false
         default: ''
 
@@ -35,12 +35,11 @@ jobs:
         run: |
           echo "YESTERDAY=$(date -u -d '1 day ago' +%Y-%m-%d)"           >> $GITHUB_ENV
           echo "TWO_DAYS_AGO=$(date -u -d '2 days ago' +%Y-%m-%d)"       >> $GITHUB_ENV
-          echo "FOURTEEN_DAYS_AGO=$(date -u -d '14 days ago' +%Y-%m-%d)" >> $GITHUB_ENV
-          # workflow_dispatch override: use custom start if provided, else 14-day lookback
+          # workflow_dispatch override: use custom start if provided, else 8-day lookback
           if [ -n "${{ github.event.inputs.marketing_start }}" ]; then
             echo "MARKETING_START=${{ github.event.inputs.marketing_start }}" >> $GITHUB_ENV
           else
-            echo "MARKETING_START=$(date -u -d '14 days ago' +%Y-%m-%d)" >> $GITHUB_ENV
+            echo "MARKETING_START=$(date -u -d '8 days ago' +%Y-%m-%d)" >> $GITHUB_ENV
           fi
 
       - name: Write Google service account credentials
@@ -77,10 +76,10 @@ jobs:
         continue-on-error: true
 
       # ── META ADS + GA4 + GOOGLE ADS ────────────────────────────────────────
-      # Default: 14-day lookback (MARKETING_START) so Meta's retroactive spend
+      # Default: 8-day lookback (MARKETING_START) so Meta's retroactive spend
       # adjustments are captured. On manual dispatch, MARKETING_START can be
       # set to any past date for a one-time historical re-fetch.
-      - name: Refresh Meta Ads / GA4 / Google Ads (14-day lookback)
+      - name: Refresh Meta Ads / GA4 / Google Ads (8-day lookback)
         env:
           META_ACCESS_TOKEN:              ${{ secrets.META_TOKEN }}
           META_APP_ID:                    ${{ secrets.META_APP_ID }}
