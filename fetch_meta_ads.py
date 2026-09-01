@@ -255,7 +255,7 @@ def previous_quarter_bounds(today: date) -> tuple[str, str]:
 
 # ── main ETL ─────────────────────────────────────────────────────────
 
-def run(start_override: str | None = None):
+def run(start_override: str | None = None, end_override: str | None = None):
     import studios as studios_registry
 
     ad_account  = studios_registry.defaults()["meta_ad_account_id"]  # e.g. "act_1553887681409034"
@@ -271,8 +271,12 @@ def run(start_override: str | None = None):
     # ── date windows ─────────────────────────────────────────────────
     # Fetch only the last DAILY_LOOKBACK_DAYS days each run.
     # Older data is preserved via upsert from the existing file.
+    # end_override lets a caller re-verify a bounded historical window (e.g. a
+    # monthly attribution audit chunking through the last 90 days) without
+    # re-fetching all the way to today every time — see monthly-attribution-
+    # audit.yml. Only meaningful together with start_override.
     daily_start = start_override or (today - timedelta(days=DAILY_LOOKBACK_DAYS)).isoformat()
-    daily_end   = today_iso
+    daily_end   = end_override or today_iso
 
     # ── load existing output (for upsert + baked monthly) ────────────
     existing: dict = {}
@@ -623,9 +627,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--start", default=None,
                         help="Override fetch start date (YYYY-MM-DD). Default: last DAILY_LOOKBACK_DAYS days.")
+    parser.add_argument("--end", default=None,
+                        help="Override fetch end date (YYYY-MM-DD). Default: today. Only meaningful with --start "
+                             "(e.g. a bounded historical chunk for a backfill/audit run).")
     args = parser.parse_args()
     try:
-        run(start_override=args.start)
+        run(start_override=args.start, end_override=args.end)
     except Exception as e:
         log.exception(f"❌ ETL failed: {e}")
         sys.exit(1)
