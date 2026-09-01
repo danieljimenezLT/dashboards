@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-01",
+      "pr_number": 280,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/280",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Added a monthly job that re-checks the last 90 days of Meta ad spend attribution\r",
+      "summary": "Daily refreshes only re-verify the last ~week of ad-to-studio attribution, so a mismatch like the Reston/Prestonwood one could sit undetected once it aged past that window. A new monthly job re-fetches the last 90 days so misattributed ads and their spend self-correct automatically, without needing another manual audit.\r"
+    },
+    {
+      "date": "2026-09-01",
       "pr_number": 278,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/278",
       "author": "Sebastian Arango",
