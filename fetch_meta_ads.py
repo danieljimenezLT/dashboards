@@ -45,7 +45,7 @@ OUT_PATH       = REPO_ROOT / "meta-ads-data.json"
 
 # How many days back to re-fetch on each daily run.
 # Historical data outside this window is preserved via upsert from the existing file.
-DAILY_LOOKBACK_DAYS = 21
+DAILY_LOOKBACK_DAYS = 8
 
 logging.basicConfig(
     level=logging.INFO,

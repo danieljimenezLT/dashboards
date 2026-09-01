@@ -71,7 +71,7 @@ jobs:
           META_APP_SECRET:   ${{ secrets.META_APP_SECRET }}
         run: |
           python nso-dashboard/scripts/fetch_social_insights.py \
-            --days 90 \
+            --days 5 \
             --output nso-dashboard/social_insights.json
         continue-on-error: true
 
