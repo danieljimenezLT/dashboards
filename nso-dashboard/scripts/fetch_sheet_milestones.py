@@ -9,11 +9,12 @@ Run from the nso-dashboard/ folder:
     python scripts/fetch_sheet_milestones.py
 """
 import json, re, math
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-SPREADSHEET_ID = "1Ku0VSwOY6HVXuqucduWlsbKIiNzb0ojL21rozaPpHHU"
+SPREADSHEET_ID        = "1Ku0VSwOY6HVXuqucduWlsbKIiNzb0ojL21rozaPpHHU"
+EVENTS_SPREADSHEET_ID = "1KhXfeofzltGyllmrfIm9UN2xqLUgBtjAxPhT-E0SQmk"
 CREDS_FILE     = "credentials/service_account.json"
 SCORECARD_FILE = "nso_scorecard_data.json"
 
@@ -225,6 +226,87 @@ def _match_events_spend(studio_name_raw):
     return {}
 
 
+# ── Read Weekly Events & Spend from NSO Manual Metrics sheet ─────────────────
+# This sheet uses calendar date ranges as columns (Sun–Sat weeks).
+# Community events are attributed to scorecard weeks by date overlap.
+
+def _parse_week_range_header(s, base_year):
+    """'Jan 4 - Jan 10' → (date, date). Returns None if unparseable."""
+    s = (s or '').strip()
+    if ' - ' not in s:
+        return None
+    left, right = s.split(' - ', 1)
+    def _p(x, yr):
+        for fmt in ('%b %d', '%B %d'):
+            try:
+                return datetime.strptime(f"{x.strip()} {yr}", f'{fmt} %Y').date()
+            except ValueError:
+                pass
+        return None
+    start = _p(left, base_year)
+    end   = _p(right, base_year)
+    if not start or not end:
+        return None
+    if end < start:
+        end = _p(right, base_year + 1)
+    return start, end
+
+print("Reading Weekly Events & Spend from NSO Manual Metrics sheet...")
+_ev_res = svc.spreadsheets().values().get(
+    spreadsheetId=EVENTS_SPREADSHEET_ID, range="Weekly Events & Spend"
+).execute()
+_ev_rows = _ev_res.get("values", [])
+
+_ev_base_year = date.today().year
+if _ev_rows:
+    _yr_m = re.search(r'\b(20\d\d)\b', ' '.join(_ev_rows[0]))
+    if _yr_m:
+        _ev_base_year = int(_yr_m.group(1))
+
+_ev_week_ranges = []   # (col_idx, start_date, end_date)
+_ev_hdr = _ev_rows[1] if len(_ev_rows) > 1 else []
+for _ci, _h in enumerate(_ev_hdr):
+    if _ci < 2:
+        continue
+    _parsed_hdr = _parse_week_range_header(_h, _ev_base_year)
+    if _parsed_hdr:
+        _ev_week_ranges.append((_ci, _parsed_hdr[0], _parsed_hdr[1]))
+
+# {studio_name_lower: [(cal_start, cal_end, events_int), ...]}
+_new_events: dict = {}
+for _er in _ev_rows[2:]:
+    _ename  = (_er[0] if _er else '').strip()
+    _metric = (_er[1] if len(_er) > 1 else '').strip().lower()
+    if not _ename or ('community' not in _metric and 'event' not in _metric):
+        continue
+    _entries = []
+    for _ci, _ws, _we in _ev_week_ranges:
+        _raw = _er[_ci].strip() if _ci < len(_er) else ''
+        try:
+            _ev_val = int(float(_raw.replace(',', ''))) if _raw and _raw != '-' else 0
+        except (ValueError, TypeError):
+            _ev_val = 0
+        if _ev_val > 0:
+            _entries.append((_ws, _we, _ev_val))
+    _new_events[_ename.lower()] = _entries
+
+
+def _events_in_period(studio_name_raw, period_start: date, period_end: date):
+    """Sum community events from calendar weeks overlapping [period_start, period_end]."""
+    name = studio_name_raw.strip().lower()
+    if name.startswith("sweat440 "):
+        name = name[9:]
+    entries = None
+    for k, v in _new_events.items():
+        if k in name or name in k:
+            entries = v
+            break
+    if not entries:
+        return None
+    total = sum(ev for ws, we, ev in entries if ws <= period_end and we >= period_start)
+    return total if total > 0 else None
+
+
 # Build header-name lookup from row 1 (row 0 = group headers).
 hdr_row = rows[1] if len(rows) > 1 else []
 hdr_map = {h.strip().lower(): i for i, h in enumerate(hdr_row)}
@@ -428,6 +510,24 @@ for studio in sc.get("studios", []):
             presales = wk.get("presales_week") or 0
             wk["blended_cpa"] = round(total / presales, 2) if presales > 0 else None
         es_weeks_updated += 1
+
+    # Patch comm_events from NSO Manual Metrics "Weekly Events & Spend" tab
+    # (calendar-week columns → scorecard week by date overlap)
+    ev_patched = 0
+    for wk in studio.get("weeks", []):
+        ds_str = wk.get("date_start")
+        de_str = wk.get("date_end")
+        if not ds_str or not de_str:
+            continue
+        try:
+            ds_dt = datetime.strptime(ds_str, "%Y-%m-%d").date()
+            de_dt = datetime.strptime(de_str, "%Y-%m-%d").date()
+        except ValueError:
+            continue
+        ev = _events_in_period(studio.get("name", ""), ds_dt, de_dt)
+        if ev is not None:
+            wk["comm_events"] = ev
+            ev_patched += 1
 
     updated += 1
     print(f"  {code} ({studio['name']}): "
