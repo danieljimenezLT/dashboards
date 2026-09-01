@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-01",
+      "pr_number": 278,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/278",
+      "author": "Sebastian Arango",
+      "categories": [
+        "General"
+      ],
+      "title": "Meta creative fetch skips gracefully when API rate limit persists",
+      "summary": "If the Meta Ads Management rate limit (error 80004) is still active after one 90-second retry, the creative batch is skipped and the refresh continues instead of blocking for several minutes."
+    },
+    {
+      "date": "2026-09-01",
       "pr_number": 277,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/277",
       "author": "Sebastian Arango",
