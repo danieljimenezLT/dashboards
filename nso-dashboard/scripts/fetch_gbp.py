@@ -573,8 +573,8 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--start",
-        default="2025-01-01",
-        help="Start date in YYYY-MM-DD format (default: 2025-01-01).",
+        default=None,
+        help="Start date in YYYY-MM-DD format. Overrides --days when provided.",
     )
     parser.add_argument(
         "--end",
@@ -667,8 +667,11 @@ def _merge_with_existing(new_result: dict, output_path: str) -> dict:
 def main() -> None:
     """CLI entry point — fetch GBP data for all NSO studios and write JSON."""
     args = _parse_args()
-    start_date = args.start
     end_date = args.end
+    if args.start:
+        start_date = args.start
+    else:
+        start_date = (datetime.utcnow() - timedelta(days=args.days)).strftime("%Y-%m-%d")
 
     print(f"Fetching GBP data: {start_date} -> {end_date}")
     print(f"Output: {args.output}\n")
