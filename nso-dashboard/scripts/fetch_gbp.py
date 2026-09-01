@@ -605,6 +605,65 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _merge_with_existing(new_result: dict, output_path: str) -> dict:
+    """
+    Merge new fetch results into the existing gbp_data.json using upsert logic:
+    - New daily rows win for overlapping dates (new data is more accurate)
+    - Old daily rows for dates outside the fetch window are preserved
+    - Reviews are always replaced with the latest fetch
+    Returns the merged result dict.
+    """
+    out_path = Path(output_path)
+    if not out_path.exists():
+        return new_result
+
+    try:
+        with open(out_path, encoding="utf-8") as fh:
+            existing = json.load(fh)
+    except Exception as e:
+        print(f"  WARNING: could not load existing {output_path} for merge: {e}")
+        return new_result
+
+    existing_studios = {s["name"]: s for s in existing.get("studios", [])}
+    new_studios = {s["name"]: s for s in new_result.get("studios", [])}
+
+    merged_studios = []
+    all_names = list(existing_studios) + [n for n in new_studios if n not in existing_studios]
+
+    for name in all_names:
+        old = existing_studios.get(name, {})
+        new = new_studios.get(name)
+
+        if new is None:
+            # Studio not in this fetch — keep existing as-is
+            merged_studios.append(old)
+            continue
+
+        # Merge daily rows: upsert by date (new wins)
+        old_daily = {r["date"]: r for r in old.get("daily", [])}
+        new_daily = {r["date"]: r for r in new.get("daily", [])}
+        old_daily.update(new_daily)
+        merged_daily = sorted(old_daily.values(), key=lambda x: x["date"])
+
+        merged_studios.append({
+            **new,
+            "daily": merged_daily,
+            # Reviews: use new if fetched, else keep old
+            "reviews": new.get("reviews") if new.get("reviews") is not None else old.get("reviews"),
+        })
+
+    old_start = existing.get("date_range", {}).get("start", new_result["date_range"]["start"])
+    new_end   = new_result["date_range"]["end"]
+
+    print(f"  Merged: historical start={old_start}, new end={new_end}, studios={len(merged_studios)}")
+
+    return {
+        "generated_at": new_result["generated_at"],
+        "date_range": {"start": old_start, "end": new_end},
+        "studios": merged_studios,
+    }
+
+
 def main() -> None:
     """CLI entry point — fetch GBP data for all NSO studios and write JSON."""
     args = _parse_args()
@@ -621,6 +680,9 @@ def main() -> None:
         print(f"  {len(sheet_ids)} studio(s) with GBP location ID in sheet\n")
 
     result = fetch_all_studios(start_date, end_date, sheet_ids=sheet_ids)
+
+    # Merge with existing historical data so we don't re-fetch the full history
+    result = _merge_with_existing(result, args.output)
 
     with open(args.output, "w", encoding="utf-8") as fh:
         json.dump(result, fh, indent=2, ensure_ascii=False)
