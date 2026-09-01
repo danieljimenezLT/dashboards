@@ -734,6 +734,11 @@ function renderSummary2(){
     b+=`</div><div style="font-size:10px;color:#8aaabb;margin-top:14px">${targetLabel||'Target'}: ${fmt(target)}</div></div>`;
     return b;
   }
+  function _noGoalMetric(label,actual,color,infoKey){
+    const infoHtml=infoKey&&GLOSSARY[infoKey]?_infoBtnInline(infoKey):'';
+    const fmt=typeof actual==='number'?actual.toLocaleString('en-US'):actual;
+    return `<div style="margin-bottom:18px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><div style="font-size:11px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.5px">${label}${infoHtml}</div><span style="font-size:20px;font-weight:700;color:#1a1a2e;font-family:'Oswald',sans-serif">${fmt}</span></div></div>`;
+  }
 
   const _strip=s=>(s||'').replace(/^SWEAT440\s+/,'');
   const _sname=studio.data_name||studio.name;
@@ -754,12 +759,13 @@ function renderSummary2(){
   const estTotalSpend=displayCw>0?Math.round(cumSpendNoLT/displayCw*paceWeeks):0;
 
   const last7Range=`${_fmtDate(d7ago)} – ${_fmtDate(d7end)}`;
-  if(!_isPreLaunchSumm){
+  if(!_isPreLaunchSumm||_goalAnn){
+  const _showGoals=!_isPreLaunchSumm;
   h+=`<div class="two-col" style="margin-bottom:20px">`;
   h+=`<div class="chart-card summary-card"><div class="summary-card-section">Last 7 Full Days</div><div style="font-size:10px;color:#8aaabb;margin-top:-10px;margin-bottom:10px">${last7Range}</div>`;
-  h+=skRow('Leads (New Accounts Created)',lastLeads,wkLeadGoal,'#00A3E0',true,'sum_leads_7d',wkGoalLabel);
-  if(!_isPreLaunchSumm){
-    h+=skRow('Presales (net)',lastNetPresales,wkPresaleGoal,'#00C9A7',true,'sum_presales_7d',wkGoalLabel);
+  h+=skRow('Leads (New Accounts Created)',lastLeads,_showGoals?wkLeadGoal:null,'#00A3E0',true,'sum_leads_7d',_showGoals?wkGoalLabel:null);
+  h+=skRow('Presales (net)',lastNetPresales,_showGoals?wkPresaleGoal:null,'#00C9A7',true,'sum_presales_7d',_showGoals?wkGoalLabel:null);
+  if(_showGoals){
     const last7Cvr=lastLeads>0?Math.round(lastNetPresales/lastLeads*100):null;
     const goalCvr=_isReston?35:(tgt.presales_count&&tgt.total_leads?Math.round(tgt.presales_count/tgt.total_leads*100):null);
     if(last7Cvr!==null){
@@ -774,28 +780,34 @@ function renderSummary2(){
   h+=`</div>`;
 
   h+=`<div class="chart-card summary-card"><div class="summary-card-section">Total to Date</div>${_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:-8px;margin-bottom:10px">${_dataThruLabel}</div>`:''}`;
-  h+=_progBar('Leads (New Accounts Created)',cur.total_leads||0,annLeads||0,'#00A3E0',annLeads?Math.round(annLeads/paceWeeks*displayCw):null,'W'+displayCw+' Pace',null,null,'sum_leads_total');
-  if(!_isPreLaunchSumm)h+=_progBar('Presales (net)',netPresales,annPres||0,'#00C9A7',annPres?Math.round(annPres/paceWeeks*displayCw):null,'W'+displayCw+' Pace',null,null,'sum_presales_total');
-  if((cur.estimated_day1_rmr||0)>0){const _rmrA=cur.estimated_day1_rmr||0,_rmrT=tgt.estimated_day1_rmr||0,_rmrPct=_rmrT>0?Math.min(100,Math.round(_rmrA/_rmrT*100)):0;h+=`<div style="margin-bottom:18px;position:relative">${_infoBtn('sum_rmr')}<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><div style="font-size:11px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Est. Day-1 RMR</div><div style="text-align:right"><span style="font-size:20px;font-weight:700;color:#1a1a2e;font-family:'Oswald',sans-serif">$${_rmrA.toLocaleString('en-US')}</span><span style="font-size:10px;color:#8aaabb;margin-left:6px">/ $${_rmrT.toLocaleString('en-US')}</span></div></div><div style="position:relative;height:14px;background:#f0f6fa;border-radius:7px"><div style="position:absolute;left:0;top:0;height:100%;width:${_rmrPct}%;background:#f4a021;border-radius:7px;min-width:${_rmrPct>0?4:0}px"></div></div></div>`;}
-  if(estTotalSpend>0||cumSpendNoLT>0){
-    const _fmtS=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
-    const _parseCpl=s=>{if(typeof s==='number')return s;if(typeof s==='string'){const ns=s.replace(/[^0-9.]/g,' ').trim().split(/\s+/).map(Number).filter(n=>!isNaN(n)&&n>0);if(ns.length>=2)return(ns[0]+ns[ns.length-1])/2;if(ns.length===1)return ns[0];}return null;};
-    const cplMid=_parseCpl(tgt.blended_cpl);
-    const budgetTarget=tgt.marketing_budget||(cplMid&&tgt.total_leads?Math.round(cplMid*tgt.total_leads):estTotalSpend);
-    const spendBench=Math.round(budgetTarget/paceWeeks*displayCw);
-    h+=_progBar('Mktg Spend (without Leadteam Fee)',Math.round(cumSpendNoLT),budgetTarget,'#9b59b6',spendBench,'W'+displayCw+' Pace',_fmtS,'Budget','sum_spend');
+  if(_showGoals){
+    h+=_progBar('Leads (New Accounts Created)',cur.total_leads||0,annLeads||0,'#00A3E0',annLeads?Math.round(annLeads/paceWeeks*displayCw):null,'W'+displayCw+' Pace',null,null,'sum_leads_total');
+    h+=_progBar('Presales (net)',netPresales,annPres||0,'#00C9A7',annPres?Math.round(annPres/paceWeeks*displayCw):null,'W'+displayCw+' Pace',null,null,'sum_presales_total');
+    if((cur.estimated_day1_rmr||0)>0){const _rmrA=cur.estimated_day1_rmr||0,_rmrT=tgt.estimated_day1_rmr||0,_rmrPct=_rmrT>0?Math.min(100,Math.round(_rmrA/_rmrT*100)):0;h+=`<div style="margin-bottom:18px;position:relative">${_infoBtn('sum_rmr')}<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><div style="font-size:11px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Est. Day-1 RMR</div><div style="text-align:right"><span style="font-size:20px;font-weight:700;color:#1a1a2e;font-family:'Oswald',sans-serif">$${_rmrA.toLocaleString('en-US')}</span><span style="font-size:10px;color:#8aaabb;margin-left:6px">/ $${_rmrT.toLocaleString('en-US')}</span></div></div><div style="position:relative;height:14px;background:#f0f6fa;border-radius:7px"><div style="position:absolute;left:0;top:0;height:100%;width:${_rmrPct}%;background:#f4a021;border-radius:7px;min-width:${_rmrPct>0?4:0}px"></div></div></div>`;}
+    if(estTotalSpend>0||cumSpendNoLT>0){
+      const _fmtS=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
+      const _parseCpl=s=>{if(typeof s==='number')return s;if(typeof s==='string'){const ns=s.replace(/[^0-9.]/g,' ').trim().split(/\s+/).map(Number).filter(n=>!isNaN(n)&&n>0);if(ns.length>=2)return(ns[0]+ns[ns.length-1])/2;if(ns.length===1)return ns[0];}return null;};
+      const cplMid=_parseCpl(tgt.blended_cpl);
+      const budgetTarget=tgt.marketing_budget||(cplMid&&tgt.total_leads?Math.round(cplMid*tgt.total_leads):estTotalSpend);
+      const spendBench=Math.round(budgetTarget/paceWeeks*displayCw);
+      h+=_progBar('Mktg Spend (without Leadteam Fee)',Math.round(cumSpendNoLT),budgetTarget,'#9b59b6',spendBench,'W'+displayCw+' Pace',_fmtS,'Budget','sum_spend');
+    }
+  } else {
+    h+=_noGoalMetric('Leads (New Accounts Created)',cur.total_leads||0,'#00A3E0','sum_leads_total');
+    h+=_noGoalMetric('Presales (net)',netPresales,'#00C9A7','sum_presales_total');
+    if(cumSpendNoLT>0)h+=_noGoalMetric('Mktg Spend (without Leadteam Fee)','$'+Math.round(cumSpendNoLT).toLocaleString('en-US'),'#9b59b6','sum_spend');
   }
   h+=`</div></div>`;
-  } // end if not pre-launch (two-col)
+  } // end if !_isPreLaunchSumm || _goalAnn (two-col)
 
   // Leads & Presales chart (extends into pre-weeks)
   _sumStudio=studio;_sumView='cum';_sum2SrcMetric='leads';
-  h+=`<div class="chart-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px"><div><div class="chart-card-title" style="margin-bottom:0">${_isPreLaunchSumm?'Leads':'Leads &amp; Presales'}</div>${_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:2px">${_dataThruLabel}</div>`:''}</div><div class="gran-group"><button class="gran-btn active" id="sum2CumBtn" onclick="setSumView2('cum')">Cumulative</button><button class="gran-btn" id="sum2WeekBtn" onclick="setSumView2('weekly')">Weekly</button></div></div><div style="position:relative;width:100%;height:320px"><canvas id="sum2ChartCanvas"></canvas></div></div>`;
-  h+=`<div class="chart-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px"><div><div class="chart-card-title" style="margin-bottom:0">Last 7 Full Days by Source</div><div style="font-size:10px;color:#8aaabb;margin-top:2px">${last7Range}</div></div><div class="gran-group"><button class="gran-btn active" id="sum2SrcLeadsBtn" onclick="setSumSrcMetric2('leads')">Leads</button>${_isPreLaunchSumm?'':'<button class="gran-btn" id="sum2SrcSalesBtn" onclick="setSumSrcMetric2(\'sales\')">Net Sales</button>'}</div></div><div style="display:flex;align-items:center;justify-content:center;gap:32px;flex-wrap:wrap;margin-top:14px"><div style="width:180px;height:180px;flex-shrink:0"><canvas id="sum2SrcCanvas"></canvas></div><div id="sum2SrcLegend" style="min-width:160px;max-width:260px"></div></div></div>`;
+  h+=`<div class="chart-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px"><div><div class="chart-card-title" style="margin-bottom:0">${(_isPreLaunchSumm&&!_goalAnn)?'Leads':'Leads &amp; Presales'}</div>${_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:2px">${_dataThruLabel}</div>`:''}</div><div class="gran-group"><button class="gran-btn active" id="sum2CumBtn" onclick="setSumView2('cum')">Cumulative</button><button class="gran-btn" id="sum2WeekBtn" onclick="setSumView2('weekly')">Weekly</button></div></div><div style="position:relative;width:100%;height:320px"><canvas id="sum2ChartCanvas"></canvas></div></div>`;
+  h+=`<div class="chart-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px"><div><div class="chart-card-title" style="margin-bottom:0">Last 7 Full Days by Source</div><div style="font-size:10px;color:#8aaabb;margin-top:2px">${last7Range}</div></div><div class="gran-group"><button class="gran-btn active" id="sum2SrcLeadsBtn" onclick="setSumSrcMetric2('leads')">Leads</button>${(_isPreLaunchSumm&&!_goalAnn)?'':'<button class="gran-btn" id="sum2SrcSalesBtn" onclick="setSumSrcMetric2(\'sales\')">Net Sales</button>'}</div></div><div style="display:flex;align-items:center;justify-content:center;gap:32px;flex-wrap:wrap;margin-top:14px"><div style="width:180px;height:180px;flex-shrink:0"><canvas id="sum2SrcCanvas"></canvas></div><div id="sum2SrcLegend" style="min-width:160px;max-width:260px"></div></div></div>`;
 
   document.getElementById('summary2Content').innerHTML=h;
   setTimeout(()=>{
-    if(_isPreLaunchSumm)drawPreLaunchLeadsChart(studio);
+    if(_isPreLaunchSumm&&!_goalAnn)drawPreLaunchLeadsChart(studio);
     else drawCum2Chart(studio);
     drawSumSourceChart2(studio,'leads');
   },50);
@@ -808,7 +820,7 @@ function setSumView2(v){
   if(cb)cb.classList.toggle('active',v==='cum');
   if(wb)wb.classList.toggle('active',v==='weekly');
   if(_sumStudio){
-    if(_isSummPreLaunch(_sumStudio))drawPreLaunchLeadsChart(_sumStudio);
+    if(_isSummPreLaunch(_sumStudio)&&!(_sumStudio&&_sumStudio.goal_announce_target))drawPreLaunchLeadsChart(_sumStudio);
     else if(v==='cum')drawCum2Chart(_sumStudio);
     else drawWeekly2Chart(_sumStudio);
   }
