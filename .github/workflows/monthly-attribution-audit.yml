@@ -1,0 +1,74 @@
+name: Monthly Meta Attribution Audit
+
+# Re-verifies the last 90 days of Meta ad-to-studio attribution once a month,
+# so a misattributed ad (adset renamed/reassigned, or a one-off bad match —
+# see the Reston/Prestonwood incident this was built in response to) gets a
+# chance to self-correct even after it's aged past the daily refresh's much
+# shorter DAILY_LOOKBACK_DAYS window (fetch_meta_ads.py). Without this, a
+# mismatch outside that window is frozen forever once written — nothing else
+# ever re-examines it.
+#
+# Runs in four ~23-day chunks instead of one 90-day request: a one-time
+# 365-day widen attempt failed outright (Meta's ad-level + daily-granularity
+# endpoint couldn't handle a request that large — see commit 2edc563), and a
+# single 90-day request is untested territory. Chunking stays close to
+# DAILY_LOOKBACK_DAYS's normal window size, which is proven to work daily.
+#
+# fetch_meta_ads.py's own (date, ad_id) dedupe (see ad_daily_idx) means a
+# corrected re-match here replaces any stale attribution automatically —
+# this workflow just gives that logic a wider window to run against.
+
+on:
+  schedule:
+    - cron: "0 9 1 * *"   # 1st of each month, 9:00 AM UTC (~4-5 AM Eastern)
+  workflow_dispatch:        # Manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ADMIN_PUSH_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests python-dotenv
+
+      - name: Re-fetch the last 90 days in chunks
+        env:
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+        run: |
+          # (start_offset:end_offset) in days-ago, oldest chunk first.
+          for CHUNK in "90:68" "67:45" "44:22" "21:0"; do
+            START_OFFSET="${CHUNK%%:*}"
+            END_OFFSET="${CHUNK##*:}"
+            START=$(date -u -d "-${START_OFFSET} days" +%Y-%m-%d)
+            END=$(date -u -d "-${END_OFFSET} days" +%Y-%m-%d)
+            echo "=== Chunk: ${START} to ${END} ==="
+            python fetch_meta_ads.py --start "$START" --end "$END" || echo "  chunk failed, continuing with the rest"
+            echo "  sleeping 60s before next chunk to ease rate limits..."
+            sleep 60
+          done
+
+      - name: Build spend-data.json (Meta + Google combined)
+        run: python build_spend_data.py
+
+      - name: Commit updated data files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add meta-ads-data.json spend-data.json
+          git add data-quality-alerts.json 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "chore: monthly 90-day Meta attribution audit $(date -u '+%Y-%m-%d')"
+          git pull --rebase origin main
+          git push
