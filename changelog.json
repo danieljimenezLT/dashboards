@@ -2,6 +2,18 @@
   "entries": [
     {
       "date": "2026-09-01",
+      "pr_number": 285,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/285",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Remove Offsite Conversions card from Meta Ads tab",
+      "summary": "The Offsite Conversions (Alpha) metric is hidden from the Meta Ads tab in both OS and NSO dashboards. Data is still being collected and can be re-enabled with a one-line change."
+    },
+    {
+      "date": "2026-09-01",
       "pr_number": 284,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/284",
       "author": "Sebastian Arango",
