@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-01",
+      "pr_number": 282,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/282",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix GBP fetch to respect --days window instead of always re-fetching from 2025-01-01",
+      "summary": "The --days flag was being ignored; every daily run re-fetched the full GBP history back to Jan 2025. Now --days 30 correctly limits each run to the last 30 days while historical data is preserved via merge."
+    },
+    {
+      "date": "2026-09-01",
       "pr_number": 280,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/280",
       "author": "Santiago Estrada",
