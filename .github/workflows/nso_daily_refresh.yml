@@ -141,6 +141,12 @@ jobs:
           cd nso-dashboard && python scripts/fetch_other_costs.py
         continue-on-error: true
 
+      # ── PRE-WEEKS (lead buckets + community events before Week 0) ────────────
+      - name: Build pre-launch weekly lead & events buckets
+        run: |
+          cd nso-dashboard && python scripts/fetch_pre_weeks.py
+        continue-on-error: true
+
       # ── MILESTONES + PRICING + TARGETS FROM NSO CONFIG SHEET ───────────────
       - name: Apply pricing, milestones, targets and dates from NSO Config sheet
         run: |
@@ -178,7 +184,8 @@ jobs:
             nso-dashboard/nso_scorecard_data.json \
             nso-dashboard/nso_ad_meta.json \
             nso-dashboard/nso_client_history.json \
-            nso-dashboard/nso_other_costs.json 2>/dev/null || true
+            nso-dashboard/nso_other_costs.json \
+            nso-dashboard/nso_pre_weeks_data.json 2>/dev/null || true
           git add nso-dashboard/nso_media_cache.json 2>/dev/null || true
           find nso-dashboard/thumbnails -type f 2>/dev/null | grep -q . && \
             git add nso-dashboard/thumbnails/ || true

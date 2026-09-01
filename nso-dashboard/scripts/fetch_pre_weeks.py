@@ -14,6 +14,7 @@ Output: nso_pre_weeks_data.json
 """
 
 import json
+import re
 import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -40,6 +41,89 @@ NAME_MAP = {
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+def _parse_week_range_header(s: str, base_year: int):
+    """'Jan 4 - Jan 10' → (date, date). Returns None if unparseable."""
+    s = (s or '').strip()
+    if ' - ' not in s:
+        return None
+    left, right = s.split(' - ', 1)
+    def _p(x, yr):
+        for fmt in ('%b %d', '%B %d'):
+            try:
+                return datetime.strptime(f"{x.strip()} {yr}", f'{fmt} %Y').date()
+            except ValueError:
+                pass
+        return None
+    start = _p(left, base_year)
+    end   = _p(right, base_year)
+    if not start or not end:
+        return None
+    if end < start:          # Dec → Jan year rollover
+        end = _p(right, base_year + 1)
+    return start, end
+
+
+def load_weekly_events(creds_path: Path, sheet_id: str) -> dict:
+    """
+    Read 'Weekly Events & Spend' tab.
+    Returns {studio_name_lower: [(cal_start, cal_end, events_int), ...]}
+    """
+    creds = Credentials.from_service_account_file(str(creds_path), scopes=SCOPES)
+    gc    = gspread.authorize(creds)
+    ws    = gc.open_by_key(sheet_id).worksheet("Weekly Events & Spend")
+    rows  = ws.get_all_values()
+    if len(rows) < 2:
+        return {}
+
+    m = re.search(r'\b(20\d\d)\b', ' '.join(rows[0]))
+    base_year = int(m.group(1)) if m else date.today().year
+
+    hdr = rows[1]
+    week_ranges = []   # (col_idx, start_date, end_date)
+    for ci, h in enumerate(hdr):
+        if ci < 2:
+            continue
+        parsed = _parse_week_range_header(h, base_year)
+        if parsed:
+            week_ranges.append((ci, parsed[0], parsed[1]))
+
+    result: dict = {}
+    for row in rows[2:]:
+        name   = (row[0] if row else '').strip()
+        metric = (row[1] if len(row) > 1 else '').strip().lower()
+        if not name or ('community' not in metric and 'event' not in metric):
+            continue
+        entries = []
+        for ci, wstart, wend in week_ranges:
+            raw = row[ci].strip() if ci < len(row) else ''
+            try:
+                ev = int(float(raw.replace(',', ''))) if raw and raw != '-' else 0
+            except (ValueError, TypeError):
+                ev = 0
+            if ev > 0:
+                entries.append((wstart, wend, ev))
+        result[name.lower()] = entries
+    return result
+
+
+def events_in_period(events_by_studio: dict, studio_name: str,
+                     period_start: date, period_end: date):
+    """Sum community events from calendar weeks overlapping [period_start, period_end]."""
+    name = studio_name.strip().lower()
+    if name.startswith("sweat440 "):
+        name = name[9:]
+    entries = None
+    for k, v in events_by_studio.items():
+        if k in name or name in k:
+            entries = v
+            break
+    if not entries:
+        return None
+    total = sum(ev for wstart, wend, ev in entries
+                if wstart <= period_end and wend >= period_start)
+    return total if total > 0 else None
+
+
 def _parse_date(val: str) -> date | None:
     if not val or val.strip().lower() in ("n/a", "", "tbd", "-"):
         return None
@@ -99,7 +183,8 @@ def load_daily_leads() -> dict[str, dict[str, dict]]:
     return by_studio
 
 
-def build_pre_weeks(cfg: dict, daily_leads: dict) -> list[dict]:
+def build_pre_weeks(cfg: dict, daily_leads: dict,
+                    events_by_studio: dict | None = None) -> list[dict]:
     """
     Build Week -N ... Week -1 entries using all lead data that exists
     before week_0_start. No organic start date needed — just go as far
@@ -161,6 +246,8 @@ def build_pre_weeks(cfg: dict, daily_leads: dict) -> list[dict]:
             "date_end":        bucket_end.isoformat(),
             "new_leads":       new_leads,
             "grassroots_leads": grassroots_leads if grassroots_leads > 0 else None,
+            "comm_events":     events_in_period(events_by_studio or {}, cfg["name"],
+                                               bucket_start, bucket_end),
             "total_leads":     None,  # filled below
         })
 
@@ -200,6 +287,14 @@ def main():
     daily_leads = load_daily_leads()
     print(f"  {len(daily_leads)} studio(s) in data.json\n")
 
+    print("Loading Weekly Events & Spend...")
+    try:
+        events_by_studio = load_weekly_events(CREDS_PATH, SHEET_ID)
+        print(f"  {len(events_by_studio)} studio(s) with community events data\n")
+    except Exception as e:
+        print(f"  WARNING: Could not load events: {e}\n")
+        events_by_studio = {}
+
     result = {
         "generated_at": datetime.now().isoformat(),
         "source_sheet": f"https://docs.google.com/spreadsheets/d/{SHEET_ID}",
@@ -212,7 +307,7 @@ def main():
         w0 = cfg["week_0_start"]
         w1 = cfg["week_1_start"]
 
-        pre_weeks       = build_pre_weeks(cfg, daily_leads)
+        pre_weeks       = build_pre_weeks(cfg, daily_leads, events_by_studio)
         total_pre_leads = sum(w["new_leads"] for w in pre_weeks)
 
         print(f"  {name:<30}  w0={str(w0):<12}  w1={str(w1):<12}  "

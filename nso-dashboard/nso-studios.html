@@ -30,7 +30,7 @@
 .sk-row{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px}
 .sk-label{font-size:11px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
 .sk-vals{text-align:right}
-.sk-actual{font-size:22px;font-weight:700;color:#1a1a2e;line-height:1}
+.sk-actual{font-size:22px;font-weight:700;color:#1a1a2e;line-height:1;font-family:'Oswald',sans-serif}
 .sk-goal{font-size:11px;color:#8aaabb;margin-top:2px}
 .sk-check{color:#0a8a4a;font-weight:700;margin-left:4px}
 .sk-miss{color:#d32f2f;font-weight:700;margin-left:4px}
@@ -662,7 +662,7 @@ function renderSummary2(){
   // Milestones + Goal to Announce Opening (Goal hidden in pre-launch mode)
   const milestones=(studio.milestones||[]).filter(m=>m.date);
   const _goalAnn=studio.goal_announce_target||null;
-  if(milestones.length||(!_isPreLaunchSumm&&_goalAnn)){
+  if(milestones.length||_goalAnn){
     h+=`<div style="display:flex;gap:12px;align-items:stretch;flex-wrap:wrap;margin-bottom:12px">`;
     if(milestones.length){
       h+=`<div class="chart-card" style="padding:14px 20px;flex:1;min-width:260px;margin-bottom:0">`;
@@ -676,7 +676,7 @@ function renderSummary2(){
       });
       h+=`</div></div>`;
     }
-    if(!_isPreLaunchSumm&&_goalAnn){
+    if(_goalAnn){
       const _gaActual=_sumCurTier?(_sumCurTier.t0||0)+(_sumCurTier.t1||0)+(_sumCurTier.t2||0)+(_sumCurTier.t3||0):Math.max(0,(cur.presales_count||0)-(cur.cancellations_count||0));
       const _gaPct=Math.min(100,Math.round(_gaActual/_goalAnn*100));const _gaMet=_gaActual>=_goalAnn;
       h+=`<div class="chart-card" style="padding:14px 20px;min-width:200px;margin-bottom:0"><div style="font-family:Oswald,sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;color:#5a7a8a;letter-spacing:1px;margin-bottom:12px">Goal to Announce Opening${_infoBtnInline('sum_goal_announce')}</div><div style="font-size:11px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Presales as of ${_fmtDateShort(d7end)}</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px"><span style="font-family:Oswald,sans-serif;font-style:italic;font-size:32px;font-weight:700;color:${_gaMet?'#00C9A7':'#1a1a2e'};line-height:1">${_gaActual}</span><span style="font-size:13px;color:#8aaabb">/ ${_goalAnn}</span>${_gaMet?'<span style="font-size:13px;color:#00C9A7;font-weight:700">✓</span>':''}</div><div style="height:8px;background:#f0f6fa;border-radius:4px;overflow:hidden"><div style="height:100%;width:${_gaPct}%;background:${_gaMet?'#00C9A7':'#00A3E0'};border-radius:4px;transition:width .6s ease"></div></div><div style="font-size:10px;color:#8aaabb;margin-top:4px">${_gaPct}% to goal</div></div>`;
@@ -686,11 +686,7 @@ function renderSummary2(){
 
   if(!_isPreLaunchSumm&&studio.code!=='VA-001'){
   h+=`<div class="chart-card">`;
-  // Pre-launch indicator (only in Summary Test)
-  if(preWeeks.length>0){
-    const _pw0start=preWeeks[0].date_start,_pw0end=preWeeks[preWeeks.length-1].date_end,_pwTotal=preWeeks[preWeeks.length-1].total_leads||0;
-    h+=`<div style="background:#f0f7fb;border-left:3px solid #99DAF3;padding:7px 12px;border-radius:4px;margin-bottom:14px;font-size:11px;color:#5a7a8a;font-family:'Open Sans',sans-serif">Pre-launch lead gen: <strong>${preWeeks.length} weeks</strong> (${_fmtDate(_pw0start)} – ${_fmtDate(_pw0end)}) · <strong>${_pwTotal.toLocaleString()} leads</strong> before Week 0</div>`;
-  }
+  // Pre-launch indicator removed
   h+=`<div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:18px"><div class="chart-card-title" style="margin-bottom:0">Presale Timeline — ${studio.name}</div><div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;color:#5a7a8a;font-weight:500;text-transform:uppercase;letter-spacing:.5px;text-align:right"><span style="font-size:22px;font-weight:700;color:#e05a5a;font-family:'Oswald',sans-serif">${daysToCO!=null?daysToCO:'—'}</span>&nbsp;Days to Target C/O<div style="font-size:10px;font-weight:400;color:#e05a5a;text-transform:none;letter-spacing:0;margin-top:1px">${coDateStr?_fmtDate(coDateStr):''}</div></div></div>`;
   const _pricing=studio.pricing||{};
   const _t2sw=_pricing.tier2_start_week,_t3sw=_pricing.tier3_start_week;
@@ -702,9 +698,13 @@ function renderSummary2(){
   const _preW0Pct=_hasPre?preWeeks.length/_totalSpan*100:0;
   const _curFullPct=Math.min(97,Math.max(3,(preWeeks.length+displayCw)/_totalSpan*100));
   const _scFillPct=Math.max(0,_curFullPct-_preW0Pct);
+  const _showPreLabel=_hasPre&&_preW0Pct>=12;
   h+=`<div style="display:flex;align-items:flex-end;gap:16px"><div style="flex:1;min-width:0">`;
-  // Current-week label (positioned over the unified bar)
-  h+=`<div style="position:relative;height:32px;margin-bottom:4px"><div style="position:absolute;left:${_curFullPct}%;transform:translateX(-50%);text-align:center;white-space:nowrap;bottom:0"><div style="font-size:9px;color:#00C9A7;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${displayCw} — Current</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(todayStr)}</div></div></div>`;
+  // Above-bar label row: Current week + W-N (when pre-launch segment is too narrow for below)
+  h+=`<div style="position:relative;height:32px;margin-bottom:4px">`;
+  h+=`<div style="position:absolute;left:${_curFullPct}%;transform:translateX(-50%);text-align:center;white-space:nowrap;bottom:0"><div style="font-size:9px;color:#00C9A7;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${displayCw} — Current</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(todayStr)}</div></div>`;
+  if(_hasPre&&!_showPreLabel){const _pw0=preWeeks[0];h+=`<div style="position:absolute;left:0;text-align:left;white-space:nowrap;bottom:0"><div style="font-size:9px;color:#9abdc8;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${_pw0.week_num}</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(_pw0.date_start)}</div></div>`;}
+  h+=`</div>`;
   // The bar itself: grey pre-launch fill + blue/teal scorecard fill + markers
   h+=`<div class="timeline-bar" style="overflow:visible;position:relative">`;
   if(_hasPre){h+=`<div style="position:absolute;left:0;top:0;height:100%;width:${_preW0Pct}%;background:#b8cdd8;border-radius:10px 0 0 10px;z-index:1"></div>`;}
@@ -716,8 +716,15 @@ function renderSummary2(){
   h+=`</div>`;// close timeline-bar
   // Label row below the bar — all absolute in the same coordinate space
   h+=`<div style="position:relative;height:30px;margin-top:6px">`;
-  if(_hasPre){const _pw0=preWeeks[0];h+=`<div style="position:absolute;left:0;text-align:left"><div style="font-size:9px;color:#9abdc8;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${_pw0.week_num}</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(_pw0.date_start)}</div></div>`;}
-  h+=`<div style="position:absolute;left:${_preW0Pct}%;${_hasPre?'transform:translateX(-50%);text-align:center':'text-align:left'}"><div style="font-size:9px;color:#0084B5;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Week 0</div>${startDate?`<div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(startDate)}</div>`:''}</div>`;
+  if(_showPreLabel){
+    // Enough room: W-N at far left, Week 0 centered at its position
+    const _pw0=preWeeks[0];
+    h+=`<div style="position:absolute;left:0;text-align:left"><div style="font-size:9px;color:#9abdc8;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${_pw0.week_num}</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(_pw0.date_start)}</div></div>`;
+    h+=`<div style="position:absolute;left:${_preW0Pct}%;transform:translateX(-50%);text-align:center"><div style="font-size:9px;color:#0084B5;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Week 0</div>${startDate?`<div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(startDate)}</div>`:''}</div>`;
+  } else {
+    // Narrow (W-N is above bar): Week 0 centered under the colour-change line
+    h+=`<div style="position:absolute;left:${_preW0Pct}%;transform:translateX(-50%);text-align:center"><div style="font-size:9px;color:#0084B5;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Week 0</div>${startDate?`<div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(startDate)}</div>`:''}</div>`;
+  }
   h+=`</div>`;// close label row
   h+=`</div><div style="text-align:right;white-space:nowrap;flex-shrink:0"><div style="font-size:9px;color:#8aaabb;font-weight:600;text-transform:uppercase;letter-spacing:.5px">GO W${totalWeeks}</div>${openDate?`<div style="font-size:9px;color:#e05a5a;margin-top:2px">${_fmtDate(openDate)}</div>`:''}</div></div></div>`;
   } // end if not Reston / not pre-launch
@@ -733,6 +740,11 @@ function renderSummary2(){
     if(benchPct!==null){b+=`<div style="position:absolute;top:-4px;left:${benchPct}%;width:2px;height:22px;background:#f4a021;border-radius:1px;transform:translateX(-50%);z-index:2"><div style="position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:8px;color:#f4a021;font-weight:700;white-space:nowrap;margin-top:3px">${benchLabel}: ${fmt(benchVal)}</div></div>`;}
     b+=`</div><div style="font-size:10px;color:#8aaabb;margin-top:14px">${targetLabel||'Target'}: ${fmt(target)}</div></div>`;
     return b;
+  }
+  function _noGoalMetric(label,actual,color,infoKey){
+    const infoHtml=infoKey&&GLOSSARY[infoKey]?_infoBtnInline(infoKey):'';
+    const fmt=typeof actual==='number'?actual.toLocaleString('en-US'):actual;
+    return `<div class="sk-row"><div><div class="sk-label">${label}${infoHtml}</div></div><div class="sk-vals"><div class="sk-actual">${fmt}</div></div></div>`;
   }
 
   const _strip=s=>(s||'').replace(/^SWEAT440\s+/,'');
@@ -754,12 +766,13 @@ function renderSummary2(){
   const estTotalSpend=displayCw>0?Math.round(cumSpendNoLT/displayCw*paceWeeks):0;
 
   const last7Range=`${_fmtDate(d7ago)} – ${_fmtDate(d7end)}`;
-  if(!_isPreLaunchSumm){
+  if(!_isPreLaunchSumm||_goalAnn){
+  const _showGoals=!_isPreLaunchSumm;
   h+=`<div class="two-col" style="margin-bottom:20px">`;
   h+=`<div class="chart-card summary-card"><div class="summary-card-section">Last 7 Full Days</div><div style="font-size:10px;color:#8aaabb;margin-top:-10px;margin-bottom:10px">${last7Range}</div>`;
-  h+=skRow('Leads (New Accounts Created)',lastLeads,wkLeadGoal,'#00A3E0',true,'sum_leads_7d',wkGoalLabel);
-  if(!_isPreLaunchSumm){
-    h+=skRow('Presales (net)',lastNetPresales,wkPresaleGoal,'#00C9A7',true,'sum_presales_7d',wkGoalLabel);
+  h+=skRow('Leads (New Accounts Created)',lastLeads,_showGoals?wkLeadGoal:null,'#00A3E0',true,'sum_leads_7d',_showGoals?wkGoalLabel:null);
+  h+=skRow('Presales (net)',lastNetPresales,_showGoals?wkPresaleGoal:null,'#00C9A7',true,'sum_presales_7d',_showGoals?wkGoalLabel:null);
+  if(_showGoals){
     const last7Cvr=lastLeads>0?Math.round(lastNetPresales/lastLeads*100):null;
     const goalCvr=_isReston?35:(tgt.presales_count&&tgt.total_leads?Math.round(tgt.presales_count/tgt.total_leads*100):null);
     if(last7Cvr!==null){
@@ -774,28 +787,34 @@ function renderSummary2(){
   h+=`</div>`;
 
   h+=`<div class="chart-card summary-card"><div class="summary-card-section">Total to Date</div>${_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:-8px;margin-bottom:10px">${_dataThruLabel}</div>`:''}`;
-  h+=_progBar('Leads (New Accounts Created)',cur.total_leads||0,annLeads||0,'#00A3E0',annLeads?Math.round(annLeads/paceWeeks*displayCw):null,'W'+displayCw+' Pace',null,null,'sum_leads_total');
-  if(!_isPreLaunchSumm)h+=_progBar('Presales (net)',netPresales,annPres||0,'#00C9A7',annPres?Math.round(annPres/paceWeeks*displayCw):null,'W'+displayCw+' Pace',null,null,'sum_presales_total');
-  if((cur.estimated_day1_rmr||0)>0){const _rmrA=cur.estimated_day1_rmr||0,_rmrT=tgt.estimated_day1_rmr||0,_rmrPct=_rmrT>0?Math.min(100,Math.round(_rmrA/_rmrT*100)):0;h+=`<div style="margin-bottom:18px;position:relative">${_infoBtn('sum_rmr')}<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><div style="font-size:11px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Est. Day-1 RMR</div><div style="text-align:right"><span style="font-size:20px;font-weight:700;color:#1a1a2e;font-family:'Oswald',sans-serif">$${_rmrA.toLocaleString('en-US')}</span><span style="font-size:10px;color:#8aaabb;margin-left:6px">/ $${_rmrT.toLocaleString('en-US')}</span></div></div><div style="position:relative;height:14px;background:#f0f6fa;border-radius:7px"><div style="position:absolute;left:0;top:0;height:100%;width:${_rmrPct}%;background:#f4a021;border-radius:7px;min-width:${_rmrPct>0?4:0}px"></div></div></div>`;}
-  if(estTotalSpend>0||cumSpendNoLT>0){
-    const _fmtS=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
-    const _parseCpl=s=>{if(typeof s==='number')return s;if(typeof s==='string'){const ns=s.replace(/[^0-9.]/g,' ').trim().split(/\s+/).map(Number).filter(n=>!isNaN(n)&&n>0);if(ns.length>=2)return(ns[0]+ns[ns.length-1])/2;if(ns.length===1)return ns[0];}return null;};
-    const cplMid=_parseCpl(tgt.blended_cpl);
-    const budgetTarget=tgt.marketing_budget||(cplMid&&tgt.total_leads?Math.round(cplMid*tgt.total_leads):estTotalSpend);
-    const spendBench=Math.round(budgetTarget/paceWeeks*displayCw);
-    h+=_progBar('Mktg Spend (without Leadteam Fee)',Math.round(cumSpendNoLT),budgetTarget,'#9b59b6',spendBench,'W'+displayCw+' Pace',_fmtS,'Budget','sum_spend');
+  if(_showGoals){
+    h+=_progBar('Leads (New Accounts Created)',cur.total_leads||0,annLeads||0,'#00A3E0',annLeads?Math.round(annLeads/paceWeeks*displayCw):null,'W'+displayCw+' Pace',null,null,'sum_leads_total');
+    h+=_progBar('Presales (net)',netPresales,annPres||0,'#00C9A7',annPres?Math.round(annPres/paceWeeks*displayCw):null,'W'+displayCw+' Pace',null,null,'sum_presales_total');
+    if((cur.estimated_day1_rmr||0)>0){const _rmrA=cur.estimated_day1_rmr||0,_rmrT=tgt.estimated_day1_rmr||0,_rmrPct=_rmrT>0?Math.min(100,Math.round(_rmrA/_rmrT*100)):0;h+=`<div style="margin-bottom:18px;position:relative">${_infoBtn('sum_rmr')}<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><div style="font-size:11px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Est. Day-1 RMR</div><div style="text-align:right"><span style="font-size:20px;font-weight:700;color:#1a1a2e;font-family:'Oswald',sans-serif">$${_rmrA.toLocaleString('en-US')}</span><span style="font-size:10px;color:#8aaabb;margin-left:6px">/ $${_rmrT.toLocaleString('en-US')}</span></div></div><div style="position:relative;height:14px;background:#f0f6fa;border-radius:7px"><div style="position:absolute;left:0;top:0;height:100%;width:${_rmrPct}%;background:#f4a021;border-radius:7px;min-width:${_rmrPct>0?4:0}px"></div></div></div>`;}
+    if(estTotalSpend>0||cumSpendNoLT>0){
+      const _fmtS=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
+      const _parseCpl=s=>{if(typeof s==='number')return s;if(typeof s==='string'){const ns=s.replace(/[^0-9.]/g,' ').trim().split(/\s+/).map(Number).filter(n=>!isNaN(n)&&n>0);if(ns.length>=2)return(ns[0]+ns[ns.length-1])/2;if(ns.length===1)return ns[0];}return null;};
+      const cplMid=_parseCpl(tgt.blended_cpl);
+      const budgetTarget=tgt.marketing_budget||(cplMid&&tgt.total_leads?Math.round(cplMid*tgt.total_leads):estTotalSpend);
+      const spendBench=Math.round(budgetTarget/paceWeeks*displayCw);
+      h+=_progBar('Mktg Spend (without Leadteam Fee)',Math.round(cumSpendNoLT),budgetTarget,'#9b59b6',spendBench,'W'+displayCw+' Pace',_fmtS,'Budget','sum_spend');
+    }
+  } else {
+    h+=_noGoalMetric('Leads (New Accounts Created)',cur.total_leads||0,'#00A3E0','sum_leads_total');
+    h+=_noGoalMetric('Presales (net)',netPresales,'#00C9A7','sum_presales_total');
+    if(cumSpendNoLT>0)h+=_noGoalMetric('Mktg Spend (without Leadteam Fee)','$'+Math.round(cumSpendNoLT).toLocaleString('en-US'),'#9b59b6','sum_spend');
   }
   h+=`</div></div>`;
-  } // end if not pre-launch (two-col)
+  } // end if !_isPreLaunchSumm || _goalAnn (two-col)
 
   // Leads & Presales chart (extends into pre-weeks)
   _sumStudio=studio;_sumView='cum';_sum2SrcMetric='leads';
-  h+=`<div class="chart-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px"><div><div class="chart-card-title" style="margin-bottom:0">${_isPreLaunchSumm?'Leads':'Leads &amp; Presales'}</div>${_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:2px">${_dataThruLabel}</div>`:''}</div><div class="gran-group"><button class="gran-btn active" id="sum2CumBtn" onclick="setSumView2('cum')">Cumulative</button><button class="gran-btn" id="sum2WeekBtn" onclick="setSumView2('weekly')">Weekly</button></div></div><div style="position:relative;width:100%;height:320px"><canvas id="sum2ChartCanvas"></canvas></div></div>`;
-  h+=`<div class="chart-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px"><div><div class="chart-card-title" style="margin-bottom:0">Last 7 Full Days by Source</div><div style="font-size:10px;color:#8aaabb;margin-top:2px">${last7Range}</div></div><div class="gran-group"><button class="gran-btn active" id="sum2SrcLeadsBtn" onclick="setSumSrcMetric2('leads')">Leads</button>${_isPreLaunchSumm?'':'<button class="gran-btn" id="sum2SrcSalesBtn" onclick="setSumSrcMetric2(\'sales\')">Net Sales</button>'}</div></div><div style="display:flex;align-items:center;justify-content:center;gap:32px;flex-wrap:wrap;margin-top:14px"><div style="width:180px;height:180px;flex-shrink:0"><canvas id="sum2SrcCanvas"></canvas></div><div id="sum2SrcLegend" style="min-width:160px;max-width:260px"></div></div></div>`;
+  h+=`<div class="chart-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px"><div><div class="chart-card-title" style="margin-bottom:0">${(_isPreLaunchSumm&&!_goalAnn)?'Leads':'Leads &amp; Presales'}</div>${_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:2px">${_dataThruLabel}</div>`:''}</div><div class="gran-group"><button class="gran-btn active" id="sum2CumBtn" onclick="setSumView2('cum')">Cumulative</button><button class="gran-btn" id="sum2WeekBtn" onclick="setSumView2('weekly')">Weekly</button></div></div><div style="position:relative;width:100%;height:320px"><canvas id="sum2ChartCanvas"></canvas></div></div>`;
+  h+=`<div class="chart-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px"><div><div class="chart-card-title" style="margin-bottom:0">Last 7 Full Days by Source</div><div style="font-size:10px;color:#8aaabb;margin-top:2px">${last7Range}</div></div><div class="gran-group"><button class="gran-btn active" id="sum2SrcLeadsBtn" onclick="setSumSrcMetric2('leads')">Leads</button>${(_isPreLaunchSumm&&!_goalAnn)?'':'<button class="gran-btn" id="sum2SrcSalesBtn" onclick="setSumSrcMetric2(\'sales\')">Net Sales</button>'}</div></div><div style="display:flex;align-items:center;justify-content:center;gap:32px;flex-wrap:wrap;margin-top:14px"><div style="width:180px;height:180px;flex-shrink:0"><canvas id="sum2SrcCanvas"></canvas></div><div id="sum2SrcLegend" style="min-width:160px;max-width:260px"></div></div></div>`;
 
   document.getElementById('summary2Content').innerHTML=h;
   setTimeout(()=>{
-    if(_isPreLaunchSumm)drawPreLaunchLeadsChart(studio);
+    if(_isPreLaunchSumm&&!_goalAnn)drawPreLaunchLeadsChart(studio);
     else drawCum2Chart(studio);
     drawSumSourceChart2(studio,'leads');
   },50);
@@ -808,7 +827,7 @@ function setSumView2(v){
   if(cb)cb.classList.toggle('active',v==='cum');
   if(wb)wb.classList.toggle('active',v==='weekly');
   if(_sumStudio){
-    if(_isSummPreLaunch(_sumStudio))drawPreLaunchLeadsChart(_sumStudio);
+    if(_isSummPreLaunch(_sumStudio)&&!(_sumStudio&&_sumStudio.goal_announce_target))drawPreLaunchLeadsChart(_sumStudio);
     else if(v==='cum')drawCum2Chart(_sumStudio);
     else drawWeekly2Chart(_sumStudio);
   }
@@ -852,12 +871,19 @@ function drawCum2Chart(studio){
   const allPresD=[...preWeeks.map(()=>null),...scPresD];
   const allLeadsPace=[...preWeeks.map(()=>null),...leadsPace];
   const allPresPace=[...preWeeks.map(()=>null),...presPace];
-  _ch.sum2=new Chart(ctx,{type:'line',data:{labels:allLabels,datasets:[
+  const _pwD2=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[studio.code];
+  const _w1Off2=_pwD2&&_pwD2.week_1_start;
+  const _isPreL2=!_w1Off2||_w1Off2>new Date().toISOString().slice(0,10);
+  const _showPace2=!(_isPreL2&&_ann);
+  const datasets=[
     {label:'LEADS',data:allLeadsD,borderColor:'#00A3E0',backgroundColor:'rgba(0,163,224,0.08)',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.3,fill:true,spanGaps:false},
     {label:'PRESALES (NET)',data:allPresD,borderColor:'#00527A',backgroundColor:'rgba(0,82,122,0.08)',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.3,fill:true,spanGaps:false},
-    {label:'LEADS PACE ('+tLeads+')',data:allLeadsPace,borderColor:'rgba(0,163,224,0.45)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false},
-    {label:'PRESALES PACE ('+tPres+')',data:allPresPace,borderColor:'rgba(0,82,122,0.55)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false},
-  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+  ];
+  if(_showPace2){
+    datasets.push({label:'LEADS PACE ('+tLeads+')',data:allLeadsPace,borderColor:'rgba(0,163,224,0.45)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false});
+    datasets.push({label:'PRESALES PACE ('+tPres+')',data:allPresPace,borderColor:'rgba(0,82,122,0.55)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false});
+  }
+  _ch.sum2=new Chart(ctx,{type:'line',data:{labels:allLabels,datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
     plugins:{legend:{position:'bottom',labels:{font:{family:'Oswald',size:12,style:'italic'},usePointStyle:true,padding:16}},tooltip:{mode:'index',intersect:false}},
     scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',maxRotation:0}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'}}}}});
 }
@@ -894,12 +920,19 @@ function drawWeekly2Chart(studio){
   const allPresDelta=[...preWeeks.map(()=>null),...scPresDelta];
   const allLeadsPace=[...preWeeks.map(()=>null),...w.map(()=>wkLeadPace)];
   const allPresPace=[...preWeeks.map(()=>null),...w.map(()=>wkPresPace)];
-  _ch.sum2=new Chart(ctx,{type:'bar',data:{labels:allLabels,datasets:[
+  const _pwD2w=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[studio.code];
+  const _w1Off2w=_pwD2w&&_pwD2w.week_1_start;
+  const _isPreL2w=!_w1Off2w||_w1Off2w>new Date().toISOString().slice(0,10);
+  const _showPace2w=!(_isPreL2w&&_ann);
+  const datasetsW=[
     {label:'LEADS',data:allLeadsDelta,backgroundColor:'rgba(0,163,224,0.3)',borderColor:'#00A3E0',borderWidth:1,type:'bar',order:3},
     {label:'PRESALES (NET)',data:allPresDelta,backgroundColor:'rgba(0,82,122,0.35)',borderColor:'#00527A',borderWidth:1,type:'bar',order:4},
-    {label:'LEADS PACE ('+wkLeadPace+'/WK)',data:allLeadsPace,borderColor:'rgba(0,163,224,0.6)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false,type:'line',order:1},
-    {label:'PRESALES PACE ('+wkPresPace+'/WK)',data:allPresPace,borderColor:'rgba(0,82,122,0.65)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false,type:'line',order:2},
-  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+  ];
+  if(_showPace2w){
+    datasetsW.push({label:'LEADS PACE ('+wkLeadPace+'/WK)',data:allLeadsPace,borderColor:'rgba(0,163,224,0.6)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false,type:'line',order:1});
+    datasetsW.push({label:'PRESALES PACE ('+wkPresPace+'/WK)',data:allPresPace,borderColor:'rgba(0,82,122,0.65)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false,type:'line',order:2});
+  }
+  _ch.sum2=new Chart(ctx,{type:'bar',data:{labels:allLabels,datasets:datasetsW},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
     plugins:{legend:{position:'bottom',labels:{font:{family:'Oswald',size:12,style:'italic'},usePointStyle:true,padding:16}},tooltip:{mode:'index',intersect:false}},
     scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',maxRotation:0}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'}}}}});
 }
@@ -2093,7 +2126,7 @@ function toggleScSpend2(){
   const open=subs[0]&&subs[0].style.display!=='none';
   subs.forEach(r=>r.style.display=open?'none':'');
   if(icon)icon.textContent=open?'▶':'▼';
-  if(open){document.querySelectorAll('.sc-digital-sub2').forEach(r=>r.style.display='none');const di=document.getElementById('sc-digital-icon2');if(di)di.textContent='▶';}
+  if(open){document.querySelectorAll('.sc-digital-sub2').forEach(r=>r.style.display='none');const di=document.getElementById('sc-digital-icon2');if(di)di.textContent='▶';document.querySelectorAll('.sc-agency-sub2').forEach(r=>r.style.display='none');const ai=document.getElementById('sc-agency-icon2');if(ai)ai.textContent='▶';}
 }
 function toggleScDigital2(){
   const subs=document.querySelectorAll('.sc-digital-sub2');
@@ -2112,6 +2145,13 @@ function toggleScCpl2(){
 function toggleScCpa2(){
   const subs=document.querySelectorAll('.sc-cpa-sub2');
   const icon=document.getElementById('sc-cpa-icon2');
+  const open=subs[0]&&subs[0].style.display!=='none';
+  subs.forEach(r=>r.style.display=open?'none':'');
+  if(icon)icon.textContent=open?'▶':'▼';
+}
+function toggleScAgency2(){
+  const subs=document.querySelectorAll('.sc-agency-sub2');
+  const icon=document.getElementById('sc-agency-icon2');
   const open=subs[0]&&subs[0].style.display!=='none';
   subs.forEach(r=>r.style.display=open?'none':'');
   if(icon)icon.textContent=open?'▶':'▼';
@@ -2207,7 +2247,7 @@ function renderScorecard2(){
       tl:pw.total_leads||null,
       grs:grsW,cumGrs:Math.round(_cumGrsPre*100)/100,
       cumGl:_cumGlPre,cumEv:_cumEvPre};
-  });
+  }).filter(pw=>!_isPreLaunch2||!pw.ds||pw.ds<=_todaySc2);
 
   // Align W0/W1 dates using PRE_WEEKS (NSO Config Sheet) as authoritative source.
   // SC data derives weeks from Snowflake activity which may predate the official presale.
@@ -2286,13 +2326,17 @@ function renderScorecard2(){
     {label:_ib('sc_grassroots_presales')+'Grassroots Presales', key:'gp', req:20, fmt:fInt, color:true},
     {label:_ib('sc_comm_events')+'Comm. Events',      key:'ev',  req:6,          fmt:fInt, color:true},
     {label:_ib('sc_ig_followers')+'IG New Followers',  key:'ig',  req:30,        fmt:fInt, color:true},
-    {label:_ib('sc_total_spend')+'▶ Total Mktg Spend',                           key:'ts',  req:null, fmt:$v, color:false, spendParent:true},
-    {label:_ib('sc_digital_spend')+'▶ Total Digital Ad Spend (Meta & Google)',   key:'dsp', req:null, fmt:$v, color:false, spendSub:true, spendSubParent:true},
-    {label:'Meta Spend',          key:'ms',  req:null,       fmt:$v,   color:false, spendSubSub:true},
-    {label:'Google Spend',        key:'gs',  req:null,       fmt:$v,   color:false, spendSubSub:true},
-    {label:_ib('sc_grassroots_spend')+'Grassroots Spend ★',key:'grs', req:null, fmt:$v, color:false, spendSub:true},
-    {label:_ib('sc_other_spend')+'Other Marketing Spend',   key:'oth', req:null, fmt:$v, color:false, spendSub:true},
-    {label:_ib('sc_leadteam_fee')+'LeadTeam Fee',     key:'ltf', req:null,       fmt:$v,   color:false, spendSub:true},
+    {label:_ib('sc_total_spend')+'▶ Total Mktg Spend',                   key:'ts',  req:null, fmt:$v, color:false, spendParent:true},
+    {label:_ib('sc_digital_spend')+'▶ Digital Spend',                    key:'dsp', req:null, fmt:$v, color:false, spendSub:true, spendSubParent:true},
+    {label:'Meta Ads',            key:'ms',  req:null, fmt:$v, color:false, spendSubSub:true},
+    {label:'Google Ads',          key:'gs',  req:null, fmt:$v, color:false, spendSubSub:true},
+    {label:_ib('sc_grassroots_spend')+'Grassroots Spend', key:'grs', req:null, fmt:$v, color:false, spendSub:true},
+    {label:'Print / Signs',        computed:()=>null,  req:null, fmt:$v, color:false, spendSub:true},
+    {label:_ib('sc_other_spend')+'Other Marketing Spend',  key:'oth', req:null, fmt:$v, color:false, spendSub:true},
+    {label:'▶ Marketing Agencies', computed:wk=>{const lt=_cprLtFee([sc.full_name],wk.ds,wk.de)||0;const ext=_cprExtAgency([sc.full_name],wk.ds,wk.de)||0;return lt+ext||null;}, fmt:$v, color:false, spendSub:true, agencyParent:true},
+    {label:'PR',               computed:()=>null, fmt:$v, color:false, agencySub:true},
+    {label:'External Agency',  computed:wk=>_cprExtAgency([sc.full_name],wk.ds,wk.de)||null, fmt:$v, color:false, agencySub:true},
+    {label:_ib('sc_leadteam_fee')+'Leadteam', computed:wk=>_cprLtFee([sc.full_name],wk.ds,wk.de)||null, fmt:$v, color:false, agencySub:true},
     {label:_ib('sc_blended_cpl')+'▶ Blended CPL', computed:wk=>wk.ts&&((wk.nl||0)+(wk.gl||0))>0?wk.ts/((wk.nl||0)+(wk.gl||0)):null, fmt:fCur, reqLabel:'$28 – $41', color:false, cplParent:true,
      colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
     {label:_ib('sc_ads_cpl')+'Ads CPL', computed:wk=>wk.dsp&&wk.dlw>0?wk.dsp/wk.dlw:null, fmt:fCur, reqLabel:'—', color:false, cplSub:true,
@@ -2320,13 +2364,17 @@ function renderScorecard2(){
     {label:_ib('sc_grassroots_presales')+'Grassroots Presales', key:'cumGp', req:null, fmt:fInt, color:true},
     {label:_ib('sc_comm_events')+'Comm. Events',        key:'cumEv', req:null, fmt:fInt, color:true},
     {label:_ib('sc_ig_cum')+'IG Followers (cum.)',       key:'cumIg',   req:null, fmt:fInt, color:false},
-    {label:_ib('sc_total_spend')+'▶ Total Mktg Spend',                            key:'cumTs',  req:null, fmt:$v, color:false, spendParent:true},
-    {label:_ib('sc_digital_spend')+'▶ Total Digital Ad Spend (Meta & Google)',    key:'cumDsp', req:null, fmt:$v, color:false, spendSub:true, spendSubParent:true},
-    {label:'Meta Spend',          key:'cumMs', req:null, fmt:$v, color:false, spendSubSub:true},
-    {label:'Google Spend',        key:'cumGs', req:null, fmt:$v, color:false, spendSubSub:true},
-    {label:_ib('sc_grassroots_spend')+'Grassroots Spend ★',key:'cumGrs',req:null, fmt:$v, color:false, spendSub:true},
-    {label:_ib('sc_other_spend')+'Other Marketing Spend',   key:'cumOth',req:null, fmt:$v, color:false, spendSub:true},
-    {label:_ib('sc_leadteam_fee')+'LeadTeam Fee',       key:'cumLtf',req:null, fmt:$v, color:false, spendSub:true},
+    {label:_ib('sc_total_spend')+'▶ Total Mktg Spend',                   key:'cumTs',  req:null, fmt:$v, color:false, spendParent:true},
+    {label:_ib('sc_digital_spend')+'▶ Digital Spend',                    key:'cumDsp', req:null, fmt:$v, color:false, spendSub:true, spendSubParent:true},
+    {label:'Meta Ads',            key:'cumMs', req:null, fmt:$v, color:false, spendSubSub:true},
+    {label:'Google Ads',          key:'cumGs', req:null, fmt:$v, color:false, spendSubSub:true},
+    {label:_ib('sc_grassroots_spend')+'Grassroots Spend', key:'cumGrs', req:null, fmt:$v, color:false, spendSub:true},
+    {label:'Print / Signs',        computed:()=>null,   req:null, fmt:$v, color:false, spendSub:true},
+    {label:_ib('sc_other_spend')+'Other Marketing Spend',  key:'cumOth', req:null, fmt:$v, color:false, spendSub:true},
+    {label:'▶ Marketing Agencies', computed:wk=>{const lt=_cprLtFee([sc.full_name],weeks[0]?.ds,wk.de)||0;const ext=_cprExtAgency([sc.full_name],weeks[0]?.ds,wk.de)||0;return lt+ext||null;}, fmt:$v, color:false, spendSub:true, agencyParent:true},
+    {label:'PR',               computed:()=>null, fmt:$v, color:false, agencySub:true},
+    {label:'External Agency',  computed:wk=>_cprExtAgency([sc.full_name],weeks[0]?.ds,wk.de)||null, fmt:$v, color:false, agencySub:true},
+    {label:_ib('sc_leadteam_fee')+'Leadteam', computed:wk=>_cprLtFee([sc.full_name],weeks[0]?.ds,wk.de)||null, fmt:$v, color:false, agencySub:true},
     {label:_ib('sc_blended_cpl')+'▶ Blended CPL', computed:wk=>wk.cumTs&&(wk.tl||0)>0?wk.cumTs/(wk.tl||1):null, fmt:fCur, reqLabel:'$28 – $41', color:false, cplParent:true,
      colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
     {label:_ib('sc_ads_cpl')+'Ads CPL', computed:wk=>wk.cumDsp&&wk.cumDl>0?wk.cumDsp/wk.cumDl:null, fmt:fCur, reqLabel:'—', color:false, cplSub:true,
@@ -2405,25 +2453,9 @@ function renderScorecard2(){
   });
   h+=`</div>`;
 
-  // Pre-weeks info chip
-  if(preWeekCols.length>0){
-    const _pw0=preWeekCols[0],_pwL=preWeekCols[preWeekCols.length-1];
-    h+=`<div style="background:#f0f7fb;border-left:3px solid #99DAF3;padding:7px 12px;border-radius:4px;margin-bottom:12px;font-size:11px;color:#5a7a8a;font-family:'Open Sans',sans-serif">`;
-    h+=`Pre-launch: <strong>W${_pw0.w} – W-1</strong> (${_fmtD(_pw0.ds)} – ${_fmtD(_pwL.de)}) &nbsp;·&nbsp; <strong>${(_pwL.tl||0)} leads</strong>`;
-    if(_cumGrsPre>0.01)h+=` &nbsp;·&nbsp; <strong>$${Math.round(_cumGrsPre).toLocaleString()} grassroots spend (sheet)</strong>`;
-    h+=`</div>`;
-  }
 
-  // Sheet legend
-  if(_grsEntries.length>0||preWeekCols.length>0){
-    h+=`<div style="font-size:10px;color:#8aaabb;margin-bottom:10px">`;
-    h+=`★ Grassroots Spend sourced from <a href="https://docs.google.com/spreadsheets/d/1oLvrjTfcGUmt-mi1bp2xnqmESgt4uu4QlLCfAOKoRd8" target="_blank" style="color:#00A3E0;text-decoration:none">NSO Spend Form responses</a>`;
-    if(!_grsEntries.length)h+=` <em>(no data for this studio yet)</em>`;
-    h+=`</div>`;
-  }
-
-  // ── PRE-LAUNCH MODE: W1 hasn't started — show simplified weekly table ──
-  if(_isPreLaunch2){
+  // ── PRE-LAUNCH VARIABLES (kept for _plRows defs below, no longer early-exit) ──
+  if(false&&_isPreLaunch2){
     const _plWeeks=preWeekCols.filter(pw=>pw.ds<=_todaySc2);
     const _plCur=_plWeeks[_plWeeks.length-1];
     const _pl$v=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
@@ -2449,12 +2481,16 @@ function renderScorecard2(){
       {label:_ib('sc_grassroots_leads')+'Grassroots Leads', key:'cumGl', req:null, colorFn:()=>null},
       {label:_ib('sc_comm_events')+'Comm. Events',  key:'cumEv', req:null, colorFn:()=>null},
       {label:_ib('sc_total_spend')+'▶ Total Mktg Spend', key:'cumGrs', fmt:_pl$v, req:null, colorFn:()=>null, spendParent:true},
-      {label:_ib('sc_digital_spend')+'▶ Total Digital Ad Spend (Meta & Google)', computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSub:true, spendSubParent:true},
-      {label:'Meta Spend',   computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSubSub:true},
-      {label:'Google Spend', computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSubSub:true},
-      {label:_ib('sc_grassroots_spend')+'Grassroots Spend ★', key:'cumGrs', fmt:_pl$v, colorFn:()=>null, spendSub:true},
-      {label:_ib('sc_other_spend')+'Other Marketing Spend',   computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSub:true},
-      {label:_ib('sc_leadteam_fee')+'LeadTeam Fee',           computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSub:true},
+      {label:_ib('sc_digital_spend')+'▶ Digital Spend', computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSub:true, spendSubParent:true},
+      {label:'Meta Ads',     computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSubSub:true},
+      {label:'Google Ads',   computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSubSub:true},
+      {label:_ib('sc_grassroots_spend')+'Grassroots Spend', key:'cumGrs', fmt:_pl$v, colorFn:()=>null, spendSub:true},
+      {label:'Print / Signs',        computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSub:true},
+      {label:_ib('sc_other_spend')+'Other Marketing Spend',  computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSub:true},
+      {label:'▶ Marketing Agencies', computed:pw=>{const lt=_cprLtFee([sc.full_name],preWeekCols[0]?.ds,pw.de)||0;const ext=_cprExtAgency([sc.full_name],preWeekCols[0]?.ds,pw.de)||0;return lt+ext||null;}, fmt:_pl$v, colorFn:()=>null, spendSub:true, agencyParent:true},
+      {label:'PR',               computed:()=>null, fmt:_pl$v, colorFn:()=>null, agencySub:true},
+      {label:'External Agency',  computed:pw=>_cprExtAgency([sc.full_name],preWeekCols[0]?.ds,pw.de)||null, fmt:_pl$v, colorFn:()=>null, agencySub:true},
+      {label:'Leadteam',         computed:pw=>_cprLtFee([sc.full_name],preWeekCols[0]?.ds,pw.de)||null, fmt:_pl$v, colorFn:()=>null, agencySub:true},
       {label:_ib('sc_blended_cpl')+'▶ Blended CPL',
        computed:pw=>(pw.cumGrs&&(pw.tl||0)>0)?pw.cumGrs/(pw.tl||1):null,
        fmt:_plCpr, colorFn:v=>v==null?'':v<=41?'sc-cell-good':v<=53?'sc-cell-warn':'sc-cell-bad', cplParent:true},
@@ -2466,12 +2502,16 @@ function renderScorecard2(){
       {label:_ib('sc_comm_events')+'Comm. Events',  key:'ev',  req:6,
        colorFn:v=>v==null?'':v>=6?'sc-cell-good':v>=3?'sc-cell-warn':'sc-cell-bad'},
       {label:_ib('sc_total_spend')+'▶ Total Mktg Spend', key:'grs', fmt:_pl$v, req:null, colorFn:()=>null, spendParent:true},
-      {label:_ib('sc_digital_spend')+'▶ Total Digital Ad Spend (Meta & Google)', computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSub:true, spendSubParent:true},
-      {label:'Meta Spend',   computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSubSub:true},
-      {label:'Google Spend', computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSubSub:true},
-      {label:_ib('sc_grassroots_spend')+'Grassroots Spend ★', key:'grs', fmt:_pl$v, colorFn:()=>null, spendSub:true},
-      {label:_ib('sc_other_spend')+'Other Marketing Spend',   computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSub:true},
-      {label:_ib('sc_leadteam_fee')+'LeadTeam Fee',           computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSub:true},
+      {label:_ib('sc_digital_spend')+'▶ Digital Spend', computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSub:true, spendSubParent:true},
+      {label:'Meta Ads',     computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSubSub:true},
+      {label:'Google Ads',   computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSubSub:true},
+      {label:_ib('sc_grassroots_spend')+'Grassroots Spend', key:'grs', fmt:_pl$v, colorFn:()=>null, spendSub:true},
+      {label:'Print / Signs',        computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSub:true},
+      {label:_ib('sc_other_spend')+'Other Marketing Spend',  computed:()=>null, fmt:_pl$v, colorFn:()=>null, spendSub:true},
+      {label:'▶ Marketing Agencies', computed:pw=>{const lt=_cprLtFee([sc.full_name],pw.ds,pw.de)||0;const ext=_cprExtAgency([sc.full_name],pw.ds,pw.de)||0;return lt+ext||null;}, fmt:_pl$v, colorFn:()=>null, spendSub:true, agencyParent:true},
+      {label:'PR',               computed:()=>null, fmt:_pl$v, colorFn:()=>null, agencySub:true},
+      {label:'External Agency',  computed:pw=>_cprExtAgency([sc.full_name],pw.ds,pw.de)||null, fmt:_pl$v, colorFn:()=>null, agencySub:true},
+      {label:'Leadteam',         computed:pw=>_cprLtFee([sc.full_name],pw.ds,pw.de)||null, fmt:_pl$v, colorFn:()=>null, agencySub:true},
       {label:_ib('sc_blended_cpl')+'▶ Blended CPL',
        computed:pw=>(pw.grs&&((pw.nl||0)+(pw.gl||0))>0)?pw.grs/((pw.nl||0)+(pw.gl||0)):null,
        fmt:_plCpr, colorFn:v=>v==null?'':v<=41?'sc-cell-good':v<=53?'sc-cell-warn':'sc-cell-bad', cplParent:true},
@@ -2480,10 +2520,12 @@ function renderScorecard2(){
     _plRows.forEach(row=>{
       const isParent=row.spendParent;
       const isSubParent=row.spendSubParent;
-      const isSub=row.spendSub&&!row.spendSubParent;
+      const isSub=row.spendSub&&!row.spendSubParent&&!row.agencyParent;
       const isSubSub=row.spendSubSub;
       const isCplParent=row.cplParent;
       const isCplSub=row.cplSub;
+      const isAgencyParent=row.agencyParent;
+      const isAgencySub=row.agencySub;
       let trClass='',trStyle='',tdStyle='font-size:13px;font-weight:600',trClick='',labelHtml=row.label;
       if(isParent){
         trClick=` onclick="toggleScSpend2()" style="cursor:pointer"`;
@@ -2493,11 +2535,19 @@ function renderScorecard2(){
         tdStyle='padding-left:20px;font-size:12px;font-weight:600';
         trClick=` onclick="toggleScDigital2()" style="cursor:pointer"`;
         labelHtml=`<span id="sc-digital-icon2" style="margin-right:6px;font-size:10px">▶</span>${row.label.replace('▶ ','')}`;
+      } else if(isAgencyParent){
+        trClass='sc-spend-sub2'; trStyle='display:none';
+        tdStyle='padding-left:20px;font-size:12px;font-weight:600';
+        trClick=` onclick="toggleScAgency2()" style="cursor:pointer"`;
+        labelHtml=`<span id="sc-agency-icon2" style="margin-right:6px;font-size:10px">▶</span>${row.label.replace('▶ ','')}`;
       } else if(isSub){
         trClass='sc-spend-sub2'; trStyle='display:none';
         tdStyle='padding-left:20px;font-size:12px;color:#7a7a9a';
       } else if(isSubSub){
         trClass='sc-digital-sub2'; trStyle='display:none';
+        tdStyle='padding-left:40px;font-size:12px;color:#7a7a9a';
+      } else if(isAgencySub){
+        trClass='sc-agency-sub2'; trStyle='display:none';
         tdStyle='padding-left:40px;font-size:12px;color:#7a7a9a';
       } else if(isCplParent){
         trClick=` onclick="toggleScCpl2()" style="cursor:pointer"`;
@@ -2512,7 +2562,7 @@ function renderScorecard2(){
         const val=row.computed?row.computed(pw):(pw[row.key]??null);
         const cls=row.colorFn(val);
         const fmt=row.fmt||_plFmt;
-        h+=`<td class="num${cls?' '+cls:''}" style="font-size:${isSub||isSubSub||isCplSub?12:13}px">${fmt(val)}</td>`;
+        h+=`<td class="num${cls?' '+cls:''}" style="font-size:${isSub||isSubSub||isCplSub||isAgencySub?12:13}px">${fmt(val)}</td>`;
       });
       h+=`</tr>`;
     });
@@ -2528,16 +2578,23 @@ function renderScorecard2(){
     return;
   }
 
-  // ── RMR mini-table (no pre-week columns) ──────────────────────────────
+  // ── RMR mini-table ───────────────────────────────────────────────────
   const _tierSubtitle=t0p
     ?`Founders $${t0p} + Tier 1 $${t1p}`+(t2sw<99?` → Tier 2 $${t2p} from W${t2sw}`:'')+(t3p&&t3sw?` → Tier 3 $${t3p} from W${t3sw}`:'')
     :`Tier 1 $${t1p} → Tier 2 $${t2p} from W${t2sw}`+(t3p&&t3sw?` → Tier 3 $${t3p} from W${t3sw}`:'');
+  if(!_isPreLaunch2){
   h+=`<div class="chart-card" style="padding:14px 20px;margin-bottom:12px">`;
   h+=`<div style="font-family:Oswald,sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;color:#5a7a8a;letter-spacing:1px;margin-bottom:10px">RMR Breakdown &nbsp;<span style="font-weight:400;font-size:10px;color:#aabbc8">${_tierSubtitle}</span></div>`;
   h+=_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:-4px;margin-bottom:8px">${_dataThruLabel}</div>`:'';
   h+=`<div id="scRmrScrollWrap2" style="overflow-x:auto"><table class="data-table" style="font-size:12px"><thead><tr>`;
   h+=`<th style="min-width:200px;font-size:12px;position:sticky;left:0;z-index:3;background:#fff">KPI</th>`;
   h+=`<th class="num" style="min-width:80px;font-size:11px;background:#f8f4ec;color:#b8860b;position:sticky;left:200px;z-index:3">Target</th>`;
+  preWeekCols.forEach(pw=>{
+    const _pwLabel=_isPreLaunch2
+      ?(pw.ds?`<span style="font-size:9px;font-weight:400;color:#7dcef0;white-space:nowrap">${_fmtD(pw.ds)}</span><br><span style="font-size:9px;font-weight:400;color:#7dcef0;white-space:nowrap">${_fmtD(pw.de)}</span>`:'—')
+      :`W${pw.w}${pw.ds?`<br><span style="font-size:9px;font-weight:400;color:#7dcef0;white-space:nowrap">${_fmtD(pw.ds)}</span><br><span style="font-size:9px;font-weight:400;color:#7dcef0;white-space:nowrap">${_fmtD(pw.de)}</span>`:''}`;
+    h+=`<th class="num" style="min-width:80px;font-size:11px;vertical-align:bottom;background:#f0f9ff;color:#5a9fc0"><span style="display:block;min-height:14px"></span>${_pwLabel}</th>`;
+  });
   rmrtRows.forEach(wk=>{
     const ds=wk.ds?`<br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.ds)}</span><br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.de)}</span>`:'';
     const _b=[];
@@ -2584,6 +2641,9 @@ function renderScorecard2(){
     h+=`<tr><td style="${_rowStyle};position:sticky;left:0;z-index:1;background:#fff">${labelCell}</td>`;
     const tgtFmt=row.tgtFmt||(row.fmt||(v=>v));
     h+=`<td class="num" style="background:#f8f4ec;color:#b8860b;font-weight:600;position:sticky;left:200px;z-index:1${row.style?';'+row.style:''}">${row.target!=null?tgtFmt(row.target):'—'}</td>`;
+    preWeekCols.forEach(()=>{
+      h+=`<td class="num" style="background:#f0f9ff;color:#5a9fc0">—</td>`;
+    });
     rmrtRows.forEach(wk=>{
       const v=row.computed?row.computed(wk):(row.key!=null?wk[row.key]:null);
       const fmt=row.fmt||(v=>v);
@@ -2592,11 +2652,12 @@ function renderScorecard2(){
     h+=`</tr>`;
   });
   h+=`</tbody></table></div></div>`;
+  } // end if(!_isPreLaunch2) — RMR Breakdown
 
   // ── Main KPI scorecard table (with pre-week columns) ───────────────────
   h+=`<div class="chart-card" style="padding:20px 24px">`;
   h+=`<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">`;
-  h+=`<div><div style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;color:#8aaabb;font-weight:500;text-transform:uppercase">${sc.full_name.replace('SWEAT440 ','')} — W${cw} current`;
+  h+=`<div><div style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;color:#8aaabb;font-weight:500;text-transform:uppercase">${sc.full_name.replace('SWEAT440 ','')}${_isPreLaunch2?'':` — W${cw} current`}`;
   if(preWeekCols.length)h+=` <span style="font-size:10px;font-weight:400;color:#99DAF3">(+${preWeekCols.length} pre-launch wks)</span>`;
   h+=`</div>${_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:2px">${_dataThruLabel}</div>`:''}</div>`;
   h+=`<div class="gran-group"><button class="gran-btn${_scView2==='weekly'?' active':''}" id="scWeeklyBtn2" onclick="setScView2('weekly')">Weekly</button><button class="gran-btn${_scView2==='cum'?' active':''}" id="scCumBtn2" onclick="setScView2('cum')">Cumulative</button></div>`;
@@ -2608,8 +2669,12 @@ function renderScorecard2(){
 
   // Pre-week header columns
   preWeekCols.forEach(pw=>{
-    const dateSpan=pw.ds?`<span style="font-size:9px;font-weight:400;color:#7dcef0;white-space:nowrap">${_fmtD(pw.ds)}</span><br><span style="font-size:9px;font-weight:400;color:#7dcef0;white-space:nowrap">${_fmtD(pw.de)}</span>`:'';
-    h+=`<th class="num" style="min-width:80px;font-size:12px;vertical-align:bottom;background:#f0f9ff;color:#5a9fc0"><span style="display:block;min-height:14px;text-align:center;margin-bottom:1px"></span>W${pw.w}<br>${dateSpan}</th>`;
+    const _dcol=_isPreLaunch2?'#5a7a8a':'#7dcef0';
+    const _pwLabel2=_isPreLaunch2
+      ?(pw.ds?`<span style="font-size:9px;font-weight:400;color:${_dcol};white-space:nowrap">${_fmtD(pw.ds)}</span><br><span style="font-size:9px;font-weight:400;color:${_dcol};white-space:nowrap">${_fmtD(pw.de)}</span>`:'—')
+      :`W${pw.w}${pw.ds?`<br><span style="font-size:9px;font-weight:400;color:${_dcol};white-space:nowrap">${_fmtD(pw.ds)}</span><br><span style="font-size:9px;font-weight:400;color:${_dcol};white-space:nowrap">${_fmtD(pw.de)}</span>`:''}`;
+    const _phStyle=_isPreLaunch2?'min-width:90px;font-size:13px;vertical-align:bottom':'min-width:80px;font-size:12px;vertical-align:bottom;background:#f0f9ff;color:#5a9fc0';
+    h+=`<th class="num" style="${_phStyle}"><span style="display:block;min-height:14px;text-align:center;margin-bottom:1px"></span>${_pwLabel2}</th>`;
   });
 
   // Regular week header columns
@@ -2627,12 +2692,14 @@ function renderScorecard2(){
   defs.forEach(row=>{
     const isParent=row.spendParent;
     const isSubParent=row.spendSubParent;
-    const isSub=row.spendSub&&!row.spendSubParent;
+    const isSub=row.spendSub&&!row.spendSubParent&&!row.agencyParent;
     const isSubSub=row.spendSubSub;
     const isCplParent=row.cplParent;
     const isCplSub=row.cplSub;
     const isCpaParent=row.cpaParent;
     const isCpaSub=row.cpaSub;
+    const isAgencyParent=row.agencyParent;
+    const isAgencySub=row.agencySub;
     let trClass='', trStyle='', tdStyle='font-size:13px;font-weight:600', trClick='', labelHtml=row.label;
     if(isParent){
       trClick=` onclick="toggleScSpend2()" style="cursor:pointer"`;
@@ -2642,11 +2709,19 @@ function renderScorecard2(){
       tdStyle='padding-left:20px;font-size:12px;font-weight:600';
       trClick=` onclick="toggleScDigital2()" style="cursor:pointer"`;
       labelHtml=`<span id="sc-digital-icon2" style="margin-right:6px;font-size:10px">▶</span>${row.label.replace('▶ ','')}`;
+    } else if(isAgencyParent){
+      trClass='sc-spend-sub2'; trStyle='display:none';
+      tdStyle='padding-left:20px;font-size:12px;font-weight:600';
+      trClick=` onclick="toggleScAgency2()" style="cursor:pointer"`;
+      labelHtml=`<span id="sc-agency-icon2" style="margin-right:6px;font-size:10px">▶</span>${row.label.replace('▶ ','')}`;
     } else if(isSub){
       trClass='sc-spend-sub2'; trStyle='display:none';
       tdStyle='padding-left:20px;font-size:12px;color:#7a7a9a';
     } else if(isSubSub){
       trClass='sc-digital-sub2'; trStyle='display:none';
+      tdStyle='padding-left:40px;font-size:12px;color:#7a7a9a';
+    } else if(isAgencySub){
+      trClass='sc-agency-sub2'; trStyle='display:none';
       tdStyle='padding-left:40px;font-size:12px;color:#7a7a9a';
     } else if(isCplParent){
       trClick=` onclick="toggleScCpl2()" style="cursor:pointer"`;
@@ -2673,7 +2748,8 @@ function renderScorecard2(){
     const _preBg=isSub||isSubParent||isSubSub?'#f3f9ff':'#f0f9ff';
     preWeekCols.forEach(pw=>{
       const val=row.computed?null:(row.key!=null?pw[row.key]:null);
-      h+=`<td class="num" style="font-size:${isSub||isSubSub?12:13}px;background:${_preBg};color:#5a9fc0">${row.fmt(val)}</td>`;
+      const _pcStyle=_isPreLaunch2?`font-size:${isSub||isSubSub||isAgencySub?12:13}px`:`font-size:${isSub||isSubSub||isAgencySub?12:13}px;background:${_preBg};color:#5a9fc0`;
+      h+=`<td class="num" style="${_pcStyle}">${row.fmt(val)}</td>`;
     });
 
     // Regular week cells
@@ -2688,7 +2764,7 @@ function renderScorecard2(){
         else if(val>=wkReq*.7)cls='sc-cell-warn';
         else if(wk.w>0&&val>0)cls='sc-cell-bad';
       }
-      h+=`<td class="num ${cls}" style="font-size:${isSub||isSubSub?12:13}px">${row.fmt(val)}</td>`;
+      h+=`<td class="num ${cls}" style="font-size:${isSub||isSubSub||isAgencySub?12:13}px">${row.fmt(val)}</td>`;
     });
     h+=`</tr>`;
   });
