@@ -215,8 +215,11 @@ class MetaClient:
                     ids = chunk[0] if len(chunk) == 1 else f"{len(chunk)} creatives"
                     log.warning(f"  {ids} unfetchable: {e}")
 
-        chunk_size = 10
-        for i in range(0, len(creative_ids), chunk_size):
-            _fetch_chunk(creative_ids[i : i + chunk_size])
+        chunk_size = 50
+        chunks = [creative_ids[i : i + chunk_size] for i in range(0, len(creative_ids), chunk_size)]
+        for idx, chunk in enumerate(chunks):
+            _fetch_chunk(chunk)
+            if idx < len(chunks) - 1:
+                time.sleep(0.3)
 
         return results
