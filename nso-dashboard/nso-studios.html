@@ -3222,7 +3222,7 @@ function renderMeta(){
   h+=kpiCard('Clicks',totalClicks,null,null,v=>fN(v),GLOSSARY.meta_clicks);
   h+=kpiCard('Leads (Native)',totalLeads,null,null,v=>v,GLOSSARY.meta_leads);
   h+=kpiCard('Cost / Lead',cpl,null,null,f$2,GLOSSARY.meta_cpl);
-  if(isAdminUser())h+=kpiCard('Offsite Conversions <span style="font-size:9px;font-family:Oswald,sans-serif;font-style:italic;background:#DDFF00;color:#1a3a4a;padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:4px;letter-spacing:.5px">ALPHA</span>',totalOffsiteLeads,null,null,v=>v,GLOSSARY.meta_offsite_leads);
+  // Offsite Conversions hidden — data preserved in totalOffsiteLeads, re-enable with kpiCard call above
   h+=`</div>`;
 
   // Creative ads table — grouped by creative short name
