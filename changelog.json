@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-02",
+      "pr_number": 300,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/300",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO Scorecard: fix Est. ROMS showing 0 in W0",
+      "summary": "ROMS now uses the same computed cumulative marketing spend as the Total Mktg Spend row, so W0 no longer shows 0 when Snowflake has no stored cumTs value."
+    },
+    {
+      "date": "2026-09-02",
       "pr_number": 299,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/299",
       "author": "Sebastian Arango",
