@@ -2,6 +2,18 @@
   "entries": [
     {
       "date": "2026-09-02",
+      "pr_number": 304,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/304",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Fix video ad thumbnails showing as blue play button",
+      "summary": "Video poster-frame thumbnails are now uploaded to Google Drive (permanent URL) so they no longer expire in ~24 hours. Fixes the blue play-button fallback appearing for all video-type Meta ads in both dashboards."
+    },
+    {
+      "date": "2026-09-02",
       "pr_number": 300,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/300",
       "author": "Sebastian Arango",
