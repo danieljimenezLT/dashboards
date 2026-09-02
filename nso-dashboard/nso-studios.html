@@ -2413,8 +2413,12 @@ function renderScorecard2(){
   // Offset SC cumulative Total Leads by pre-launch total so the Cumulative view
   // shows true leads from presale start (pre-weeks + SC), not SC-only.
   // Skip when pre-launch: scorecard weeks were suppressed above, pre-weeks carry the total.
+  // Skip when SC's W0 is a catch-all week that already includes pre-week leads
+  // (detectable when W0.tl >= pre-weeks cumulative total).
   const _preWkTl=preWeekCols.length?(preWeekCols[preWeekCols.length-1].tl||0):0;
-  if(!_isPreLaunch2&&_preWkTl>0)weeks.forEach(wk=>{if(wk.tl!=null)wk.tl+=_preWkTl;});
+  {const _w0wk=weeks.find(w=>w.w===0);
+  const _scHasPreLeads=_w0wk&&_w0wk.tl!=null&&_w0wk.tl>=_preWkTl;
+  if(!_isPreLaunch2&&_preWkTl>0&&!_scHasPreLeads)weeks.forEach(wk=>{if(wk.tl!=null)wk.tl+=_preWkTl;});}
 
   const $v=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
   const fInt=v=>v!=null?v:'—';
