@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-02",
+      "pr_number": 307,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/307",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Redesigned the Meta Ads Spend (Corporate Account) report to fetch monthly instead of daily\r",
+      "summary": "This report now fetches corporate-account Meta spend once a month, right after each month closes, instead of tracking individual ads daily with a rolling re-fetch window. Filters now select whole months only (defaulting to last month) instead of arbitrary date ranges.\r"
+    },
+    {
+      "date": "2026-09-02",
       "pr_number": 306,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/306",
       "author": "Sebastian Arango",
