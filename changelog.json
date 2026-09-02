@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-02",
+      "pr_number": 289,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/289",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix pre-launch chart and presales display for Summary Test tab",
+      "summary": "Pre-launch studios (e.g. Long Beach) now show correct presales, leads, and chart data even before Week 0 is configured. Chart filters future weeks, uses date-range labels, and no longer spikes at Week 0 or extends to W28."
+    },
+    {
+      "date": "2026-09-02",
       "pr_number": 287,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/287",
       "author": "Sebastian Arango",
