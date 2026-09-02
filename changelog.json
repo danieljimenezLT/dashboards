@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-02",
+      "pr_number": null,
+      "pr_url": null,
+      "author": "Santiago Estrada",
+      "categories": [
+        "OS Dashboard"
+      ],
+      "title": "Website tab now shows a sitewide traffic trend",
+      "summary": "Added a new chart on the Website tab showing total site sessions over time (daily/weekly/monthly), separate from the per-studio breakdown and unaffected by the studio filter."
+    },
+    {
+      "date": "2026-09-02",
       "pr_number": 290,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/290",
       "author": "Santiago Estrada",
@@ -54,7 +65,7 @@
         "NSO Dashboard"
       ],
       "title": "NSO pre-launch studios with Goal to Announce now show recent sales activity",
-      "summary": "When a studio has a Goal to Announce Opening set but hasn't entered Week 0 yet, the Summary tab now shows Last 7 Full Days and Total to Date sections with actual lead and presale counts — without goal bars or pace markers — so teams can track early sales activity before launch."
+      "summary": "When a studio has a Goal to Announce Opening set but hasn't entered Week 0 yet, the Summary tab now shows Last 7 Full Days and Total to Date sections with actual lead and presale counts \u2014 without goal bars or pace markers \u2014 so teams can track early sales activity before launch."
     },
     {
       "date": "2026-09-01",
@@ -186,8 +197,8 @@
       "categories": [
         "NSO Dashboard"
       ],
-      "title": "NSO Funnel — gráfica de Lead→Net Sale Conversion Rate",
-      "summary": "Agrega KPI card y gráfica de Lead→Net Sale conversion rate al tab de Funnel del NSO dashboard, con toggle y granularidad Daily/Weekly/Monthly."
+      "title": "NSO Funnel \u2014 gr\u00e1fica de Lead\u2192Net Sale Conversion Rate",
+      "summary": "Agrega KPI card y gr\u00e1fica de Lead\u2192Net Sale conversion rate al tab de Funnel del NSO dashboard, con toggle y granularidad Daily/Weekly/Monthly."
     },
     {
       "date": "2026-08-31",
@@ -208,7 +219,7 @@
       "categories": [
         "NSO Dashboard"
       ],
-      "title": "Blended CPR tab — lead fix, net sales, new cost sources (Grassroots, Print, PR, External Agency, Other)",
+      "title": "Blended CPR tab \u2014 lead fix, net sales, new cost sources (Grassroots, Print, PR, External Agency, Other)",
       "summary": "Fixed lead double-counting and gross-vs-net sales in Blended CPR. Added 5 new cost source toggles (Grassroots, Print/Signs, PR, External Agency, Other Marketing Spend) sourced from a Google Sheet. CPR chart now shows lines only with no bottom legend. Monthly fees pro-rated by actual calendar days."
     },
     {
@@ -220,7 +231,7 @@
         "Campaign Dashboard"
       ],
       "title": "Refresh 2 Weeks for $40 campaign data through Aug 30",
-      "summary": "Updates 2weeks_data.json with 6 days of campaign data — 70 transactions, 99 Meta leads, and $4,774 in Meta spend across 19 studios."
+      "summary": "Updates 2weeks_data.json with 6 days of campaign data \u2014 70 transactions, 99 Meta leads, and $4,774 in Meta spend across 19 studios."
     },
     {
       "date": "2026-08-28",
@@ -264,7 +275,7 @@
         "Paid Ads Dashboard"
       ],
       "title": "add 2 Weeks for $40 campaign\r",
-      "summary": "Adds the \"2 Weeks for $40\" Open Studios campaign (Aug 25 – Sep 7, 2026) to the Meta Ads Dashboard. Updates config, ETL output path, and dashboard data with 44 leads and $2,062 in spend through Aug 27.\r"
+      "summary": "Adds the \"2 Weeks for $40\" Open Studios campaign (Aug 25 \u2013 Sep 7, 2026) to the Meta Ads Dashboard. Updates config, ETL output path, and dashboard data with 44 leads and $2,062 in spend through Aug 27.\r"
     },
     {
       "date": "2026-08-28",
@@ -286,7 +297,7 @@
         "General"
       ],
       "title": "The Leadteam Discount / External Agency spend report is no longer marked as staging",
-      "summary": "The OS Dashboard Agency Spend admin report has been reviewed and approved — it now lives on the main Marketing Admin Reports page instead of under Staging Reports."
+      "summary": "The OS Dashboard Agency Spend admin report has been reviewed and approved \u2014 it now lives on the main Marketing Admin Reports page instead of under Staging Reports."
     },
     {
       "date": "2026-08-27",
@@ -296,7 +307,7 @@
       "categories": [
         "NSO Dashboard"
       ],
-      "title": "NSO Dashboard — Blended CPR tab (admin-only alpha)",
+      "title": "NSO Dashboard \u2014 Blended CPR tab (admin-only alpha)",
       "summary": "Adds a new Blended CPR tab to the NSO dashboard for admin users, showing blended cost per lead and cost per sale across Meta Ads, Google Ads, and Leadteam Fee, with OS-style spend breakdown and time-series chart."
     },
     {
@@ -307,7 +318,7 @@
       "categories": [
         "NSO Dashboard"
       ],
-      "title": "Fix NSO ad media sync — cache Meta creatives to avoid rate limits, fix image download 403 errors",
+      "title": "Fix NSO ad media sync \u2014 cache Meta creatives to avoid rate limits, fix image download 403 errors",
       "summary": "Reduced daily Meta creative API calls from ~1,500 to ~20-30 (new ads only) by caching already-known thumbnails. Fixed image download failures caused by emg1 proxy URLs and missing image hashes in sync_ad_media.py."
     },
     {
@@ -352,7 +363,7 @@
         "General"
       ],
       "title": "Added a new admin report showing Meta Ads spend by studio and month\r",
-      "summary": "Marketing Admin Reports now has a Meta Ads Spend (Corporate Account) report — a studio-by-month spend table (with CSV export) covering studios billed through the shared corporate Meta ad account, for use in corporate billing.\r"
+      "summary": "Marketing Admin Reports now has a Meta Ads Spend (Corporate Account) report \u2014 a studio-by-month spend table (with CSV export) covering studios billed through the shared corporate Meta ad account, for use in corporate billing.\r"
     },
     {
       "date": "2026-08-26",
@@ -386,7 +397,7 @@
         "NSO Dashboard"
       ],
       "title": "Fix Reston early-week lead and IG data; fix Naples week 0 start date",
-      "summary": "Reston weeks 0–6 now show correct historical leads (from manually-compiled static file) and IG follower counts. Naples week 0 start date corrected to Feb 1, 2026."
+      "summary": "Reston weeks 0\u20136 now show correct historical leads (from manually-compiled static file) and IG follower counts. Naples week 0 start date corrected to Feb 1, 2026."
     },
     {
       "date": "2026-08-25",
@@ -539,7 +550,7 @@
       "categories": [
         "General"
       ],
-      "title": "Deduplicate Drive ad media — 90% fewer files",
+      "title": "Deduplicate Drive ad media \u2014 90% fewer files",
       "summary": "Ads sharing the same creative now reuse one Drive file (dedup by video_id, image_hash, and creative name). Image links now open in Drive viewer like videos. Reduces OS Drive files from ~2,159 to ~203."
     },
     {
@@ -573,7 +584,7 @@
         "General"
       ],
       "title": "Ad thumbnails now open full 1080px resolution on click for all ad types",
-      "summary": "Carousel and Advantage+ ads previously showed ~600px images when clicked by admin users. Now all static ad types fetch and upload the full 1080×1080 image to Drive."
+      "summary": "Carousel and Advantage+ ads previously showed ~600px images when clicked by admin users. Now all static ad types fetch and upload the full 1080\u00d71080 image to Drive."
     },
     {
       "date": "2026-08-21",
@@ -629,7 +640,7 @@
       "categories": [
         "NSO Dashboard"
       ],
-      "title": "Fix Open Studio ads thumbnails — more ads now show images instead of dark squares",
+      "title": "Fix Open Studio ads thumbnails \u2014 more ads now show images instead of dark squares",
       "summary": "Meta emg1 proxy URLs are now unwrapped to extract permanent facebook.com/ads/image/ URLs, fixing ~777 ads whose thumbnails were showing broken/dark due to expired CDN tokens."
     },
     {
@@ -651,7 +662,7 @@
       "categories": [
         "NSO Dashboard"
       ],
-      "title": "Fix Naples membership count — exclude non-membership products",
+      "title": "Fix Naples membership count \u2014 exclude non-membership products",
       "summary": "Single Class, Guest Pass, free class passes, and other Class/Class Packs were incorrectly counted as memberships in the Naples Funnel tab. Now only products with REVENUE_CATEGORY = 'Memberships' (and not presales, employee, or guest passes) are counted, reducing the inflated Total New Sales figure to the correct value."
     },
     {
@@ -663,7 +674,7 @@
         "NSO Dashboard",
         "OS Dashboard"
       ],
-      "title": "Open Studio ad lightbox — full-res images and easier close",
+      "title": "Open Studio ad lightbox \u2014 full-res images and easier close",
       "summary": "Ad lightbox in Open Studio now shows full-resolution images (matching NSO behavior) and the dark backdrop on the sides is now wider and easier to click to close the lightbox."
     },
     {
@@ -752,7 +763,7 @@
         "Campaign Dashboard"
       ],
       "title": "Added Summer Pass and 33% Off to the Campaign Dashboard",
-      "summary": "The Campaign Dashboard now tracks the Summer Pass promotion (May 15 – Jun 15, with post-promo tracking through Aug 15) and the 33% Off campaign, both populated with real performance numbers."
+      "summary": "The Campaign Dashboard now tracks the Summer Pass promotion (May 15 \u2013 Jun 15, with post-promo tracking through Aug 15) and the 33% Off campaign, both populated with real performance numbers."
     },
     {
       "date": "2026-08-18",
@@ -843,7 +854,7 @@
         "OS Dashboard"
       ],
       "title": "Added a Network Average comparison to the Summary tab",
-      "summary": "KPI cards on the Summary tab, and now the Funnel, First Timers, and Blended CPR tabs too, show how your studio compares to the network average — not just how it's trending against its own past periods."
+      "summary": "KPI cards on the Summary tab, and now the Funnel, First Timers, and Blended CPR tabs too, show how your studio compares to the network average \u2014 not just how it's trending against its own past periods."
     },
     {
       "date": "2026-08-12",
