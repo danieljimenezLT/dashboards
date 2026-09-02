@@ -2336,17 +2336,30 @@ function renderScorecard2(){
   const _isPreLaunch2=!_w1Official||_w1Official>_todaySc2;
   if(_isPreLaunch2)weeks.splice(0);
 
-  let _cumGrsPre=0,_cumGlPre=0,_cumEvPre=0;
+  const _scStrip=s=>(s||'').replace(/^SWEAT440\s+/,'');
+  const _scSname=_scStrip(sc.data_name||sc.full_name||sc.name);
+  const _scSalesRows=NSO_SALES_ROWS.filter(r=>_scStrip(r.studio)===_scSname);
+  let _cumGrsPre=0,_cumGlPre=0,_cumEvPre=0,_cumNpPre=0,_cumCancPre=0,_cumGpPre=0;
   const preWeekCols=_pwList.map(pw=>{
     const grsW=_sheetGrs(pw.date_start,pw.date_end);
+    const _pwSales=pw.date_start?_scSalesRows.filter(r=>r.date>=pw.date_start&&r.date<=(pw.date_end||pw.date_start)):[];
+    const _pwNp=_pwSales.reduce((s,r)=>s+(r.first_sales||0),0)||null;
+    const _pwCanc=_pwSales.reduce((s,r)=>s+(r.cancellations||0),0)||null;
     _cumGrsPre+=grsW||0;
     _cumGlPre+=pw.grassroots_leads||0;
     _cumEvPre+=pw.comm_events||0;
+    _cumNpPre+=_pwNp||0;
+    _cumCancPre+=_pwCanc||0;
+    _cumGpPre+=pw.grassroots_presales||0;
     return{w:pw.week_num,isPre:true,ds:pw.date_start,de:pw.date_end,
       nl:pw.new_leads||null, gl:pw.grassroots_leads||null, ev:pw.comm_events||null,
       tl:pw.total_leads||null,
-      grs:grsW,cumGrs:Math.round(_cumGrsPre*100)/100,
-      cumGl:_cumGlPre,cumEv:_cumEvPre};
+      np:_pwNp, gp:pw.grassroots_presales||null, canc:_pwCanc,
+      ts:grsW, pc:_cumNpPre||null, cancTot:_cumCancPre||null,
+      grs:grsW, cumGrs:Math.round(_cumGrsPre*100)/100,
+      cumGl:_cumGlPre, cumEv:_cumEvPre,
+      cumGp:_cumGpPre, cumTs:Math.round(_cumGrsPre*100)/100,
+    };
   }).filter(pw=>!_isPreLaunch2||!pw.ds||pw.ds<=_todaySc2);
 
   // Align W0/W1 dates using PRE_WEEKS (NSO Config Sheet) as authoritative source.
@@ -2844,7 +2857,7 @@ function renderScorecard2(){
         :(row.cumReqDisplay!=null?row.fmt(row.cumReqDisplay):'—'));
     h+=`<td class="num" style="background:#f8f4ec;color:#b8860b;font-size:13px;position:sticky;left:200px;z-index:1">${_reqCellVal}</td>`;
 
-    // Pre-week cells — only nl/tl/grs/cumGrs keys have data; all computed rows show '—'
+    // Pre-week cells — key-based rows read from preWeekCols; computed rows show '—'
     const _preBg=isSub||isSubParent||isSubSub?'#f3f9ff':'#f0f9ff';
     preWeekCols.forEach(pw=>{
       const val=row.computed?null:(row.key!=null?pw[row.key]:null);
