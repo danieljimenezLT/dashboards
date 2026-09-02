@@ -29,7 +29,16 @@ Output JSON format:
                 ...
             ],
             "reviews_daily": [
-                {"date": "2025-01-03", "count": 2, "five_star_count": 1, "rating_sum": 9},
+                {
+                    "date": "2025-01-03",
+                    "count": 2,
+                    "rating_sum": 9,
+                    "one_star_count": 0,
+                    "two_star_count": 0,
+                    "three_star_count": 0,
+                    "four_star_count": 1,
+                    "five_star_count": 1
+                },
                 ...
             ]
         },
@@ -342,6 +351,13 @@ def fetch_performance_metrics(
 # ---------------------------------------------------------------------------
 
 _STAR_VALUES = {"ONE": 1, "TWO": 2, "THREE": 3, "FOUR": 4, "FIVE": 5}
+_STAR_BUCKET_KEYS = {
+    1: "one_star_count",
+    2: "two_star_count",
+    3: "three_star_count",
+    4: "four_star_count",
+    5: "five_star_count",
+}
 
 
 def fetch_reviews(location_id: str, token: str, account_name: str = "") -> list | None:
@@ -355,7 +371,16 @@ def fetch_reviews(location_id: str, token: str, account_name: str = "") -> list 
 
     Returns:
         [
-            {"date": "2025-01-03", "count": 2, "five_star_count": 1, "rating_sum": 9},
+            {
+                "date": "2025-01-03",
+                "count": 2,
+                "rating_sum": 9,
+                "one_star_count": 0,
+                "two_star_count": 0,
+                "three_star_count": 0,
+                "four_star_count": 1,
+                "five_star_count": 1
+            },
             ...
         ]
     or None if account_name is empty or the request fails.
@@ -396,11 +421,18 @@ def fetch_reviews(location_id: str, token: str, account_name: str = "") -> list 
             if not create_time or star is None:
                 continue
             date = create_time[:10]
-            bucket = buckets.setdefault(date, {"count": 0, "five_star_count": 0, "rating_sum": 0})
+            bucket = buckets.setdefault(date, {
+                "count": 0,
+                "rating_sum": 0,
+                "one_star_count": 0,
+                "two_star_count": 0,
+                "three_star_count": 0,
+                "four_star_count": 0,
+                "five_star_count": 0,
+            })
             bucket["count"] += 1
             bucket["rating_sum"] += star
-            if star == 5:
-                bucket["five_star_count"] += 1
+            bucket[_STAR_BUCKET_KEYS[star]] += 1
 
         page_token = data.get("nextPageToken")
         if not page_token:

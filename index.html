@@ -3037,15 +3037,19 @@ function renderGBP() {
     h += '</div>';
     h += '<div class="chart-card"><div class="chart-card-title">By Studio</div>';
     h += '<div style="overflow-x:auto"><table class="data-table"><thead><tr>';
-    h += '<th>Studio</th><th class="num">Total Views</th><th class="num">Search</th><th class="num">Maps</th><th class="num">Directions</th><th class="num">Website Clicks</th><th class="num">Calls</th><th class="num">Avg Rating</th><th class="num">Total Reviews</th><th class="num">5-Star</th>';
+    h += '<th>Studio</th><th class="num">Total Views</th><th class="num">Search</th><th class="num">Maps</th><th class="num">Directions</th><th class="num">Website Clicks</th><th class="num">Calls</th><th class="num">Avg Rating</th><th class="num">Total Reviews</th><th class="num">5-Star</th><th class="num">1-Star</th><th class="num">2-Star</th><th class="num">3-Star</th><th class="num">4-Star</th>';
     h += '</tr></thead><tbody>';
     studioRows.forEach(r => {
       const tv = (r.search_mobile||0)+(r.search_desktop||0)+(r.maps_mobile||0)+(r.maps_desktop||0);
       const rv = r.reviews;
       const ratingCell = rv && rv.total_count > 0 ? `${(rv.rating_sum / rv.total_count).toFixed(1)} &#9733;` : '—';
       const totalCell  = rv ? rv.total_count.toLocaleString() : '—';
-      const fiveCell   = rv ? rv.five_star_count.toLocaleString() : '—';
-      h += `<tr><td>${r.name}</td><td class="num">${tv.toLocaleString()}</td><td class="num">${((r.search_mobile||0)+(r.search_desktop||0)).toLocaleString()}</td><td class="num">${((r.maps_mobile||0)+(r.maps_desktop||0)).toLocaleString()}</td><td class="num">${(r.direction_requests||0).toLocaleString()}</td><td class="num">${(r.website_clicks||0).toLocaleString()}</td><td class="num">${(r.calls||0).toLocaleString()}</td><td class="num">${ratingCell}</td><td class="num">${totalCell}</td><td class="num">${fiveCell}</td></tr>`;
+      const fiveCell   = rv ? rv.five_star_count.toLocaleString()  : '—';
+      const oneCell    = rv ? rv.one_star_count.toLocaleString()   : '—';
+      const twoCell    = rv ? rv.two_star_count.toLocaleString()   : '—';
+      const threeCell  = rv ? rv.three_star_count.toLocaleString() : '—';
+      const fourCell   = rv ? rv.four_star_count.toLocaleString()  : '—';
+      h += `<tr><td>${r.name}</td><td class="num">${tv.toLocaleString()}</td><td class="num">${((r.search_mobile||0)+(r.search_desktop||0)).toLocaleString()}</td><td class="num">${((r.maps_mobile||0)+(r.maps_desktop||0)).toLocaleString()}</td><td class="num">${(r.direction_requests||0).toLocaleString()}</td><td class="num">${(r.website_clicks||0).toLocaleString()}</td><td class="num">${(r.calls||0).toLocaleString()}</td><td class="num">${ratingCell}</td><td class="num">${totalCell}</td><td class="num">${fiveCell}</td><td class="num">${oneCell}</td><td class="num">${twoCell}</td><td class="num">${threeCell}</td><td class="num">${fourCell}</td></tr>`;
     });
     h += '</tbody></table></div></div>';
     return h;
@@ -3060,9 +3064,13 @@ function renderGBP() {
       const sum  = k => rows.reduce((a, r) => a + (r[k] || 0), 0);
       const revRows = (s.reviews_daily || []).filter(r => (!from || r.date >= from) && (!to || r.date <= to));
       const reviews = s.reviews_daily ? {
-        total_count:     revRows.reduce((a, r) => a + r.count,           0),
-        five_star_count: revRows.reduce((a, r) => a + r.five_star_count, 0),
-        rating_sum:      revRows.reduce((a, r) => a + r.rating_sum,      0),
+        total_count:      revRows.reduce((a, r) => a + r.count,            0),
+        rating_sum:       revRows.reduce((a, r) => a + r.rating_sum,       0),
+        one_star_count:   revRows.reduce((a, r) => a + (r.one_star_count   || 0), 0),
+        two_star_count:   revRows.reduce((a, r) => a + (r.two_star_count   || 0), 0),
+        three_star_count: revRows.reduce((a, r) => a + (r.three_star_count || 0), 0),
+        four_star_count:  revRows.reduce((a, r) => a + (r.four_star_count  || 0), 0),
+        five_star_count:  revRows.reduce((a, r) => a + (r.five_star_count  || 0), 0),
       } : null;
       return { name: s.name.replace(/^SWEAT440\s+/, ''), search_mobile: sum('mobile_search'), search_desktop: sum('desktop_search'), maps_mobile: sum('mobile_maps'), maps_desktop: sum('desktop_maps'), direction_requests: sum('direction_requests'), website_clicks: sum('website_clicks'), calls: sum('calls'), reviews };
     });
