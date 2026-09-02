@@ -2,6 +2,18 @@
   "entries": [
     {
       "date": "2026-09-02",
+      "pr_number": 308,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/308",
+      "author": "Santiago Estrada",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "GBP reviews table now breaks out 1-4 star counts",
+      "summary": "The Google Business Profile \"By Studio\" table now shows separate columns for 1-star through 4-star review counts, alongside the existing 5-star column."
+    },
+    {
+      "date": "2026-09-02",
       "pr_number": 307,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/307",
       "author": "Santiago Estrada",
