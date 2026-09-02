@@ -2345,16 +2345,17 @@ function renderScorecard2(){
     const _pwSales=pw.date_start?_scSalesRows.filter(r=>r.date>=pw.date_start&&r.date<=(pw.date_end||pw.date_start)):[];
     const _pwNp=_pwSales.reduce((s,r)=>s+(r.first_sales||0),0)||null;
     const _pwCanc=_pwSales.reduce((s,r)=>s+(r.cancellations||0),0)||null;
+    const _pwGp=_pwSales.filter(r=>r.source==='Grassroots').reduce((s,r)=>s+(r.first_sales||0),0)||null;
     _cumGrsPre+=grsW||0;
     _cumGlPre+=pw.grassroots_leads||0;
     _cumEvPre+=pw.comm_events||0;
     _cumNpPre+=_pwNp||0;
     _cumCancPre+=_pwCanc||0;
-    _cumGpPre+=pw.grassroots_presales||0;
+    _cumGpPre+=_pwGp||0;
     return{w:pw.week_num,isPre:true,ds:pw.date_start,de:pw.date_end,
       nl:pw.new_leads||null, gl:pw.grassroots_leads||null, ev:pw.comm_events||null,
       tl:pw.total_leads||null,
-      np:_pwNp, gp:pw.grassroots_presales||null, canc:_pwCanc,
+      np:_pwNp, gp:_pwGp, canc:_pwCanc,
       ts:grsW, pc:_cumNpPre||null, cancTot:_cumCancPre||null,
       grs:grsW, cumGrs:Math.round(_cumGrsPre*100)/100,
       cumGl:_cumGlPre, cumEv:_cumEvPre,
