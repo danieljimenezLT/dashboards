@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-09-02",
+      "pr_number": 287,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/287",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO pre-launch scorecard test tabs + daily CI sync fix",
+      "summary": "Improved pre-launch scorecard test tabs (date-range columns, no RMR Breakdown, fixed timeline labels), added community events from new Google Sheet, and fixed the daily workflow so test-tab data refreshes every day alongside the normal tabs."
+    },
+    {
       "date": "2026-09-01",
       "pr_number": 286,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/286",
