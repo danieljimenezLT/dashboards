@@ -2424,6 +2424,8 @@ function renderScorecard2(){
   // (detectable when W0.tl >= pre-weeks cumulative total).
   const _preWkTl=preWeekCols.length?(preWeekCols[preWeekCols.length-1].tl||0):0;
   const _preWkNp=preWeekCols.length?(preWeekCols[preWeekCols.length-1].pc||0):0;
+  const _lastPwCol=preWeekCols.length?preWeekCols[preWeekCols.length-1]:null;
+  const _preWkNetNp=_lastPwCol?Math.max(0,(_lastPwCol.pc||0)-(_lastPwCol.cancTot||0)):0;
   {const _w0wk=weeks.find(w=>w.w===0);
   const _scHasPreLeads=_w0wk&&_w0wk.tl!=null&&_w0wk.tl>=_preWkTl;
   if(!_isPreLaunch2&&_preWkTl>0&&!_scHasPreLeads)weeks.forEach(wk=>{if(wk.tl!=null)wk.tl+=_preWkTl;});
@@ -2536,6 +2538,9 @@ function renderScorecard2(){
   const rmrtRows=pastWeeks.map(wk=>{
     if(_tierReal[wk.w]){
       _t0=_tierReal[wk.w].t0||0;_t1=_tierReal[wk.w].t1||0;_t2=_tierReal[wk.w].t2||0;_t3=_tierReal[wk.w].t3||0;
+      // W0 catch-all: Snowflake tier data may only reflect the W0 week itself (not cumulative
+      // including pre-weeks). If tier T1 is less than the pre-week net presales, add them.
+      if(wk.w===0&&_preWkNetNp>0&&_t1<_preWkNetNp)_t1+=_preWkNetNp;
     } else if(wk.t1m!=null){
       _t0=wk.t0m||0;_t1=wk.t1m||0;_t2=wk.t2m||0;_t3=0;
     } else {
