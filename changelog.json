@@ -2,6 +2,18 @@
   "entries": [
     {
       "date": "2026-09-02",
+      "pr_number": 292,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/292",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard",
+        "Campaign Dashboard"
+      ],
+      "title": "NSO timeline marker stagger + campaign 2-weeks daily refresh",
+      "summary": "Timeline markers that overlap now stagger above and below the bar instead of overlapping. Added daily CI refresh for the 2 Weeks for $40 campaign dashboard, scheduled at 6:30 AM ET (later than all other dashboards)."
+    },
+    {
+      "date": "2026-09-02",
       "pr_number": 289,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/289",
       "author": "Sebastian Arango",
