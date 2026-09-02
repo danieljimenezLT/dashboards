@@ -21,11 +21,11 @@
 <div class="controls-bar">
   <button class="controls-toggle" id="ctrlToggle" onclick="toggleControls()">Filters ▾</button>
   <div class="controls-inner" id="ctrlInner">
-    <span class="ctrl-label">Date range</span>
+    <span class="ctrl-label">Months</span>
     <div class="ctrl-date">
-      <input type="date" id="fFrom" onchange="applyFilters()"/>
+      <input type="month" id="fFrom" onchange="applyFilters()"/>
       <span style="font-size:12px;color:#5a7a8a">→</span>
-      <input type="date" id="fTo" onchange="applyFilters()"/>
+      <input type="month" id="fTo" onchange="applyFilters()"/>
     </div>
   </div>
 </div>
@@ -37,8 +37,8 @@
       <button class="download-btn" onclick="downloadMetaSpendCSV()">⬇ Download CSV</button>
     </div>
     <p style="font-size:12px;color:#5a7a8a;margin:-10px 0 18px">
-      Shows only spend billed to the shared corporate Meta ad account. A studio's spend
-      after it moves to its own dedicated ad account is netted out automatically, day by day.
+      Spend billed to SWEAT440's shared corporate Meta ad account only, fetched once a month
+      right after each month closes. Whole months only — partial months can't be selected.
     </p>
     <div style="overflow-x:auto"><table class="data-table" id="metaSpendTable"></table></div>
   </div>
@@ -48,7 +48,7 @@
 <script src="../shared/auth.js"></script>
 <script src="../shared/utils.js"></script>
 <script>
-let SPEND_RAW = null;
+let SPEND_RAW = null;   // meta-corporate-spend-monthly.json — already monthly, already corporate-only
 
 async function loadData() {
   const _authUser = checkAuth();
@@ -56,88 +56,64 @@ async function loadData() {
   if (_authUser.role !== 'admin') { location.replace('../home.html'); return; }
   renderAuthNav(_authUser);
 
-  const spendRes = await fetch('../spend-data.json?_=' + Date.now()).catch(e => { console.warn('spend-data.json unavailable:', e); return null; });
-  try { SPEND_RAW = spendRes ? await spendRes.json() : null; } catch(e) { console.warn('spend-data.json unavailable:', e); }
+  const spendRes = await fetch('../meta-corporate-spend-monthly.json?_=' + Date.now())
+    .catch(e => { console.warn('meta-corporate-spend-monthly.json unavailable:', e); return null; });
+  try { SPEND_RAW = spendRes ? await spendRes.json() : null; } catch(e) { console.warn('meta-corporate-spend-monthly.json unavailable:', e); }
 
   await loadStudiosRegistry('../');
 
-  // Default date range: trailing 6 full months
+  // Default: last full calendar month only. <input type="month"> only ever
+  // allows picking whole months, so there's no partial-month case to guard.
   const _today = new Date();
-  const _firstOfRange = new Date(_today.getFullYear(), _today.getMonth() - 5, 1);
-  const _lastOfLastMonth = new Date(_today.getFullYear(), _today.getMonth(), 0);
-  document.getElementById('fFrom').value = localDateStr(_firstOfRange);
-  document.getElementById('fTo').value   = localDateStr(_lastOfLastMonth);
+  const _lastMonth = new Date(_today.getFullYear(), _today.getMonth() - 1, 1);
+  const _lastMonthKey = _lastMonth.getFullYear() + '-' + String(_lastMonth.getMonth()+1).padStart(2,'0');
+  document.getElementById('fFrom').value = _lastMonthKey;
+  document.getElementById('fTo').value   = _lastMonthKey;
 
   applyFilters();
 }
 
 function applyFilters() {
   if (!SPEND_RAW) return;
-  const fromStr = document.getElementById('fFrom').value;
-  const toStr   = document.getElementById('fTo').value;
-  const from = fromStr ? new Date(fromStr+'T00:00:00Z') : new Date('2025-01-01T00:00:00Z');
-  const to   = toStr   ? new Date(toStr+'T23:59:59Z')   : new Date();
-  buildMetaSpendTable(from, to);
+  const fromKey = document.getElementById('fFrom').value || '2026-01';
+  const toKey   = document.getElementById('fTo').value   || fromKey;
+  // Swap if entered backwards — <input type="month"> doesn't enforce from <= to.
+  buildMetaSpendTable(fromKey <= toKey ? fromKey : toKey, fromKey <= toKey ? toKey : fromKey);
 }
 
-function _monthList(from, to) {
+// Every "YYYY-MM" key from fromKey to toKey, inclusive, with a display label.
+function _monthList(fromKey, toKey) {
   const months = [];
-  let cur = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), 1));
-  const end = new Date(Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), 1));
-  while (cur <= end) {
-    const mStart = new Date(Math.max(cur.getTime(), from.getTime()));
-    const mEndFull = new Date(Date.UTC(cur.getUTCFullYear(), cur.getUTCMonth()+1, 0, 23, 59, 59));
-    const mEnd = new Date(Math.min(mEndFull.getTime(), to.getTime()));
-    months.push({ start: mStart, end: mEnd, key: cur.toISOString().slice(0,7), label: cur.toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}) });
-    cur = new Date(Date.UTC(cur.getUTCFullYear(), cur.getUTCMonth()+1, 1));
+  let [y, m] = fromKey.split('-').map(Number);
+  while (`${y}-${String(m).padStart(2,'0')}` <= toKey) {
+    const key = `${y}-${String(m).padStart(2,'0')}`;
+    const label = new Date(Date.UTC(y, m-1, 1)).toLocaleDateString('en-US', {month:'short', year:'numeric', timeZone:'UTC'});
+    months.push({ key, label });
+    m += 1;
+    if (m > 12) { m = 1; y += 1; }
   }
   return months;
 }
 
-// studio_code -> month key ("YYYY-MM") -> corporate-only meta spend. Daily rows
-// (2026) take priority over monthly rows for the same studio+month, same rule
-// as _adminSpendFor() in studio-performance-summary.html.
-//
-// meta_spend_dedicated (daily rows only) is the portion of that day's spend
-// that ran through a studio's own dedicated Meta ad account rather than the
-// shared corporate one — see the meta_dedicated comment in build_spend_data.py.
-// Subtracting it out gives corporate-only spend automatically, day by day, with
-// no need to know which studios have migrated or when: a studio with no
-// dedicated account always nets to its full spend, and one that migrated mid-
-// month nets to $0 from its cutover day onward.
-function _metaSpendByStudioMonth(from, to) {
-  const fT = from.getTime(), tT = to.getTime();
-  const out = {};   // code -> { monthKey -> spend }
-  const dailyCovered = new Set();
-
-  for (const r of (SPEND_RAW.daily || [])) {
-    const d = new Date(r.date+'T00:00:00Z').getTime();
-    if (d < fT || d > tT) continue;
-    const mk = r.date.slice(0,7);
-    const corp = (r.meta_spend || 0) - (r.meta_spend_dedicated || 0);
-    (out[r.studio_code] ||= {})[mk] = (out[r.studio_code]?.[mk] || 0) + corp;
-    dailyCovered.add(r.studio_code+'|'+mk);
-  }
+// studio_code -> month key ("YYYY-MM") -> corporate spend. The source file is
+// already scoped to the corporate account and already monthly, so this is
+// just a direct lookup — no daily/monthly merge, no dedicated-account netting.
+function _metaSpendByStudioMonth() {
+  const out = {};
   for (const r of (SPEND_RAW.monthly || [])) {
-    const d = new Date(r.month+'T00:00:00Z').getTime();
-    if (d < fT || d > tT) continue;
-    const mk = r.month.slice(0,7);
-    if (dailyCovered.has(r.studio_code+'|'+mk)) continue;
-    // Monthly rows are always pre-2026, before any studio had a dedicated
-    // account, so meta_spend here is already corporate-only.
-    (out[r.studio_code] ||= {})[mk] = (out[r.studio_code]?.[mk] || 0) + (r.meta_spend || 0);
+    (out[r.studio_code] ||= {})[r.month] = (out[r.studio_code]?.[r.month] || 0) + (r.spend || 0);
   }
   return out;
 }
 
 let _metaSpendExport = null;
 
-function buildMetaSpendTable(from, to) {
+function buildMetaSpendTable(fromKey, toKey) {
   const table = document.getElementById('metaSpendTable');
   if (!table || !SPEND_RAW) return;
 
-  const months = _monthList(from, to);
-  const spendByStudioMonth = _metaSpendByStudioMonth(from, to);
+  const months = _monthList(fromKey, toKey);
+  const spendByStudioMonth = _metaSpendByStudioMonth();
 
   const rows = Object.keys(META_CODE_TO_STUDIO)
     .map(code => ({
