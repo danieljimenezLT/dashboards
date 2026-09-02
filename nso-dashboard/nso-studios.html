@@ -914,7 +914,7 @@ function drawCum2Chart(studio){
     allLabels=[..._wkNumLabels,...scLabels];
     const _preTotal=preLeadsD.length?(preLeadsD[preLeadsD.length-1]||0):0;
     const scLeadsAdj=_preTotal>0?[]:null;
-    if(scLeadsAdj){let _adj=_preTotal,_rv=0;for(let i=0;i<scLeadsD.length;i++){const v=scLeadsD[i];if(v===null){scLeadsAdj.push(null);continue;}if(i===0)_adj=_preTotal+v;else _adj+=Math.max(0,v-_rv);scLeadsAdj.push(_adj);_rv=v;}}
+    if(scLeadsAdj){let _adj=_preTotal,_rv=0;for(let i=0;i<scLeadsD.length;i++){const v=scLeadsD[i];if(v===null){scLeadsAdj.push(null);continue;}if(i===0)_adj=v>=_preTotal?v:_preTotal+v;else _adj+=Math.max(0,v-_rv);scLeadsAdj.push(_adj);_rv=v;}}
     allLeadsD=[...preLeadsD,...(scLeadsAdj||scLeadsD)];
     // Map pre-week presales from NSO_SALES_ROWS (cumulative) then continue with scorecard
     const _sn2=studio.data_name||studio.name;const _st2=s=>(s||'').replace(/^SWEAT440\s+/,'');
@@ -1002,19 +1002,21 @@ function drawWeekly2Chart(studio){
     const _wkTierMap={};(studio.tier_rmr_by_week||[]).forEach(r=>{_wkTierMap[r.week]=r;});
     const scPresD=w.map((x,i)=>{if(i>cw)return null;const tr=_wkTierMap[i];return tr?(tr.t0||0)+(tr.t1||0)+(tr.t2||0)+(tr.t3||0):(x.presales_count||0)-(x.cancellations_count||0);});
     const scLeadsD=w.map((x,i)=>i<=cw?x.total_leads||0:null);
-    const scPresDelta=scPresD.map((v,i)=>v===null?null:(i===0?0:v-(scPresD[i-1]||0)));
+    // Compute pre-week presales before scPresDelta so W0 delta can exclude pre-week accumulation
+    const _sn2w=studio.data_name||studio.name;const _st2w=s=>(s||'').replace(/^SWEAT440\s+/,'');
+    const _psrW=NSO_SALES_ROWS.filter(r=>_st2w(r.studio)===_sn2w);
+    const _prePDw=preWeeks.map(pw=>{if(!pw.date_start)return null;const de=pw.date_end||pw.date_start;const v=Math.max(0,_psrW.filter(r=>r.date>=pw.date_start&&r.date<=de).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));return v>0?v:null;});
+    const _preTotalPresW=_prePDw.reduce((s,v)=>s+(v||0),0);
+    const scPresDelta=scPresD.map((v,i)=>v===null?null:(i===0?(v>_preTotalPresW?Math.max(0,v-_preTotalPresW):0):v-(scPresD[i-1]||0)));
+    const _preTotalW=preWeeks.length?(preWeeks[preWeeks.length-1].total_leads||0):0;
     const scLeadsDelta=scLeadsD.map((v,i)=>{
       if(v===null)return null;
-      if(i===0)return v||0;
+      if(i===0)return v>=_preTotalW?Math.max(0,v-_preTotalW):v||0;
       return Math.max(0,v-(scLeadsD[i-1]||0));
     });
     const _wkNumLabelsW=preWeeks.map(pw=>`W${pw.week_num}`);
     allLabels=[..._wkNumLabelsW,...scLabels];
     allLeadsDelta=[...preLeadsDelta,...scLeadsDelta];
-    // Map pre-week presales from NSO_SALES_ROWS (weekly delta) then continue with scorecard
-    const _sn2w=studio.data_name||studio.name;const _st2w=s=>(s||'').replace(/^SWEAT440\s+/,'');
-    const _psrW=NSO_SALES_ROWS.filter(r=>_st2w(r.studio)===_sn2w);
-    const _prePDw=preWeeks.map(pw=>{if(!pw.date_start)return null;const de=pw.date_end||pw.date_start;const v=Math.max(0,_psrW.filter(r=>r.date>=pw.date_start&&r.date<=de).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));return v>0?v:null;});
     allPresDelta=[..._prePDw,...scPresDelta];
     allLeadsPace=[...preWeeks.map(()=>null),...w.map(()=>wkLeadPace)];
     allPresPace=[...preWeeks.map(()=>null),...w.map(()=>wkPresPace)];
@@ -1937,7 +1939,7 @@ function renderScorecard(){
     {label:_ib('sc_presales_gross')+'Presales (gross)', key:'pc',  fmt:fInt, color:true,
      cumReqFn:wk=>tgt.presales_count&&scPaceWeeks?Math.round(tgt.presales_count/scPaceWeeks*wk.w):null,
      cumReqDisplay:tgt.presales_count||null},
-    {label:_ib('sc_net_presales')+'Net Presales',       key:null, computed:wk=>{const td=_tierReal[wk.w];return td?(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0):Math.max(0,(wk.pc||0)-(wk.cancTot||0));}, fmt:fInt, color:true,
+    {label:_ib('sc_net_presales')+'Net Presales',       key:null, pwKey:'netPres', computed:wk=>{const td=_tierReal[wk.w];return td?(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0):Math.max(0,(wk.pc||0)-(wk.cancTot||0));}, fmt:fInt, color:true,
      cumReqFn:wk=>tgt.presales_count&&scPaceWeeks?Math.round(tgt.presales_count/scPaceWeeks*wk.w):null,
      cumReqDisplay:tgt.presales_count||null},
     {label:_ib('sc_cum_cvr')+'Conversion Rate',         key:'cumCr', fmt:fPct, color:true,
@@ -2336,17 +2338,39 @@ function renderScorecard2(){
   const _isPreLaunch2=!_w1Official||_w1Official>_todaySc2;
   if(_isPreLaunch2)weeks.splice(0);
 
-  let _cumGrsPre=0,_cumGlPre=0,_cumEvPre=0;
+  const _scStrip=s=>(s||'').replace(/^SWEAT440\s+/,'');
+  const _scSname=_scStrip(sc.data_name||sc.full_name||sc.name);
+  const _scSalesRows=NSO_SALES_ROWS.filter(r=>_scStrip(r.studio)===_scSname);
+  let _cumGrsPre=0,_cumGlPre=0,_cumEvPre=0,_cumNpPre=0,_cumCancPre=0,_cumGpPre=0;
   const preWeekCols=_pwList.map(pw=>{
     const grsW=_sheetGrs(pw.date_start,pw.date_end);
+    const _pwSales=pw.date_start?_scSalesRows.filter(r=>r.date>=pw.date_start&&r.date<=(pw.date_end||pw.date_start)):[];
+    const _pwNp=_pwSales.reduce((s,r)=>s+(r.first_sales||0),0)||null;
+    const _pwCanc=_pwSales.reduce((s,r)=>s+(r.cancellations||0),0)||null;
+    const _pwGp=_pwSales.filter(r=>r.source==='Grassroots').reduce((s,r)=>s+(r.first_sales||0),0)||null;
     _cumGrsPre+=grsW||0;
     _cumGlPre+=pw.grassroots_leads||0;
     _cumEvPre+=pw.comm_events||0;
+    _cumNpPre+=_pwNp||0;
+    _cumCancPre+=_pwCanc||0;
+    _cumGpPre+=_pwGp||0;
+    const _nl=pw.new_leads||null;
     return{w:pw.week_num,isPre:true,ds:pw.date_start,de:pw.date_end,
-      nl:pw.new_leads||null, gl:pw.grassroots_leads||null, ev:pw.comm_events||null,
+      nl:_nl, gl:pw.grassroots_leads||null, ev:pw.comm_events||null,
       tl:pw.total_leads||null,
-      grs:grsW,cumGrs:Math.round(_cumGrsPre*100)/100,
-      cumGl:_cumGlPre,cumEv:_cumEvPre};
+      np:_pwNp, gp:_pwGp, canc:_pwCanc,
+      cr:(_pwNp&&_nl>0)?_pwNp/_nl:null,
+      cumCr:(_cumNpPre>0&&pw.total_leads>0)?_cumNpPre/pw.total_leads:null,
+      ts:grsW, pc:_cumNpPre||null, cancTot:_cumCancPre||null,
+      netPres:(_cumNpPre>0||_cumCancPre>0)?Math.max(0,_cumNpPre-_cumCancPre):null,
+      grs:grsW, cumGrs:Math.round(_cumGrsPre*100)/100,
+      cumGl:_cumGlPre, cumEv:_cumEvPre,
+      cumGp:_cumGpPre, cumTs:Math.round(_cumGrsPre*100)/100,
+      cpl:grsW&&((pw.new_leads||0)+(pw.grassroots_leads||0))>0?grsW/((pw.new_leads||0)+(pw.grassroots_leads||0)):null,
+      cpa:grsW&&(_pwNp||0)>(_pwCanc||0)?grsW/Math.max(1,(_pwNp||0)-(_pwCanc||0)):null,
+      cumCpl:_cumGrsPre>0&&(pw.total_leads||0)>0?(Math.round(_cumGrsPre*100)/100)/(pw.total_leads||1):null,
+      cumCpa:_cumGrsPre>0&&(_cumNpPre-_cumCancPre)>0?(Math.round(_cumGrsPre*100)/100)/Math.max(1,_cumNpPre-_cumCancPre):null,
+    };
   }).filter(pw=>!_isPreLaunch2||!pw.ds||pw.ds<=_todaySc2);
 
   // Align W0/W1 dates using PRE_WEEKS (NSO Config Sheet) as authoritative source.
@@ -2400,8 +2424,20 @@ function renderScorecard2(){
   // Offset SC cumulative Total Leads by pre-launch total so the Cumulative view
   // shows true leads from presale start (pre-weeks + SC), not SC-only.
   // Skip when pre-launch: scorecard weeks were suppressed above, pre-weeks carry the total.
+  // Skip when SC's W0 is a catch-all week that already includes pre-week leads
+  // (detectable when W0.tl >= pre-weeks cumulative total).
   const _preWkTl=preWeekCols.length?(preWeekCols[preWeekCols.length-1].tl||0):0;
-  if(!_isPreLaunch2&&_preWkTl>0)weeks.forEach(wk=>{if(wk.tl!=null)wk.tl+=_preWkTl;});
+  const _preWkNp=preWeekCols.length?(preWeekCols[preWeekCols.length-1].pc||0):0;
+  const _lastPwCol=preWeekCols.length?preWeekCols[preWeekCols.length-1]:null;
+  const _preWkNetNp=_lastPwCol?Math.max(0,(_lastPwCol.pc||0)-(_lastPwCol.cancTot||0)):0;
+  {const _w0wk=weeks.find(w=>w.w===0);
+  const _scHasPreLeads=_w0wk&&_w0wk.tl!=null&&_w0wk.tl>=_preWkTl;
+  if(!_isPreLaunch2&&_preWkTl>0&&!_scHasPreLeads)weeks.forEach(wk=>{if(wk.tl!=null)wk.tl+=_preWkTl;});
+  // W0 catch-all: strip pre-week accumulation from weekly nl/np so the weekly view shows only W0
+  if(!_isPreLaunch2&&_scHasPreLeads&&_w0wk){
+    if(_w0wk.nl!=null)_w0wk.nl=Math.max(0,_w0wk.nl-_preWkTl);
+    if(_w0wk.np!=null)_w0wk.np=Math.max(0,_w0wk.np-_preWkNp);
+  }}
 
   const $v=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
   const fInt=v=>v!=null?v:'—';
@@ -2437,11 +2473,11 @@ function renderScorecard2(){
     {label:'PR',               computed:()=>null, fmt:$v, color:false, agencySub:true},
     {label:'External Agency',  computed:wk=>_cprExtAgency([sc.full_name],wk.ds,wk.de)||null, fmt:$v, color:false, agencySub:true},
     {label:_ib('sc_leadteam_fee')+'Leadteam', computed:wk=>_cprLtFee([sc.full_name],wk.ds,wk.de)||null, fmt:$v, color:false, agencySub:true},
-    {label:_ib('sc_blended_cpl')+'▶ Blended CPL', computed:wk=>wk.ts&&((wk.nl||0)+(wk.gl||0))>0?wk.ts/((wk.nl||0)+(wk.gl||0)):null, fmt:fCur, reqLabel:'$28 – $41', color:false, cplParent:true,
+    {label:_ib('sc_blended_cpl')+'▶ Blended CPL', pwKey:'cpl', computed:wk=>wk.ts&&((wk.nl||0)+(wk.gl||0))>0?wk.ts/((wk.nl||0)+(wk.gl||0)):null, fmt:fCur, reqLabel:'$28 – $41', color:false, cplParent:true,
      colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
     {label:_ib('sc_ads_cpl')+'Ads CPL', computed:wk=>wk.dsp&&wk.dlw>0?wk.dsp/wk.dlw:null, fmt:fCur, reqLabel:'—', color:false, cplSub:true,
      colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
-    {label:_ib('sc_blended_cpa')+'▶ Blended CPA', computed:wk=>wk.ts&&((wk.np||0)-(wk.canc||0))>0?wk.ts/((wk.np||0)-(wk.canc||0)):null, fmt:fCur, reqLabel:'$80 – $116', color:false, cpaParent:true,
+    {label:_ib('sc_blended_cpa')+'▶ Blended CPA', pwKey:'cpa', computed:wk=>wk.ts&&((wk.np||0)-(wk.canc||0))>0?wk.ts/((wk.np||0)-(wk.canc||0)):null, fmt:fCur, reqLabel:'$80 – $116', color:false, cpaParent:true,
      colorFn:v=>!v?'':(v<=116?'sc-cell-good':v<=116*1.3?'sc-cell-warn':'sc-cell-bad')},
     {label:_ib('sc_ads_cpa')+'Ads CPA', computed:wk=>wk.dsp&&((wk.dpw||0)-(wk.dCanc||0))>0?wk.dsp/((wk.dpw||0)-(wk.dCanc||0)):null, fmt:fCur, reqLabel:'—', color:false, cpaSub:true,
      colorFn:v=>!v?'':(v<=116?'sc-cell-good':v<=116*1.3?'sc-cell-warn':'sc-cell-bad')},
@@ -2454,7 +2490,7 @@ function renderScorecard2(){
     {label:_ib('sc_presales_gross')+'Presales (gross)', key:'pc',  fmt:fInt, color:true,
      cumReqFn:wk=>tgt.presales_count&&scPaceWeeks?Math.round(tgt.presales_count/scPaceWeeks*wk.w):null,
      cumReqDisplay:tgt.presales_count||null},
-    {label:_ib('sc_net_presales')+'Net Presales',       key:null, computed:wk=>{const td=_tierReal[wk.w];return td?(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0):Math.max(0,(wk.pc||0)-(wk.cancTot||0));}, fmt:fInt, color:true,
+    {label:_ib('sc_net_presales')+'Net Presales',       key:null, pwKey:'netPres', computed:wk=>{const td=_tierReal[wk.w];return td?(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0):Math.max(0,(wk.pc||0)-(wk.cancTot||0));}, fmt:fInt, color:true,
      cumReqFn:wk=>tgt.presales_count&&scPaceWeeks?Math.round(tgt.presales_count/scPaceWeeks*wk.w):null,
      cumReqDisplay:tgt.presales_count||null},
     {label:_ib('sc_cum_cvr')+'Conversion Rate',         key:'cumCr', fmt:fPct, color:true,
@@ -2475,11 +2511,11 @@ function renderScorecard2(){
     {label:'PR',               computed:()=>null, fmt:$v, color:false, agencySub:true},
     {label:'External Agency',  computed:wk=>_cprExtAgency([sc.full_name],weeks[0]?.ds,wk.de)||null, fmt:$v, color:false, agencySub:true},
     {label:_ib('sc_leadteam_fee')+'Leadteam', computed:wk=>_cprLtFee([sc.full_name],weeks[0]?.ds,wk.de)||null, fmt:$v, color:false, agencySub:true},
-    {label:_ib('sc_blended_cpl')+'▶ Blended CPL', computed:wk=>wk.cumTs&&(wk.tl||0)>0?wk.cumTs/(wk.tl||1):null, fmt:fCur, reqLabel:'$28 – $41', color:false, cplParent:true,
+    {label:_ib('sc_blended_cpl')+'▶ Blended CPL', pwKey:'cumCpl', computed:wk=>wk.cumTs&&(wk.tl||0)>0?wk.cumTs/(wk.tl||1):null, fmt:fCur, reqLabel:'$28 – $41', color:false, cplParent:true,
      colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
     {label:_ib('sc_ads_cpl')+'Ads CPL', computed:wk=>wk.cumDsp&&wk.cumDl>0?wk.cumDsp/wk.cumDl:null, fmt:fCur, reqLabel:'—', color:false, cplSub:true,
      colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
-    {label:_ib('sc_blended_cpa')+'▶ Blended CPA', computed:wk=>{const td=_tierReal[wk.w];const np=td?(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0):Math.max(0,(wk.pc||0)-(wk.cancTot||0));return wk.cumTs&&np>0?wk.cumTs/np:null;}, fmt:fCur, reqLabel:'$80 – $116', color:false, cpaParent:true,
+    {label:_ib('sc_blended_cpa')+'▶ Blended CPA', pwKey:'cumCpa', computed:wk=>{const td=_tierReal[wk.w];const np=td?(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0):Math.max(0,(wk.pc||0)-(wk.cancTot||0));return wk.cumTs&&np>0?wk.cumTs/np:null;}, fmt:fCur, reqLabel:'$80 – $116', color:false, cpaParent:true,
      colorFn:v=>!v?'':(v<=116?'sc-cell-good':v<=116*1.3?'sc-cell-warn':'sc-cell-bad')},
     {label:_ib('sc_ads_cpa')+'Ads CPA', computed:wk=>wk.cumDsp&&((wk.cumDp||0)-(wk.cumDCanc||0))>0?wk.cumDsp/((wk.cumDp||0)-(wk.cumDCanc||0)):null, fmt:fCur, reqLabel:'—', color:false, cpaSub:true,
      colorFn:v=>!v?'':(v<=116?'sc-cell-good':v<=116*1.3?'sc-cell-warn':'sc-cell-bad')},
@@ -2506,6 +2542,9 @@ function renderScorecard2(){
   const rmrtRows=pastWeeks.map(wk=>{
     if(_tierReal[wk.w]){
       _t0=_tierReal[wk.w].t0||0;_t1=_tierReal[wk.w].t1||0;_t2=_tierReal[wk.w].t2||0;_t3=_tierReal[wk.w].t3||0;
+      // W0 catch-all: Snowflake tier data may only reflect the W0 week itself (not cumulative
+      // including pre-weeks). If tier T1 is less than the pre-week net presales, add them.
+      if(wk.w===0&&_preWkNetNp>0&&_t1<_preWkNetNp)_t1+=_preWkNetNp;
     } else if(wk.t1m!=null){
       _t0=wk.t0m||0;_t1=wk.t1m||0;_t2=wk.t2m||0;_t3=0;
     } else {
@@ -2721,19 +2760,23 @@ function renderScorecard2(){
   }
   const _hasTierData2=_isNaplesRmr2&&Object.values(_naplesTierWk2).some(t=>t.total>0);
   const _tierMemberLabels2={unl_mo:'Unlimited Monthly',unl_yr:'Unlimited Yearly',std_mil:'Student/Military/Teacher',visit:'Visit Packs',other:'Other'};
+  // Pre-week RMR helpers: all pre-week presales land in T1 (before any tier transition)
+  const _pwNetPs=pw=>Math.max(0,(pw.pc||0)-(pw.cancTot||0));
   const rmrRowDefs=[
-    ...(t0p?[{label:`Founders ($${t0p})`,key:'t0',target:_t0tgt}]:[]),
-    {label:`Tier 1 Members ($${t1p})`,key:'t1',target:_t1tgt},
-    {label:`Tier 2 Members ($${t2p})`,key:'t2',target:_t2tgt},
-    ...(t3p?[{label:`Tier 3 Members ($${t3p})`,key:'t3',target:_t3tgt}]:[]),
-    {label:'Total Members',key:null,computed:wk=>(wk.t0||0)+(wk.t1||0)+(wk.t2||0)+(wk.t3||0),target:_totalMembersTgt,style:'font-weight:700;border-top:1px solid #e0ecf4'},
+    ...(t0p?[{label:`Founders ($${t0p})`,key:'t0',target:_t0tgt,pwFn:()=>null}]:[]),
+    {label:`Tier 1 Members ($${t1p})`,key:'t1',target:_t1tgt,pwFn:pw=>{const n=_pwNetPs(pw);return n>0?n:null;}},
+    {label:`Tier 2 Members ($${t2p})`,key:'t2',target:_t2tgt,pwFn:()=>null},
+    ...(t3p?[{label:`Tier 3 Members ($${t3p})`,key:'t3',target:_t3tgt,pwFn:()=>null}]:[]),
+    {label:'Total Members',key:null,computed:wk=>(wk.t0||0)+(wk.t1||0)+(wk.t2||0)+(wk.t3||0),target:_totalMembersTgt,style:'font-weight:700;border-top:1px solid #e0ecf4',pwFn:pw=>{const n=_pwNetPs(pw);return n>0?n:null;}},
     ...(_hasTierData2?[
-      {label:'Open Memberships',key:null,computed:()=>null,style:'font-style:italic;font-size:10px;color:#8aaabb;border-top:2px solid #e0ecf4;padding-top:6px'},
-      ...['unl_mo','unl_yr','std_mil','visit','other'].map(k=>({label:_tierMemberLabels2[k],key:null,computed:wk=>{const v=(_naplesTierWk2[wk.w]||{})[k];return v||null;}})),
-      {label:'Total Open',key:null,computed:wk=>(_naplesTierWk2[wk.w]||{}).total||null,style:'font-weight:700'},
+      {label:'Open Memberships',key:null,computed:()=>null,style:'font-style:italic;font-size:10px;color:#8aaabb;border-top:2px solid #e0ecf4;padding-top:6px',pwFn:()=>null},
+      ...['unl_mo','unl_yr','std_mil','visit','other'].map(k=>({label:_tierMemberLabels2[k],key:null,computed:wk=>{const v=(_naplesTierWk2[wk.w]||{})[k];return v||null;},pwFn:()=>null})),
+      {label:'Total Open',key:null,computed:wk=>(_naplesTierWk2[wk.w]||{}).total||null,style:'font-weight:700',pwFn:()=>null},
     ]:[]),
-    {label:_ib('sc_rmr')+'Est. Day 1 RMR',key:'rmr',fmt:v=>`$${v.toLocaleString('en-US')}`,target:_rmrTgt,tgtFmt:v=>`$${Math.round(v).toLocaleString('en-US')}`,style:'border-top:1px solid #e0ecf4'},
-    {label:_ib('sc_roms')+'Est. ROMS',key:'roms',fmt:v=>v.toFixed(1)+'x',target:_romsTgt,tgtFmt:v=>typeof v==='string'?v:(+v).toFixed(1)+'x'},
+    {label:_ib('sc_rmr')+'Est. Day 1 RMR',key:'rmr',fmt:v=>`$${v.toLocaleString('en-US')}`,target:_rmrTgt,tgtFmt:v=>`$${Math.round(v).toLocaleString('en-US')}`,style:'border-top:1px solid #e0ecf4',
+     pwFn:pw=>{const n=_pwNetPs(pw);return n>0?Math.round(n*t1p):null;}},
+    {label:_ib('sc_roms')+'Est. ROMS',key:'roms',fmt:v=>v.toFixed(1)+'x',target:_romsTgt,tgtFmt:v=>typeof v==='string'?v:(+v).toFixed(1)+'x',
+     pwFn:pw=>{const n=_pwNetPs(pw);const sp=pw.cumTs||0;return(n>0&&sp>0)?+((n*640)/sp).toFixed(1):null;}},
   ];
   rmrRowDefs.forEach(row=>{
     const labelCell=row.sublabel?`<div style="font-size:12px;font-weight:600">${row.label}</div><div style="font-size:9px;color:#aabbc8;margin-top:1px">${row.sublabel}</div>`:`${row.label}`;
@@ -2741,8 +2784,10 @@ function renderScorecard2(){
     h+=`<tr><td style="${_rowStyle};position:sticky;left:0;z-index:1;background:#fff">${labelCell}</td>`;
     const tgtFmt=row.tgtFmt||(row.fmt||(v=>v));
     h+=`<td class="num" style="background:#f8f4ec;color:#b8860b;font-weight:600;position:sticky;left:200px;z-index:1${row.style?';'+row.style:''}">${row.target!=null?tgtFmt(row.target):'—'}</td>`;
-    preWeekCols.forEach(()=>{
-      h+=`<td class="num" style="background:#f0f9ff;color:#5a9fc0">—</td>`;
+    preWeekCols.forEach(pw=>{
+      const v=row.pwFn?row.pwFn(pw):null;
+      const fmt=row.fmt||(x=>x);
+      h+=`<td class="num" style="font-size:12px;background:#f0f9ff;color:#5a9fc0">${v!=null?fmt(v):'—'}</td>`;
     });
     rmrtRows.forEach(wk=>{
       const v=row.computed?row.computed(wk):(row.key!=null?wk[row.key]:null);
@@ -2844,10 +2889,10 @@ function renderScorecard2(){
         :(row.cumReqDisplay!=null?row.fmt(row.cumReqDisplay):'—'));
     h+=`<td class="num" style="background:#f8f4ec;color:#b8860b;font-size:13px;position:sticky;left:200px;z-index:1">${_reqCellVal}</td>`;
 
-    // Pre-week cells — only nl/tl/grs/cumGrs keys have data; all computed rows show '—'
+    // Pre-week cells — key-based rows read from preWeekCols; computed rows show '—'
     const _preBg=isSub||isSubParent||isSubSub?'#f3f9ff':'#f0f9ff';
     preWeekCols.forEach(pw=>{
-      const val=row.computed?null:(row.key!=null?pw[row.key]:null);
+      const val=row.computed?(row.pwKey!=null?pw[row.pwKey]:null):(row.key!=null?pw[row.key]:null);
       const _pcStyle=_isPreLaunch2?`font-size:${isSub||isSubSub||isAgencySub?12:13}px`:`font-size:${isSub||isSubSub||isAgencySub?12:13}px;background:${_preBg};color:#5a9fc0`;
       h+=`<td class="num" style="${_pcStyle}">${row.fmt(val)}</td>`;
     });
