@@ -259,6 +259,7 @@
         <button class="cpr-tog on" data-cost="google"   onclick="toggleCPRCost(this)" style="border-color:#34A853;background:#34A853">Google Ads</button>
         <button class="cpr-tog on" data-cost="meta"     onclick="toggleCPRCost(this)" style="border-color:#1877F2;background:#1877F2">Meta Ads</button>
         <button class="cpr-tog on" data-cost="leadteam" onclick="toggleCPRCost(this)" style="border-color:#FF6B35;background:#FF6B35">Leadteam Fee</button>
+        <button class="cpr-tog on" data-cost="external_agency" onclick="toggleCPRCost(this)" style="border-color:#8E44AD;background:#8E44AD">External Agency</button>
       </div>
       <div id="cpr-warning" style="display:none;margin-top:10px;padding:10px 12px;background:#fff8e1;border-left:3px solid #f59e0b;border-radius:4px;font-size:12px;color:#92400e;line-height:1.5"></div>
     </div>
@@ -294,6 +295,7 @@
               <th class="num" data-sort="google">Google Ads</th>
               <th class="num" data-sort="meta">Meta Ads</th>
               <th class="num" data-sort="leadteam">Leadteam Fee</th>
+              <th class="num" data-sort="external_agency">External Agency</th>
               <th class="num" data-sort="cpl">Blended CPL</th>
               <th class="num" data-sort="cpft">Blended CPFT</th>
               <th class="num" data-sort="cpa">Blended CPA</th>
@@ -450,7 +452,8 @@ const GLOSSARY = {
   spend:    { title:'Total Marketing Spend', desc:'The combined total of all marketing-related costs for a given period: Google Ads spend, Meta Ads spend, and the LeadTeam service fee. Represents the full investment in paid marketing for the studio during the selected time window.', date:'Ad spend is attributed to the date the ads were shown (not the invoice date). The LeadTeam fee is prorated on a daily basis across the billing period.' },
   google:   { title:'Google Ads Spend', desc:"The dollar amount spent on Google Ads campaigns for a specific studio during the selected period. Includes all Google Ads placements (Search, Display, etc.) associated with that studio's account.", date:'Attributed to the date the ads were served, not the date of the invoice or billing cycle.' },
   meta:     { title:'Meta Ads Spend', desc:'The dollar amount spent on Meta Ads (Facebook and Instagram) campaigns for a specific studio during the selected period.', date:'Attributed to the date the ads were served, not the date of the invoice or billing cycle.' },
-  leadteam: { title:'LeadTeam Fee', desc:'The monthly service fee paid to LeadTeam for marketing management services. Since this is a fixed monthly fee, it is prorated on a daily basis so it can be accurately compared against any custom date range selected in the dashboard.', date:'Prorated daily based on the number of days in the selected period relative to the full billing month.' },
+  leadteam: { title:'LeadTeam Fee', desc:'The monthly service fee paid to LeadTeam for marketing management services. Since this is a fixed monthly fee, it is prorated on a daily basis so it can be accurately compared against any custom date range selected in the dashboard. For studios with an active Leadteam Discount (per the Marketing Spend Adjustments sheet — e.g. a studio that moved to an external agency), this fee is automatically reduced by the discount amount for the applicable date range; the discount is not optional and is always applied where it exists.', date:'Prorated daily based on the number of days in the selected period relative to the full billing month.' },
+  external_agency: { title:'External Agency Spend', desc:"The monthly amount paid to a third-party marketing agency for studios that have moved off LeadTeam's in-house management, per the Marketing Spend Adjustments sheet. Shown as its own spend category alongside Google Ads, Meta Ads, and the LeadTeam Fee.", date:'Prorated daily based on the number of days in the selected period relative to the full billing month, using the agency\'s active date range.' },
   cpl:      { title:'Blended Cost per Lead (CPL)', desc:'The average total marketing cost required to generate one new lead. Calculated by dividing Total Marketing Spend by the number of Leads generated during the same period. A lower CPL indicates more efficient top-of-funnel marketing performance.\n\nLead (New Accounts Created): Number of new accounts created in the time frame selected for the selected studio; account defined as client profile created.', date:'Both spend and leads are measured over the same selected date range.' },
   cpft:     { title:'Blended Cost per First Timer (CPFT)', desc:'The average total marketing cost associated with bringing one person in for their first class. Calculated by dividing Total Marketing Spend by the number of First Timers who attended during the same period. Reflects the efficiency of converting leads into in-studio visits.\n\nFirst Studio Visits: Number of visits in the selected period from customers attending a class for the first time in the selected studio regardless of prior history at other SWEAT440 studios.', date:'Both spend and first timers are measured over the same selected date range.' },
   cpa:      { title:'Blended Cost per Acquisition (CPA)', desc:'The average total marketing cost required to acquire one new paying member. Calculated by dividing Total Marketing Spend by the number of New Members who activated their first recurring membership during the same period. The primary metric for evaluating the return on marketing investment.\n\nFirst Memberships Activated: Number of customers who activated a membership for the first time during the selected time period in the selected studio.', date:'Both spend and new member activations are measured over the same selected date range.' },
@@ -542,6 +545,7 @@ const GLOSSARY_META = {
   google:              { cat:'Marketing Spend & CPR', fmt:'Currency (USD)'},
   meta:                { cat:'Marketing Spend & CPR', fmt:'Currency (USD)'},
   leadteam:            { cat:'Marketing Spend & CPR', fmt:'Currency (USD)'},
+  external_agency:     { cat:'Marketing Spend & CPR', fmt:'Currency (USD)'},
   cpl:                 { cat:'Marketing Spend & CPR', fmt:'Currency (USD)'},
   cpft:                { cat:'Marketing Spend & CPR', fmt:'Currency (USD)'},
   cpa:                 { cat:'Marketing Spend & CPR', fmt:'Currency (USD)'},
@@ -660,6 +664,69 @@ let GRAN = 'daily';
 const COLORS = ['#00A3E0','#00FFC2','#DDFF00']; // Leads, First Timers, New Members
 const AREA_GRAN = {leadsAreaChart:'daily', ftAreaChart:'daily', memAreaChart:'daily'};
 const LTFEE_MONTHLY = 1200; // Leadteam fee per studio per month — shared by every network-average + CPR calc
+
+// -- Marketing Spend Adjustments (Leadteam Discount / External Agency) -----
+// Sourced from the "Marketing Spend Adjustments" Google Sheet via
+// fetch_agency_overrides.py into agency-spend-overrides.json. Each row
+// covers one studio for one category over a [start_date, end_date] window;
+// monthly_amount is prorated the same way LTFEE_MONTHLY is.
+let AGENCY_OVERRIDES = [];
+
+// Sheet studio names are sometimes short forms ("Uptown") of the full studio
+// name used in data.json ("Dallas - Uptown") — resolve with an exact match
+// first, then a loose contains-match (same idea as studios.py's matching).
+function _resolveOverrideStudio(rawName, knownStudios) {
+  if (knownStudios.includes(rawName)) return rawName;
+  const lower = rawName.trim().toLowerCase();
+  const hit = knownStudios.find(s => {
+    const sl = s.toLowerCase();
+    return sl === lower || sl.endsWith(lower) || sl.startsWith(lower);
+  });
+  return hit || rawName;
+}
+
+function _overrideAmountForStudio(studio, category, f, t) {
+  if (!f || !t || !AGENCY_OVERRIDES.length) return 0;
+  const fT = f.getTime(), tT = t.getTime();
+  let total = 0;
+  for (const o of AGENCY_OVERRIDES) {
+    if (o.studio !== studio || o.category !== category) continue;
+    const oStart = Math.max(fT, o.startMs);
+    const oEnd   = Math.min(tT, o.endMs);
+    if (oEnd < oStart) continue;
+    // Same day-count convention as leadteamNetForStudio's own `days` (f/t are
+    // 00:00:00/23:59:59 boundaries, so a plain round already counts inclusively).
+    const overlapDays = Math.round((oEnd - oStart) / 86400000);
+    total += o.monthly_amount * (overlapDays / 30.4375);
+  }
+  return total;
+}
+
+// Net Leadteam Fee for one studio over [f,t]: the flat LTFEE_MONTHLY rate
+// minus any active Leadteam Discount override, never below $0. This
+// discount is NOT optional/toggleable — it's applied automatically
+// wherever an override exists for the studio + date range.
+function leadteamNetForStudio(studio, f, t) {
+  if (!f || !t) return 0;
+  const days = Math.round((t.getTime()-f.getTime())/86400000);
+  const gross = LTFEE_MONTHLY * (days/30.4375);
+  const discount = _overrideAmountForStudio(studio, 'leadteam_discount', f, t);
+  return Math.max(0, gross - discount);
+}
+
+function externalAgencyForStudio(studio, f, t) {
+  return _overrideAmountForStudio(studio, 'external_agency', f, t);
+}
+
+function computeLeadteamSpend(f, t, studios) {
+  if (!f || !t) return 0;
+  return (studios||[]).reduce((sum, s) => sum + leadteamNetForStudio(s, f, t), 0);
+}
+
+function computeExternalAgencySpend(f, t, studios) {
+  if (!f || !t) return 0;
+  return (studios||[]).reduce((sum, s) => sum + externalAgencyForStudio(s, f, t), 0);
+}
 let convRateChart = null;
 let CONV_GRAN = 'daily';
 const CONV_COLORS = ['#00A3E0','#00FFC2','#DDFF00']; // Lead→FT, FT→Member, Lead→Member
@@ -729,12 +796,13 @@ async function loadData() {
   const _allowedStudios = getAuthStudios(_authUser);
 
   // Main dashboard data — load in parallel (blocks initial render)
-  const [rawRes, metaRes, googleRes, spendRes, vdlRes] = await Promise.allSettled([
+  const [rawRes, metaRes, googleRes, spendRes, vdlRes, agencyRes] = await Promise.allSettled([
     fetch('data.json?_='                + Date.now()),
     fetch('meta-ads-data.json?_='       + Date.now()),
     fetch('google-ads-data.json?_='     + Date.now()),
     fetch('spend-data.json?_='          + Date.now()),
     fetch('video_drive_links.json?_='   + Date.now()),
+    fetch('agency-spend-overrides.json?_=' + Date.now()),
   ]);
   try {
     RAW = await rawRes.value.json();
@@ -747,6 +815,17 @@ async function loadData() {
   try { GOOGLE_ADS_RAW = await googleRes.value.json(); } catch(e) { console.warn('google-ads-data.json unavailable:', e); }
   try { SPEND_RAW      = await spendRes.value.json();  } catch(e) { console.warn('spend-data.json unavailable:', e); }
   try { VIDEO_DRIVE_LINKS = await vdlRes.value.json(); } catch(e) { console.warn('video_drive_links.json unavailable:', e); }
+  try {
+    const agencyRaw = await agencyRes.value.json();
+    const knownStudios = RAW.studios || [];
+    AGENCY_OVERRIDES = (agencyRaw.overrides || []).map(o => ({
+      studio:          _resolveOverrideStudio(o.studio, knownStudios),
+      category:        o.category,
+      startMs:         new Date(o.start_date + 'T00:00:00Z').getTime(),
+      endMs:           new Date(o.end_date   + 'T23:59:59Z').getTime(),
+      monthly_amount:  o.monthly_amount,
+    }));
+  } catch(e) { console.warn('agency-spend-overrides.json unavailable:', e); }
   _renderFreshnessNote();
 
   // Organic channel data — load in background, does NOT block main dashboard
@@ -840,8 +919,11 @@ function applyFilters() {
     window._netGoogleMap[s] = netSpendMap[s].google;
     window._netMetaMap[s]   = netSpendMap[s].meta;
   });
-  const _netLtDays = Math.round((to.getTime()-from.getTime())/86400000);
-  window._netLtPerStudio = LTFEE_MONTHLY*(_netLtDays/30.4375);
+  window._netLtMap = {}; window._netExtMap = {};
+  window._netStudios.forEach(s => {
+    window._netLtMap[s]  = leadteamNetForStudio(s, from, to);
+    window._netExtMap[s] = externalAgencyForStudio(s, from, to);
+  });
 
   function filterAll(f,t) {
     return {
@@ -1304,14 +1386,14 @@ function setAreaGran(canvasId, gran) {
   applyFilters();
 }
 
-const CPR_COSTS_ACTIVE={google:true,meta:true,leadteam:true};
+const CPR_COSTS_ACTIVE={google:true,meta:true,leadteam:true,external_agency:true};
 let cprChart=null;
 let CPR_GRAN='daily';
 
 
 function toggleCPRCost(btn){
   const cost=btn.dataset.cost;CPR_COSTS_ACTIVE[cost]=!CPR_COSTS_ACTIVE[cost];btn.classList.toggle('on');
-  const colors={google:'#34A853',meta:'#1877F2',leadteam:'#FF6B35'};const c=colors[cost];
+  const colors={google:'#34A853',meta:'#1877F2',leadteam:'#FF6B35',external_agency:'#8E44AD'};const c=colors[cost];
   if(btn.classList.contains('on')){btn.style.background=c;btn.style.borderColor=c;btn.style.color='#fff';}else{btn.style.background='#f4f9fd';btn.style.borderColor='#c0d4df';btn.style.color='#5a7a8a';}
   buildCPRTab();
   checkCPRWarning();
@@ -1552,13 +1634,9 @@ function buildSummaryTab() {
   if (!from || !to) return;
 
   const allStudios  = selStudios.length > 0 ? selStudios : (RAW ? RAW.studios : []);
-  const studioCount = allStudios.length || 1;
 
-  function ltFor(f,t) {
-    if(!f||!t) return 0;
-    const days=Math.round((t.getTime()-f.getTime())/86400000);
-    return studioCount*LTFEE_MONTHLY*(days/30.4375);
-  }
+  function ltFor(f,t)  { return computeLeadteamSpend(f, t, allStudios); }
+  function extFor(f,t) { return computeExternalAgencySpend(f, t, allStudios); }
   function gFor(f,t) { return spendFor(f, t, selStudios.length>0?selStudios:null).google; }
   function mFor(f,t) { return spendFor(f, t, selStudios.length>0?selStudios:null).meta; }
 
@@ -1571,16 +1649,19 @@ function buildSummaryTab() {
   const lCurr=ltFor(from,to);
   const lPp=ltFor(ppFrom?new Date(ppFrom):null,ppTo?new Date(ppTo):null);
   const lPy=ltFor(pyFrom?new Date(pyFrom):null,pyTo?new Date(pyTo):null);
-  const tCurr=gCurr+mCurr+lCurr, tPp=gPp+mPp+lPp, tPy=gPy+mPy+lPy;
+  const extCurr=extFor(from,to);
+  const extPp=extFor(ppFrom?new Date(ppFrom):null,ppTo?new Date(ppTo):null);
+  const extPy=extFor(pyFrom?new Date(pyFrom):null,pyTo?new Date(pyTo):null);
+  const tCurr=gCurr+mCurr+lCurr+extCurr, tPp=gPp+mPp+lPp+extPp, tPy=gPy+mPy+lPy+extPy;
 
   // Network-average population for spend cards, shared across every tab.
   const googleMap = window._netGoogleMap || {};
   const metaMap   = window._netMetaMap   || {};
-  const ltPerStudio = window._netLtPerStudio || 0;
-  const ltMap = {}, totalMap = {};
+  const ltMap  = window._netLtMap  || {};
+  const extMap = window._netExtMap || {};
+  const totalMap = {};
   NET_STUDIOS.forEach(s => {
-    ltMap[s]    = ltPerStudio;
-    totalMap[s] = (googleMap[s]||0) + (metaMap[s]||0) + ltPerStudio;
+    totalMap[s] = (googleMap[s]||0) + (metaMap[s]||0) + (ltMap[s]||0) + (extMap[s]||0);
   });
   // Same qualifying set (studios that ran ads in Google or Meta) drives every
   // cost-related card's network average, so they're comparable to each other.
@@ -1588,6 +1669,7 @@ function buildSummaryTab() {
   const googleNet = _netCostAvg(googleMap, costQualifying);
   const metaNet   = _netCostAvg(metaMap,   costQualifying);
   const ltNet     = _netCostAvg(ltMap,     costQualifying);
+  const extNet    = _netCostAvg(extMap,    costQualifying);
   const totalNet  = _netCostAvg(totalMap,  costQualifying);
 
   const f$  = v => '$'+Math.round(v).toLocaleString('en-US');
@@ -1599,6 +1681,7 @@ function buildSummaryTab() {
     '<span style="color:#34A853;font-weight:600">Google ' + f$(gCurr) + '</span>' +
     '<span style="color:#1877F2;font-weight:600">Meta '   + f$(mCurr) + '</span>' +
     '<span style="color:#FF6B35;font-weight:600">LT Fee ' + f$(lCurr) + '</span>' +
+    '<span style="color:#8E44AD;font-weight:600">Agency ' + f$(extCurr) + '</span>' +
     '</div>';
   const dppT = tPp>0 ? (tCurr-tPp)/tPp*100 : null;
   const dpyT = tPy>0 ? (tCurr-tPy)/tPy*100 : null;
@@ -1627,7 +1710,9 @@ function buildSummaryTab() {
     kpiCard('Meta Ads',     mCurr, mPp||null, mPy||null, f$, G.meta,
       netAvgHtml(mCurr, metaNet.avgPerStudio, metaNet.netCount, selCount, f$, false, true, {label:'Meta Ads Spend', costBased:true})) +
     kpiCard('Leadteam Fee', lCurr, lPp||null, lPy||null, f$, G.leadteam,
-      netAvgHtml(lCurr, ltNet.avgPerStudio, ltNet.netCount, selCount, f$, false, true, {label:'Leadteam Fee', costBased:true}));
+      netAvgHtml(lCurr, ltNet.avgPerStudio, ltNet.netCount, selCount, f$, false, true, {label:'Leadteam Fee', costBased:true})) +
+    kpiCard('External Agency', extCurr, extPp||null, extPy||null, f$, G.external_agency,
+      netAvgHtml(extCurr, extNet.avgPerStudio, extNet.netCount, selCount, f$, false, true, {label:'External Agency Spend', costBased:true}));
 
   if (!cprEl) return;
   const cpl_curr  = curr.leads>0 ? tCurr/curr.leads : 0;
@@ -1698,18 +1783,22 @@ function buildCPRTab() {
   const fTime=from.getTime(),tTime=to.getTime();
   const allStudios=selStudios.length>0?selStudios:(RAW?RAW.studios:[]);
   const studioCount=allStudios.length||1;
-  function leadteamForRange(f,t){if(!f||!t)return 0;const days=Math.round((t.getTime()-f.getTime())/86400000);return studioCount*LTFEE_MONTHLY*(days/30.4375);}
+  function leadteamForRange(f,t){ return computeLeadteamSpend(f,t,allStudios); }
   const ltCurr=leadteamForRange(from,to);
   const ltPp=leadteamForRange(ppFrom?new Date(ppFrom):null,ppTo?new Date(ppTo):null);
   const ltPy=leadteamForRange(pyFrom?new Date(pyFrom):null,pyTo?new Date(pyTo):null);
+  function externalAgencyForRange(f,t){ return computeExternalAgencySpend(f,t,allStudios); }
+  const extCurr=externalAgencyForRange(from,to);
+  const extPp=externalAgencyForRange(ppFrom?new Date(ppFrom):null,ppTo?new Date(ppTo):null);
+  const extPy=externalAgencyForRange(pyFrom?new Date(pyFrom):null,pyTo?new Date(pyTo):null);
   function sumGoogleSpend(f,t){return spendFor(f,t,selStudios.length>0?selStudios:null).google;}
   function sumMetaSpend(f,t){return spendFor(f,t,selStudios.length>0?selStudios:null).meta;}
   function funnelSum(fi){if(!fi)return{leads:0,ft:0,mem:0};return sumRows([...(fi.daily||[]),...(fi.monthly||[])]);}
   const curr=funnelSum(funnelCurr),pp=funnelSum(funnelPp),py=funnelSum(funnelPy);
-  function spendTotals(f,t,lt){const g=CPR_COSTS_ACTIVE.google?sumGoogleSpend(f,t):0;const m=CPR_COSTS_ACTIVE.meta?sumMetaSpend(f,t):0;const l=CPR_COSTS_ACTIVE.leadteam?lt:0;return{google:g,meta:m,leadteam:l,total:g+m+l};}
-  const spCurr=spendTotals(from,to,ltCurr);
-  const spPp=spendTotals(ppFrom?new Date(ppFrom):null,ppTo?new Date(ppTo):null,ltPp);
-  const spPy=spendTotals(pyFrom?new Date(pyFrom):null,pyTo?new Date(pyTo):null,ltPy);
+  function spendTotals(f,t,lt,ext){const g=CPR_COSTS_ACTIVE.google?sumGoogleSpend(f,t):0;const m=CPR_COSTS_ACTIVE.meta?sumMetaSpend(f,t):0;const l=CPR_COSTS_ACTIVE.leadteam?lt:0;const e=CPR_COSTS_ACTIVE.external_agency?ext:0;return{google:g,meta:m,leadteam:l,external_agency:e,total:g+m+l+e};}
+  const spCurr=spendTotals(from,to,ltCurr,extCurr);
+  const spPp=spendTotals(ppFrom?new Date(ppFrom):null,ppTo?new Date(ppTo):null,ltPp,extPp);
+  const spPy=spendTotals(pyFrom?new Date(pyFrom):null,pyTo?new Date(pyTo):null,ltPy,extPy);
   const f$=v=>'$'+Math.round(v).toLocaleString('en-US');
   const f$2=v=>'$'+Number(v).toFixed(2);
   const cpl_curr=curr.leads>0?spCurr.total/curr.leads:0,cpl_pp=pp.leads>0?spPp.total/pp.leads:null,cpl_py=py.leads>0?spPy.total/py.leads:null;
@@ -1722,24 +1811,25 @@ function buildCPRTab() {
   const netStudiosCPR = window._netStudios   || [];
   const netGoogleMap  = window._netGoogleMap || {};
   const netMetaMap    = window._netMetaMap   || {};
-  const netLtPerStudio= window._netLtPerStudio || 0;
+  const netLtMap       = window._netLtMap    || {};
+  const netExtMap      = window._netExtMap   || {};
   const netLeadsMap   = window._netLeadsMap  || {};
   const netFtMapCPR   = window._netFtMap     || {};
   const netMemMapCPR  = window._netMemMap    || {};
   const netSelCountCPR= selStudios.length;
-  const netLtMap = {};
-  netStudiosCPR.forEach(s => { netLtMap[s] = netLtPerStudio; });
   const netTotalMap = {};
   netStudiosCPR.forEach(s => {
     netTotalMap[s] = (CPR_COSTS_ACTIVE.google ? (netGoogleMap[s]||0) : 0) +
                      (CPR_COSTS_ACTIVE.meta   ? (netMetaMap[s]||0)   : 0) +
-                     (CPR_COSTS_ACTIVE.leadteam ? netLtPerStudio      : 0);
+                     (CPR_COSTS_ACTIVE.leadteam ? (netLtMap[s]||0)   : 0) +
+                     (CPR_COSTS_ACTIVE.external_agency ? (netExtMap[s]||0) : 0);
   });
   const costQualifyingCPR = _netCostQualifying(netGoogleMap, netMetaMap, netStudiosCPR);
   const costNetStats = {
     google:   _netCostAvg(netGoogleMap, costQualifyingCPR),
     meta:     _netCostAvg(netMetaMap,   costQualifyingCPR),
     leadteam: _netCostAvg(netLtMap,     costQualifyingCPR),
+    external_agency: _netCostAvg(netExtMap, costQualifyingCPR),
   };
   const totalNetCPR = _netCostAvg(netTotalMap, costQualifyingCPR);
   const cplNetCPR  = _netCostRatioAvg(netTotalMap, netLeadsMap,  costQualifyingCPR);
@@ -1759,11 +1849,11 @@ function buildCPRTab() {
   const _gIbSpend=()=>{const g=GLOSSARY.spend;return'<button class="kpi-info-btn" onclick="showKpiInfo(this,event)" data-title="'+_esc(g.title)+'" data-desc="'+_esc(g.desc)+'" data-date="'+_esc(g.date)+'">i</button>';};
   if(bdEl){
     const parts=[];
-    const bLabels={google:'Google Ads',meta:'Meta Ads',leadteam:'Leadteam Fee'};
-    const bGlossaryKeys={google:'google',meta:'meta',leadteam:'leadteam'};
-    const bColors={google:'#34A853',meta:'#1877F2',leadteam:'#FF6B35'};
+    const bLabels={google:'Google Ads',meta:'Meta Ads',leadteam:'Leadteam Fee',external_agency:'External Agency'};
+    const bGlossaryKeys={google:'google',meta:'meta',leadteam:'leadteam',external_agency:'external_agency'};
+    const bColors={google:'#34A853',meta:'#1877F2',leadteam:'#FF6B35',external_agency:'#8E44AD'};
     let first=true;
-    ['google','meta','leadteam'].forEach(k=>{
+    ['google','meta','leadteam','external_agency'].forEach(k=>{
       if(!CPR_COSTS_ACTIVE[k])return;
       const v=spCurr[k],vPp=spPp[k],vPy=spPy[k];
       if(!first)parts.push('<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">+</span>');
@@ -1908,6 +1998,7 @@ function buildCPRTab() {
     if (CPR_COSTS_ACTIVE.google)   s += sumGoogleSpend(f, t);
     if (CPR_COSTS_ACTIVE.meta)     s += sumMetaSpend(f, t);
     if (CPR_COSTS_ACTIVE.leadteam) s += leadteamForRange(f, t);
+    if (CPR_COSTS_ACTIVE.external_agency) s += externalAgencyForRange(f, t);
     return s;
   }
   const cplData=sortedKeys.map(k=>{const s=trendSpend(k),l=buckets[k].leads;return l>0?Math.round(s/l*100)/100:null;});
@@ -1933,10 +2024,11 @@ function buildCPRStudioSummaryTable(from,to,selStudios) {
     const monthly = filterRows(RAW.monthly_detail || [], from, to, [studio], selSources);
     const {leads, ft, mem} = sumRows([...daily, ...monthly]);
     const {meta, google} = spendFor(from, to, [studio]);
-    const leadteam = _adminLeadteamFee(from, to);
-    const spend = google+meta+leadteam;
+    const leadteam = _adminLeadteamFee(from, to, studio);
+    const external_agency = _adminExternalAgency(from, to, studio);
+    const spend = google+meta+leadteam+external_agency;
     return {
-      studio, leads, ft, mem, spend, google, meta, leadteam,
+      studio, leads, ft, mem, spend, google, meta, leadteam, external_agency,
       cpl:  leads>0 ? spend/leads : null,
       cpft: ft>0    ? spend/ft    : null,
       cpa:  mem>0   ? spend/mem   : null,
@@ -1956,6 +2048,7 @@ function buildCPRStudioSummaryTable(from,to,selStudios) {
       <td class="num">${f$(r.google)}</td>
       <td class="num">${f$(r.meta)}</td>
       <td class="num">${f$(r.leadteam)}</td>
+      <td class="num">${f$(r.external_agency)}</td>
       <td class="num">${r.cpl  != null ? f$2(r.cpl)  : dash}</td>
       <td class="num">${r.cpft != null ? f$2(r.cpft) : dash}</td>
       <td class="num">${r.cpa  != null ? f$2(r.cpa)  : dash}</td>
@@ -1973,6 +2066,7 @@ function buildCPRStudioSummaryTable(from,to,selStudios) {
         <td class="num">${f$(t('google'))}</td>
         <td class="num">${f$(t('meta'))}</td>
         <td class="num">${f$(t('leadteam'))}</td>
+        <td class="num">${f$(t('external_agency'))}</td>
         <td class="num">${tLeads>0 ? f$2(tSpend/tLeads) : dash}</td>
         <td class="num">${tFt>0    ? f$2(tSpend/tFt)    : dash}</td>
         <td class="num">${tMem>0   ? f$2(tSpend/tMem)   : dash}</td>
@@ -1985,11 +2079,12 @@ function toggleCPRds(btn,i){if(!cprChart)return;const ds=cprChart.data.datasets[
 
 
 // -- SPEND HELPERS (used by the Blended CPR tab's per-studio summary table) --
-const ADMIN_LEADTEAM_PER_STUDIO_MONTH = 1200;
+function _adminLeadteamFee(f, t, studio) {
+  return computeLeadteamSpend(f, t, [studio]);
+}
 
-function _adminLeadteamFee(f, t) {
-  const days = Math.round((t.getTime()-f.getTime())/86400000);
-  return ADMIN_LEADTEAM_PER_STUDIO_MONTH * (days/30.4375);
+function _adminExternalAgency(f, t, studio) {
+  return computeExternalAgencySpend(f, t, [studio]);
 }
 
 
@@ -2738,7 +2833,7 @@ function checkCPRWarning() {
   if (!warn) return;
 
   const paidOnly  = (CPR_COSTS_ACTIVE.google || CPR_COSTS_ACTIVE.meta) && !CPR_COSTS_ACTIVE.leadteam;
-  const allCosts  = CPR_COSTS_ACTIVE.google && CPR_COSTS_ACTIVE.meta && CPR_COSTS_ACTIVE.leadteam;
+  const allCosts  = CPR_COSTS_ACTIVE.google && CPR_COSTS_ACTIVE.meta && CPR_COSTS_ACTIVE.leadteam && CPR_COSTS_ACTIVE.external_agency;
 
   // Get selected sources
   const selSources = typeof getSelected === 'function' ? (getSelected('sourceMenu') || []) : [];
