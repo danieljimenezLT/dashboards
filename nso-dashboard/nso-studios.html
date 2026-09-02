@@ -2352,10 +2352,13 @@ function renderScorecard2(){
     _cumNpPre+=_pwNp||0;
     _cumCancPre+=_pwCanc||0;
     _cumGpPre+=_pwGp||0;
+    const _nl=pw.new_leads||null;
     return{w:pw.week_num,isPre:true,ds:pw.date_start,de:pw.date_end,
-      nl:pw.new_leads||null, gl:pw.grassroots_leads||null, ev:pw.comm_events||null,
+      nl:_nl, gl:pw.grassroots_leads||null, ev:pw.comm_events||null,
       tl:pw.total_leads||null,
       np:_pwNp, gp:_pwGp, canc:_pwCanc,
+      cr:(_pwNp&&_nl>0)?_pwNp/_nl:null,
+      cumCr:(_cumNpPre>0&&pw.total_leads>0)?_cumNpPre/pw.total_leads:null,
       ts:grsW, pc:_cumNpPre||null, cancTot:_cumCancPre||null,
       grs:grsW, cumGrs:Math.round(_cumGrsPre*100)/100,
       cumGl:_cumGlPre, cumEv:_cumEvPre,
@@ -2417,9 +2420,15 @@ function renderScorecard2(){
   // Skip when SC's W0 is a catch-all week that already includes pre-week leads
   // (detectable when W0.tl >= pre-weeks cumulative total).
   const _preWkTl=preWeekCols.length?(preWeekCols[preWeekCols.length-1].tl||0):0;
+  const _preWkNp=preWeekCols.length?(preWeekCols[preWeekCols.length-1].pc||0):0;
   {const _w0wk=weeks.find(w=>w.w===0);
   const _scHasPreLeads=_w0wk&&_w0wk.tl!=null&&_w0wk.tl>=_preWkTl;
-  if(!_isPreLaunch2&&_preWkTl>0&&!_scHasPreLeads)weeks.forEach(wk=>{if(wk.tl!=null)wk.tl+=_preWkTl;});}
+  if(!_isPreLaunch2&&_preWkTl>0&&!_scHasPreLeads)weeks.forEach(wk=>{if(wk.tl!=null)wk.tl+=_preWkTl;});
+  // W0 catch-all: strip pre-week accumulation from weekly nl/np so the weekly view shows only W0
+  if(!_isPreLaunch2&&_scHasPreLeads&&_w0wk){
+    if(_w0wk.nl!=null)_w0wk.nl=Math.max(0,_w0wk.nl-_preWkTl);
+    if(_w0wk.np!=null)_w0wk.np=Math.max(0,_w0wk.np-_preWkNp);
+  }}
 
   const $v=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
   const fInt=v=>v!=null?v:'—';
