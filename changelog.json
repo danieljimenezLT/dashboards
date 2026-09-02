@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-02",
+      "pr_number": 294,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/294",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO pre-launch week data in Scorecard Test + W0 chart fixes",
+      "summary": "Pre-week columns in the Scorecard Test now show presales, CPL, CPA, and RMR Breakdown data (T1 members, total members, Est. RMR, Est. ROMS). W0 cumulative and weekly charts fixed for studios where Snowflake W0 is a catch-all row that already includes pre-week totals."
+    },
+    {
+      "date": "2026-09-02",
       "pr_number": null,
       "pr_url": null,
       "author": "Santiago Estrada",
