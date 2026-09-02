@@ -1937,7 +1937,7 @@ function renderScorecard(){
     {label:_ib('sc_presales_gross')+'Presales (gross)', key:'pc',  fmt:fInt, color:true,
      cumReqFn:wk=>tgt.presales_count&&scPaceWeeks?Math.round(tgt.presales_count/scPaceWeeks*wk.w):null,
      cumReqDisplay:tgt.presales_count||null},
-    {label:_ib('sc_net_presales')+'Net Presales',       key:null, computed:wk=>{const td=_tierReal[wk.w];return td?(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0):Math.max(0,(wk.pc||0)-(wk.cancTot||0));}, fmt:fInt, color:true,
+    {label:_ib('sc_net_presales')+'Net Presales',       key:null, pwKey:'netPres', computed:wk=>{const td=_tierReal[wk.w];return td?(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0):Math.max(0,(wk.pc||0)-(wk.cancTot||0));}, fmt:fInt, color:true,
      cumReqFn:wk=>tgt.presales_count&&scPaceWeeks?Math.round(tgt.presales_count/scPaceWeeks*wk.w):null,
      cumReqDisplay:tgt.presales_count||null},
     {label:_ib('sc_cum_cvr')+'Conversion Rate',         key:'cumCr', fmt:fPct, color:true,
@@ -2360,6 +2360,7 @@ function renderScorecard2(){
       cr:(_pwNp&&_nl>0)?_pwNp/_nl:null,
       cumCr:(_cumNpPre>0&&pw.total_leads>0)?_cumNpPre/pw.total_leads:null,
       ts:grsW, pc:_cumNpPre||null, cancTot:_cumCancPre||null,
+      netPres:(_cumNpPre>0||_cumCancPre>0)?Math.max(0,_cumNpPre-_cumCancPre):null,
       grs:grsW, cumGrs:Math.round(_cumGrsPre*100)/100,
       cumGl:_cumGlPre, cumEv:_cumEvPre,
       cumGp:_cumGpPre, cumTs:Math.round(_cumGrsPre*100)/100,
@@ -2481,7 +2482,7 @@ function renderScorecard2(){
     {label:_ib('sc_presales_gross')+'Presales (gross)', key:'pc',  fmt:fInt, color:true,
      cumReqFn:wk=>tgt.presales_count&&scPaceWeeks?Math.round(tgt.presales_count/scPaceWeeks*wk.w):null,
      cumReqDisplay:tgt.presales_count||null},
-    {label:_ib('sc_net_presales')+'Net Presales',       key:null, computed:wk=>{const td=_tierReal[wk.w];return td?(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0):Math.max(0,(wk.pc||0)-(wk.cancTot||0));}, fmt:fInt, color:true,
+    {label:_ib('sc_net_presales')+'Net Presales',       key:null, pwKey:'netPres', computed:wk=>{const td=_tierReal[wk.w];return td?(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0):Math.max(0,(wk.pc||0)-(wk.cancTot||0));}, fmt:fInt, color:true,
      cumReqFn:wk=>tgt.presales_count&&scPaceWeeks?Math.round(tgt.presales_count/scPaceWeeks*wk.w):null,
      cumReqDisplay:tgt.presales_count||null},
     {label:_ib('sc_cum_cvr')+'Conversion Rate',         key:'cumCr', fmt:fPct, color:true,
@@ -2874,7 +2875,7 @@ function renderScorecard2(){
     // Pre-week cells — key-based rows read from preWeekCols; computed rows show '—'
     const _preBg=isSub||isSubParent||isSubSub?'#f3f9ff':'#f0f9ff';
     preWeekCols.forEach(pw=>{
-      const val=row.computed?null:(row.key!=null?pw[row.key]:null);
+      const val=row.computed?(row.pwKey!=null?pw[row.pwKey]:null):(row.key!=null?pw[row.key]:null);
       const _pcStyle=_isPreLaunch2?`font-size:${isSub||isSubSub||isAgencySub?12:13}px`:`font-size:${isSub||isSubSub||isAgencySub?12:13}px;background:${_preBg};color:#5a9fc0`;
       h+=`<td class="num" style="${_pcStyle}">${row.fmt(val)}</td>`;
     });
