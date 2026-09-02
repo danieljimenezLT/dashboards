@@ -912,7 +912,12 @@ function drawCum2Chart(studio){
     const scLeadsAdj=_preTotal>0?[]:null;
     if(scLeadsAdj){let _adj=_preTotal,_rv=0;for(let i=0;i<scLeadsD.length;i++){const v=scLeadsD[i];if(v===null){scLeadsAdj.push(null);continue;}if(i===0)_adj=_preTotal+v;else _adj+=Math.max(0,v-_rv);scLeadsAdj.push(_adj);_rv=v;}}
     allLeadsD=[...preLeadsD,...(scLeadsAdj||scLeadsD)];
-    allPresD=[...preWeeks.map(()=>null),...scPresD];
+    // Map pre-week presales from NSO_SALES_ROWS (cumulative) then continue with scorecard
+    const _sn2=studio.data_name||studio.name;const _st2=s=>(s||'').replace(/^SWEAT440\s+/,'');
+    const _psr=NSO_SALES_ROWS.filter(r=>_st2(r.studio)===_sn2);
+    let _cPP=0;
+    const _prePresD=preWeeks.map(pw=>{if(!pw.date_start)return null;const de=pw.date_end||pw.date_start;_cPP+=Math.max(0,_psr.filter(r=>r.date>=pw.date_start&&r.date<=de).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));return _cPP>0?_cPP:null;});
+    allPresD=[..._prePresD,...scPresD];
     allLeadsPace=[...preWeeks.map(()=>null),...leadsPace];
     allPresPace=[...preWeeks.map(()=>null),...presPace];
   }
@@ -1001,7 +1006,11 @@ function drawWeekly2Chart(studio){
     });
     allLabels=[...preLabels,...scLabels];
     allLeadsDelta=[...preLeadsDelta,...scLeadsDelta];
-    allPresDelta=[...preWeeks.map(()=>null),...scPresDelta];
+    // Map pre-week presales from NSO_SALES_ROWS (weekly delta) then continue with scorecard
+    const _sn2w=studio.data_name||studio.name;const _st2w=s=>(s||'').replace(/^SWEAT440\s+/,'');
+    const _psrW=NSO_SALES_ROWS.filter(r=>_st2w(r.studio)===_sn2w);
+    const _prePDw=preWeeks.map(pw=>{if(!pw.date_start)return null;const de=pw.date_end||pw.date_start;const v=Math.max(0,_psrW.filter(r=>r.date>=pw.date_start&&r.date<=de).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));return v>0?v:null;});
+    allPresDelta=[..._prePDw,...scPresDelta];
     allLeadsPace=[...preWeeks.map(()=>null),...w.map(()=>wkLeadPace)];
     allPresPace=[...preWeeks.map(()=>null),...w.map(()=>wkPresPace)];
   }
