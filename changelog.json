@@ -2,6 +2,18 @@
   "entries": [
     {
       "date": "2026-09-02",
+      "pr_number": 295,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/295",
+      "author": "Santiago Estrada",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "GBP review counts now update with the date filter",
+      "summary": "The Avg Star Rating, Total Reviews, and 5-Star Reviews cards on the Google Business Profile tab now reflect the selected date range instead of always showing an all-time total."
+    },
+    {
+      "date": "2026-09-02",
       "pr_number": 294,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/294",
       "author": "Sebastian Arango",
