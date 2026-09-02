@@ -108,16 +108,26 @@ def fetch_meta_ads(start_date, end_date, existing_ad_meta=None):
     # bad creative kills the whole batch.
     if cids_per_name:
         cache = existing_ad_meta or {}
-        # Skip creatives already cached with a permanent, non-expiring thumbnail URL.
-        # facebook.com/ads/image/?d=... URLs are permanent; scontent-*.fbcdn.net URLs
-        # expire in ~24h and must be re-fetched every run.
-        def _is_permanent_thumb(url: str) -> bool:
-            return bool(url) and "facebook.com/ads/image/" in url
+        import time as _time, re as _re2
+        _now = int(_time.time())
+        def _thumb_still_valid(url: str) -> bool:
+            """Return True if the cached thumbnail URL is still usable.
+            facebook.com/ads/image/ URLs are permanent.
+            scontent-*.fbcdn.net URLs carry oe=<hex-unix-expiry>; treat as
+            valid only if they expire more than 2 days from now."""
+            if not url:
+                return False
+            if "facebook.com/ads/image/" in url:
+                return True
+            m = _re2.search(r'[?&]oe=([0-9A-Fa-f]+)', url)
+            if m:
+                return int(m.group(1), 16) > _now + 2 * 86400
+            return False  # unknown expiry — re-fetch to be safe
         cid_to_names: dict[str, list[str]] = {}
         for name, cid in cids_per_name.items():
             cached_thumb = _public_thumb(cache.get(name, {}).get("thumbnail_url", ""))
-            if not cached_thumb or not _is_permanent_thumb(cached_thumb):
-                # Re-fetch: no cached URL, or cached URL is a time-limited CDN URL
+            if not _thumb_still_valid(cached_thumb):
+                # Re-fetch: no cached URL, permanent URL, or CDN URL expiring within 2 days
                 cid_to_names.setdefault(cid, []).append(name)
             else:
                 # Pre-populate from cache so the merge step has data without an API call.
