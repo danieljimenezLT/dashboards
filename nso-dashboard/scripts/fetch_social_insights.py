@@ -445,11 +445,15 @@ def main():
     for studio_name, new_data in ig_map.items():
         old = existing_studios.get(studio_name, {})
 
-        # Daily rows: new data wins for overlapping dates; old data preserved for the rest
+        # Daily rows: merge per field, not per row — a partial fetch (e.g. follower_count's
+        # fixed 30-day window reaching further back than a shorter --days reach window) must
+        # not blow away fields it didn't fetch, like a previously-captured reach value.
         old_daily = {r["date"]: r for r in old.get("daily", [])}
         new_daily = {r["date"]: r for r in new_data.get("daily", [])}
-        old_daily.update(new_daily)
-        all_daily = sorted(old_daily.values(), key=lambda x: x["date"])
+        merged_daily = dict(old_daily)
+        for date, row in new_daily.items():
+            merged_daily[date] = {**merged_daily.get(date, {}), **row}
+        all_daily = sorted(merged_daily.values(), key=lambda x: x["date"])
 
         # Posts: dedup by permalink, new API data wins for engagement counts
         old_posts = {p["permalink"]: p for p in old.get("posts", []) if p.get("permalink")}
