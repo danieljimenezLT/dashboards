@@ -317,10 +317,11 @@ def process(
         if cached.get("video_embed_url"):
             entry["drive_video_url"] = cached["video_embed_url"]
 
-        # Upload thumbnail image to Drive for all ad types (image and video).
-        # Video CDN thumbnail URLs (scontent-*.fbcdn.net) expire in ~24 hours; Drive URLs are permanent.
+        # Static ads only: upload full-res image to Drive for click-to-view.
+        # Video thumbnail URLs are kept fresh by re-fetching from Meta API each run.
         need_image = (
             not skip_images
+            and not is_video
             and not cached.get("drive_image_id")
             and (max_new_images == 0 or thumbs_uploaded < max_new_images)
         )
@@ -335,7 +336,7 @@ def process(
         if not need_image and not need_video:
             continue
 
-        # Upload thumbnail image to Drive (image and video ads)
+        # Upload full-res image to Drive (static ads only)
         if need_image:
             ih = entry.get("image_hash", "")
             fid = None
@@ -344,16 +345,13 @@ def process(
                 log.info(f"  image  dedup(hash) {key_raw[:50]}")
             else:
                 img_url = _best_image_url(entry)
-                # For static ads: try adimages API when permanent URL is missing
-                if not is_video and ih and token and (not img_url or "facebook.com/ads/image/" not in img_url):
+                # If hash is available but URL is missing or non-permanent, use adimages API
+                if ih and token and (not img_url or "facebook.com/ads/image/" not in img_url):
                     full = _fullres_via_hash(ih, token)
                     if full:
                         img_url = full
-                # For video ads: fall back to thumbnail_url (the poster frame)
-                if is_video and not img_url:
-                    img_url = entry.get("thumbnail_url", "")
                 if img_url:
-                    log.info(f"  {'video thumb' if is_video else 'image'}  <- {key_raw[:60]}")
+                    log.info(f"  image  <- {key_raw[:60]}")
                     img_data = _download(img_url)
                     if img_data:
                         fid = drive.upload(img_data, f"{ck}_image.jpg", "image/jpeg", folder_id)
