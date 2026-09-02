@@ -907,7 +907,8 @@ function drawCum2Chart(studio){
     const scPresD=w.map((x,i)=>{if(i>cw)return null;const tr=_cumTierMap[i];return tr?(tr.t0||0)+(tr.t1||0)+(tr.t2||0)+(tr.t3||0):Math.max(0,(x.presales_count||0)-(x.cancellations_count||0));});
     const leadsPace=w.map((_,i)=>Math.min(tLeads,Math.round(wkLeadPace*i)));
     const presPace=w.map((_,i)=>Math.min(tPres,Math.round(wkPresPace*i)));
-    allLabels=[...preLabels,...scLabels];
+    const _wkNumLabels=preWeeks.map(pw=>`W${pw.week_num}`);
+    allLabels=[..._wkNumLabels,...scLabels];
     const _preTotal=preLeadsD.length?(preLeadsD[preLeadsD.length-1]||0):0;
     const scLeadsAdj=_preTotal>0?[]:null;
     if(scLeadsAdj){let _adj=_preTotal,_rv=0;for(let i=0;i<scLeadsD.length;i++){const v=scLeadsD[i];if(v===null){scLeadsAdj.push(null);continue;}if(i===0)_adj=_preTotal+v;else _adj+=Math.max(0,v-_rv);scLeadsAdj.push(_adj);_rv=v;}}
@@ -1004,7 +1005,8 @@ function drawWeekly2Chart(studio){
       if(i===0)return v||0;
       return Math.max(0,v-(scLeadsD[i-1]||0));
     });
-    allLabels=[...preLabels,...scLabels];
+    const _wkNumLabelsW=preWeeks.map(pw=>`W${pw.week_num}`);
+    allLabels=[..._wkNumLabelsW,...scLabels];
     allLeadsDelta=[...preLeadsDelta,...scLeadsDelta];
     // Map pre-week presales from NSO_SALES_ROWS (weekly delta) then continue with scorecard
     const _sn2w=studio.data_name||studio.name;const _st2w=s=>(s||'').replace(/^SWEAT440\s+/,'');
