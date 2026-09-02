@@ -710,9 +710,12 @@ function renderSummary2(){
   if(_hasPre){h+=`<div style="position:absolute;left:0;top:0;height:100%;width:${_preW0Pct}%;background:#b8cdd8;border-radius:10px 0 0 10px;z-index:1"></div>`;}
   if(_scFillPct>0){h+=`<div class="timeline-fill" style="left:${_preW0Pct}%;width:${_scFillPct}%;border-top-left-radius:${_hasPre?0:''};border-bottom-left-radius:${_hasPre?0:''}"><div class="timeline-current"></div></div>`;}
   if(_hasPre){h+=`<div style="position:absolute;left:${_preW0Pct}%;top:-4px;bottom:-4px;width:2px;background:#0084B5;transform:translateX(-50%);z-index:4;border-radius:1px"></div>`;}
-  if(studio.co_week){const coPct=(preWeeks.length+studio.co_week)/_totalSpan*100;const coWkData=w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===studio.co_week);const coDate=studio.co_date||coWkData?.date_start||null;h+=`<div class="timeline-marker co" style="left:${coPct}%"><div class="timeline-marker-label">Target C/O Date${coDate?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(coDate)}</div>`:''}</div></div>`;}
-  if(_t2sw&&totalWeeks>0){const p2=(preWeeks.length+_t2sw)/_totalSpan*100;const d2=_t2date||w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===_t2sw)?.date_start||null;h+=`<div class="timeline-marker tier2" style="left:${p2}%"><div class="timeline-marker-label">Move to $${_t2p}${d2?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(d2)}</div>`:''}</div></div>`;}
-  if(_t3sw&&totalWeeks>0){const p3=(preWeeks.length+_t3sw)/_totalSpan*100;const d3=_t3date||w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===_t3sw)?.date_start||null;h+=`<div class="timeline-marker tier3" style="left:${p3}%"><div class="timeline-marker-label">Move to $${_t3p}${d3?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(d3)}</div>`:''}</div></div>`;}
+  {const _mk=[];
+  if(studio.co_week){const p=(preWeeks.length+studio.co_week)/_totalSpan*100;const wd=w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===studio.co_week);const cd=studio.co_date||wd?.date_start||null;_mk.push({p,cls:'co',html:`Target C/O Date${cd?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(cd)}</div>`:''}`});}
+  if(_t2sw&&totalWeeks>0){const p=(preWeeks.length+_t2sw)/_totalSpan*100;const d=_t2date||w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===_t2sw)?.date_start||null;_mk.push({p,cls:'tier2',html:`Move to $${_t2p}${d?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(d)}</div>`:''}`});}
+  if(_t3sw&&totalWeeks>0){const p=(preWeeks.length+_t3sw)/_totalSpan*100;const d=_t3date||w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===_t3sw)?.date_start||null;_mk.push({p,cls:'tier3',html:`Move to $${_t3p}${d?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(d)}</div>`:''}`});}
+  _mk.sort((a,b)=>a.p-b.p);let _lp=-999;
+  _mk.forEach(m=>{const up=m.p-_lp<9;const ls=up?'top:auto;bottom:46px':'';h+=`<div class="timeline-marker ${m.cls}" style="left:${m.p}%"><div class="timeline-marker-label" style="${ls}">${m.html}</div></div>`;_lp=m.p;});}
   h+=`</div>`;// close timeline-bar
   // Label row below the bar — all absolute in the same coordinate space
   h+=`<div style="position:relative;height:30px;margin-top:6px">`;
@@ -1245,9 +1248,12 @@ function renderSummary(){
   h+=`</div>`;
   // ── Timeline bar ────────────────────────────────────────────────────────
   h+=`<div class="timeline-bar"><div class="timeline-fill" style="width:${pct}%"><div class="timeline-current"></div></div>`;
-  if(studio.co_week){const coPct=Math.round(studio.co_week/totalWeeks*100);const coWkData=w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===studio.co_week);const coDate=studio.co_date||coWkData?.date_start||null;h+=`<div class="timeline-marker co" style="left:${coPct}%"><div class="timeline-marker-label">Target C/O Date${coDate?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(coDate)}</div>`:''}</div></div>`;}
-  if(_t2sw&&totalWeeks>0){const pct=Math.round(_t2sw/totalWeeks*100);const d=_t2date||w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===_t2sw)?.date_start||null;h+=`<div class="timeline-marker tier2" style="left:${pct}%"><div class="timeline-marker-label">Move to $${_t2p}${d?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(d)}</div>`:''}</div></div>`;}
-  if(_t3sw&&totalWeeks>0){const pct=Math.round(_t3sw/totalWeeks*100);const d=_t3date||w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===_t3sw)?.date_start||null;h+=`<div class="timeline-marker tier3" style="left:${pct}%"><div class="timeline-marker-label">Move to $${_t3p}${d?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(d)}</div>`:''}</div></div>`;}
+  {const _mk=[];
+  if(studio.co_week){const p=Math.round(studio.co_week/totalWeeks*100);const wd=w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===studio.co_week);const cd=studio.co_date||wd?.date_start||null;_mk.push({p,cls:'co',html:`Target C/O Date${cd?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(cd)}</div>`:''}`});}
+  if(_t2sw&&totalWeeks>0){const p=Math.round(_t2sw/totalWeeks*100);const d=_t2date||w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===_t2sw)?.date_start||null;_mk.push({p,cls:'tier2',html:`Move to $${_t2p}${d?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(d)}</div>`:''}`});}
+  if(_t3sw&&totalWeeks>0){const p=Math.round(_t3sw/totalWeeks*100);const d=_t3date||w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===_t3sw)?.date_start||null;_mk.push({p,cls:'tier3',html:`Move to $${_t3p}${d?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(d)}</div>`:''}`});}
+  _mk.sort((a,b)=>a.p-b.p);let _lp=-999;
+  _mk.forEach(m=>{const up=m.p-_lp<9;const ls=up?'top:auto;bottom:46px':'';h+=`<div class="timeline-marker ${m.cls}" style="left:${m.p}%"><div class="timeline-marker-label" style="${ls}">${m.html}</div></div>`;_lp=m.p;});}
   h+=`</div>`;
   // ── Row below bar: Week 0 label only ────────────────────────────────────
   h+=`<div style="position:relative;height:30px;margin-top:6px">`;
