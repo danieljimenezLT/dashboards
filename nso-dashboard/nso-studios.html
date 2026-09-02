@@ -3465,11 +3465,11 @@ function renderMeta(){
     if(!g.thumb)g.thumb=r.local_image_url||r.thumbnail_url||r.image_url||'';
     if(!g.preview)g.preview=r.preview_link||'';
   });
-  // Override thumbnails with fresh URLs from nso_ad_meta.json (regenerated daily)
-  // Rows in marketing_data.json are append-only — their thumbnail URLs expire after ~30 days.
+  // Override thumbnails with fresh URLs from nso_ad_meta.json (regenerated daily).
+  // Prefer drive_image_url (permanent Drive URL) over thumbnail_url (Facebook CDN, expires ~24h).
   Object.values(creativeMap).forEach(g=>{
     const meta=AD_META[g.ad_name];
-    if(meta&&meta.thumbnail_url)g.thumb=meta.thumbnail_url;
+    if(meta&&(meta.drive_image_url||meta.thumbnail_url))g.thumb=meta.drive_image_url||meta.thumbnail_url;
     if(meta&&meta.image_url)g.full_img=meta.image_url;
     if(meta&&meta.post_url)g.preview=meta.post_url;
     else if(meta&&meta.preview_link&&!g.preview)g.preview=meta.preview_link;
