@@ -525,7 +525,7 @@ for studio in sc.get("studios", []):
         except ValueError:
             continue
         ev = _events_in_period(studio.get("name", ""), ds_dt, de_dt)
-        if ev is not None:
+        if ev is not None and not wk.get("comm_events"):
             wk["comm_events"] = ev
             ev_patched += 1
 

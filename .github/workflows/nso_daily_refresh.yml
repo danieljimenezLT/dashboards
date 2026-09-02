@@ -172,6 +172,31 @@ jobs:
           cd nso-dashboard && python scripts/fetch_tier_rmr.py
         continue-on-error: true
 
+      # ── SCORECARD V2 (PRE_WEEKS-aligned week dates for test tabs) ───────────
+      - name: Rebuild Scorecard v2 (test tabs)
+        env:
+          SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
+          SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
+          SNOWFLAKE_PASSWORD:  ${{ secrets.SF_TOKEN }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SNOWFLAKE_DATABASE:  ${{ secrets.SF_DATABASE }}
+          SNOWFLAKE_ROLE:      ${{ secrets.SF_ROLE }}
+        run: |
+          cd nso-dashboard && python scripts/build_scorecard_v2.py
+        continue-on-error: true
+
+      - name: Calculate tier RMR v2 (test tabs)
+        env:
+          SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
+          SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
+          SNOWFLAKE_PASSWORD:  ${{ secrets.SF_TOKEN }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SNOWFLAKE_DATABASE:  ${{ secrets.SF_DATABASE }}
+          SNOWFLAKE_ROLE:      ${{ secrets.SF_ROLE }}
+        run: |
+          cd nso-dashboard && python scripts/fetch_tier_rmr_v2.py
+        continue-on-error: true
+
       # ── COMMIT ─────────────────────────────────────────────────────────────
       - name: Commit updated data files
         run: |
@@ -182,6 +207,7 @@ jobs:
             nso-dashboard/marketing_data.json \
             nso-dashboard/nso_google_ads.json \
             nso-dashboard/nso_scorecard_data.json \
+            nso-dashboard/nso_scorecard_data2.json \
             nso-dashboard/nso_ad_meta.json \
             nso-dashboard/nso_client_history.json \
             nso-dashboard/nso_other_costs.json \
