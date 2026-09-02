@@ -2012,7 +2012,7 @@ function renderScorecard(){
     }
     const rmr=Math.round((t0p?_t0*t0p:0)+_t1*t1p+_t2*t2p+(t3p?_t3*t3p:0));
     const netPs=_t0+_t1+_t2+_t3;
-    const totalSpend=wk.cumTs||0;
+    const totalSpend=_wCumTs(wk);
     const roms=totalSpend>0?((netPs*640)/totalSpend):null;
     return{w:wk.w,isCur:wk.isCur,ds:wk.ds,de:wk.de,t0:t0p?_t0:null,t1:_t1,t2:_t2,t3:t3p?_t3:null,rmr,roms};
   });
@@ -2563,7 +2563,7 @@ function renderScorecard2(){
     if(wk.w===0&&_preWkNetNp>0&&_t1<_preWkNetNp)_t1+=_preWkNetNp;
     const rmr=Math.round((t0p?_t0*t0p:0)+_t1*t1p+_t2*t2p+(t3p?_t3*t3p:0));
     const netPs=_t0+_t1+_t2+_t3;
-    const totalSpend=wk.cumTs||0;
+    const totalSpend=_wCumTs(wk);
     const roms=totalSpend>0?((netPs*640)/totalSpend):null;
     return{w:wk.w,isCur:wk.isCur,ds:wk.ds,de:wk.de,t0:t0p?_t0:null,t1:_t1,t2:_t2,t3:t3p?_t3:null,rmr,roms};
   });
