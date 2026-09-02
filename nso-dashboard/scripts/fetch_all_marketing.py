@@ -108,12 +108,16 @@ def fetch_meta_ads(start_date, end_date, existing_ad_meta=None):
     # bad creative kills the whole batch.
     if cids_per_name:
         cache = existing_ad_meta or {}
-        # Skip creatives already cached with a valid (non-proxy) thumbnail URL.
-        # Active ads with no cached thumbnail still get fetched so new creatives are picked up.
+        # Skip creatives already cached with a permanent, non-expiring thumbnail URL.
+        # facebook.com/ads/image/?d=... URLs are permanent; scontent-*.fbcdn.net URLs
+        # expire in ~24h and must be re-fetched every run.
+        def _is_permanent_thumb(url: str) -> bool:
+            return bool(url) and "facebook.com/ads/image/" in url
         cid_to_names: dict[str, list[str]] = {}
         for name, cid in cids_per_name.items():
             cached_thumb = _public_thumb(cache.get(name, {}).get("thumbnail_url", ""))
-            if not cached_thumb:
+            if not cached_thumb or not _is_permanent_thumb(cached_thumb):
+                # Re-fetch: no cached URL, or cached URL is a time-limited CDN URL
                 cid_to_names.setdefault(cid, []).append(name)
             else:
                 # Pre-populate from cache so the merge step has data without an API call.

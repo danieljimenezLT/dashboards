@@ -317,8 +317,8 @@ def process(
         if cached.get("video_embed_url"):
             entry["drive_video_url"] = cached["video_embed_url"]
 
-        # Videos: upload only the MP4 (grid thumbnail stays as-is from Facebook URL)
-        # Static ads: upload full-res image to Drive for click-to-view
+        # Static ads only: upload full-res image to Drive for click-to-view.
+        # Video thumbnail URLs are kept fresh by re-fetching from Meta API each run.
         need_image = (
             not skip_images
             and not is_video
