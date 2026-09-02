@@ -2751,19 +2751,23 @@ function renderScorecard2(){
   }
   const _hasTierData2=_isNaplesRmr2&&Object.values(_naplesTierWk2).some(t=>t.total>0);
   const _tierMemberLabels2={unl_mo:'Unlimited Monthly',unl_yr:'Unlimited Yearly',std_mil:'Student/Military/Teacher',visit:'Visit Packs',other:'Other'};
+  // Pre-week RMR helpers: all pre-week presales land in T1 (before any tier transition)
+  const _pwNetPs=pw=>Math.max(0,(pw.pc||0)-(pw.cancTot||0));
   const rmrRowDefs=[
-    ...(t0p?[{label:`Founders ($${t0p})`,key:'t0',target:_t0tgt}]:[]),
-    {label:`Tier 1 Members ($${t1p})`,key:'t1',target:_t1tgt},
-    {label:`Tier 2 Members ($${t2p})`,key:'t2',target:_t2tgt},
-    ...(t3p?[{label:`Tier 3 Members ($${t3p})`,key:'t3',target:_t3tgt}]:[]),
-    {label:'Total Members',key:null,computed:wk=>(wk.t0||0)+(wk.t1||0)+(wk.t2||0)+(wk.t3||0),target:_totalMembersTgt,style:'font-weight:700;border-top:1px solid #e0ecf4'},
+    ...(t0p?[{label:`Founders ($${t0p})`,key:'t0',target:_t0tgt,pwFn:()=>null}]:[]),
+    {label:`Tier 1 Members ($${t1p})`,key:'t1',target:_t1tgt,pwFn:pw=>{const n=_pwNetPs(pw);return n>0?n:null;}},
+    {label:`Tier 2 Members ($${t2p})`,key:'t2',target:_t2tgt,pwFn:()=>null},
+    ...(t3p?[{label:`Tier 3 Members ($${t3p})`,key:'t3',target:_t3tgt,pwFn:()=>null}]:[]),
+    {label:'Total Members',key:null,computed:wk=>(wk.t0||0)+(wk.t1||0)+(wk.t2||0)+(wk.t3||0),target:_totalMembersTgt,style:'font-weight:700;border-top:1px solid #e0ecf4',pwFn:pw=>{const n=_pwNetPs(pw);return n>0?n:null;}},
     ...(_hasTierData2?[
-      {label:'Open Memberships',key:null,computed:()=>null,style:'font-style:italic;font-size:10px;color:#8aaabb;border-top:2px solid #e0ecf4;padding-top:6px'},
-      ...['unl_mo','unl_yr','std_mil','visit','other'].map(k=>({label:_tierMemberLabels2[k],key:null,computed:wk=>{const v=(_naplesTierWk2[wk.w]||{})[k];return v||null;}})),
-      {label:'Total Open',key:null,computed:wk=>(_naplesTierWk2[wk.w]||{}).total||null,style:'font-weight:700'},
+      {label:'Open Memberships',key:null,computed:()=>null,style:'font-style:italic;font-size:10px;color:#8aaabb;border-top:2px solid #e0ecf4;padding-top:6px',pwFn:()=>null},
+      ...['unl_mo','unl_yr','std_mil','visit','other'].map(k=>({label:_tierMemberLabels2[k],key:null,computed:wk=>{const v=(_naplesTierWk2[wk.w]||{})[k];return v||null;},pwFn:()=>null})),
+      {label:'Total Open',key:null,computed:wk=>(_naplesTierWk2[wk.w]||{}).total||null,style:'font-weight:700',pwFn:()=>null},
     ]:[]),
-    {label:_ib('sc_rmr')+'Est. Day 1 RMR',key:'rmr',fmt:v=>`$${v.toLocaleString('en-US')}`,target:_rmrTgt,tgtFmt:v=>`$${Math.round(v).toLocaleString('en-US')}`,style:'border-top:1px solid #e0ecf4'},
-    {label:_ib('sc_roms')+'Est. ROMS',key:'roms',fmt:v=>v.toFixed(1)+'x',target:_romsTgt,tgtFmt:v=>typeof v==='string'?v:(+v).toFixed(1)+'x'},
+    {label:_ib('sc_rmr')+'Est. Day 1 RMR',key:'rmr',fmt:v=>`$${v.toLocaleString('en-US')}`,target:_rmrTgt,tgtFmt:v=>`$${Math.round(v).toLocaleString('en-US')}`,style:'border-top:1px solid #e0ecf4',
+     pwFn:pw=>{const n=_pwNetPs(pw);return n>0?Math.round(n*t1p):null;}},
+    {label:_ib('sc_roms')+'Est. ROMS',key:'roms',fmt:v=>v.toFixed(1)+'x',target:_romsTgt,tgtFmt:v=>typeof v==='string'?v:(+v).toFixed(1)+'x',
+     pwFn:pw=>{const n=_pwNetPs(pw);const sp=pw.cumTs||0;return(n>0&&sp>0)?+((n*640)/sp).toFixed(1):null;}},
   ];
   rmrRowDefs.forEach(row=>{
     const labelCell=row.sublabel?`<div style="font-size:12px;font-weight:600">${row.label}</div><div style="font-size:9px;color:#aabbc8;margin-top:1px">${row.sublabel}</div>`:`${row.label}`;
@@ -2771,8 +2775,10 @@ function renderScorecard2(){
     h+=`<tr><td style="${_rowStyle};position:sticky;left:0;z-index:1;background:#fff">${labelCell}</td>`;
     const tgtFmt=row.tgtFmt||(row.fmt||(v=>v));
     h+=`<td class="num" style="background:#f8f4ec;color:#b8860b;font-weight:600;position:sticky;left:200px;z-index:1${row.style?';'+row.style:''}">${row.target!=null?tgtFmt(row.target):'—'}</td>`;
-    preWeekCols.forEach(()=>{
-      h+=`<td class="num" style="background:#f0f9ff;color:#5a9fc0">—</td>`;
+    preWeekCols.forEach(pw=>{
+      const v=row.pwFn?row.pwFn(pw):null;
+      const fmt=row.fmt||(x=>x);
+      h+=`<td class="num" style="font-size:12px;background:#f0f9ff;color:#5a9fc0">${v!=null?fmt(v):'—'}</td>`;
     });
     rmrtRows.forEach(wk=>{
       const v=row.computed?row.computed(wk):(row.key!=null?wk[row.key]:null);
