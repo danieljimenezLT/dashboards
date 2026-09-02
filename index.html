@@ -48,7 +48,7 @@
       </div>
     </div>
 
-    <button class="nav-tab" id="navTabGlossary" onclick="switchTab('glossary',this)">Glossary<span class="nav-badge alpha">Alpha</span></button>
+    <button class="nav-tab" id="navTabGlossary" onclick="switchTab('glossary',this)">Glossary</button>
 
   </div>
   <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Toggle navigation">
@@ -527,7 +527,7 @@ function _infoBtn(key) {
   return '<button class="kpi-info-btn" onclick="showKpiInfo(this,event)" data-title="'+_esc(g.title)+'" data-desc="'+_esc(g.desc)+'" data-date="'+_esc(g.date||'')+'">i</button>';
 }
 
-// -- Glossary tab (Alpha, admin-only) --------------------------------------
+// -- Glossary tab -----------------------------------------------------------
 // Metadata for every entry in GLOSSARY above: which tab/category it belongs
 // to, how it's displayed, and how it's evaluated. Descriptions come straight
 // from GLOSSARY so the glossary tab and the "i" tooltips never drift apart.
@@ -721,10 +721,6 @@ async function loadData() {
   }
   CUR_USER = _authUser;
   renderAuthNav(_authUser);
-  if (!isAdminUser()) {
-    const _glossaryTab = document.getElementById('navTabGlossary');
-    if (_glossaryTab) _glossaryTab.remove();
-  }
   const _allowedStudios = getAuthStudios(_authUser);
 
   // Main dashboard data — load in parallel (blocks initial render)
