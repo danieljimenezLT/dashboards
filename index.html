@@ -2811,6 +2811,7 @@ function _renderFreshnessNote() {
 let SOCIAL_RAW   = null;
 let GBP_RAW_ORG  = null;
 let GA4_RAW_ORG  = [];
+let GA4_SITE_GRAN = 'daily';
 
 // Chart registry for organic tabs
 const _orgCharts = {};
@@ -3007,7 +3008,15 @@ function renderGA4() {
   h += `<div class="kpi-card">${_infoBtn('ga4_sessions')}<div class="kpi-card-label">Sessions</div><div class="kpi-card-val">${fmt(site.sessions)}</div></div>`;
   h += `<div class="kpi-card">${_infoBtn('ga4_users')}<div class="kpi-card-label">Users</div><div class="kpi-card-val">${fmt(site.users)}</div></div>`;
   h += `<div class="kpi-card">${_infoBtn('ga4_new_users')}<div class="kpi-card-label">New Users</div><div class="kpi-card-val">${fmt(site.newUsers)}</div></div>`;
-  h += '</div></div>';
+  h += '</div>';
+  h += '<div style="font-size:11px;color:#5a7a8a;margin:20px 0 4px;font-family:\'Open Sans\'">Metric: <strong>Sessions</strong> &middot; entire site, all studios combined &mdash; not affected by the studio filter above</div>';
+  h += '<div class="gran-group">';
+  h += `<button class="gran-btn${GA4_SITE_GRAN==='daily'?' active':''}" id="ga4SiteGranDaily" onclick="setGA4SiteGran('daily')">Daily</button>`;
+  h += `<button class="gran-btn${GA4_SITE_GRAN==='weekly'?' active':''}" id="ga4SiteGranWeekly" onclick="setGA4SiteGran('weekly')">Weekly</button>`;
+  h += `<button class="gran-btn${GA4_SITE_GRAN==='monthly'?' active':''}" id="ga4SiteGranMonthly" onclick="setGA4SiteGran('monthly')">Monthly</button>`;
+  h += '</div>';
+  h += '<div style="position:relative;width:100%;height:220px;margin-top:12px"><canvas id="ga4SiteTrendChart"></canvas></div>';
+  h += '</div>';
 
   if (activeStudios.length) {
     // Location pages — selected studios combined
@@ -3038,7 +3047,71 @@ function renderGA4() {
   }
 
   el.innerHTML = h;
-  setTimeout(() => _drawGA4Trend(from, to, activeStudios), 50);
+  setTimeout(() => { _drawGA4SiteTrend(from, to); _drawGA4Trend(from, to, activeStudios); }, 50);
+}
+
+function setGA4SiteGran(gran) {
+  const btn = document.getElementById('ga4SiteGran'+gran.charAt(0).toUpperCase()+gran.slice(1));
+  if (btn && btn.disabled) return;
+  GA4_SITE_GRAN = gran;
+  ['daily','weekly','monthly'].forEach(g => {
+    const b = document.getElementById('ga4SiteGran'+g.charAt(0).toUpperCase()+g.slice(1));
+    if (b) b.classList.toggle('active', g === gran);
+  });
+  const from = document.getElementById('fFrom').value || null;
+  const to   = document.getElementById('fTo').value   || null;
+  _drawGA4SiteTrend(from, to);
+}
+
+function _drawGA4SiteTrend(from, to) {
+  const ctx = document.getElementById('ga4SiteTrendChart');
+  if (!ctx) return;
+  if (_orgCharts.ga4Site) { _orgCharts.ga4Site.destroy(); _orgCharts.ga4Site = null; }
+  const rows = GA4_RAW_ORG.filter(r => (!from || r.date >= from) && (!to || r.date <= to));
+  const byKey = {};
+  rows.forEach(r => {
+    let key;
+    if (GA4_SITE_GRAN === 'monthly') {
+      key = r.date.slice(0,7)+'-01';
+    } else if (GA4_SITE_GRAN === 'weekly') {
+      const d = new Date(r.date+'T00:00:00Z');
+      const ws = new Date(d); ws.setUTCDate(d.getUTCDate()-d.getUTCDay());
+      key = ws.toISOString().slice(0,10);
+    } else {
+      key = r.date;
+    }
+    byKey[key] = (byKey[key]||0) + (r.sessions||0);
+  });
+  const keys   = Object.keys(byKey).sort();
+  const labels = keys.map(k => GA4_SITE_GRAN === 'monthly' ? fmtMonthLabel(k) : fmtDayLabel(k));
+  const isMob  = window.innerWidth <= 768;
+  _orgCharts.ga4Site = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Sessions (entire website)',
+        data: keys.map(k => byKey[k]),
+        borderColor: '#00A3E0',
+        backgroundColor: '#00A3E033',
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: .4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { mode: 'index', intersect: false }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { size: 10 }, color: '#5a7a8a', autoSkip: true, maxTicksLimit: isMob ? 5 : 14, maxRotation: 0 } },
+        y: { grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { size: 11 }, color: '#5a7a8a' }, min: 0 }
+      }
+    }
+  });
 }
 
 function _drawGA4Trend(from, to, activeStudios) {
