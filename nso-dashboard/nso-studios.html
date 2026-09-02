@@ -2546,9 +2546,6 @@ function renderScorecard2(){
   const rmrtRows=pastWeeks.map(wk=>{
     if(_tierReal[wk.w]){
       _t0=_tierReal[wk.w].t0||0;_t1=_tierReal[wk.w].t1||0;_t2=_tierReal[wk.w].t2||0;_t3=_tierReal[wk.w].t3||0;
-      // W0 catch-all: Snowflake tier data may only reflect the W0 week itself (not cumulative
-      // including pre-weeks). If tier T1 is less than the pre-week net presales, add them.
-      if(wk.w===0&&_preWkNetNp>0&&_t1<_preWkNetNp)_t1+=_preWkNetNp;
     } else if(wk.t1m!=null){
       _t0=wk.t0m||0;_t1=wk.t1m||0;_t2=wk.t2m||0;_t3=0;
     } else {
@@ -2560,6 +2557,10 @@ function renderScorecard2(){
       if(t3p){const c3=Math.min(c,_t3);_t3-=c3;c-=c3;}
       const c2=Math.min(c,_t2);_t2-=c2;c-=c2;_t1=Math.max(0,_t1-c);
     }
+    // W0: add pre-week net presales to T1 regardless of which data source was used,
+    // since all three branches above may undercount if the W0 entry only reflects
+    // the W0 week itself and not the cumulative pre-launch period.
+    if(wk.w===0&&_preWkNetNp>0&&_t1<_preWkNetNp)_t1+=_preWkNetNp;
     const rmr=Math.round((t0p?_t0*t0p:0)+_t1*t1p+_t2*t2p+(t3p?_t3*t3p:0));
     const netPs=_t0+_t1+_t2+_t3;
     const totalSpend=wk.cumTs||0;
