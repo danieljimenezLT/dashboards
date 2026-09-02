@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-02",
+      "pr_number": 297,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/297",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO scorecard CPL fix — digital leads only, spend from sub-rows",
+      "summary": "Blended CPL now divides by digital-only leads (not digital + grassroots), matching the CPR tab. Leadteam fee uses the same formula in all tabs. Total Mktg Spend is computed as the explicit sum of its sub-rows so the displayed total and the CPL/CPA ratio always use the same number."
+    },
+    {
+      "date": "2026-09-02",
       "pr_number": 295,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/295",
       "author": "Santiago Estrada",
