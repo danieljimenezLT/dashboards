@@ -1,0 +1,72 @@
+name: Backfill Instagram Insights
+
+# One-off manual recovery run for nso-dashboard/social_insights.json only.
+# Use this to re-fetch a wider trailing window (e.g. after the reach-data-loss
+# bug fixed in fetch_social_insights.py) without touching any other data source.
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "How many trailing days of Instagram insights to fetch"
+        required: true
+        default: "30"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-json-writer
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ADMIN_PUSH_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests python-dotenv
+
+      - name: Fetch Instagram insights (backfill)
+        env:
+          META_ACCESS_TOKEN: ${{ secrets.META_TOKEN }}
+          META_APP_ID:       ${{ secrets.META_APP_ID }}
+          META_APP_SECRET:   ${{ secrets.META_APP_SECRET }}
+        run: |
+          python nso-dashboard/scripts/fetch_social_insights.py \
+            --days ${{ inputs.days }} \
+            --output nso-dashboard/social_insights.json
+
+      - name: Commit updated data file
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add nso-dashboard/social_insights.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "chore: backfill Instagram insights (--days ${{ inputs.days }}) $(date -u '+%Y-%m-%d %H:%M UTC')"
+
+          for attempt in 1 2 3 4 5; do
+            if git pull --rebase origin main && git push; then
+              echo "Pushed on attempt $attempt"
+              exit 0
+            fi
+            echo "Push attempt $attempt failed — retrying"
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+
+          echo "::error::Failed to push after 5 attempts due to repeated conflicts"
+          exit 1
