@@ -2914,14 +2914,15 @@ function renderGBP() {
     h += _orgKpi('Website Clicks',     agg('website_clicks').toLocaleString(),     '🌐', 'gbp_website_clicks');
     h += _orgKpi('Calls',              agg('calls').toLocaleString(),              '📞', 'gbp_calls');
     h += `</div>`;
-    const rvStudios = studioRows.filter(r => r.reviews && r.reviews.total_count > 0);
+    const rvStudios = studioRows.filter(r => r.reviews);
     if (rvStudios.length) {
       const rvTotal   = rvStudios.reduce((a, r) => a + r.reviews.total_count,    0);
       const fiveStar  = rvStudios.reduce((a, r) => a + r.reviews.five_star_count, 0);
-      const wtdRating = rvStudios.reduce((a, r) => a + r.reviews.average_rating * r.reviews.total_count, 0) / rvTotal;
-      h += sec('Reviews (cumulative totals)');
+      const ratingSum = rvStudios.reduce((a, r) => a + r.reviews.rating_sum,      0);
+      const wtdRating = rvTotal > 0 ? (ratingSum / rvTotal) : null;
+      h += sec('Reviews');
       h += `<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
-      h += `<div class="kpi-card"><div class="kpi-card-label">Avg Star Rating</div><div class="kpi-card-val">${wtdRating.toFixed(2)} <span style="font-size:14px">&#9733;</span></div></div>`;
+      h += `<div class="kpi-card"><div class="kpi-card-label">Avg Star Rating</div><div class="kpi-card-val">${wtdRating !== null ? wtdRating.toFixed(2) + ' <span style="font-size:14px">&#9733;</span>' : '—'}</div></div>`;
       h += `<div class="kpi-card"><div class="kpi-card-label">Total Reviews</div><div class="kpi-card-val">${rvTotal.toLocaleString()}</div></div>`;
       h += `<div class="kpi-card"><div class="kpi-card-label">5-Star Reviews</div><div class="kpi-card-val">${fiveStar.toLocaleString()}</div></div>`;
       h += `</div>`;
@@ -2934,7 +2935,7 @@ function renderGBP() {
     studioRows.forEach(r => {
       const tv = (r.search_mobile||0)+(r.search_desktop||0)+(r.maps_mobile||0)+(r.maps_desktop||0);
       const rv = r.reviews;
-      const ratingCell = rv ? `${rv.average_rating.toFixed(1)} &#9733;` : '—';
+      const ratingCell = rv && rv.total_count > 0 ? `${(rv.rating_sum / rv.total_count).toFixed(1)} &#9733;` : '—';
       const totalCell  = rv ? rv.total_count.toLocaleString() : '—';
       const fiveCell   = rv ? rv.five_star_count.toLocaleString() : '—';
       h += `<tr><td>${r.name}</td><td class="num">${tv.toLocaleString()}</td><td class="num">${((r.search_mobile||0)+(r.search_desktop||0)).toLocaleString()}</td><td class="num">${((r.maps_mobile||0)+(r.maps_desktop||0)).toLocaleString()}</td><td class="num">${(r.direction_requests||0).toLocaleString()}</td><td class="num">${(r.website_clicks||0).toLocaleString()}</td><td class="num">${(r.calls||0).toLocaleString()}</td><td class="num">${ratingCell}</td><td class="num">${totalCell}</td><td class="num">${fiveCell}</td></tr>`;
@@ -2950,7 +2951,13 @@ function renderGBP() {
     const studioRows = studios.map(s => {
       const rows = (s.daily || []).filter(r => (!from || r.date >= from) && (!to || r.date <= to));
       const sum  = k => rows.reduce((a, r) => a + (r[k] || 0), 0);
-      return { name: s.name.replace(/^SWEAT440\s+/, ''), search_mobile: sum('mobile_search'), search_desktop: sum('desktop_search'), maps_mobile: sum('mobile_maps'), maps_desktop: sum('desktop_maps'), direction_requests: sum('direction_requests'), website_clicks: sum('website_clicks'), calls: sum('calls'), reviews: s.reviews || null };
+      const revRows = (s.reviews_daily || []).filter(r => (!from || r.date >= from) && (!to || r.date <= to));
+      const reviews = s.reviews_daily ? {
+        total_count:     revRows.reduce((a, r) => a + r.count,           0),
+        five_star_count: revRows.reduce((a, r) => a + r.five_star_count, 0),
+        rating_sum:      revRows.reduce((a, r) => a + r.rating_sum,      0),
+      } : null;
+      return { name: s.name.replace(/^SWEAT440\s+/, ''), search_mobile: sum('mobile_search'), search_desktop: sum('desktop_search'), maps_mobile: sum('mobile_maps'), maps_desktop: sum('desktop_maps'), direction_requests: sum('direction_requests'), website_clicks: sum('website_clicks'), calls: sum('calls'), reviews };
     });
     el.innerHTML = _renderGBPAgg(studioRows);
     return;

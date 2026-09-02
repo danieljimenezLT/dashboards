@@ -6,10 +6,12 @@ Usage:
 
 Logic:
   gbp_data.json structure:
-    {studios: [{name, code, location_id, daily: [{date, total_views, ...}], reviews}]}
+    {studios: [{name, code, location_id, daily: [{date, total_views, ...}], reviews_daily}]}
 
   For each studio (matched by location_id), removes rows whose date falls
   within the new file's date range, then appends the new rows.
+  reviews_daily is always replaced wholesale with the latest fetch, since the
+  reviews endpoint returns the full history every time (not just new dates).
 """
 
 import argparse
@@ -44,8 +46,8 @@ def merge(existing_path: str, new_path: str, output_path: str) -> None:
 
         existing_by_id[loc_id]["daily"] = merged
 
-        if new_studio.get("reviews") is not None:
-            existing_by_id[loc_id]["reviews"] = new_studio["reviews"]
+        if new_studio.get("reviews_daily") is not None:
+            existing_by_id[loc_id]["reviews_daily"] = new_studio["reviews_daily"]
 
         print(f"  {new_studio['name']}: {len(merged)} daily rows after merge")
 

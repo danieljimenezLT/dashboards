@@ -2,7 +2,8 @@
 fetch_gbp.py — Pull Google Business Profile performance data for NSO studios.
 
 Fetches daily performance metrics per location using the Business Profile
-Performance API. Reviews endpoint is stubbed (no account IDs available yet).
+Performance API, plus a day-by-day breakdown of reviews via the reviews
+endpoint (bucketed by each review's createTime).
 
 Output JSON format:
 {
@@ -27,7 +28,10 @@ Output JSON format:
                 },
                 ...
             ],
-            "reviews": null
+            "reviews_daily": [
+                {"date": "2025-01-03", "count": 2, "five_star_count": 1, "rating_sum": 9},
+                ...
+            ]
         },
         ...
     ]
@@ -334,24 +338,26 @@ def fetch_performance_metrics(
 
 
 # ---------------------------------------------------------------------------
-# Reviews — stubbed until account IDs are available for all locations
+# Reviews
 # ---------------------------------------------------------------------------
 
+_STAR_VALUES = {"ONE": 1, "TWO": 2, "THREE": 3, "FOUR": 4, "FIVE": 5}
 
-def fetch_reviews(location_id: str, token: str, account_name: str = "") -> dict | None:
+
+def fetch_reviews(location_id: str, token: str, account_name: str = "") -> list | None:
     """
-    Fetch review summary for a GBP location.
+    Fetch every review for a GBP location and bucket star ratings by the day
+    each review was posted.
 
-    Paginates through all reviews to compute the 5-star count (the API only
-    returns averageRating and totalReviewCount in the list response, not a
-    breakdown by star rating).
+    The reviews.list endpoint always returns the full review history (there's
+    no way to ask for "reviews since date X"), so every call rebuilds the
+    complete daily breakdown from each review's createTime + starRating.
 
     Returns:
-        {
-            "average_rating": 4.8,
-            "total_count": 454,
-            "five_star_count": 320
-        }
+        [
+            {"date": "2025-01-03", "count": 2, "five_star_count": 1, "rating_sum": 9},
+            ...
+        ]
     or None if account_name is empty or the request fails.
     """
     if not account_name:
@@ -361,9 +367,7 @@ def fetch_reviews(location_id: str, token: str, account_name: str = "") -> dict 
     url = f"{MYBUSINESS_API}/{account_name}/locations/{loc_id}/reviews"
     hdrs = _headers(token)
 
-    total_count = 0
-    avg_rating = None
-    five_star_count = 0
+    buckets: dict[str, dict] = {}
     page_token = None
 
     print(f"  Fetching reviews for locations/{loc_id}...")
@@ -386,13 +390,17 @@ def fetch_reviews(location_id: str, token: str, account_name: str = "") -> dict 
 
         data = resp.json()
 
-        if avg_rating is None:
-            avg_rating = data.get("averageRating")
-            total_count = data.get("totalReviewCount", 0)
-
         for rv in data.get("reviews", []):
-            if rv.get("starRating") == "FIVE":
-                five_star_count += 1
+            create_time = rv.get("createTime")
+            star = _STAR_VALUES.get(rv.get("starRating"))
+            if not create_time or star is None:
+                continue
+            date = create_time[:10]
+            bucket = buckets.setdefault(date, {"count": 0, "five_star_count": 0, "rating_sum": 0})
+            bucket["count"] += 1
+            bucket["rating_sum"] += star
+            if star == 5:
+                bucket["five_star_count"] += 1
 
         page_token = data.get("nextPageToken")
         if not page_token:
@@ -400,12 +408,9 @@ def fetch_reviews(location_id: str, token: str, account_name: str = "") -> dict 
 
         time.sleep(0.5)
 
-    result = {
-        "average_rating": round(float(avg_rating), 2) if avg_rating is not None else None,
-        "total_count": total_count,
-        "five_star_count": five_star_count,
-    }
-    print(f"  -> reviews: avg={result['average_rating']}, total={total_count}, 5-star={five_star_count}")
+    result = [{"date": d, **buckets[d]} for d in sorted(buckets)]
+    total = sum(b["count"] for b in buckets.values())
+    print(f"  -> reviews: {total} total across {len(result)} day(s)")
     return result
 
 
@@ -481,13 +486,13 @@ def fetch_all_studios(
                 location_id, start_date, end_date, token
             )
             is_nso = studio.get("status") == "nso"
-            reviews = fetch_reviews(location_id, token, gbp_account_name) if not is_nso else None
+            reviews_daily = fetch_reviews(location_id, token, gbp_account_name) if not is_nso else None
         except Exception as exc:
             msg = f"{studio['name']}: {exc}"
             print(f"  Error fetching {studio['name']}: {exc}")
             errors.append(msg)
             daily_rows = []
-            reviews = None
+            reviews_daily = None
 
         studio_results.append(
             {
@@ -495,7 +500,7 @@ def fetch_all_studios(
                 "code": studio["code"],
                 "location_id": location_id,
                 "daily": daily_rows,
-                "reviews": reviews,
+                "reviews_daily": reviews_daily,
             }
         )
 
@@ -610,7 +615,8 @@ def _merge_with_existing(new_result: dict, output_path: str) -> dict:
     Merge new fetch results into the existing gbp_data.json using upsert logic:
     - New daily rows win for overlapping dates (new data is more accurate)
     - Old daily rows for dates outside the fetch window are preserved
-    - Reviews are always replaced with the latest fetch
+    - reviews_daily is always replaced with the latest fetch (the reviews
+      endpoint returns the full history every time, so it's already complete)
     Returns the merged result dict.
     """
     out_path = Path(output_path)
@@ -648,8 +654,8 @@ def _merge_with_existing(new_result: dict, output_path: str) -> dict:
         merged_studios.append({
             **new,
             "daily": merged_daily,
-            # Reviews: use new if fetched, else keep old
-            "reviews": new.get("reviews") if new.get("reviews") is not None else old.get("reviews"),
+            # reviews_daily: use new if fetched, else keep old
+            "reviews_daily": new.get("reviews_daily") if new.get("reviews_daily") is not None else old.get("reviews_daily"),
         })
 
     old_start = existing.get("date_range", {}).get("start", new_result["date_range"]["start"])
