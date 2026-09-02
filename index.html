@@ -650,6 +650,11 @@ async function downloadLeadsDetail(btn) {
 
 // -- Dashboard state -------------------------------------------------------
 let RAW = null;
+// Full company-wide studio list, captured BEFORE RAW.studios is narrowed to
+// a franchisee/manager's allowed studios — network-average comparisons must
+// always be measured against the whole comparable network, not just the
+// studios a restricted login happens to see in their own filter dropdown.
+let ALL_NETWORK_STUDIOS = [];
 let trendChart = null;
 let GRAN = 'daily';
 const COLORS = ['#00A3E0','#00FFC2','#DDFF00']; // Leads, First Timers, New Members
@@ -754,6 +759,7 @@ async function loadData() {
   document.getElementById('fTo').value   = localDateStr(_twoDaysAgo);
 
   await loadStudiosRegistry();
+  ALL_NETWORK_STUDIOS = RAW.studios.slice();
   if (_allowedStudios) RAW.studios = RAW.studios.filter(s => _allowedStudios.includes(s));
   buildMultiSelect('studioMenu', 'studioLabel', RAW.studios, DEFAULT_EXCL_STUDIOS);
   buildSourceSelect('sourceMenu', 'sourceLabel', RAW.sources, DEFAULT_EXCL_SOURCES);
@@ -816,7 +822,11 @@ function applyFilters() {
   // reused by buildFunnel/buildStageTabs/buildCPRTab/buildSummaryTab so they
   // all compare against the exact same per-studio numbers.
   window._cprStudios   = studios;
-  window._netStudios   = (RAW.studios || []).filter(s => !DEFAULT_EXCL_STUDIOS.includes(s));
+  // Always the FULL company-wide list, never the current login's restricted
+  // RAW.studios — a franchisee or single-studio manager must still be
+  // compared against the whole network, not just the studios they can see.
+  const _allNet = ALL_NETWORK_STUDIOS.length ? ALL_NETWORK_STUDIOS : (RAW.studios || []);
+  window._netStudios   = _allNet.filter(s => !DEFAULT_EXCL_STUDIOS.includes(s));
   const netFunnelMap   = perStudioFunnelTotals(from, to, sources);
   window._netLeadsMap = {}; window._netFtMap = {}; window._netMemMap = {};
   Object.keys(netFunnelMap).forEach(s => {
