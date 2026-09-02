@@ -1,0 +1,56 @@
+name: Refresh GBP Data
+
+on:
+  workflow_dispatch:        # Manual trigger from GitHub UI (Actions tab -> Refresh GBP Data -> Run workflow)
+    inputs:
+      days:
+        description: "How many days of performance metrics to (re)fetch"
+        required: false
+        default: "30"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-gbp:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ADMIN_PUSH_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install requests python-dotenv gspread google-auth
+
+      - name: Write Google service account credentials
+        run: |
+          mkdir -p nso-dashboard/credentials
+          printf '%s' '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > nso-dashboard/credentials/service_account.json
+
+      - name: Fetch Google Business Profile data (all studios)
+        env:
+          GBP_CLIENT_ID:     ${{ secrets.GBP_CLIENT_ID }}
+          GBP_CLIENT_SECRET: ${{ secrets.GBP_CLIENT_SECRET }}
+          GBP_REFRESH_TOKEN: ${{ secrets.GBP_REFRESH_TOKEN }}
+        run: |
+          python nso-dashboard/scripts/fetch_gbp.py \
+            --days ${{ inputs.days }} \
+            --output nso-dashboard/gbp_data.json \
+            --credentials nso-dashboard/credentials/service_account.json
+
+      - name: Commit updated GBP data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add nso-dashboard/gbp_data.json
+          git diff --cached --quiet || git commit -m "chore: refresh GBP data $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git pull --rebase origin main
+          git push
