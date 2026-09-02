@@ -2,7 +2,7 @@ name: Refresh Dashboard Data
 
 on:
   schedule:
-    - cron: "0 8 * * *"   # 4:00 AM Eastern (EDT=UTC-4; drifts to 3:00 AM during EST/winter) — runs 1hr after "Refresh Snowflake Data"
+    - cron: "30 6 * * *"   # 2:30 AM Eastern (EDT=UTC-4) — runs 30min after Snowflake refresh
   workflow_dispatch:        # Manual trigger from GitHub UI
 
 permissions:
