@@ -2,9 +2,8 @@ name: Refresh Paid Ads data
 
 on:
   schedule:
-    # 8:05 UTC = 4:05 AM EDT / 3:05 AM EST. Corre diario.
-    # Corre unos minutos DESPUÉS de refresh.yml para no pisarlo en el git push.
-    - cron: "5 8 * * *"
+    # 10:00 UTC = 6:00 AM EDT. Corre diario después del NSO refresh.
+    - cron: "0 10 * * *"
   workflow_dispatch: {}        # permite correrlo manual desde la UI
   push:
     branches: [main]

@@ -2,7 +2,7 @@ name: NSO Dashboard Daily Refresh
 
 on:
   schedule:
-    - cron: '0 13 * * *'    # 9:00 AM Eastern (EDT=UTC-4) — 1hr after general refresh finishes, avoids Meta rate limit contention
+    - cron: '40 7 * * *'    # 3:40 AM Eastern (EDT=UTC-4) — runs 1hr after Open Studio refresh
   workflow_dispatch:        # Allow manual trigger from GitHub UI
     inputs:
       marketing_start:
