@@ -3656,7 +3656,7 @@ function renderMeta(){
   // Populate creative ads table
   if(creativeRows.length){
     sortableTable('meta-ads-table',creativeRows,(g,i)=>{
-      const isVid=(g.media_type||'').toLowerCase().includes('video')||g.name.toLowerCase().includes('reel')||g.name.toLowerCase().includes('video');
+      const isVid=(g.media_type||'').toLowerCase().includes('video')||g.name.toLowerCase().includes('reel');
       const canLink=isAdminUser();
       const driveUrl=isVid?(g.drive_vid||VIDEO_DRIVE_LINKS[_creativeSlug(g.name)]||''):'';
       const driveImg=!isVid?(g.drive_img||''):'';
