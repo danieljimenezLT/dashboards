@@ -3665,10 +3665,7 @@ function renderMeta(){
       const thumbCell=g.thumb
         ?`<div ${thumbAttrs} style="width:44px;height:44px;border-radius:6px;overflow:hidden;border:1px solid rgba(0,163,224,0.2);cursor:pointer"><img src="${(g.thumb||'').replace(/_p\d+x\d+/g,'')}" style="width:100%;height:100%;object-fit:cover;pointer-events:none" loading="lazy" data-fb="${fallback.replace(/"/g,'&quot;')}" data-orig="${(g.thumb||'').replace(/"/g,'&quot;')}" onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src=this.dataset.orig||''}else{this.parentElement.outerHTML=this.dataset.fb}" /></div>`
         :fallback;
-      const _adminLink=isAdminUser()?(isVid?driveUrl:driveImg)||g.preview||'':'';
-      const nameCell=_adminLink
-        ?`<a href="${_adminLink}" target="_blank" rel="noopener" style="color:#1a4d6e;text-decoration:none;font-weight:600;font-size:13px">${g.name}</a>`
-        :`<span style="font-weight:600;font-size:13px">${g.name}</span>`;
+      const nameCell=`<span ${thumbAttrs} style="cursor:pointer;font-weight:600;font-size:13px;color:#1a4d6e">${g.name}</span>`;
       const ctrStr=g.impressions>0?(g.clicks/g.impressions*100).toFixed(2)+'%':'—';
       const cplStr=g.leads>0?f$2(g.spend/g.leads):'—';
       const st=(g.status||'').toUpperCase();
