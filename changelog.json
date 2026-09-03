@@ -2,6 +2,18 @@
   "entries": [
     {
       "date": "2026-09-03",
+      "pr_number": 316,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/316",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Summary Test and Scorecard Test are now the default tabs; Blended CPR, Instagram, and Meta Ads embed open to all users",
+      "summary": "Promoted the Test versions of Summary and Scorecard as the main tabs (originals hidden but preserved). Removed Alpha restrictions from Blended CPR and Instagram. Meta Ads embed viewer and Drive links now available to all users on both NSO and OS dashboards."
+    },
+    {
+      "date": "2026-09-03",
       "pr_number": 315,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/315",
       "author": "Sebastian Arango",
