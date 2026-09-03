@@ -1167,7 +1167,8 @@ function switchSumStudio(code){
   if(!sc)return;
   if(_allowedStudios&&!_allowedStudios.includes((sc.data_name||sc.full_name||sc.name||'').replace(/^SWEAT440\s+/,'')))return;
   _sumStudio=sc;
-  renderSummary();
+  if(document.getElementById('tab-summary2').classList.contains('active'))renderSummary2();
+  else renderSummary();
   if(document.getElementById('tab-funnel').classList.contains('active'))renderFunnel();
 }
 
@@ -1816,6 +1817,7 @@ function applyFilters(){
   if(document.getElementById('tab-instagram').classList.contains('active'))renderInstagram();
   if(document.getElementById('tab-scorecard').classList.contains('active'))renderScorecard();
   if(document.getElementById('tab-summary').classList.contains('active'))renderSummary();
+  if(document.getElementById('tab-summary2').classList.contains('active'))renderSummary2();
   if(document.getElementById('tab-clienthistory').classList.contains('active'))renderClientHistory();
 }
 
@@ -4930,7 +4932,7 @@ async function init(){
   if(_lastD){const _ld=new Date(_lastD+'T00:00:00Z');_dataThruLabel='Data until '+(_ld.getUTCMonth()+1)+'/'+_ld.getUTCDate()+'/'+_ld.getUTCFullYear();}
   document.querySelectorAll('.data-thru-label').forEach(el=>el.textContent=_dataThruLabel);
   document.querySelector('.controls-bar').style.display='none';
-  renderSummary();
+  renderSummary2();
   renderFunnel();
   applyFilters();
 }
