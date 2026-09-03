@@ -2899,7 +2899,8 @@ function renderScorecard2(){
     const topRow=`<span style="display:block;min-height:14px;text-align:center;margin-bottom:1px">${_b.join(' ')}</span>`;
     // Unconfigured studios (no week_1_start): show date range only, no week number
     const _colLabel=!_w1Official
-      ?(wk.ds?`${_fmtD(wk.ds)}<br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.de)}</span>`:'—')
+      ?(wk.ds?`${_fmtD(wk.ds)}<br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.de)}</span>`
+            :`<span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${wk.date||'—'}</span>`)
       :`W${wk.w}<br>${dateSpan}`;
     h+=`<th class="num${wk.isCur?' sc-cell-cur':''}" style="min-width:90px;font-size:13px;vertical-align:bottom">${topRow}${_colLabel}</th>`;
   });
