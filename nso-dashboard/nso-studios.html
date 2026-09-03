@@ -2591,15 +2591,21 @@ function renderScorecard2(){
   if(!isAdminUser())defs=defs.filter(d=>d.key!=='ig'&&d.key!=='cumIg');
   const pastWeeks=weeks.filter(w=>w.w>=0);
   function _fmtD(iso){if(!iso)return'?';const[y,m,d]=iso.split('-');return`${+m}/${+d}`+(y!=='2026'?`<br><span style="font-size:8px;color:#c07000">${y}</span>`:'')}
-  // For unconfigured studios: snap any date to its Sunday–Saturday week
-  function _toSunSat(dsIso,deIso){
-    const ref=dsIso||deIso;if(!ref)return null;
-    const d=new Date(ref+'T00:00:00Z');
-    const sun=new Date(d);sun.setUTCDate(d.getUTCDate()-d.getUTCDay());
-    const sat=new Date(sun);sat.setUTCDate(sun.getUTCDate()+6);
-    const iso=x=>x.toISOString().slice(0,10);
-    return{sunDs:iso(sun),satDe:iso(sat)};
-  }
+  // For unconfigured studios: build sequential Sun-Sat labels anchored to the
+  // first date that has any Snowflake lead/sale data (same source as the chart).
+  const _unconfigLabels=(!_w1Official&&pastWeeks.length)?( ()=>{
+    const _sn2=(sc.data_name||sc.full_name||sc.name||'').replace(/^SWEAT440\s+/,'');
+    const _dailyDates=(RAW?.daily_detail||[]).filter(r=>(r.studio||'').replace(/^SWEAT440\s+/,'')===_sn2&&r.date<=_todaySc2).map(r=>r.date).sort();
+    if(!_dailyDates.length)return null;
+    const _anchor=new Date(_dailyDates[0]+'T00:00:00Z');
+    _anchor.setUTCDate(_anchor.getUTCDate()-_anchor.getUTCDay()); // snap to Sunday
+    const _iso=x=>x.toISOString().slice(0,10);
+    return pastWeeks.map((_,i)=>{
+      const sun=new Date(_anchor);sun.setUTCDate(_anchor.getUTCDate()+i*7);
+      const sat=new Date(sun);sat.setUTCDate(sun.getUTCDate()+6);
+      return{sunDs:_iso(sun),satDe:_iso(sat)};
+    });
+  })():null;
 
   // ── RMR Tier Breakdown ─────────────────────────────────────────────────
   const pricing=sc.pricing||{tier1_price:99,tier2_price:129,tier2_start_week:99};
@@ -2899,15 +2905,15 @@ function renderScorecard2(){
   });
 
   // Regular week header columns
-  pastWeeks.forEach(wk=>{
+  pastWeeks.forEach((wk,_wi2)=>{
     const dateSpan=wk.ds?`<span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.ds)}</span><br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.de)}</span>`:`<span style="font-size:9px;font-weight:400;color:#8aaabb">${(wk.date||'').slice(0,9)}</span>`;
     const _b=[];
     if(wk.w===sc.co_week)_b.push(`<span style="font-size:7px;background:#0084B5;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">Target C/O</span>`);
     if(wk.w===t2sw)_b.push(`<span style="font-size:7px;background:#27ae60;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">→$${t2p}</span>`);
     else if(wk.w===t3sw)_b.push(`<span style="font-size:7px;background:#8e44ad;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">→$${t3p}</span>`);
     const topRow=`<span style="display:block;min-height:14px;text-align:center;margin-bottom:1px">${_b.join(' ')}</span>`;
-    // Unconfigured studios: snap to Sunday–Saturday week (same style as Fort Myers pre-weeks)
-    const _ss=!_w1Official?_toSunSat(wk.ds,wk.de):null;
+    // Unconfigured studios: use sequential Sun-Sat labels anchored to first Snowflake data date
+    const _ss=_unconfigLabels?_unconfigLabels[_wi2]:null;
     const _colLabel=_ss
       ?`<span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(_ss.sunDs)}</span><br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(_ss.satDe)}</span>`
       :`W${wk.w}<br>${dateSpan}`;
