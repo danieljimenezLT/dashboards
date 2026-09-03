@@ -2869,7 +2869,7 @@ function renderScorecard2(){
   // ── Main KPI scorecard table (with pre-week columns) ───────────────────
   h+=`<div class="chart-card" style="padding:20px 24px">`;
   h+=`<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">`;
-  h+=`<div><div style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;color:#8aaabb;font-weight:500;text-transform:uppercase">${sc.full_name.replace('SWEAT440 ','')}${_isPreLaunch2?'':` — W${cw} current`}`;
+  h+=`<div><div style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;color:#8aaabb;font-weight:500;text-transform:uppercase">${sc.full_name.replace('SWEAT440 ','')}${(_isPreLaunch2||!_w1Official)?'':` — W${cw} current`}`;
   if(preWeekCols.length)h+=` <span style="font-size:10px;font-weight:400;color:#99DAF3">(+${preWeekCols.length} pre-launch wks)</span>`;
   h+=`</div>${_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:2px">${_dataThruLabel}</div>`:''}</div>`;
   h+=`<div class="gran-group"><button class="gran-btn${_scView2==='weekly'?' active':''}" id="scWeeklyBtn2" onclick="setScView2('weekly')">Weekly</button><button class="gran-btn${_scView2==='cum'?' active':''}" id="scCumBtn2" onclick="setScView2('cum')">Cumulative</button></div>`;
@@ -2897,7 +2897,11 @@ function renderScorecard2(){
     if(wk.w===t2sw)_b.push(`<span style="font-size:7px;background:#27ae60;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">→$${t2p}</span>`);
     else if(wk.w===t3sw)_b.push(`<span style="font-size:7px;background:#8e44ad;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">→$${t3p}</span>`);
     const topRow=`<span style="display:block;min-height:14px;text-align:center;margin-bottom:1px">${_b.join(' ')}</span>`;
-    h+=`<th class="num${wk.isCur?' sc-cell-cur':''}" style="min-width:90px;font-size:13px;vertical-align:bottom">${topRow}W${wk.w}<br>${dateSpan}</th>`;
+    // Unconfigured studios (no week_1_start): show date range only, no week number
+    const _colLabel=!_w1Official
+      ?(wk.ds?`${_fmtD(wk.ds)}<br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.de)}</span>`:'—')
+      :`W${wk.w}<br>${dateSpan}`;
+    h+=`<th class="num${wk.isCur?' sc-cell-cur':''}" style="min-width:90px;font-size:13px;vertical-align:bottom">${topRow}${_colLabel}</th>`;
   });
   h+=`</tr></thead><tbody>`;
 
