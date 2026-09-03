@@ -2332,7 +2332,7 @@ async function buildMetaTab() {
     const snowMetaCpl   = snowMetaLeads > 0 ? spend / snowMetaLeads : 0;
     const metaSnowEl = document.getElementById('meta-snowflake-row');
     if (metaSnowEl) {
-      const adPreviewNote = 'Click on an ad image to open the Facebook Ad Library page with all currently active ads from that studio. We\'re working on making full ad-by-ad previews available directly from this dashboard.';
+      const adPreviewNote = 'To preview an ad, click on its thumbnail or name. Images open a Drive link and videos play as an embedded preview. Some ads may not load — if a specific ad isn\'t showing for you, contact LeadTeam and we\'ll share it directly.';
       metaSnowEl.innerHTML =
         `<div class="kpi-grid three" style="margin-bottom:20px">` +
           kpiCard('Spend', spend, null, null, f$, GLOSSARY.meta) +
@@ -2350,7 +2350,7 @@ async function buildMetaTab() {
   // ---- Active Ads info banner (user-type aware) ----
   const _adsBanner = document.getElementById('meta-ads-info-banner');
   if (_adsBanner) {
-    const _bannerMsg = 'Click on an ad image to open the Facebook Ad Library page with all currently active ads from that studio. We\'re working on making full ad-by-ad previews available directly from this dashboard.';
+    const _bannerMsg = 'To preview an ad, click on its thumbnail or name. Images open a Drive link and videos play as an embedded preview. Some ads may not load — if a specific ad isn\'t showing for you, contact LeadTeam and we\'ll share it directly.';
     _adsBanner.innerHTML =
       `<div style="display:flex;align-items:flex-start;gap:10px;background:#f0f6fa;border-left:3px solid #99DAF3;border-radius:6px;padding:10px 14px;margin-bottom:16px">` +
         `<span style="font-size:15px;line-height:1;color:#0084B5;flex-shrink:0;margin-top:1px">ⓘ</span>` +
