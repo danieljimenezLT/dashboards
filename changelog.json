@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-03",
+      "pr_number": 313,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/313",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Rename Definitions tab to Glossary with OS-style table layout",
+      "summary": "NSO dashboard Glossary now matches the Open Studio dashboard format — full metric table with category and format pills, accessible to all users."
+    },
+    {
+      "date": "2026-09-03",
       "pr_number": 312,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/312",
       "author": "Sebastian Arango",
