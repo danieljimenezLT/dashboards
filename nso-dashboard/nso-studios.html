@@ -2393,11 +2393,12 @@ function renderScorecard2(){
   const _pwData=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[sc.code];
   const _pwList=(_pwData&&_pwData.pre_weeks)||[];
 
-  // If the official W1 hasn't started yet, the scorecard weeks are pre-launch
-  // data that overlaps with the pre-weeks — suppress them to avoid double-counting.
+  // If week_1_start is not configured or is in the future, treat as pre-launch:
+  // suppress scorecard weeks (avoid double-counting with pre-weeks) and hide RMR Breakdown.
+  // Studios with no week_1_start (e.g. not yet configured) also display as pre-launch.
   const _todaySc2=new Date().toISOString().slice(0,10);
   const _w1Official=_pwData&&_pwData.week_1_start;
-  const _isPreLaunch2=Boolean(_w1Official)&&_w1Official>_todaySc2;
+  const _isPreLaunch2=!_w1Official||_w1Official>_todaySc2;
   if(_isPreLaunch2)weeks.splice(0);
 
   const _scStrip=s=>(s||'').replace(/^SWEAT440\s+/,'');
