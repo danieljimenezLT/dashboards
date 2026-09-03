@@ -1978,7 +1978,7 @@ function renderScorecard(){
     {label:_ib('sc_grassroots_leads')+'Grassroots Leads',    key:'gl',  req:40,  fmt:fInt, color:true},
     {label:_ib('sc_grassroots_presales')+'Grassroots Presales', key:'gp', req:20, fmt:fInt, color:true},
     {label:_ib('sc_comm_events')+'Comm. Events',      key:'ev',  req:6,          fmt:fInt, color:true},
-    {label:_ib('sc_ig_followers')+'IG New Followers',  key:'ig',  req:30,        fmt:fInt, color:true},
+    // {label:_ib('sc_ig_followers')+'IG New Followers',  key:'ig',  req:30,        fmt:fInt, color:true}, // hidden pending review
     {label:_ib('sc_total_spend')+'▶ Total Mktg Spend', computed:wk=>_wTs(wk)||null, req:null, fmt:$v, color:false, spendParent:true},
     {label:_ib('sc_digital_spend')+'▶ Total Digital Ad Spend (Meta & Google)',   key:'dsp', req:null, fmt:$v, color:false, spendSub:true, spendSubParent:true},
     {label:'Meta Spend',          key:'ms',  req:null,       fmt:$v,   color:false, spendSubSub:true},
@@ -2529,7 +2529,7 @@ function renderScorecard2(){
     {label:_ib('sc_grassroots_leads')+'Grassroots Leads',    key:'gl',  req:40,  fmt:fInt, color:true},
     {label:_ib('sc_grassroots_presales')+'Grassroots Presales', key:'gp', req:20, fmt:fInt, color:true},
     {label:_ib('sc_comm_events')+'Comm. Events',      key:'ev',  req:6,          fmt:fInt, color:true},
-    {label:_ib('sc_ig_followers')+'IG New Followers',  key:'ig',  req:30,        fmt:fInt, color:true},
+    // {label:_ib('sc_ig_followers')+'IG New Followers',  key:'ig',  req:30,        fmt:fInt, color:true}, // hidden pending review
     {label:_ib('sc_total_spend')+'▶ Total Mktg Spend', computed:wk=>_wTs(wk)||null, req:null, fmt:$v, color:false, spendParent:true},
     {label:_ib('sc_digital_spend')+'▶ Digital Spend',                    key:'dsp', req:null, fmt:$v, color:false, spendSub:true, spendSubParent:true},
     {label:'Meta Ads',            key:'ms',  req:null, fmt:$v, color:false, spendSubSub:true},
