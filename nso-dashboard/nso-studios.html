@@ -89,10 +89,10 @@
 <nav class="nav">
   <a class="nav-logo" href="../home.html"><img src="../logo.png" alt="SWEAT440"/></a>
   <div class="nav-tabs" id="navTabs">
-    <button class="nav-tab active" onclick="switchTab('summary',this)">Summary</button>
-    <button class="nav-tab" id="navTabSummary2" onclick="switchTab('summary2',this)">Summary (Test)<span class="nav-badge alpha">Alpha</span></button>
-    <button class="nav-tab" onclick="switchTab('scorecard',this)">Scorecard</button>
-    <button class="nav-tab" id="navTabScorecard2" onclick="switchTab('scorecard2',this)">Scorecard (Test)<span class="nav-badge alpha">Alpha</span></button>
+    <button class="nav-tab" onclick="switchTab('summary',this)" style="display:none">Summary</button>
+    <button class="nav-tab active" id="navTabSummary2" onclick="switchTab('summary2',this)">Summary</button>
+    <button class="nav-tab" onclick="switchTab('scorecard',this)" style="display:none">Scorecard</button>
+    <button class="nav-tab" id="navTabScorecard2" onclick="switchTab('scorecard2',this)">Scorecard</button>
     <button class="nav-tab" id="navClientHistory" onclick="switchTab('clienthistory',this)">Client History</button>
     <div class="nav-group">
       <button class="nav-tab nav-group-label" onclick="toggleNavGroup('funnel-group',this)">Funnel ▾</button>
@@ -110,13 +110,13 @@
         <button class="nav-tab nav-sub" onclick="switchTab('google',this)">Google Ads</button>
       </div>
     </div>
-    <button class="nav-tab" id="navTabCpr" onclick="switchTab('cpr',this)">Blended CPR<span class="nav-badge alpha">Alpha</span></button>
+    <button class="nav-tab" id="navTabCpr" onclick="switchTab('cpr',this)">Blended CPR</button>
     <div class="nav-group">
       <button class="nav-tab nav-group-label" onclick="toggleNavGroup('organic-group',this)">Organic Channels ▾</button>
       <div class="nav-submenu" id="organic-group">
         <button class="nav-tab nav-sub" onclick="switchTab('ga4',this)">Website</button>
         <button class="nav-tab nav-sub" onclick="switchTab('gbp',this)">Google Business Profile</button>
-        <button class="nav-tab nav-sub" id="navTabInstagram" onclick="switchTab('instagram',this)">Instagram<span class="nav-badge alpha">Alpha</span></button>
+        <button class="nav-tab nav-sub" id="navTabInstagram" onclick="switchTab('instagram',this)">Instagram</button>
       </div>
     </div>
     <button class="nav-tab" id="navTabGlossary" onclick="switchTab('glossary',this)">Glossary</button>
@@ -160,12 +160,12 @@
 <div class="main">
 
   <!-- SUMMARY TAB -->
-  <div class="tab-content active" id="tab-summary">
+  <div class="tab-content" id="tab-summary">
     <div id="summaryContent"></div>
   </div>
 
   <!-- SUMMARY TEST TAB (extended pre-weeks timeline) -->
-  <div class="tab-content" id="tab-summary2">
+  <div class="tab-content active" id="tab-summary2">
     <div id="summary2Content"></div>
   </div>
 
@@ -398,7 +398,7 @@ function switchTab(id,btn){
   btn.classList.add('active');
   document.getElementById('navTabs').classList.remove('open');
   document.querySelector('.controls-bar').style.display=(id==='summary'||id==='scorecard'||id==='summary2'||id==='scorecard2')?'none':'';
-  const _alphaTabs=['summary2','scorecard2','cpr','instagram'];
+  const _alphaTabs=[];
   document.getElementById('alphaWarning').classList.toggle('visible',_alphaTabs.includes(id));
   // "Download Leads" only makes sense on the Leads tab
   const showDownload = id === 'leads';
@@ -1167,7 +1167,8 @@ function switchSumStudio(code){
   if(!sc)return;
   if(_allowedStudios&&!_allowedStudios.includes((sc.data_name||sc.full_name||sc.name||'').replace(/^SWEAT440\s+/,'')))return;
   _sumStudio=sc;
-  renderSummary();
+  if(document.getElementById('tab-summary2').classList.contains('active'))renderSummary2();
+  else renderSummary();
   if(document.getElementById('tab-funnel').classList.contains('active'))renderFunnel();
 }
 
@@ -1816,6 +1817,7 @@ function applyFilters(){
   if(document.getElementById('tab-instagram').classList.contains('active'))renderInstagram();
   if(document.getElementById('tab-scorecard').classList.contains('active'))renderScorecard();
   if(document.getElementById('tab-summary').classList.contains('active'))renderSummary();
+  if(document.getElementById('tab-summary2').classList.contains('active'))renderSummary2();
   if(document.getElementById('tab-clienthistory').classList.contains('active'))renderClientHistory();
 }
 
@@ -1976,7 +1978,7 @@ function renderScorecard(){
     {label:_ib('sc_grassroots_leads')+'Grassroots Leads',    key:'gl',  req:40,  fmt:fInt, color:true},
     {label:_ib('sc_grassroots_presales')+'Grassroots Presales', key:'gp', req:20, fmt:fInt, color:true},
     {label:_ib('sc_comm_events')+'Comm. Events',      key:'ev',  req:6,          fmt:fInt, color:true},
-    {label:_ib('sc_ig_followers')+'IG New Followers',  key:'ig',  req:30,        fmt:fInt, color:true},
+    // {label:_ib('sc_ig_followers')+'IG New Followers',  key:'ig',  req:30,        fmt:fInt, color:true}, // hidden pending review
     {label:_ib('sc_total_spend')+'▶ Total Mktg Spend', computed:wk=>_wTs(wk)||null, req:null, fmt:$v, color:false, spendParent:true},
     {label:_ib('sc_digital_spend')+'▶ Total Digital Ad Spend (Meta & Google)',   key:'dsp', req:null, fmt:$v, color:false, spendSub:true, spendSubParent:true},
     {label:'Meta Spend',          key:'ms',  req:null,       fmt:$v,   color:false, spendSubSub:true},
@@ -2527,7 +2529,7 @@ function renderScorecard2(){
     {label:_ib('sc_grassroots_leads')+'Grassroots Leads',    key:'gl',  req:40,  fmt:fInt, color:true},
     {label:_ib('sc_grassroots_presales')+'Grassroots Presales', key:'gp', req:20, fmt:fInt, color:true},
     {label:_ib('sc_comm_events')+'Comm. Events',      key:'ev',  req:6,          fmt:fInt, color:true},
-    {label:_ib('sc_ig_followers')+'IG New Followers',  key:'ig',  req:30,        fmt:fInt, color:true},
+    // {label:_ib('sc_ig_followers')+'IG New Followers',  key:'ig',  req:30,        fmt:fInt, color:true}, // hidden pending review
     {label:_ib('sc_total_spend')+'▶ Total Mktg Spend', computed:wk=>_wTs(wk)||null, req:null, fmt:$v, color:false, spendParent:true},
     {label:_ib('sc_digital_spend')+'▶ Digital Spend',                    key:'dsp', req:null, fmt:$v, color:false, spendSub:true, spendSubParent:true},
     {label:'Meta Ads',            key:'ms',  req:null, fmt:$v, color:false, spendSubSub:true},
@@ -3570,9 +3572,7 @@ function renderMeta(){
     <div class="chart-card-title">Active Ads</div>
     <div style="display:flex;align-items:flex-start;gap:10px;background:#f0f6fa;border-left:3px solid #99DAF3;border-radius:6px;padding:10px 14px;margin-bottom:16px">
       <span style="font-size:15px;line-height:1;color:#0084B5;flex-shrink:0;margin-top:1px">ⓘ</span>
-      <p style="margin:0;font-size:12px;color:#1a4d6e;line-height:1.55">${isAdminUser()
-        ?`If you want to preview the ads below, you must be logged into your Facebook account that is connected to Meta Business for your studio. If you do not have access to your studio's Meta Business, reach out to your Marketing Manager for assistance.`
-        :`Coming soon: full ad previews (images and video) will be viewable directly from this dashboard in an upcoming update.`}</p>
+      <p style="margin:0;font-size:12px;color:#1a4d6e;line-height:1.55">To preview an ad, click on its thumbnail or name. Images open a Drive link and videos play as an embedded preview. Some ads may not load — if a specific ad isn't showing for you, contact <b>LeadTeam</b> and we'll share it directly.</p>
     </div>
     <div style="overflow-x:auto">
       <table class="data-table" id="meta-ads-table">
@@ -3638,17 +3638,13 @@ function renderMeta(){
       const isVid=btn.dataset.vid==='1';
       const vurl=btn.dataset.vurl||'';
       const prev=btn.dataset.prev||'';
-      if(isAdminUser()){
-        if(isVid){
-          if(vurl)openAdMedia(btn.dataset.thumb,true,vurl,prev,btn.dataset.name);
-          else if(prev)window.open(prev,'_blank','noopener');
-        }else{
-          const di=btn.dataset.dimg||'';
-          if(di)window.open(di,'_blank','noopener');
-          else openAdMedia(btn.dataset.full||btn.dataset.thumb,false,null,null,btn.dataset.name);
-        }
+      if(isVid){
+        if(vurl)openAdMedia(btn.dataset.thumb,true,vurl,prev,btn.dataset.name);
+        else if(prev)window.open(prev,'_blank','noopener');
       }else{
-        openAdMedia(btn.dataset.thumb,isVid,vurl||null,prev||null,btn.dataset.name);
+        const di=btn.dataset.dimg||'';
+        if(di)window.open(di,'_blank','noopener');
+        else openAdMedia(btn.dataset.full||btn.dataset.thumb,false,null,null,btn.dataset.name);
       }
     });
   }
@@ -4936,7 +4932,7 @@ async function init(){
   if(_lastD){const _ld=new Date(_lastD+'T00:00:00Z');_dataThruLabel='Data until '+(_ld.getUTCMonth()+1)+'/'+_ld.getUTCDate()+'/'+_ld.getUTCFullYear();}
   document.querySelectorAll('.data-thru-label').forEach(el=>el.textContent=_dataThruLabel);
   document.querySelector('.controls-bar').style.display='none';
-  renderSummary();
+  renderSummary2();
   renderFunnel();
   applyFilters();
 }

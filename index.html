@@ -2540,7 +2540,7 @@ async function buildMetaTab() {
 
           const ctrStr = g.impressions > 0 ? (g.clicks/g.impressions*100).toFixed(2)+'%' : '—';
           const adCpl  = g.leads > 0 ? f$2(g.spend/g.leads) : '—';
-          const isVid  = (g.media_type||'').toLowerCase().includes('video') || g.name.toLowerCase().includes('reel') || g.name.toLowerCase().includes('video');
+          const isVid  = (g.media_type||'').toLowerCase().includes('video') || g.name.toLowerCase().includes('reel');
           const fallbackIcon = isVid ? '&#9654;' : '&#128444;';
           const thumbFallback = `<div style="width:44px;height:44px;background:#0084b5;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px">${fallbackIcon}</div>`;
           const _pageId = META_CODE_TO_PAGE_ID[g.studio_code];
@@ -2548,35 +2548,15 @@ async function buildMetaTab() {
             ? 'https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=US&view_all_page_id=' + _pageId
             : (isAdminUser() ? (g.preview_link || g.library_url || '#') : '#');
           const canLink = !!_pageId || isAdminUser();
-          let driveUrl = '';
-          let driveImg = '';
-          let thumbCell;
-          if (isAdminUser()) {
-            driveUrl = isVid ? (g.drive_vid || VIDEO_DRIVE_LINKS[g.name] || '') : '';
-            driveImg = !isVid ? (g.drive_img || '') : '';
-            const ta = `class="ad-thumb-btn" data-thumb="${(g.thumbnail||'').replace(/"/g,'&quot;')}" data-full="${(g.full_img||g.thumbnail||'').replace(/"/g,'&quot;')}" data-vid="${isVid?1:0}" data-vurl="${driveUrl}" data-dimg="${driveImg.replace(/"/g,'&quot;')}" data-prev="${(g.preview_link||'').replace(/"/g,'&quot;')}" data-name="${g.name.replace(/"/g,'&quot;')}"`;
-            const fbAdm = `<div style="width:44px;height:44px;background:#0084b5;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">${fallbackIcon}</div>`;
-            thumbCell = g.thumbnail
-              ? `<div ${ta} style="width:44px;height:44px;border-radius:6px;overflow:hidden;border:1px solid rgba(0,163,224,0.2);cursor:pointer"><img src="${(g.thumbnail||'').replace(/_p\d+x\d+/g,'')}" style="width:100%;height:100%;object-fit:cover;pointer-events:none" loading="lazy" data-fb="${fbAdm.replace(/"/g,'&quot;')}" data-orig="${(g.thumbnail||'').replace(/"/g,'&quot;')}" onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src=this.dataset.orig||''}else{this.parentElement.outerHTML=this.dataset.fb}"/></div>`
-              : `<div ${ta} style="width:44px;height:44px;background:#0084b5;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">${fallbackIcon}</div>`;
-          } else {
-            thumbCell = g.thumbnail
-              ? (canLink
-                ? '<a href="' + adLink + '" target="_blank" rel="noopener" style="display:block;width:44px;height:44px;border-radius:6px;overflow:hidden;border:1px solid rgba(0,163,224,0.2);flex-shrink:0">'
-                  + '<img src="' + (g.thumbnail||'').replace(/_p\d+x\d+/g,'') + '" style="width:100%;height:100%;object-fit:cover" loading="lazy" data-orig="' + (g.thumbnail||'').replace(/"/g,'&quot;') + '" data-fb="' + thumbFallback.replace(/"/g, '&quot;') + '" onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src=this.dataset.orig||\'\'}else{this.parentElement.innerHTML=this.dataset.fb}"/></a>'
-                : '<div style="width:44px;height:44px;border-radius:6px;overflow:hidden;border:1px solid rgba(0,163,224,0.2)">'
-                  + '<img src="' + (g.thumbnail||'').replace(/_p\d+x\d+/g,'') + '" style="width:100%;height:100%;object-fit:cover" loading="lazy" data-orig="' + (g.thumbnail||'').replace(/"/g,'&quot;') + '" data-fb="' + thumbFallback.replace(/"/g, '&quot;') + '" onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src=this.dataset.orig||\'\'}else{this.parentElement.innerHTML=this.dataset.fb}"/></div>')
-              : (canLink
-                ? `<a href="${adLink}" target="_blank" rel="noopener" style="display:flex;width:44px;height:44px;background:#0084b5;border-radius:6px;align-items:center;justify-content:center;font-size:18px;text-decoration:none">${fallbackIcon}</a>`
-                : `<div style="display:flex;width:44px;height:44px;background:#0084b5;border-radius:6px;align-items:center;justify-content:center;font-size:18px">${fallbackIcon}</div>`);
-          }
+          const driveUrl = isVid ? (g.drive_vid || VIDEO_DRIVE_LINKS[g.name] || '') : '';
+          const driveImg = !isVid ? (g.drive_img || '') : '';
+          const ta = `class="ad-thumb-btn" data-thumb="${(g.thumbnail||'').replace(/"/g,'&quot;')}" data-full="${(g.full_img||g.thumbnail||'').replace(/"/g,'&quot;')}" data-vid="${isVid?1:0}" data-vurl="${driveUrl}" data-dimg="${driveImg.replace(/"/g,'&quot;')}" data-prev="${(g.preview_link||'').replace(/"/g,'&quot;')}" data-name="${g.name.replace(/"/g,'&quot;')}"`;
+          const fbFallback = `<div style="width:44px;height:44px;background:#0084b5;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">${fallbackIcon}</div>`;
+          const thumbCell = g.thumbnail
+            ? `<div ${ta} style="width:44px;height:44px;border-radius:6px;overflow:hidden;border:1px solid rgba(0,163,224,0.2);cursor:pointer"><img src="${(g.thumbnail||'').replace(/_p\d+x\d+/g,'')}" style="width:100%;height:100%;object-fit:cover;pointer-events:none" loading="lazy" data-fb="${fbFallback.replace(/"/g,'&quot;')}" data-orig="${(g.thumbnail||'').replace(/"/g,'&quot;')}" onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src=this.dataset.orig||''}else{this.parentElement.outerHTML=this.dataset.fb}"/></div>`
+            : `<div ${ta} style="width:44px;height:44px;background:#0084b5;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">${fallbackIcon}</div>`;
           const mediaLabel = isVid ? 'Video' : 'Image';
-          const _nameHref = canLink && adLink !== '#' ? adLink : '';
-          const nameCell = isAdminUser()
-            ? `<span class="ad-thumb-btn" data-thumb="${(g.thumbnail||'').replace(/"/g,'&quot;')}" data-full="${(g.full_img||g.thumbnail||'').replace(/"/g,'&quot;')}" data-vid="${isVid?1:0}" data-vurl="${driveUrl}" data-dimg="${driveImg.replace(/"/g,'&quot;')}" data-prev="${(g.preview_link||'').replace(/"/g,'&quot;')}" data-name="${g.name.replace(/"/g,'&quot;')}" style="cursor:pointer;font-weight:600;font-size:13px;color:#1a4d6e">${g.name}</span>`
-            : (_nameHref
-                ? `<a href="${_nameHref}" target="_blank" rel="noopener" style="color:#1a4d6e;text-decoration:none;font-weight:600;font-size:13px">${g.name}</a>`
-                : `<span style="font-weight:600;font-size:13px">${g.name}</span>`);
+          const nameCell = `<span ${ta} style="cursor:pointer;font-weight:600;font-size:13px;color:#1a4d6e">${g.name}</span>`;
           return `<tr>
             <td style="padding:8px 6px">${thumbCell}</td>
             <td><div>${nameCell}</div><div style="font-size:11px;color:#8aabbf;margin-top:2px">${mediaLabel}</div></td>
@@ -2609,27 +2589,25 @@ async function buildMetaTab() {
           </tr>`;
         }
       );
-      // Admin-only thumbnail click handler (delegated, survives table re-sorts)
-      if (isAdminUser()) {
-        const _adsTable = document.getElementById('meta-ads-table');
-        if (_adsTable && !_adsTable._lbBound) {
-          _adsTable._lbBound = true;
-          _adsTable.addEventListener('click', e => {
-            const btn = e.target.closest('.ad-thumb-btn');
-            if (!btn) return;
-            const isVidBtn = btn.dataset.vid === '1';
-            if (isVidBtn) {
-              const vurl = btn.dataset.vurl || '';
-              const prev = btn.dataset.prev || '';
-              if (vurl) openAdMedia(btn.dataset.thumb, true, vurl, prev, btn.dataset.name);
-              else if (prev) window.open(prev, '_blank', 'noopener');
-            } else {
-              const di = btn.dataset.dimg || '';
-              if (di) window.open(di, '_blank', 'noopener');
-              else openAdMedia(btn.dataset.full || btn.dataset.thumb, false, null, btn.dataset.prev || null, btn.dataset.name);
-            }
-          });
-        }
+      // Thumbnail / name click handler (delegated, survives table re-sorts)
+      const _adsTable = document.getElementById('meta-ads-table');
+      if (_adsTable && !_adsTable._lbBound) {
+        _adsTable._lbBound = true;
+        _adsTable.addEventListener('click', e => {
+          const btn = e.target.closest('.ad-thumb-btn');
+          if (!btn) return;
+          const isVidBtn = btn.dataset.vid === '1';
+          if (isVidBtn) {
+            const vurl = btn.dataset.vurl || '';
+            const prev = btn.dataset.prev || '';
+            if (vurl) openAdMedia(btn.dataset.thumb, true, vurl, prev, btn.dataset.name);
+            else if (prev) window.open(prev, '_blank', 'noopener');
+          } else {
+            const di = btn.dataset.dimg || '';
+            if (di) window.open(di, '_blank', 'noopener');
+            else openAdMedia(btn.dataset.full || btn.dataset.thumb, false, null, btn.dataset.prev || null, btn.dataset.name);
+          }
+        });
       }
     }
   }
