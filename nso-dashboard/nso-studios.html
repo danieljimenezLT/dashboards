@@ -2897,10 +2897,12 @@ function renderScorecard2(){
     if(wk.w===t2sw)_b.push(`<span style="font-size:7px;background:#27ae60;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">→$${t2p}</span>`);
     else if(wk.w===t3sw)_b.push(`<span style="font-size:7px;background:#8e44ad;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">→$${t3p}</span>`);
     const topRow=`<span style="display:block;min-height:14px;text-align:center;margin-bottom:1px">${_b.join(' ')}</span>`;
-    // Unconfigured studios (no week_1_start): show date range only, no week number
+    // Unconfigured studios (no week_1_start): show date range only like Fort Myers pre-weeks
+    // Both dates at 9px; first week has no ds so show de only (no "Pre" prefix)
     const _colLabel=!_w1Official
-      ?(wk.ds?`${_fmtD(wk.ds)}<br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.de)}</span>`
-            :`<span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${wk.date||'—'}</span>`)
+      ?(wk.ds
+        ?`<span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.ds)}</span><br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.de)}</span>`
+        :(wk.de?`<span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.de)}</span>`:'—'))
       :`W${wk.w}<br>${dateSpan}`;
     h+=`<th class="num${wk.isCur?' sc-cell-cur':''}" style="min-width:90px;font-size:13px;vertical-align:bottom">${topRow}${_colLabel}</th>`;
   });
