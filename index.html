@@ -2571,11 +2571,12 @@ async function buildMetaTab() {
                 : `<div style="display:flex;width:44px;height:44px;background:#0084b5;border-radius:6px;align-items:center;justify-content:center;font-size:18px">${fallbackIcon}</div>`);
           }
           const mediaLabel = isVid ? 'Video' : 'Image';
-          const _adminDriveLink = isAdminUser() ? (isVid ? driveUrl : driveImg) : '';
-          const _nameHref = _adminDriveLink || (canLink && adLink !== '#' ? adLink : '');
-          const nameCell = _nameHref
-            ? `<a href="${_nameHref}" target="_blank" rel="noopener" style="color:#1a4d6e;text-decoration:none;font-weight:600;font-size:13px">${g.name}</a>`
-            : `<span style="font-weight:600;font-size:13px">${g.name}</span>`;
+          const _nameHref = canLink && adLink !== '#' ? adLink : '';
+          const nameCell = isAdminUser()
+            ? `<span class="ad-thumb-btn" data-thumb="${(g.thumbnail||'').replace(/"/g,'&quot;')}" data-full="${(g.full_img||g.thumbnail||'').replace(/"/g,'&quot;')}" data-vid="${isVid?1:0}" data-vurl="${driveUrl}" data-dimg="${driveImg.replace(/"/g,'&quot;')}" data-prev="${(g.preview_link||'').replace(/"/g,'&quot;')}" data-name="${g.name.replace(/"/g,'&quot;')}" style="cursor:pointer;font-weight:600;font-size:13px;color:#1a4d6e">${g.name}</span>`
+            : (_nameHref
+                ? `<a href="${_nameHref}" target="_blank" rel="noopener" style="color:#1a4d6e;text-decoration:none;font-weight:600;font-size:13px">${g.name}</a>`
+                : `<span style="font-weight:600;font-size:13px">${g.name}</span>`);
           return `<tr>
             <td style="padding:8px 6px">${thumbCell}</td>
             <td><div>${nameCell}</div><div style="font-size:11px;color:#8aabbf;margin-top:2px">${mediaLabel}</div></td>
