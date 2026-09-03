@@ -1,6 +1,18 @@
 {
   "entries": [
     {
+      "date": "2026-09-03",
+      "pr_number": 310,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/310",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Fix broken image thumbnails in Meta Ads table",
+      "summary": "Reverts using the Drive /view URL as <img src> — it is a viewer page, not an image. Image ads now display their permanent facebook.com/ads/image URL as before."
+    },
+    {
       "date": "2026-09-02",
       "pr_number": 308,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/308",
