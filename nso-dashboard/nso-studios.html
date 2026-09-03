@@ -78,14 +78,10 @@
 #leadsRingLeg .ring-legend-label,#newsalesRingLeg .ring-legend-label,#cancRingLeg .ring-legend-label{white-space:nowrap;color:#1a1a2e;margin-right:16px;flex:0 0 auto}
 #leadsRingLeg .ring-legend-vol,#newsalesRingLeg .ring-legend-vol,#cancRingLeg .ring-legend-vol{white-space:nowrap;text-align:right;color:#5a7a8a;margin-right:10px;flex:0 0 auto}
 #leadsRingLeg .ring-legend-pct,#newsalesRingLeg .ring-legend-pct,#cancRingLeg .ring-legend-pct{white-space:nowrap;text-align:right;font-weight:700;color:#1a1a2e;flex:0 0 auto}
-/* ── DEFINITIONS TAB ─────────────────────────────────────────────────────── */
-.defs-intro{margin-bottom:20px}
-.defs-section{margin-bottom:28px}
-.defs-section-title{font-family:'Oswald',sans-serif;font-size:13px;font-style:italic;text-transform:uppercase;letter-spacing:.07em;color:#0084B5;border-bottom:2px solid #D2EFFF;padding-bottom:7px;margin-bottom:14px}
-.defs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
-.defs-card{background:#fff;border-radius:8px;padding:14px 16px;border-left:3px solid #00A3E0;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.defs-card-title{font-family:'Oswald',sans-serif;font-size:13px;font-style:italic;text-transform:uppercase;letter-spacing:.04em;color:#1a1a2e;margin-bottom:6px}
-.defs-card-desc{font-size:13px;color:#4a5a6a;line-height:1.6}
+/* ── GLOSSARY TAB — extra category pills (not in shared/style.css) ──────── */
+.glossary-pill.cat-summary{background:rgba(0,195,160,.14);color:#007a62}
+.glossary-pill.cat-scorecard{background:rgba(221,180,0,.18);color:#7a6400}
+.glossary-pill.cat-cumulative{background:rgba(0,132,181,.18);color:#005080}
 </style>
 </head>
 <body>
@@ -123,7 +119,7 @@
         <button class="nav-tab nav-sub" id="navTabInstagram" onclick="switchTab('instagram',this)">Instagram<span class="nav-badge alpha">Alpha</span></button>
       </div>
     </div>
-    <button class="nav-tab" id="navTabDefinitions" onclick="switchTab('definitions',this)">Definitions<span class="nav-badge alpha">Alpha</span></button>
+    <button class="nav-tab" id="navTabGlossary" onclick="switchTab('glossary',this)">Glossary</button>
   </div>
   <button class="hamburger" id="hamburger" onclick="toggleNav()"><span></span><span></span><span></span></button>
   <div class="nav-user" id="navUser"></div>
@@ -310,9 +306,9 @@
     <div id="cpr-content"></div>
   </div>
 
-  <!-- DEFINITIONS TAB -->
-  <div class="tab-content" id="tab-definitions">
-    <div id="defsContent"></div>
+  <!-- GLOSSARY TAB -->
+  <div class="tab-content" id="tab-glossary">
+    <div id="glossaryContent"></div>
   </div>
 </div>
 
@@ -402,7 +398,7 @@ function switchTab(id,btn){
   btn.classList.add('active');
   document.getElementById('navTabs').classList.remove('open');
   document.querySelector('.controls-bar').style.display=(id==='summary'||id==='scorecard'||id==='summary2'||id==='scorecard2')?'none':'';
-  const _alphaTabs=['summary2','scorecard2','cpr','instagram','definitions'];
+  const _alphaTabs=['summary2','scorecard2','cpr','instagram'];
   document.getElementById('alphaWarning').classList.toggle('visible',_alphaTabs.includes(id));
   // "Download Leads" only makes sense on the Leads tab
   const showDownload = id === 'leads';
@@ -561,42 +557,106 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeKpiInfo();});
 function _infoBtn(key){const g=GLOSSARY[key];if(!g)return'';return`<button class="kpi-info-btn" onclick="showKpiInfo(this,event)" data-title="${_esc(g.title||key)}" data-desc="${_esc(g.desc)}" data-date="${_esc(g.date||'')}">i</button>`;}
 function _infoBtnInline(key){const g=GLOSSARY[key];if(!g)return'';return`<button class="kpi-info-btn kpi-info-inline" onclick="showKpiInfo(this,event)" data-title="${_esc(g.title||key)}" data-desc="${_esc(g.desc)}" data-date="${_esc(g.date||'')}">i</button>`;}
 
-/* ── DEFINITIONS TAB ────────────────────────────────────────────────────── */
-function renderDefinitionsTab(){
-  const SECTIONS=[
-    {title:'Core Funnel',items:[
-      {key:'leads',label:'Leads (New Accounts Created)'},
-      {key:'nso_new_sale',label:'New Sales'},
-      {key:'nso_sale',label:'Net Sales'},
-      {key:'nso_cancel',label:'Cancellations'},
-      {key:'sc_cvr',label:'Conversion Rate',desc:'Percentage of leads who purchased a membership. Calculated as New Sales ÷ Leads. Measures how effectively the presale campaign is converting interest into committed members.'}
-    ]},
-    {title:'Cost & Efficiency',items:[
-      {key:'sc_blended_cpl',label:'Blended CPL',desc:'Total marketing spend divided by total leads (digital + grassroots). Blended CPL accounts for all acquisition costs and all lead sources, giving a full-funnel cost view.'},
-      {key:'sc_ads_cpl',label:'Ads CPL'},
-      {key:'sc_blended_cpa',label:'Blended CPA',desc:'Total marketing spend divided by net new presales (new sales minus cancellations). Measures how much is spent across all channels to acquire one net new paying member.'},
-      {key:'sc_ads_cpa',label:'Ads CPA'}
-    ]},
-    {title:'Performance',items:[
-      {key:'sum_goal_announce',label:'Goal to Announce Opening'},
-      {key:'sc_rmr',label:'Estimated Day-1 RMR'},
-      {key:'sc_roms',label:'ROMS'},
-      {key:'sum_spend',label:'Marketing Spend'}
-    ]}
-  ];
-  let h=`<div class="chart-card defs-intro"><div style="font-family:'Oswald',sans-serif;font-size:18px;font-style:italic;text-transform:uppercase;color:#00A3E0;letter-spacing:.04em;margin-bottom:8px">Metric Definitions & Glossary</div><p style="margin:0;color:#4a5a6a;line-height:1.6;font-size:13.5px">Definitions for the key metrics in this dashboard, organized by section.</p></div>`;
-  for(const sec of SECTIONS){
-    h+=`<div class="defs-section"><div class="defs-section-title">${_esc(sec.title)}</div><div class="defs-grid">`;
-    for(const item of sec.items){
-      const g=GLOSSARY[item.key];if(!g)continue;
-      const desc=item.desc||g.desc;
-      h+=`<div class="defs-card"><div class="defs-card-title">${_esc(item.label)}</div><div class="defs-card-desc">${_esc(desc)}</div></div>`;
-    }
-    h+=`</div></div>`;
-  }
-  document.getElementById('defsContent').innerHTML=h;
+/* ── GLOSSARY TAB ────────────────────────────────────────────────────────── */
+const GLOSSARY_META = {
+  leads:               { cat:'Core Funnel',             fmt:'Count' },
+  nso_new_sale:        { cat:'Core Funnel',             fmt:'Count' },
+  nso_sale:            { cat:'Core Funnel',             fmt:'Count' },
+  nso_cancel:          { cat:'Core Funnel',             fmt:'Count' },
+  sum_leads_7d:        { cat:'Summary',                 fmt:'Count' },
+  sum_presales_7d:     { cat:'Summary',                 fmt:'Count' },
+  sum_cvr_7d:          { cat:'Summary',                 fmt:'Percentage' },
+  sum_leads_total:     { cat:'Summary',                 fmt:'Count' },
+  sum_presales_total:  { cat:'Summary',                 fmt:'Count' },
+  sum_rmr:             { cat:'Summary',                 fmt:'Currency (USD)' },
+  sum_spend:           { cat:'Summary',                 fmt:'Currency (USD)' },
+  sum_goal_announce:   { cat:'Summary',                 fmt:'Count' },
+  sc_new_leads:        { cat:'Scorecard — Weekly',      fmt:'Count' },
+  sc_new_presales:     { cat:'Scorecard — Weekly',      fmt:'Count' },
+  sc_cvr:              { cat:'Scorecard — Weekly',      fmt:'Percentage' },
+  sc_cancellations:    { cat:'Scorecard — Weekly',      fmt:'Count' },
+  sc_grassroots_leads: { cat:'Scorecard — Weekly',      fmt:'Count' },
+  sc_grassroots_presales:{ cat:'Scorecard — Weekly',    fmt:'Count' },
+  sc_comm_events:      { cat:'Scorecard — Weekly',      fmt:'Count' },
+  sc_ig_followers:     { cat:'Scorecard — Weekly',      fmt:'Count' },
+  sc_total_spend:      { cat:'Scorecard — Weekly',      fmt:'Currency (USD)' },
+  sc_digital_spend:    { cat:'Scorecard — Weekly',      fmt:'Currency (USD)' },
+  sc_grassroots_spend: { cat:'Scorecard — Weekly',      fmt:'Currency (USD)' },
+  sc_other_spend:      { cat:'Scorecard — Weekly',      fmt:'Currency (USD)' },
+  sc_leadteam_fee:     { cat:'Scorecard — Weekly',      fmt:'Currency (USD)' },
+  sc_blended_cpl:      { cat:'Scorecard — Weekly',      fmt:'Currency (USD)' },
+  sc_ads_cpl:          { cat:'Scorecard — Weekly',      fmt:'Currency (USD)' },
+  sc_blended_cpa:      { cat:'Scorecard — Weekly',      fmt:'Currency (USD)' },
+  sc_ads_cpa:          { cat:'Scorecard — Weekly',      fmt:'Currency (USD)' },
+  sc_total_leads:      { cat:'Scorecard — Cumulative',  fmt:'Count' },
+  sc_presales_gross:   { cat:'Scorecard — Cumulative',  fmt:'Count' },
+  sc_net_presales:     { cat:'Scorecard — Cumulative',  fmt:'Count' },
+  sc_cum_cvr:          { cat:'Scorecard — Cumulative',  fmt:'Percentage' },
+  sc_cum_cancellations:{ cat:'Scorecard — Cumulative',  fmt:'Count' },
+  sc_ig_cum:           { cat:'Scorecard — Cumulative',  fmt:'Count' },
+  sc_rmr:              { cat:'Scorecard — Cumulative',  fmt:'Currency (USD)' },
+  sc_roms:             { cat:'Scorecard — Cumulative',  fmt:'Ratio (×)' },
+  meta_spend:          { cat:'Meta Ads',                fmt:'Currency (USD)' },
+  meta_impressions:    { cat:'Meta Ads',                fmt:'Count' },
+  meta_clicks:         { cat:'Meta Ads',                fmt:'Count' },
+  meta_leads:          { cat:'Meta Ads',                fmt:'Count' },
+  meta_cpl:            { cat:'Meta Ads',                fmt:'Currency (USD)' },
+  meta_blended_cpl:    { cat:'Meta Ads',                fmt:'Currency (USD)' },
+  google_spend:        { cat:'Google Ads',              fmt:'Currency (USD)' },
+  google_leads:        { cat:'Google Ads',              fmt:'Count' },
+  google_cpl:          { cat:'Google Ads',              fmt:'Currency (USD)' },
+  google_blended_cpl:  { cat:'Google Ads',              fmt:'Currency (USD)' },
+  google_opp:          { cat:'Google Ads',              fmt:'Count' },
+  google_cpo:          { cat:'Google Ads',              fmt:'Currency (USD)' },
+  google_calls:        { cat:'Google Ads',              fmt:'Count' },
+  google_directions:   { cat:'Google Ads',              fmt:'Count' },
+  ga4_sessions:        { cat:'Website (GA4)',           fmt:'Count' },
+  ga4_users:           { cat:'Website (GA4)',           fmt:'Count' },
+  ga4_new_users:       { cat:'Website (GA4)',           fmt:'Count' },
+  gbp_total_views:     { cat:'Google Business Profile', fmt:'Count' },
+  gbp_search:          { cat:'Google Business Profile', fmt:'Count' },
+  gbp_maps:            { cat:'Google Business Profile', fmt:'Count' },
+  gbp_directions:      { cat:'Google Business Profile', fmt:'Count' },
+  gbp_website:         { cat:'Google Business Profile', fmt:'Count' },
+  gbp_calls:           { cat:'Google Business Profile', fmt:'Count' },
+  gbp_avg_rating:      { cat:'Google Business Profile', fmt:'Number' },
+  gbp_total_reviews:   { cat:'Google Business Profile', fmt:'Count' },
+  gbp_five_star:       { cat:'Google Business Profile', fmt:'Count' },
+};
+const GLOSSARY_CATEGORY_ORDER = ['Core Funnel','Summary','Scorecard — Weekly','Scorecard — Cumulative','Meta Ads','Google Ads','Website (GA4)','Google Business Profile'];
+const GLOSSARY_CAT_SLUG = {'Core Funnel':'funnel','Summary':'summary','Scorecard — Weekly':'scorecard','Scorecard — Cumulative':'cumulative','Meta Ads':'meta','Google Ads':'google','Website (GA4)':'ga4','Google Business Profile':'gbp'};
+
+function renderGlossaryTab(){
+  const rowsByCat={};
+  Object.keys(GLOSSARY_META).forEach(key=>{
+    const meta=GLOSSARY_META[key],g=GLOSSARY[key];
+    if(!g)return;
+    (rowsByCat[meta.cat]=rowsByCat[meta.cat]||[]).push({meta,g});
+  });
+  let h='<div class="chart-card" style="margin-bottom:20px">'
+    +'<div class="chart-card-title">Metric Glossary</div>'
+    +'<p style="margin:0;color:#5a7a8a;font-size:13px;line-height:1.6">Definitions for every metric shown across this dashboard\'s tabs — Summary, Scorecard, Meta Ads, Google Ads, Website, and Google Business Profile.</p></div>';
+  h+='<div class="glossary-table-wrap"><table class="glossary-table">'
+    +'<thead><tr><th>Metric</th><th>Category</th><th>Display Format</th><th>Description</th></tr></thead><tbody>';
+  GLOSSARY_CATEGORY_ORDER.forEach(cat=>{
+    const rows=rowsByCat[cat];
+    if(!rows||!rows.length)return;
+    const slug=GLOSSARY_CAT_SLUG[cat]||'funnel';
+    h+='<tr class="glossary-section-row"><td colspan="4">'+_esc(cat)+'</td></tr>';
+    rows.forEach(({meta,g})=>{
+      const desc=_esc(g.desc).split('\n\n').join('<br><br>').split('\n').join('<br>');
+      h+='<tr>'
+        +'<td class="glossary-metric">'+_esc(g.title)+'</td>'
+        +'<td><span class="glossary-pill cat-'+slug+'">'+_esc(cat)+'</span></td>'
+        +'<td><span class="glossary-pill fmt">'+_esc(meta.fmt)+'</span></td>'
+        +'<td class="glossary-desc">'+desc+'</td>'
+        +'</tr>';
+    });
+  });
+  h+='</tbody></table></div>';
+  document.getElementById('glossaryContent').innerHTML=h;
 }
-renderDefinitionsTab();
+renderGlossaryTab();
 
 function setGran(g){GRAN=g;['Daily','Weekly','Monthly'].forEach(x=>{['gran'+x,'gran'+x+'L','gran'+x+'S','gran'+x+'C','gran'+x+'Cvr'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.toggle('active',x.toLowerCase()===g)})});applyFilters()}
 function toggleDs(btn,i){if(!trendChart)return;const ds=trendChart.data.datasets[i];ds.hidden=!ds.hidden;btn.classList.toggle('on');const cs=['#00A3E0','#00FFC2','#ff6b6b'],tc=['#000','#000','#fff'];if(btn.classList.contains('on')){btn.style.background=cs[i]||cs[0];btn.style.borderColor=cs[i]||cs[0];btn.style.color=tc[i]||'#000'}else{btn.style.background='#f4f9fd';btn.style.borderColor='#c0d4df';btn.style.color='#5a7a8a'}trendChart.update()}
@@ -2333,11 +2393,13 @@ function renderScorecard2(){
   const _pwData=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[sc.code];
   const _pwList=(_pwData&&_pwData.pre_weeks)||[];
 
-  // If the official W1 hasn't started yet, the scorecard weeks are pre-launch
-  // data that overlaps with the pre-weeks — suppress them to avoid double-counting.
+  // Pre-launch: week_1_start explicitly set and in the future (e.g. Fort Myers).
+  // Unconfigured: no week_1_start set at all (e.g. South End, Rose Creek).
+  // Both hide RMR Breakdown; only true pre-launch clears the weeks array (avoid double-counting).
   const _todaySc2=new Date().toISOString().slice(0,10);
   const _w1Official=_pwData&&_pwData.week_1_start;
   const _isPreLaunch2=Boolean(_w1Official)&&_w1Official>_todaySc2;
+  const _hideRmr=_isPreLaunch2||!_w1Official;
   if(_isPreLaunch2)weeks.splice(0);
 
   const _scStrip=s=>(s||'').replace(/^SWEAT440\s+/,'');
@@ -2529,6 +2591,21 @@ function renderScorecard2(){
   if(!isAdminUser())defs=defs.filter(d=>d.key!=='ig'&&d.key!=='cumIg');
   const pastWeeks=weeks.filter(w=>w.w>=0);
   function _fmtD(iso){if(!iso)return'?';const[y,m,d]=iso.split('-');return`${+m}/${+d}`+(y!=='2026'?`<br><span style="font-size:8px;color:#c07000">${y}</span>`:'')}
+  // For unconfigured studios: build sequential Sun-Sat labels anchored to the
+  // first date that has any Snowflake lead/sale data (same source as the chart).
+  const _unconfigLabels=(!_w1Official&&pastWeeks.length)?( ()=>{
+    const _sn2=(sc.data_name||sc.full_name||sc.name||'').replace(/^SWEAT440\s+/,'');
+    const _dailyDates=(RAW?.daily_detail||[]).filter(r=>(r.studio||'').replace(/^SWEAT440\s+/,'')===_sn2&&r.date<=_todaySc2).map(r=>r.date).sort();
+    if(!_dailyDates.length)return null;
+    const _anchor=new Date(_dailyDates[0]+'T00:00:00Z');
+    _anchor.setUTCDate(_anchor.getUTCDate()-_anchor.getUTCDay()); // snap to Sunday
+    const _iso=x=>x.toISOString().slice(0,10);
+    return pastWeeks.map((_,i)=>{
+      const sun=new Date(_anchor);sun.setUTCDate(_anchor.getUTCDate()+i*7);
+      const sat=new Date(sun);sat.setUTCDate(sun.getUTCDate()+6);
+      return{sunDs:_iso(sun),satDe:_iso(sat)};
+    });
+  })():null;
 
   // ── RMR Tier Breakdown ─────────────────────────────────────────────────
   const pricing=sc.pricing||{tier1_price:99,tier2_price:129,tier2_start_week:99};
@@ -2726,7 +2803,7 @@ function renderScorecard2(){
   const _tierSubtitle=t0p
     ?`Founders $${t0p} + Tier 1 $${t1p}`+(t2sw<99?` → Tier 2 $${t2p} from W${t2sw}`:'')+(t3p&&t3sw?` → Tier 3 $${t3p} from W${t3sw}`:'')
     :`Tier 1 $${t1p} → Tier 2 $${t2p} from W${t2sw}`+(t3p&&t3sw?` → Tier 3 $${t3p} from W${t3sw}`:'');
-  if(!_isPreLaunch2){
+  if(!_hideRmr){
   h+=`<div class="chart-card" style="padding:14px 20px;margin-bottom:12px">`;
   h+=`<div style="font-family:Oswald,sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;color:#5a7a8a;letter-spacing:1px;margin-bottom:10px">RMR Breakdown &nbsp;<span style="font-weight:400;font-size:10px;color:#aabbc8">${_tierSubtitle}</span></div>`;
   h+=_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:-4px;margin-bottom:8px">${_dataThruLabel}</div>`:'';
@@ -2802,12 +2879,12 @@ function renderScorecard2(){
     h+=`</tr>`;
   });
   h+=`</tbody></table></div></div>`;
-  } // end if(!_isPreLaunch2) — RMR Breakdown
+  } // end if(!_hideRmr) — RMR Breakdown
 
   // ── Main KPI scorecard table (with pre-week columns) ───────────────────
   h+=`<div class="chart-card" style="padding:20px 24px">`;
   h+=`<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">`;
-  h+=`<div><div style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;color:#8aaabb;font-weight:500;text-transform:uppercase">${sc.full_name.replace('SWEAT440 ','')}${_isPreLaunch2?'':` — W${cw} current`}`;
+  h+=`<div><div style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;color:#8aaabb;font-weight:500;text-transform:uppercase">${sc.full_name.replace('SWEAT440 ','')}${(_isPreLaunch2||!_w1Official)?'':` — W${cw} current`}`;
   if(preWeekCols.length)h+=` <span style="font-size:10px;font-weight:400;color:#99DAF3">(+${preWeekCols.length} pre-launch wks)</span>`;
   h+=`</div>${_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:2px">${_dataThruLabel}</div>`:''}</div>`;
   h+=`<div class="gran-group"><button class="gran-btn${_scView2==='weekly'?' active':''}" id="scWeeklyBtn2" onclick="setScView2('weekly')">Weekly</button><button class="gran-btn${_scView2==='cum'?' active':''}" id="scCumBtn2" onclick="setScView2('cum')">Cumulative</button></div>`;
@@ -2828,14 +2905,19 @@ function renderScorecard2(){
   });
 
   // Regular week header columns
-  pastWeeks.forEach(wk=>{
+  pastWeeks.forEach((wk,_wi2)=>{
     const dateSpan=wk.ds?`<span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.ds)}</span><br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.de)}</span>`:`<span style="font-size:9px;font-weight:400;color:#8aaabb">${(wk.date||'').slice(0,9)}</span>`;
     const _b=[];
     if(wk.w===sc.co_week)_b.push(`<span style="font-size:7px;background:#0084B5;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">Target C/O</span>`);
     if(wk.w===t2sw)_b.push(`<span style="font-size:7px;background:#27ae60;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">→$${t2p}</span>`);
     else if(wk.w===t3sw)_b.push(`<span style="font-size:7px;background:#8e44ad;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">→$${t3p}</span>`);
     const topRow=`<span style="display:block;min-height:14px;text-align:center;margin-bottom:1px">${_b.join(' ')}</span>`;
-    h+=`<th class="num${wk.isCur?' sc-cell-cur':''}" style="min-width:90px;font-size:13px;vertical-align:bottom">${topRow}W${wk.w}<br>${dateSpan}</th>`;
+    // Unconfigured studios: use sequential Sun-Sat labels anchored to first Snowflake data date
+    const _ss=_unconfigLabels?_unconfigLabels[_wi2]:null;
+    const _colLabel=_ss
+      ?`<span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(_ss.sunDs)}</span><br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(_ss.satDe)}</span>`
+      :`W${wk.w}<br>${dateSpan}`;
+    h+=`<th class="num${wk.isCur?' sc-cell-cur':''}" style="min-width:90px;font-size:13px;vertical-align:bottom">${topRow}${_colLabel}</th>`;
   });
   h+=`</tr></thead><tbody>`;
 
@@ -4734,8 +4816,7 @@ async function init(){
   if(!isAdminUser()){
     const _igTab=document.getElementById('navTabInstagram');
     if(_igTab)_igTab.remove();
-    const _defsTab=document.getElementById('navTabDefinitions');
-    if(_defsTab)_defsTab.remove();
+    // Glossary visible to all users — no restriction
     const _sum2Tab=document.getElementById('navTabSummary2');
     if(_sum2Tab)_sum2Tab.remove();
     const _sc2Tab=document.getElementById('navTabScorecard2');
