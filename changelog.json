@@ -2,6 +2,18 @@
   "entries": [
     {
       "date": "2026-09-03",
+      "pr_number": 315,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/315",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Ad names in Meta Ads table now open the media embed viewer on click",
+      "summary": "Clicking an ad's name in the Meta Ads table now opens the same media embed as clicking the thumbnail, instead of navigating to a new browser tab. Applies to both the NSO and OS dashboards."
+    },
+    {
+      "date": "2026-09-03",
       "pr_number": 314,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/314",
       "author": "Sebastian Arango",
