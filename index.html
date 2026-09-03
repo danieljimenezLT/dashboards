@@ -2496,9 +2496,7 @@ async function buildMetaTab() {
     const _stPri = {ACTIVE:5, PAUSED:4, ADSET_PAUSED:3, CAMPAIGN_PAUSED:3, COMPLETED:2, ARCHIVED:1, DELETED:0};
     const _newSt = (meta?.status || '').toUpperCase();
     if ((_stPri[_newSt] ?? -1) > (_stPri[g.status] ?? -1)) g.status = _newSt;
-    // Prefer drive_image_url (permanent) over thumbnail_url (Facebook CDN, expires ~24h)
-    if (!g.thumbnail && (meta?.drive_image_url || meta?.thumbnail_url))
-      g.thumbnail = meta.drive_image_url || meta.thumbnail_url;
+    if (!g.thumbnail    && meta?.thumbnail_url)  g.thumbnail    = meta.thumbnail_url;
     if (!g.full_img     && meta?.image_url)      g.full_img     = meta.image_url;
     if (meta?.post_url)                           g.preview_link = meta.post_url;
     else if (!g.preview_link && meta?.preview_link) g.preview_link = meta.preview_link;
