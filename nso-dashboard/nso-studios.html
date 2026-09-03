@@ -2393,12 +2393,13 @@ function renderScorecard2(){
   const _pwData=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[sc.code];
   const _pwList=(_pwData&&_pwData.pre_weeks)||[];
 
-  // If week_1_start is not configured or is in the future, treat as pre-launch:
-  // suppress scorecard weeks (avoid double-counting with pre-weeks) and hide RMR Breakdown.
-  // Studios with no week_1_start (e.g. not yet configured) also display as pre-launch.
+  // Pre-launch: week_1_start explicitly set and in the future (e.g. Fort Myers).
+  // Unconfigured: no week_1_start set at all (e.g. South End, Rose Creek).
+  // Both hide RMR Breakdown; only true pre-launch clears the weeks array (avoid double-counting).
   const _todaySc2=new Date().toISOString().slice(0,10);
   const _w1Official=_pwData&&_pwData.week_1_start;
-  const _isPreLaunch2=!_w1Official||_w1Official>_todaySc2;
+  const _isPreLaunch2=Boolean(_w1Official)&&_w1Official>_todaySc2;
+  const _hideRmr=_isPreLaunch2||!_w1Official;
   if(_isPreLaunch2)weeks.splice(0);
 
   const _scStrip=s=>(s||'').replace(/^SWEAT440\s+/,'');
@@ -2787,7 +2788,7 @@ function renderScorecard2(){
   const _tierSubtitle=t0p
     ?`Founders $${t0p} + Tier 1 $${t1p}`+(t2sw<99?` → Tier 2 $${t2p} from W${t2sw}`:'')+(t3p&&t3sw?` → Tier 3 $${t3p} from W${t3sw}`:'')
     :`Tier 1 $${t1p} → Tier 2 $${t2p} from W${t2sw}`+(t3p&&t3sw?` → Tier 3 $${t3p} from W${t3sw}`:'');
-  if(!_isPreLaunch2){
+  if(!_hideRmr){
   h+=`<div class="chart-card" style="padding:14px 20px;margin-bottom:12px">`;
   h+=`<div style="font-family:Oswald,sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;color:#5a7a8a;letter-spacing:1px;margin-bottom:10px">RMR Breakdown &nbsp;<span style="font-weight:400;font-size:10px;color:#aabbc8">${_tierSubtitle}</span></div>`;
   h+=_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:-4px;margin-bottom:8px">${_dataThruLabel}</div>`:'';
@@ -2863,7 +2864,7 @@ function renderScorecard2(){
     h+=`</tr>`;
   });
   h+=`</tbody></table></div></div>`;
-  } // end if(!_isPreLaunch2) — RMR Breakdown
+  } // end if(!_hideRmr) — RMR Breakdown
 
   // ── Main KPI scorecard table (with pre-week columns) ───────────────────
   h+=`<div class="chart-card" style="padding:20px 24px">`;
