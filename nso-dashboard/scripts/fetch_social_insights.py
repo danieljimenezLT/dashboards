@@ -455,10 +455,17 @@ def main():
             merged_daily[date] = {**merged_daily.get(date, {}), **row}
         all_daily = sorted(merged_daily.values(), key=lambda x: x["date"])
 
-        # Posts: dedup by permalink, new API data wins for engagement counts
+        # Posts: dedup by permalink, new API data wins for engagement counts.
+        # Preserve Drive image URLs — API always returns expiring CDN URLs.
         old_posts = {p["permalink"]: p for p in old.get("posts", []) if p.get("permalink")}
         new_posts = {p["permalink"]: p for p in new_data.get("posts", []) if p.get("permalink")}
-        old_posts.update(new_posts)
+        for permalink, new_p in new_posts.items():
+            old_p = old_posts.get(permalink, {})
+            merged = {**old_p, **new_p}
+            old_img = old_p.get("image_url", "")
+            if old_img.startswith("https://drive.google.com/thumbnail"):
+                merged["image_url"] = old_img
+            old_posts[permalink] = merged
         all_posts = sorted(old_posts.values(), key=lambda x: x.get("date", ""), reverse=True)
 
         # Monthly aggregates: compute from full accumulated data for complete months

@@ -172,7 +172,7 @@ def _ck(key: str) -> str:
 
 
 def _thumb_url(fid: str) -> str:
-    return f"https://drive.google.com/file/d/{fid}/view"
+    return f"https://drive.google.com/thumbnail?id={fid}&sz=w500"
 
 
 def _video_embed_url(fid: str) -> str:
