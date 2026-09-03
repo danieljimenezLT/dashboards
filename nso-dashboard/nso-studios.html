@@ -2337,7 +2337,7 @@ function renderScorecard2(){
   // data that overlaps with the pre-weeks — suppress them to avoid double-counting.
   const _todaySc2=new Date().toISOString().slice(0,10);
   const _w1Official=_pwData&&_pwData.week_1_start;
-  const _isPreLaunch2=!_w1Official||_w1Official>_todaySc2;
+  const _isPreLaunch2=Boolean(_w1Official)&&_w1Official>_todaySc2;
   if(_isPreLaunch2)weeks.splice(0);
 
   const _scStrip=s=>(s||'').replace(/^SWEAT440\s+/,'');
