@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-03",
+      "pr_number": 312,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/312",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix Scorecard Test showing no data for South End and Rose Creek",
+      "summary": "Studios with empty week_1_start in pre-weeks config now show their scorecard weeks instead of being incorrectly treated as pre-launch."
+    },
+    {
+      "date": "2026-09-03",
       "pr_number": 310,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/310",
       "author": "Sebastian Arango",
