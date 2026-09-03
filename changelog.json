@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-03",
+      "pr_number": 314,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/314",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix Meta Ads tab showing image ads as Video when \"Video\" appears in the ad name",
+      "summary": "Ads whose creative names contain the word \"Video\" were incorrectly classified as video type, hiding their Drive image link. Now only the Meta API object_type field (and \"reel\" in the name) determine the media type."
+    },
+    {
+      "date": "2026-09-03",
       "pr_number": 313,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/313",
       "author": "Sebastian Arango",
