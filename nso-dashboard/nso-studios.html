@@ -4806,17 +4806,7 @@ async function init(){
   CUR_USER=_authUser;
   renderAuthNav(_authUser);
   _allowedStudios = getAuthStudios(_authUser);
-  if(!isAdminUser()){
-    const _igTab=document.getElementById('navTabInstagram');
-    if(_igTab)_igTab.remove();
-    // Glossary visible to all users — no restriction
-    const _sum2Tab=document.getElementById('navTabSummary2');
-    if(_sum2Tab)_sum2Tab.remove();
-    const _sc2Tab=document.getElementById('navTabScorecard2');
-    if(_sc2Tab)_sc2Tab.remove();
-    const _cprTab=document.getElementById('navTabCpr');
-    if(_cprTab)_cprTab.remove();
-  }
+  // All tabs now visible to all users — no role-based tab removal
 
   // Load all data files
   const [dataRes,scRes,sc2Res,mktRes,dashRes,gadsRes,socialRes,salesRes,gbpRes,adMetaRes,chRes,pwRes,grRes,vdlRes,ocRes]=await Promise.allSettled([
