@@ -89,10 +89,10 @@
 <nav class="nav">
   <a class="nav-logo" href="../home.html"><img src="../logo.png" alt="SWEAT440"/></a>
   <div class="nav-tabs" id="navTabs">
-    <button class="nav-tab active" onclick="switchTab('summary',this)">Summary</button>
-    <button class="nav-tab" id="navTabSummary2" onclick="switchTab('summary2',this)">Summary (Test)<span class="nav-badge alpha">Alpha</span></button>
-    <button class="nav-tab" onclick="switchTab('scorecard',this)">Scorecard</button>
-    <button class="nav-tab" id="navTabScorecard2" onclick="switchTab('scorecard2',this)">Scorecard (Test)<span class="nav-badge alpha">Alpha</span></button>
+    <button class="nav-tab" onclick="switchTab('summary',this)" style="display:none">Summary</button>
+    <button class="nav-tab active" id="navTabSummary2" onclick="switchTab('summary2',this)">Summary</button>
+    <button class="nav-tab" onclick="switchTab('scorecard',this)" style="display:none">Scorecard</button>
+    <button class="nav-tab" id="navTabScorecard2" onclick="switchTab('scorecard2',this)">Scorecard</button>
     <button class="nav-tab" id="navClientHistory" onclick="switchTab('clienthistory',this)">Client History</button>
     <div class="nav-group">
       <button class="nav-tab nav-group-label" onclick="toggleNavGroup('funnel-group',this)">Funnel ▾</button>
@@ -110,13 +110,13 @@
         <button class="nav-tab nav-sub" onclick="switchTab('google',this)">Google Ads</button>
       </div>
     </div>
-    <button class="nav-tab" id="navTabCpr" onclick="switchTab('cpr',this)">Blended CPR<span class="nav-badge alpha">Alpha</span></button>
+    <button class="nav-tab" id="navTabCpr" onclick="switchTab('cpr',this)">Blended CPR</button>
     <div class="nav-group">
       <button class="nav-tab nav-group-label" onclick="toggleNavGroup('organic-group',this)">Organic Channels ▾</button>
       <div class="nav-submenu" id="organic-group">
         <button class="nav-tab nav-sub" onclick="switchTab('ga4',this)">Website</button>
         <button class="nav-tab nav-sub" onclick="switchTab('gbp',this)">Google Business Profile</button>
-        <button class="nav-tab nav-sub" id="navTabInstagram" onclick="switchTab('instagram',this)">Instagram<span class="nav-badge alpha">Alpha</span></button>
+        <button class="nav-tab nav-sub" id="navTabInstagram" onclick="switchTab('instagram',this)">Instagram</button>
       </div>
     </div>
     <button class="nav-tab" id="navTabGlossary" onclick="switchTab('glossary',this)">Glossary</button>
@@ -160,12 +160,12 @@
 <div class="main">
 
   <!-- SUMMARY TAB -->
-  <div class="tab-content active" id="tab-summary">
+  <div class="tab-content" id="tab-summary">
     <div id="summaryContent"></div>
   </div>
 
   <!-- SUMMARY TEST TAB (extended pre-weeks timeline) -->
-  <div class="tab-content" id="tab-summary2">
+  <div class="tab-content active" id="tab-summary2">
     <div id="summary2Content"></div>
   </div>
 
@@ -398,7 +398,7 @@ function switchTab(id,btn){
   btn.classList.add('active');
   document.getElementById('navTabs').classList.remove('open');
   document.querySelector('.controls-bar').style.display=(id==='summary'||id==='scorecard'||id==='summary2'||id==='scorecard2')?'none':'';
-  const _alphaTabs=['summary2','scorecard2','cpr','instagram'];
+  const _alphaTabs=[];
   document.getElementById('alphaWarning').classList.toggle('visible',_alphaTabs.includes(id));
   // "Download Leads" only makes sense on the Leads tab
   const showDownload = id === 'leads';
@@ -3638,17 +3638,13 @@ function renderMeta(){
       const isVid=btn.dataset.vid==='1';
       const vurl=btn.dataset.vurl||'';
       const prev=btn.dataset.prev||'';
-      if(isAdminUser()){
-        if(isVid){
-          if(vurl)openAdMedia(btn.dataset.thumb,true,vurl,prev,btn.dataset.name);
-          else if(prev)window.open(prev,'_blank','noopener');
-        }else{
-          const di=btn.dataset.dimg||'';
-          if(di)window.open(di,'_blank','noopener');
-          else openAdMedia(btn.dataset.full||btn.dataset.thumb,false,null,null,btn.dataset.name);
-        }
+      if(isVid){
+        if(vurl)openAdMedia(btn.dataset.thumb,true,vurl,prev,btn.dataset.name);
+        else if(prev)window.open(prev,'_blank','noopener');
       }else{
-        openAdMedia(btn.dataset.thumb,isVid,vurl||null,prev||null,btn.dataset.name);
+        const di=btn.dataset.dimg||'';
+        if(di)window.open(di,'_blank','noopener');
+        else openAdMedia(btn.dataset.full||btn.dataset.thumb,false,null,null,btn.dataset.name);
       }
     });
   }
