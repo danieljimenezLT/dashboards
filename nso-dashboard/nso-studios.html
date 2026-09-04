@@ -464,16 +464,29 @@ function _wkLabel(dateStr){
   if(!w1||!w1.date_start||w1.date_start>today)return'';
   // Check negative pre-weeks from PRE_WEEKS first
   const pwData=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[studioSC2.code];
-  for(const pw of((pwData&&pwData.pre_weeks)||[])){
+  const preWeekList=(pwData&&pwData.pre_weeks)||[];
+  for(const pw of preWeekList){
     if(pw.date_start&&pw.date_end&&dateStr>=pw.date_start&&dateStr<=pw.date_end)
       return'W'+pw.week_num;
   }
-  // Check W0 (date_start=null) and positive weeks from SC2
+  // Determine lower bound for W0 so dates before the configured period don't get mislabeled
+  let w0Floor=null;
+  if(preWeekList.length>0){
+    const sorted=[...preWeekList].filter(p=>p.date_start).sort((a,b)=>a.date_start<b.date_start?-1:1);
+    if(sorted.length)w0Floor=sorted[0].date_start;
+  }else if(pwData&&pwData.week_0_start){
+    w0Floor=pwData.week_0_start;
+  }else{
+    // Estimate: W0 is the 7 days before W1
+    const d=new Date(w1.date_start+'T00:00:00Z');
+    d.setUTCDate(d.getUTCDate()-7);
+    w0Floor=d.toISOString().slice(0,10);
+  }
+  // Check W0 and positive weeks from SC2
   for(const wk of weeks){
     const num=wk.week.replace('WEEK','').replace('Week','').trim();
     if(num==='0'){
-      // Week 0 has no date_start; match any date on or before its end
-      if(wk.date_end&&dateStr<=wk.date_end)return'W0';
+      if(wk.date_end&&dateStr<=wk.date_end&&dateStr>=w0Floor)return'W0';
     }else if(wk.date_start&&wk.date_end&&dateStr>=wk.date_start&&dateStr<=wk.date_end){
       return wk.week.replace('Week ','W').replace('WEEK ','W');
     }
