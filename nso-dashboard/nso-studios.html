@@ -455,9 +455,19 @@ function _wkLabel(dateStr){
   // Prefer a single-selected studio; fall back to the funnel/summary focused studio
   const studio=studios.length===1?studios[0]:(_sumStudio||null);
   if(!studio)return'';
-  for(const wk of(studio.weeks||[])){
-    if(wk.date_start&&wk.date_end&&dateStr>=wk.date_start&&dateStr<=wk.date_end)
+  const weeks=studio.weeks||[];
+  // Only show week labels for studios that have already launched (W1 start ≤ today)
+  const w1=weeks.find(w=>w.week.replace('WEEK','').replace('Week','').trim()==='1');
+  const today=new Date().toISOString().slice(0,10);
+  if(!w1||!w1.date_start||w1.date_start>today)return'';
+  for(const wk of weeks){
+    const num=wk.week.replace('WEEK','').replace('Week','').trim();
+    if(num==='0'){
+      // Week 0 has no date_start; match any date on or before its end
+      if(wk.date_end&&dateStr<=wk.date_end)return'W0';
+    }else if(wk.date_start&&wk.date_end&&dateStr>=wk.date_start&&dateStr<=wk.date_end){
       return wk.week.replace('Week ','W').replace('WEEK ','W');
+    }
   }
   return'';
 }
