@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-04",
+      "pr_number": 321,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/321",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "LeadTeam fee now starts from configurable date per studio (LT Fees Start Date)",
+      "summary": "Added support for a new \"LT Fees Start Date\" column in the NSO Config sheet. When set, the LeadTeam $1,200/month fee only starts counting from that date — weeks before it show no LT fee in the scorecard, and the Blended CPR tab clips the calculation accordingly. Existing discount logic is unchanged."
+    },
+    {
+      "date": "2026-09-04",
       "pr_number": 320,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/320",
       "author": "Sebastian Arango",
