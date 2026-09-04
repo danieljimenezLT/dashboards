@@ -481,7 +481,7 @@ const GLOSSARY={
   meta_spend:{title:'Meta Ads — Spend',desc:'Total ad spend on Facebook and Instagram during the selected period, as reported by the Meta Marketing API. Includes all campaigns attributed to this studio.'},
   meta_impressions:{title:'Meta Ads — Impressions',desc:'Total number of times ads were shown to users on Facebook and Instagram. One person seeing the same ad multiple times counts as multiple impressions.'},
   meta_clicks:{title:'Meta Ads — Clicks',desc:'Total number of clicks on Meta ads, including link clicks, button clicks, and other interactions that direct users off the platform.'},
-  meta_leads:{title:'Meta Ads — Leads (Native)',desc:'Leads reported directly by Meta Ads Manager from native Facebook/Instagram Lead Ads forms. This count uses Meta\'s own tracking and attribution, and may differ from the standardized lead count shown above which comes from MindBody account creation records.'},
+  meta_leads:{title:'Meta Ads — Leads (on platform)',desc:'Leads reported directly by Meta Ads Manager. This count uses Meta\'s own tracking and attribution, and may differ from the standardized lead count shown above which comes from MindBody account creation records.'},
   meta_offsite_leads:{title:'Meta Ads — Offsite Conversions (Alpha)',desc:'Pixel-tracked lead form submissions on the SWEAT440 website, reported by Meta as offsite_conversion.fb_pixel_lead. This is a separate signal from native Lead Ads and is shown here for diagnostic purposes. Admin only.'},
   meta_cpl:{title:'Meta Ads — Cost / Lead',desc:'Total Meta ad spend divided by the number of leads generated. Measures the average cost to acquire one lead through Meta advertising.'},
   meta_blended_cpl:{title:'Meta Ads — Cost / Lead',desc:'Meta ad spend divided by the number of leads SWEAT440 attributed to Meta Ads during the period (per the standard lead reporting used across this dashboard). Blends platform spend with Snowflake-attributed leads.'},
@@ -3252,23 +3252,26 @@ function renderCPR(){
   const _spendCard=(label,v,vPp,vPy,color)=>{
     const ppH=vPp>0?_deltaH(v,vPp):'';
     const pyH=vPy>0?_deltaYH(v,vPy):'';
-    return`<div class="kpi-card" style="flex:1;min-width:130px;border-top:3px solid ${color}"><div class="kpi-card-label">${label}</div><div class="kpi-card-val">${f$(v)}</div>${ppH}${pyH}</div>`;
+    return`<div class="kpi-card" style="min-width:0;border-top:3px solid ${color}"><div class="kpi-card-label">${label}</div><div class="kpi-card-val">${f$(v)}</div>${ppH}${pyH}</div>`;
   };
-  const _plus='<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">+</span>';
-  const spCards=[];
-  if(CPR_GOOGLE){spCards.push(_spendCard('Google Ads',totalGoogle,ppGoogle,pyGoogle,'#34A853'));}
-  if(CPR_META){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('Meta Ads',totalMeta,ppMeta,pyMeta,'#1877F2'));}
-  if(CPR_LT){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('LeadTeam Fee',totalLt,ppLt,pyLt,'#FF6B35'));}
-  if(CPR_GRASSROOTS){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('Grassroots',totalGrs,ppGrs,pyGrs,'#8B5E3C'));}
-  if(CPR_PRINT){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('Print / Signs',totalPrint,ppPrint,pyPrint,'#9B59B6'));}
-  if(CPR_PR){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('PR',totalPR,ppPR,pyPR,'#E91E63'));}
-  if(CPR_EXT){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('Ext. Agency',totalExt,ppExt,pyExt,'#00897B'));}
-  if(CPR_OTHER){if(spCards.length)spCards.push(_plus);spCards.push(_spendCard('Other',totalOther,ppOther,pyOther,'#607D8B'));}
-  if(spCards.length){
-    spCards.push('<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">=</span>');
-    spCards.push(_spendCard('Total Spend',totalSpend,ppSpend,pySpend,'#1a1a2e'));
+  const spItems=[];
+  if(CPR_GOOGLE)    spItems.push({l:'Google Ads',   v:totalGoogle, pp:ppGoogle, py:pyGoogle, c:'#34A853'});
+  if(CPR_META)      spItems.push({l:'Meta Ads',     v:totalMeta,   pp:ppMeta,   py:pyMeta,   c:'#1877F2'});
+  if(CPR_LT)        spItems.push({l:'LeadTeam Fee', v:totalLt,     pp:ppLt,     py:pyLt,     c:'#FF6B35'});
+  if(CPR_GRASSROOTS)spItems.push({l:'Grassroots',   v:totalGrs,    pp:ppGrs,    py:pyGrs,    c:'#8B5E3C'});
+  if(CPR_PRINT)     spItems.push({l:'Print / Signs',v:totalPrint,  pp:ppPrint,  py:pyPrint,  c:'#9B59B6'});
+  if(CPR_PR)        spItems.push({l:'PR',           v:totalPR,     pp:ppPR,     py:pyPR,     c:'#E91E63'});
+  if(CPR_EXT)       spItems.push({l:'Ext. Agency',  v:totalExt,    pp:ppExt,    py:pyExt,    c:'#00897B'});
+  if(CPR_OTHER)     spItems.push({l:'Other',         v:totalOther,  pp:ppOther,  py:pyOther,  c:'#607D8B'});
+  if(spItems.length){
+    h+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:10px">`;
+    spItems.forEach(c=>h+=_spendCard(c.l,c.v,c.pp,c.py,c.c));
+    h+=`</div>`;
+    h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
+      <span style="font-family:Oswald,sans-serif;font-size:18px;font-weight:600;color:#5a7a8a;flex-shrink:0">=</span>
+      <div style="flex:1">${_spendCard('Total Spend',totalSpend,ppSpend,pySpend,'#00A3E0')}</div>
+    </div>`;
   }
-  h+=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:20px">${spCards.join('')}</div>`;
 
   // ── KPI cards ────────────────────────────────────────────────────────────
   h+=`<div class="kpi-grid" style="grid-template-columns:1fr 1fr;margin-bottom:20px">`;
@@ -3530,7 +3533,7 @@ function renderMeta(){
   h+=kpiCard('Spend',totalSpend,null,null,f$,GLOSSARY.meta_spend);
   h+=kpiCard('Impressions',totalImp,null,null,v=>fK(v),GLOSSARY.meta_impressions);
   h+=kpiCard('Clicks',totalClicks,null,null,v=>fN(v),GLOSSARY.meta_clicks);
-  h+=kpiCard('Leads (Native)',totalLeads,null,null,v=>v,GLOSSARY.meta_leads);
+  h+=kpiCard('Leads (on platform)',totalLeads,null,null,v=>v,GLOSSARY.meta_leads);
   h+=kpiCard('Cost / Lead',cpl,null,null,f$2,GLOSSARY.meta_cpl);
   // Offsite Conversions hidden — data preserved in totalOffsiteLeads, re-enable with kpiCard call above
   h+=`</div>`;
