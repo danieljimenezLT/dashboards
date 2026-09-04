@@ -1,20 +1,26 @@
 {
-  "generated_at": "2026-09-03T14:39:50.108048",
+  "generated_at": "2026-09-04T14:26:47.351841",
   "date_range": {
     "start": "2026-08-25",
-    "end": "2026-09-01"
+    "end": "2026-09-02"
   },
   "snowflake": {
     "studios": [
       {
         "studio": "SWEAT440 Miami Lakes",
-        "transactions": 10,
-        "unique_clients": 10,
-        "revenue": 400.0,
+        "transactions": 13,
+        "unique_clients": 12,
+        "revenue": 440.0,
         "meta_transactions": 1,
         "meta_clients": 1,
         "meta_revenue": 40.0,
         "by_source": [
+          {
+            "source": "Business Mode / App",
+            "transactions": 1,
+            "unique_clients": 1,
+            "revenue": 40.0
+          },
           {
             "source": "Local Listings",
             "transactions": 3,
@@ -29,17 +35,17 @@
           },
           {
             "source": "Website (unattributed)",
-            "transactions": 6,
-            "unique_clients": 6,
+            "transactions": 8,
+            "unique_clients": 7,
             "revenue": 240.0
           }
         ]
       },
       {
         "studio": "SWEAT440 NYC - Park Slope",
-        "transactions": 9,
-        "unique_clients": 9,
-        "revenue": 360.0,
+        "transactions": 11,
+        "unique_clients": 11,
+        "revenue": 440.0,
         "meta_transactions": 3,
         "meta_clients": 3,
         "meta_revenue": 120.0,
@@ -55,6 +61,12 @@
             "transactions": 3,
             "unique_clients": 3,
             "revenue": 120.0
+          },
+          {
+            "source": "N/A",
+            "transactions": 2,
+            "unique_clients": 2,
+            "revenue": 80.0
           },
           {
             "source": "Website (unattributed)",
@@ -123,6 +135,35 @@
         ]
       },
       {
+        "studio": "SWEAT440 Miami - Brickell",
+        "transactions": 7,
+        "unique_clients": 7,
+        "revenue": 280.0,
+        "meta_transactions": 0,
+        "meta_clients": 0,
+        "meta_revenue": 0.0,
+        "by_source": [
+          {
+            "source": "Local Listings",
+            "transactions": 1,
+            "unique_clients": 1,
+            "revenue": 40.0
+          },
+          {
+            "source": "SWEAT440 App",
+            "transactions": 1,
+            "unique_clients": 1,
+            "revenue": 40.0
+          },
+          {
+            "source": "Website (unattributed)",
+            "transactions": 5,
+            "unique_clients": 5,
+            "revenue": 200.0
+          }
+        ]
+      },
+      {
         "studio": "SWEAT440 Pinecrest - Palmetto Bay",
         "transactions": 7,
         "unique_clients": 7,
@@ -187,6 +228,41 @@
         ]
       },
       {
+        "studio": "SWEAT440 West Palm Beach",
+        "transactions": 7,
+        "unique_clients": 7,
+        "revenue": 280.0,
+        "meta_transactions": 1,
+        "meta_clients": 1,
+        "meta_revenue": 40.0,
+        "by_source": [
+          {
+            "source": "Business Mode / App",
+            "transactions": 1,
+            "unique_clients": 1,
+            "revenue": 40.0
+          },
+          {
+            "source": "Local Listings",
+            "transactions": 1,
+            "unique_clients": 1,
+            "revenue": 40.0
+          },
+          {
+            "source": "Meta Ads",
+            "transactions": 1,
+            "unique_clients": 1,
+            "revenue": 40.0
+          },
+          {
+            "source": "Website (unattributed)",
+            "transactions": 4,
+            "unique_clients": 4,
+            "revenue": 160.0
+          }
+        ]
+      },
+      {
         "studio": "SWEAT440 Eastchester",
         "transactions": 6,
         "unique_clients": 6,
@@ -222,48 +298,7 @@
         ]
       },
       {
-        "studio": "SWEAT440 West Palm Beach",
-        "transactions": 6,
-        "unique_clients": 6,
-        "revenue": 240.0,
-        "meta_transactions": 1,
-        "meta_clients": 1,
-        "meta_revenue": 40.0,
-        "by_source": [
-          {
-            "source": "Business Mode / App",
-            "transactions": 1,
-            "unique_clients": 1,
-            "revenue": 40.0
-          },
-          {
-            "source": "Local Listings",
-            "transactions": 1,
-            "unique_clients": 1,
-            "revenue": 40.0
-          },
-          {
-            "source": "Meta Ads",
-            "transactions": 1,
-            "unique_clients": 1,
-            "revenue": 40.0
-          },
-          {
-            "source": "N/A",
-            "transactions": 1,
-            "unique_clients": 1,
-            "revenue": 40.0
-          },
-          {
-            "source": "Website (unattributed)",
-            "transactions": 2,
-            "unique_clients": 2,
-            "revenue": 80.0
-          }
-        ]
-      },
-      {
-        "studio": "SWEAT440 Miami - Brickell",
+        "studio": "SWEAT440 Miami - Coconut Grove",
         "transactions": 5,
         "unique_clients": 5,
         "revenue": 200.0,
@@ -272,22 +307,22 @@
         "meta_revenue": 0.0,
         "by_source": [
           {
-            "source": "Local Listings",
+            "source": "MindBody App",
             "transactions": 1,
             "unique_clients": 1,
             "revenue": 40.0
           },
           {
             "source": "SWEAT440 App",
-            "transactions": 1,
-            "unique_clients": 1,
-            "revenue": 40.0
+            "transactions": 2,
+            "unique_clients": 2,
+            "revenue": 80.0
           },
           {
             "source": "Website (unattributed)",
-            "transactions": 3,
-            "unique_clients": 3,
-            "revenue": 120.0
+            "transactions": 2,
+            "unique_clients": 2,
+            "revenue": 80.0
           }
         ]
       },
@@ -344,6 +379,29 @@
         ]
       },
       {
+        "studio": "SWEAT440 Doral",
+        "transactions": 4,
+        "unique_clients": 4,
+        "revenue": 160.0,
+        "meta_transactions": 0,
+        "meta_clients": 0,
+        "meta_revenue": 0.0,
+        "by_source": [
+          {
+            "source": "Local Listings",
+            "transactions": 1,
+            "unique_clients": 1,
+            "revenue": 40.0
+          },
+          {
+            "source": "Website (unattributed)",
+            "transactions": 3,
+            "unique_clients": 3,
+            "revenue": 120.0
+          }
+        ]
+      },
+      {
         "studio": "SWEAT440 Miami - Midtown",
         "transactions": 4,
         "unique_clients": 4,
@@ -369,6 +427,29 @@
             "transactions": 1,
             "unique_clients": 1,
             "revenue": 40.0
+          }
+        ]
+      },
+      {
+        "studio": "SWEAT440 Miami - Upper East Side",
+        "transactions": 4,
+        "unique_clients": 4,
+        "revenue": 160.0,
+        "meta_transactions": 0,
+        "meta_clients": 0,
+        "meta_revenue": 0.0,
+        "by_source": [
+          {
+            "source": "MindBody App",
+            "transactions": 1,
+            "unique_clients": 1,
+            "revenue": 40.0
+          },
+          {
+            "source": "Website (unattributed)",
+            "transactions": 3,
+            "unique_clients": 3,
+            "revenue": 120.0
           }
         ]
       },
@@ -448,75 +529,6 @@
         ]
       },
       {
-        "studio": "SWEAT440 Doral",
-        "transactions": 3,
-        "unique_clients": 3,
-        "revenue": 120.0,
-        "meta_transactions": 0,
-        "meta_clients": 0,
-        "meta_revenue": 0.0,
-        "by_source": [
-          {
-            "source": "Local Listings",
-            "transactions": 1,
-            "unique_clients": 1,
-            "revenue": 40.0
-          },
-          {
-            "source": "Website (unattributed)",
-            "transactions": 2,
-            "unique_clients": 2,
-            "revenue": 80.0
-          }
-        ]
-      },
-      {
-        "studio": "SWEAT440 Miami - Coconut Grove",
-        "transactions": 3,
-        "unique_clients": 3,
-        "revenue": 120.0,
-        "meta_transactions": 0,
-        "meta_clients": 0,
-        "meta_revenue": 0.0,
-        "by_source": [
-          {
-            "source": "SWEAT440 App",
-            "transactions": 1,
-            "unique_clients": 1,
-            "revenue": 40.0
-          },
-          {
-            "source": "Website (unattributed)",
-            "transactions": 2,
-            "unique_clients": 2,
-            "revenue": 80.0
-          }
-        ]
-      },
-      {
-        "studio": "SWEAT440 Miami - Upper East Side",
-        "transactions": 3,
-        "unique_clients": 3,
-        "revenue": 120.0,
-        "meta_transactions": 0,
-        "meta_clients": 0,
-        "meta_revenue": 0.0,
-        "by_source": [
-          {
-            "source": "MindBody App",
-            "transactions": 1,
-            "unique_clients": 1,
-            "revenue": 40.0
-          },
-          {
-            "source": "Website (unattributed)",
-            "transactions": 2,
-            "unique_clients": 2,
-            "revenue": 80.0
-          }
-        ]
-      },
-      {
         "studio": "SWEAT440 Pembroke Pines",
         "transactions": 3,
         "unique_clients": 3,
@@ -587,6 +599,23 @@
             "transactions": 2,
             "unique_clients": 2,
             "revenue": 80.0
+          }
+        ]
+      },
+      {
+        "studio": "SWEAT440 Deerfield Beach",
+        "transactions": 1,
+        "unique_clients": 1,
+        "revenue": 40.0,
+        "meta_transactions": 0,
+        "meta_clients": 0,
+        "meta_revenue": 0.0,
+        "by_source": [
+          {
+            "source": "Website (unattributed)",
+            "transactions": 1,
+            "unique_clients": 1,
+            "revenue": 40.0
           }
         ]
       },
@@ -656,18 +685,24 @@
         "transactions": 13,
         "unique_clients": 13,
         "revenue": 520.0
+      },
+      {
+        "date": "2026-09-02",
+        "transactions": 13,
+        "unique_clients": 11,
+        "revenue": 440.0
       }
     ],
     "totals": {
-      "transactions": 106,
-      "unique_clients": 102,
-      "revenue": 4240.0,
+      "transactions": 119,
+      "unique_clients": 114,
+      "revenue": 4680.0,
       "meta_transactions": 15,
       "meta_revenue": 600.0
     }
   },
   "meta_leads": {
-    "total": 131,
+    "total": 143,
     "studios": [
       {
         "studio": "SWEAT440 Miami Lakes",
@@ -675,26 +710,30 @@
       },
       {
         "studio": "SWEAT440 Eastchester",
-        "leads": 14
+        "leads": 15
+      },
+      {
+        "studio": "SWEAT440 Miramar",
+        "leads": 13
       },
       {
         "studio": "SWEAT440 Boca Raton",
         "leads": 11
       },
       {
-        "studio": "SWEAT440 Miramar",
+        "studio": "SWEAT440 Dallas - Prestonwood",
         "leads": 10
       },
       {
         "studio": "SWEAT440 Pembroke Pines",
-        "leads": 9
-      },
-      {
-        "studio": "SWEAT440 Doral",
-        "leads": 8
+        "leads": 10
       },
       {
         "studio": "SWEAT440 Charlotte - Noda",
+        "leads": 8
+      },
+      {
+        "studio": "SWEAT440 Doral",
         "leads": 8
       },
       {
@@ -702,20 +741,16 @@
         "leads": 8
       },
       {
-        "studio": "SWEAT440 Dallas - Prestonwood",
+        "studio": "SWEAT440 South Miami",
         "leads": 8
       },
       {
-        "studio": "SWEAT440 South Miami",
+        "studio": "SWEAT440 Coral Springs",
         "leads": 7
       },
       {
         "studio": "SWEAT440 Reston",
-        "leads": 5
-      },
-      {
-        "studio": "SWEAT440 Coral Springs",
-        "leads": 5
+        "leads": 6
       },
       {
         "studio": "SWEAT440 NYC - Park Slope",
@@ -726,19 +761,19 @@
         "leads": 4
       },
       {
-        "studio": "SWEAT440 Coral Gables",
-        "leads": 3
-      },
-      {
         "studio": "SWEAT440 Miami - Upper East Side",
         "leads": 3
       },
       {
-        "studio": "SWEAT440 Fort Lauderdale - Las Olas",
-        "leads": 2
+        "studio": "SWEAT440 Coral Gables",
+        "leads": 3
       },
       {
         "studio": "SWEAT440 Miami - Midtown",
+        "leads": 3
+      },
+      {
+        "studio": "SWEAT440 Fort Lauderdale - Las Olas",
         "leads": 2
       },
       {
@@ -756,13 +791,13 @@
     ]
   },
   "meta": {
-    "total_spend": 6276.9,
+    "total_spend": 7069.89,
     "campaigns": [
       {
         "campaign_name": "2026 - Open Studios - 2 Weeks for 40",
-        "spend": 6276.9,
-        "impressions": 148739,
-        "clicks": 3049
+        "spend": 7069.89,
+        "impressions": 166541,
+        "clicks": 3378
       }
     ],
     "daily": [
@@ -810,125 +845,131 @@
       },
       {
         "date": "2026-09-01",
-        "spend": 741.45,
-        "impressions": 16618,
+        "spend": 741.46,
+        "impressions": 16619,
         "clicks": 348
+      },
+      {
+        "date": "2026-09-02",
+        "spend": 792.98,
+        "impressions": 17801,
+        "clicks": 329
       }
     ],
     "studios": [
       {
         "studio": "SWEAT440 Eastchester",
-        "spend": 446.43,
-        "impressions": 13160,
-        "clicks": 316
+        "spend": 518.01,
+        "impressions": 15164,
+        "clicks": 352
       },
       {
         "studio": "SWEAT440 West Palm Beach",
-        "spend": 425.67,
-        "impressions": 10605,
-        "clicks": 230
+        "spend": 469.97,
+        "impressions": 11841,
+        "clicks": 253
       },
       {
         "studio": "SWEAT440 Pinecrest - Palmetto Bay",
-        "spend": 422.22,
-        "impressions": 9364,
-        "clicks": 172
+        "spend": 462.14,
+        "impressions": 10247,
+        "clicks": 185
       },
       {
         "studio": "SWEAT440 Miramar",
-        "spend": 393.1,
-        "impressions": 8825,
-        "clicks": 186
-      },
-      {
-        "studio": "SWEAT440 Charlotte - Noda",
-        "spend": 388.56,
-        "impressions": 9502,
-        "clicks": 191
+        "spend": 448.52,
+        "impressions": 10033,
+        "clicks": 210
       },
       {
         "studio": "SWEAT440 Pembroke Pines",
-        "spend": 388.16,
-        "impressions": 9571,
-        "clicks": 216
+        "spend": 435.67,
+        "impressions": 10615,
+        "clicks": 243
+      },
+      {
+        "studio": "SWEAT440 Charlotte - Noda",
+        "spend": 428.33,
+        "impressions": 10368,
+        "clicks": 199
       },
       {
         "studio": "SWEAT440 South Miami",
-        "spend": 373.55,
-        "impressions": 9010,
-        "clicks": 173
+        "spend": 426.77,
+        "impressions": 10070,
+        "clicks": 196
       },
       {
         "studio": "SWEAT440 Boca Raton",
-        "spend": 352.99,
-        "impressions": 6597,
-        "clicks": 162
+        "spend": 409.49,
+        "impressions": 7570,
+        "clicks": 186
       },
       {
         "studio": "SWEAT440 NYC - Chelsea",
-        "spend": 344.45,
-        "impressions": 7652,
-        "clicks": 158
-      },
-      {
-        "studio": "SWEAT440 Doral",
-        "spend": 325.41,
-        "impressions": 7595,
-        "clicks": 149
-      },
-      {
-        "studio": "SWEAT440 Miami Lakes",
-        "spend": 325.31,
-        "impressions": 9519,
-        "clicks": 167
-      },
-      {
-        "studio": "SWEAT440 Miami - Midtown",
-        "spend": 319.99,
-        "impressions": 8216,
-        "clicks": 127
-      },
-      {
-        "studio": "SWEAT440 NYC - Park Slope",
-        "spend": 309.6,
-        "impressions": 6998,
+        "spend": 387.42,
+        "impressions": 8644,
         "clicks": 178
       },
       {
+        "studio": "SWEAT440 Doral",
+        "spend": 370.11,
+        "impressions": 8589,
+        "clicks": 162
+      },
+      {
+        "studio": "SWEAT440 Miami Lakes",
+        "spend": 369.18,
+        "impressions": 10673,
+        "clicks": 184
+      },
+      {
+        "studio": "SWEAT440 Miami - Midtown",
+        "spend": 362.99,
+        "impressions": 9135,
+        "clicks": 144
+      },
+      {
+        "studio": "SWEAT440 NYC - Park Slope",
+        "spend": 343.09,
+        "impressions": 7738,
+        "clicks": 200
+      },
+      {
         "studio": "SWEAT440 Miami - Upper East Side",
-        "spend": 296.81,
-        "impressions": 5735,
-        "clicks": 99
+        "spend": 332.93,
+        "impressions": 6440,
+        "clicks": 112
       },
       {
         "studio": "SWEAT440 Miami - Coconut Grove",
-        "spend": 264.09,
-        "impressions": 6082,
-        "clicks": 86
+        "spend": 298.08,
+        "impressions": 6735,
+        "clicks": 96
       },
       {
         "studio": "SWEAT440 Fort Lauderdale - Las Olas",
-        "spend": 254.71,
-        "impressions": 5440,
-        "clicks": 122
+        "spend": 276.77,
+        "impressions": 5968,
+        "clicks": 129
       },
       {
         "studio": "SWEAT440 Coral Gables",
-        "spend": 243.48,
-        "impressions": 5264,
-        "clicks": 76
-      },
-      {
-        "studio": "SWEAT440 Deerfield",
-        "spend": 201.2,
-        "impressions": 4824,
-        "clicks": 109
+        "spend": 274.66,
+        "impressions": 5958,
+        "clicks": 87
       },
       {
         "studio": "SWEAT440 Coral Springs",
-        "spend": 201.17,
-        "impressions": 4780,
-        "clicks": 132
+        "spend": 229.83,
+        "impressions": 5420,
+        "clicks": 147
+      },
+      {
+        "studio": "SWEAT440 Deerfield Beach",
+        "spend": 225.93,
+        "impressions": 5333,
+        "clicks": 115
       }
     ]
   }
