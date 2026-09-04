@@ -1,6 +1,18 @@
 {
   "entries": [
     {
+      "date": "2026-09-04",
+      "pr_number": 319,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/319",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "CPR spend cards now equal size in a grid; Meta Ads \"Leads (Native)\" renamed to \"Leads (on platform)\"",
+      "summary": "Cost source cards in the Blended CPR tab use a CSS grid so they're uniform in size. In both NSO and OS Meta Ads tabs, the \"Leads (Native)\" card and tooltip have been renamed to \"Leads (on platform)\" with a shorter description."
+    },
+    {
       "date": "2026-09-03",
       "pr_number": 318,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/318",
