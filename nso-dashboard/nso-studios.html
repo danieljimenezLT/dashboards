@@ -451,15 +451,24 @@ function fmMo(iso){return new Date(iso+'T00:00:00Z').toLocaleString('en-US',{mon
 function _wkLabel(dateStr){
   if(!SC||!SC.studios)return'';
   const sel=_getSel('studioMenu');
-  const studios=sel.length?SC.studios.filter(s=>sel.includes(s.full_name)):SC.studios;
+  const _sc=SC2||SC;
+  const studios=sel.length?_sc.studios.filter(s=>sel.includes(s.full_name)):_sc.studios;
   // Prefer a single-selected studio; fall back to the funnel/summary focused studio
-  const studio=studios.length===1?studios[0]:(_sumStudio||null);
-  if(!studio)return'';
-  const weeks=studio.weeks||[];
-  // Only show week labels for studios that have already launched (W1 start ≤ today)
+  const studioSC2=studios.length===1?studios[0]:
+    (_sumStudio?(_sc.studios.find(s=>s.code===_sumStudio.code)||_sumStudio):null);
+  if(!studioSC2)return'';
+  const weeks=studioSC2.weeks||[];
+  // Only show week labels for studios that have already launched (W1 date_start <= today)
   const w1=weeks.find(w=>w.week.replace('WEEK','').replace('Week','').trim()==='1');
   const today=new Date().toISOString().slice(0,10);
   if(!w1||!w1.date_start||w1.date_start>today)return'';
+  // Check negative pre-weeks from PRE_WEEKS first
+  const pwData=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[studioSC2.code];
+  for(const pw of((pwData&&pwData.pre_weeks)||[])){
+    if(pw.date_start&&pw.date_end&&dateStr>=pw.date_start&&dateStr<=pw.date_end)
+      return'W'+pw.week_num;
+  }
+  // Check W0 (date_start=null) and positive weeks from SC2
   for(const wk of weeks){
     const num=wk.week.replace('WEEK','').replace('Week','').trim();
     if(num==='0'){
