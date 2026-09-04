@@ -160,6 +160,7 @@ def load_sheet_config() -> list[dict]:
             "code":         code,
             "week_0_start": _parse_date(_col(row, "week 0 start")),
             "week_1_start": _parse_date(_col(row, "week 1 start")),
+            "lt_fee_start": _parse_date(_col(row, "lt fees start date")),
         })
     return out
 
@@ -313,12 +314,14 @@ def main():
         print(f"  {name:<30}  w0={str(w0):<12}  w1={str(w1):<12}  "
               f"pre_weeks={len(pre_weeks):>3}  leads={total_pre_leads:>4}")
 
+        lt = cfg["lt_fee_start"]
         result["studios"][code] = {
-            "name":       name,
-            "full_name":  f"SWEAT440 {name}",
+            "name":         name,
+            "full_name":    f"SWEAT440 {name}",
             "week_0_start": w0.isoformat() if w0 else None,
             "week_1_start": w1.isoformat() if w1 else None,
-            "pre_weeks":  pre_weeks,
+            "lt_fee_start": lt.isoformat() if lt else None,
+            "pre_weeks":    pre_weeks,
         }
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)

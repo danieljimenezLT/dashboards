@@ -65,6 +65,7 @@ def _load_pw_dates(gc):
         out[code] = {
             "week_0_start": _d(_col(row, "week 0 start")),
             "week_1_start": _d(_col(row, "week 1 start")),
+            "lt_fee_start": _d(_col(row, "lt fees start date")),
         }
     return out
 
@@ -116,6 +117,7 @@ def main():
             print(f"  {code} {cfg['name']:<25} {str(old_w1):<12} → {new_w1}  ({tag})")
         else:
             print(f"  {code} {cfg['name']:<25} no PRE_WEEKS date, keeping {old_w1}")
+        cfg["lt_fee_start"] = pw.get("lt_fee_start")
 
     # Load data files
     print("\nLoading data files...")
@@ -253,10 +255,16 @@ def main():
                          if w["leads"] > 0 and is_active else None)
 
             ov_pre = spend_overrides.get(code, {}).get("leadteam_pre")
+            lt_start = cfg.get("lt_fee_start")
             if wn == 0 and ov_pre:
                 lt_fee = float(ov_pre)
             elif is_active and wn >= 1:
-                lt_fee = _bac.calc_leadteam_fee(ws_date, we_date)
+                if lt_start and we_date < lt_start:
+                    lt_fee = None          # week entirely before fee start
+                elif lt_start and ws_date < lt_start:
+                    lt_fee = _bac.calc_leadteam_fee(lt_start, we_date)  # prorate
+                else:
+                    lt_fee = _bac.calc_leadteam_fee(ws_date, we_date)
             else:
                 lt_fee = None
 
