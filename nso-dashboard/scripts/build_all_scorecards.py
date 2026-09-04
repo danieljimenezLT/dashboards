@@ -252,6 +252,7 @@ def load_studio_config(gc):
         co_date      = _parse_date(_ch(row, "target c/o date"))
         opening_date = _parse_date(_ch(row, "target opening date"))
         tier2_move   = _parse_date(_ch(row, "tier 2 start date"))
+        lt_fee_start = _parse_date(_ch(row, "lt fees start date"))
 
         co_week = _date_to_week(co_date, week1_start)
         go_week = _date_to_week(opening_date, week1_start)
@@ -327,6 +328,7 @@ def load_studio_config(gc):
             "gads_account_id":      gads_cid.replace("-", "") if gads_cid else None,
             "goal_announce_target": goal_announce,
             "milestones":           milestones,
+            "lt_fee_start":         lt_fee_start,
         })
 
     return studios
@@ -1002,10 +1004,16 @@ def main():
             # Week 0 gets the pre-presales lump sum from nso_spend_overrides.json
             # (covers LeadTeam work done before the presales period started).
             ov_pre = spend_overrides.get(code, {}).get("leadteam_pre")
+            lt_start = cfg.get("lt_fee_start")
             if wn == 0 and ov_pre:
                 lt_fee = float(ov_pre)
             elif is_active and wn >= 1:
-                lt_fee = calc_leadteam_fee(ws_date, we_date)
+                if lt_start and we_date < lt_start:
+                    lt_fee = None          # week entirely before fee start
+                elif lt_start and ws_date < lt_start:
+                    lt_fee = calc_leadteam_fee(lt_start, we_date)  # prorate
+                else:
+                    lt_fee = calc_leadteam_fee(ws_date, we_date)
             else:
                 lt_fee = None
             leadteam_fee = lt_fee

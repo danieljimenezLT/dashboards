@@ -3138,11 +3138,18 @@ function _cprOtherMkt(studios,from,to){
 
 function _cprLtFee(studios,from,to){
   if(!from||!to||!studios.length)return 0;
-  const days=Math.round((new Date(to+'T00:00:00Z')-new Date(from+'T00:00:00Z'))/(864e5))+1;
   let total=0;
+  const _sc=SC2||SC;
   for(const st of studios){
+    // Determine the effective start: max(from, lt_fee_start) per studio
+    const sc2st=_sc&&_sc.studios&&_sc.studios.find(s=>s.full_name===st||s.full_name==='SWEAT440 '+st);
+    const pwData=sc2st&&PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[sc2st.code];
+    const ltStart=pwData&&pwData.lt_fee_start;
+    const effFrom=ltStart&&ltStart>from?ltStart:from;
+    if(effFrom>to)continue; // entire range is before fee start
+    const days=Math.round((new Date(to+'T00:00:00Z')-new Date(effFrom+'T00:00:00Z'))/(864e5))+1;
     const base=1200*(days/30.4375);
-    const discount=_cprMonthlyFee('Leadteam Discount',[st],from,to);
+    const discount=_cprMonthlyFee('Leadteam Discount',[st],effFrom,to);
     total+=Math.max(0,base-discount);
   }
   return total;
