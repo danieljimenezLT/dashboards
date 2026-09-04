@@ -451,13 +451,45 @@ function fmMo(iso){return new Date(iso+'T00:00:00Z').toLocaleString('en-US',{mon
 function _wkLabel(dateStr){
   if(!SC||!SC.studios)return'';
   const sel=_getSel('studioMenu');
-  const studios=sel.length?SC.studios.filter(s=>sel.includes(s.full_name)):SC.studios;
+  const _sc=SC2||SC;
+  const studios=sel.length?_sc.studios.filter(s=>sel.includes(s.full_name)):_sc.studios;
   // Prefer a single-selected studio; fall back to the funnel/summary focused studio
-  const studio=studios.length===1?studios[0]:(_sumStudio||null);
-  if(!studio)return'';
-  for(const wk of(studio.weeks||[])){
-    if(wk.date_start&&wk.date_end&&dateStr>=wk.date_start&&dateStr<=wk.date_end)
+  const studioSC2=studios.length===1?studios[0]:
+    (_sumStudio?(_sc.studios.find(s=>s.code===_sumStudio.code)||_sumStudio):null);
+  if(!studioSC2)return'';
+  const weeks=studioSC2.weeks||[];
+  // Only show week labels for studios that have already launched (W1 date_start <= today)
+  const w1=weeks.find(w=>w.week.replace('WEEK','').replace('Week','').trim()==='1');
+  const today=new Date().toISOString().slice(0,10);
+  if(!w1||!w1.date_start||w1.date_start>today)return'';
+  // Check negative pre-weeks from PRE_WEEKS first
+  const pwData=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[studioSC2.code];
+  const preWeekList=(pwData&&pwData.pre_weeks)||[];
+  for(const pw of preWeekList){
+    if(pw.date_start&&pw.date_end&&dateStr>=pw.date_start&&dateStr<=pw.date_end)
+      return'W'+pw.week_num;
+  }
+  // Determine lower bound for W0 so dates before the configured period don't get mislabeled
+  let w0Floor=null;
+  if(preWeekList.length>0){
+    const sorted=[...preWeekList].filter(p=>p.date_start).sort((a,b)=>a.date_start<b.date_start?-1:1);
+    if(sorted.length)w0Floor=sorted[0].date_start;
+  }else if(pwData&&pwData.week_0_start){
+    w0Floor=pwData.week_0_start;
+  }else{
+    // Estimate: W0 is the 7 days before W1
+    const d=new Date(w1.date_start+'T00:00:00Z');
+    d.setUTCDate(d.getUTCDate()-7);
+    w0Floor=d.toISOString().slice(0,10);
+  }
+  // Check W0 and positive weeks from SC2
+  for(const wk of weeks){
+    const num=wk.week.replace('WEEK','').replace('Week','').trim();
+    if(num==='0'){
+      if(wk.date_end&&dateStr<=wk.date_end&&dateStr>=w0Floor)return'W0';
+    }else if(wk.date_start&&wk.date_end&&dateStr>=wk.date_start&&dateStr<=wk.date_end){
       return wk.week.replace('Week ','W').replace('WEEK ','W');
+    }
   }
   return'';
 }
