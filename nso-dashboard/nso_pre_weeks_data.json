@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-04T12:19:45.284101",
+  "generated_at": "2026-09-05T11:51:51.667323",
   "source_sheet": "https://docs.google.com/spreadsheets/d/1KhXfeofzltGyllmrfIm9UN2xqLUgBtjAxPhT-E0SQmk",
   "studios": {
     "FL-019": {
@@ -7,6 +7,7 @@
       "full_name": "SWEAT440 Naples - Mercato",
       "week_0_start": "2026-02-01",
       "week_1_start": "2026-02-08",
+      "lt_fee_start": "2026-02-01",
       "pre_weeks": [
         {
           "week_num": -1,
@@ -25,6 +26,7 @@
       "full_name": "SWEAT440 Reston",
       "week_0_start": "2025-11-02",
       "week_1_start": "2025-11-09",
+      "lt_fee_start": "2025-11-02",
       "pre_weeks": []
     },
     "UT-001": {
@@ -32,6 +34,7 @@
       "full_name": "SWEAT440 Herriman",
       "week_0_start": "2026-05-31",
       "week_1_start": "2026-06-07",
+      "lt_fee_start": "2026-03-09",
       "pre_weeks": [
         {
           "week_num": -12,
@@ -160,6 +163,7 @@
       "full_name": "SWEAT440 Old Bridge",
       "week_0_start": "2026-07-19",
       "week_1_start": "2026-07-26",
+      "lt_fee_start": "2026-06-01",
       "pre_weeks": [
         {
           "week_num": -11,
@@ -278,6 +282,7 @@
       "full_name": "SWEAT440 Dr Phillips",
       "week_0_start": "2026-05-17",
       "week_1_start": "2026-05-24",
+      "lt_fee_start": "2026-04-16",
       "pre_weeks": [
         {
           "week_num": -2,
@@ -306,6 +311,7 @@
       "full_name": "SWEAT440 Aventura",
       "week_0_start": "2026-05-17",
       "week_1_start": "2026-05-24",
+      "lt_fee_start": "2026-05-08",
       "pre_weeks": [
         {
           "week_num": -1,
@@ -324,6 +330,7 @@
       "full_name": "SWEAT440 North Miami",
       "week_0_start": "2026-05-17",
       "week_1_start": "2026-05-24",
+      "lt_fee_start": "2026-05-08",
       "pre_weeks": [
         {
           "week_num": -1,
@@ -342,6 +349,7 @@
       "full_name": "SWEAT440 Dallas - Uptown",
       "week_0_start": "2026-05-31",
       "week_1_start": "2026-06-07",
+      "lt_fee_start": "2026-05-19",
       "pre_weeks": [
         {
           "week_num": -5,
@@ -400,6 +408,7 @@
       "full_name": "SWEAT440 Fort Myers",
       "week_0_start": "2026-09-27",
       "week_1_start": "2026-10-04",
+      "lt_fee_start": "2026-09-01",
       "pre_weeks": [
         {
           "week_num": -14,
@@ -506,10 +515,10 @@
           "week": "WEEK -4",
           "date_start": "2026-08-30",
           "date_end": "2026-09-05",
-          "new_leads": 6,
+          "new_leads": 9,
           "grassroots_leads": 3,
           "comm_events": null,
-          "total_leads": 243
+          "total_leads": 246
         },
         {
           "week_num": -3,
@@ -519,7 +528,7 @@
           "new_leads": 0,
           "grassroots_leads": null,
           "comm_events": null,
-          "total_leads": 243
+          "total_leads": 246
         },
         {
           "week_num": -2,
@@ -529,7 +538,7 @@
           "new_leads": 0,
           "grassroots_leads": null,
           "comm_events": null,
-          "total_leads": 243
+          "total_leads": 246
         },
         {
           "week_num": -1,
@@ -539,7 +548,7 @@
           "new_leads": 0,
           "grassroots_leads": null,
           "comm_events": null,
-          "total_leads": 243
+          "total_leads": 246
         }
       ]
     },
@@ -548,6 +557,7 @@
       "full_name": "SWEAT440 Dunwoody",
       "week_0_start": "2026-07-19",
       "week_1_start": "2026-07-26",
+      "lt_fee_start": "2026-07-06",
       "pre_weeks": [
         {
           "week_num": -5,
@@ -606,6 +616,7 @@
       "full_name": "SWEAT440 Middletown",
       "week_0_start": "2026-07-19",
       "week_1_start": "2026-07-26",
+      "lt_fee_start": "2026-06-24",
       "pre_weeks": [
         {
           "week_num": -7,
@@ -684,6 +695,7 @@
       "full_name": "SWEAT440 Burlington",
       "week_0_start": "2026-11-08",
       "week_1_start": "2026-11-15",
+      "lt_fee_start": "2026-10-01",
       "pre_weeks": [
         {
           "week_num": -17,
@@ -862,6 +874,7 @@
       "full_name": "SWEAT440 Long Beach",
       "week_0_start": null,
       "week_1_start": null,
+      "lt_fee_start": "2026-10-01",
       "pre_weeks": []
     },
     "OK-001": {
@@ -869,6 +882,7 @@
       "full_name": "SWEAT440 Rose Creek",
       "week_0_start": null,
       "week_1_start": null,
+      "lt_fee_start": "2026-09-01",
       "pre_weeks": []
     },
     "NC-002": {
@@ -876,6 +890,7 @@
       "full_name": "SWEAT440 South End",
       "week_0_start": null,
       "week_1_start": null,
+      "lt_fee_start": "2026-10-01",
       "pre_weeks": []
     }
   }
