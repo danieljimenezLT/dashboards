@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-07",
+      "pr_number": 329,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/329",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO — Config sheet source updated to NSO Manual Metrics",
+      "summary": "fetch_sheet_milestones.py now reads NSO Config, SKU Mapping, and event data from the NSO Manual Metrics Google Sheet instead of the old config sheet. Grassroots/other spend continues to read from the costs sheet."
+    },
+    {
+      "date": "2026-09-07",
       "pr_number": 328,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/328",
       "author": "Sebastian Arango",
