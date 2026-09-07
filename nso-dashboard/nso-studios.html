@@ -3016,7 +3016,7 @@ function renderScorecard2(){
     // Pre-week cells — key-based rows read from preWeekCols; computed rows show '—'
     const _preBg=isSub||isSubParent||isSubSub?'#f3f9ff':'#f0f9ff';
     preWeekCols.forEach(pw=>{
-      const val=row.computed?(row.pwKey!=null?pw[row.pwKey]:null):(row.key!=null?pw[row.key]:null);
+      const val=row.computed?(row.pwKey!=null?pw[row.pwKey]:row.computed(pw)):(row.key!=null?pw[row.key]:null);
       const _pcStyle=_isPreLaunch2?`font-size:${isSub||isSubSub||isAgencySub?12:13}px`:`font-size:${isSub||isSubSub||isAgencySub?12:13}px;background:${_preBg};color:#5a9fc0`;
       h+=`<td class="num" style="${_pcStyle}">${row.fmt(val)}</td>`;
     });
