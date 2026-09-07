@@ -75,7 +75,12 @@ for wk in reston["weeks"]:
         if not wk.get("grassroots_leads"):
             wk["grassroots_leads"] = sw.get("grassroots_leads") or 0
 
-    # 2. IG followers: always overlay from static (API only covers 30 days)
+    # 2. Community events: fill from static for weeks with data
+    static_ev = sw.get("comm_events")
+    if static_ev and not wk.get("comm_events"):
+        wk["comm_events"] = static_ev
+
+    # 3. IG followers: always overlay from static (API only covers 30 days)
     static_ig = sw.get("ig_new_followers")
     if static_ig is not None and not wk.get("ig_new_followers"):
         wk["ig_new_followers"] = static_ig
