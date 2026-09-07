@@ -13,8 +13,8 @@ from datetime import date, datetime, timedelta
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-SPREADSHEET_ID        = "1Ku0VSwOY6HVXuqucduWlsbKIiNzb0ojL21rozaPpHHU"
-EVENTS_SPREADSHEET_ID = "1KhXfeofzltGyllmrfIm9UN2xqLUgBtjAxPhT-E0SQmk"
+NSO_CONFIG_SHEET_ID = "1KhXfeofzltGyllmrfIm9UN2xqLUgBtjAxPhT-E0SQmk"
+COSTS_SHEET_ID      = "1oLvrjTfcGUmt-mi1bp2xnqmESgt4uu4QlLCfAOKoRd8"
 CREDS_FILE     = "credentials/service_account.json"
 SCORECARD_FILE = "nso_scorecard_data.json"
 
@@ -117,14 +117,14 @@ creds = service_account.Credentials.from_service_account_file(
 )
 svc  = build("sheets", "v4", credentials=creds)
 res  = svc.spreadsheets().values().get(
-    spreadsheetId=SPREADSHEET_ID, range="NSO Config"
+    spreadsheetId=NSO_CONFIG_SHEET_ID, range="NSO Config"
 ).execute()
 rows = res.get("values", [])
 
 # ── Read SKU Mapping tab ─────────────────────────────────────────────────────
 print("Reading SKU Mapping for early NSO tab...")
 sku_res = svc.spreadsheets().values().get(
-    spreadsheetId=SPREADSHEET_ID, range="SKU Mapping for early NSO"
+    spreadsheetId=NSO_CONFIG_SHEET_ID, range="SKU Mapping for early NSO"
 ).execute()
 sku_rows = sku_res.get("values", [])
 
@@ -164,7 +164,7 @@ def _match_sku_map(studio_name_raw):
 # ── Read Weekly Events & Spend tab ───────────────────────────────────────────
 print("Reading Weekly Events & Spend tab...")
 es_res = svc.spreadsheets().values().get(
-    spreadsheetId=SPREADSHEET_ID, range="Weekly Events & Spend"
+    spreadsheetId=COSTS_SHEET_ID, range="Weekly Events & Spend"
 ).execute()
 es_rows = es_res.get("values", [])
 
@@ -253,7 +253,7 @@ def _parse_week_range_header(s, base_year):
 
 print("Reading Weekly Events & Spend from NSO Manual Metrics sheet...")
 _ev_res = svc.spreadsheets().values().get(
-    spreadsheetId=EVENTS_SPREADSHEET_ID, range="Weekly Events & Spend"
+    spreadsheetId=NSO_CONFIG_SHEET_ID, range="Weekly Events & Spend"
 ).execute()
 _ev_rows = _ev_res.get("values", [])
 
