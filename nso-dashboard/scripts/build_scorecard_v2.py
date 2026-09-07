@@ -175,17 +175,32 @@ def main():
     # v1 is already patched by fetch_sheet_milestones.py; v2 uses different week
     # boundaries so we match by date overlap instead of week number.
     def _v1_comm_events(code, ws_date, we_date):
-        """Return comm_events from v1 for the week overlapping [ws_date, we_date]."""
+        """Return comm_events from v1 for the week overlapping [ws_date, we_date].
+        Week 0 has ws_date=None; match v1 Week 0 by date_end."""
         s1 = prev_map.get(code)
-        if not s1 or not ws_date:
+        if not s1:
             return None
         best = None
         for w1 in s1.get("weeks", []):
             d0 = w1.get("date_start"); d1 = w1.get("date_end")
-            if not d0 or not d1:
+            if not d1:
                 continue
             try:
-                w1s = date.fromisoformat(d0); w1e = date.fromisoformat(d1)
+                w1e = date.fromisoformat(d1)
+            except ValueError:
+                continue
+            if ws_date is None:
+                # Week 0: match v1 Week 0 (date_start=None) by date_end
+                if d0 is None and we_date and w1e == we_date:
+                    ev = w1.get("comm_events")
+                    if ev is not None:
+                        best = ev
+                        break
+                continue
+            if not d0:
+                continue
+            try:
+                w1s = date.fromisoformat(d0)
             except ValueError:
                 continue
             if w1s <= we_date and w1e >= ws_date:
