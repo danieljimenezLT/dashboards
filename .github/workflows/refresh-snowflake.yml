@@ -65,6 +65,12 @@ jobs:
           echo "YESTERDAY=$(date -u -d '1 day ago' +%Y-%m-%d)"     >> $GITHUB_ENV
           echo "TWO_DAYS_AGO=$(date -u -d '2 days ago' +%Y-%m-%d)" >> $GITHUB_ENV
 
+      - name: Write Google service account credentials
+        if: steps.freshness.outputs.skip != 'true'
+        run: |
+          mkdir -p nso-dashboard/credentials
+          printf '%s' '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > nso-dashboard/credentials/service_account.json
+
       # ── OPEN STUDIO DASHBOARD ─────────────────────────────────────────────
       - name: Refresh Open Studio data (Snowflake → data.json)
         if: steps.freshness.outputs.skip != 'true'
