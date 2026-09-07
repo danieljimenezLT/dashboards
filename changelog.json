@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-07",
+      "pr_number": 339,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/339",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Skip isolated early leads when auto-detecting NSO week 1 start",
+      "summary": "Studios with a stray early lead far from the main cluster (like Long Beach's March lead) now correctly auto-detect their campaign start from the first clustered lead instead."
+    },
+    {
+      "date": "2026-09-07",
       "pr_number": 338,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/338",
       "author": "Sebastian Arango",
