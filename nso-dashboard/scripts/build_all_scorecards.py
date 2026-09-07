@@ -37,7 +37,7 @@ import studios as studios_registry
 CREDS_PATH = ROOT / "credentials" / "service_account.json"
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 LEADTEAM_MONTHLY = 1200.0  # $1,200/month, prorated daily
-NSO_CONFIG_SHEET_URL = "https://docs.google.com/spreadsheets/d/1Ku0VSwOY6HVXuqucduWlsbKIiNzb0ojL21rozaPpHHU"
+NSO_CONFIG_SHEET_URL = "https://docs.google.com/spreadsheets/d/1KhXfeofzltGyllmrfIm9UN2xqLUgBtjAxPhT-E0SQmk"
 
 # Scorecard weeks: Week 1 starts on the configured week1_start date (any day), ends the
 # following Saturday. All subsequent weeks run Sunday–Saturday. Charts independently use

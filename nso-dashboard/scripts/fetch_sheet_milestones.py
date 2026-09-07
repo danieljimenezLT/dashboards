@@ -14,7 +14,6 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 NSO_CONFIG_SHEET_ID = "1KhXfeofzltGyllmrfIm9UN2xqLUgBtjAxPhT-E0SQmk"
-COSTS_SHEET_ID      = "1oLvrjTfcGUmt-mi1bp2xnqmESgt4uu4QlLCfAOKoRd8"
 CREDS_FILE     = "credentials/service_account.json"
 SCORECARD_FILE = "nso_scorecard_data.json"
 
@@ -164,7 +163,7 @@ def _match_sku_map(studio_name_raw):
 # ── Read Weekly Events & Spend tab ───────────────────────────────────────────
 print("Reading Weekly Events & Spend tab...")
 es_res = svc.spreadsheets().values().get(
-    spreadsheetId=COSTS_SHEET_ID, range="Weekly Events & Spend"
+    spreadsheetId=NSO_CONFIG_SHEET_ID, range="Weekly Events & Spend"
 ).execute()
 es_rows = es_res.get("values", [])
 
