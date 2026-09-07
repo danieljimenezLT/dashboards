@@ -388,6 +388,48 @@
       </div>
     </div>
   </div>
+  <!-- Buy 1 Get 3 ads (shown when buy1get3_data.json is loaded) -->
+  <div id="b1g3-ads-content" style="display:none">
+    <p class="filter-note" id="b1g3AdsNote"></p>
+    <div class="kpi-grid" id="b1g3AdsKpiGrid"></div>
+    <div class="chart-card">
+      <div class="chart-card-title">Meta Campaigns</div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr>
+            <th>Campaign</th>
+            <th class="num">Spend</th>
+            <th class="num">Impressions</th>
+            <th class="num">Clicks</th>
+            <th class="num">CTR%</th>
+          </tr></thead>
+          <tbody id="b1g3CampaignsBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">Spend by Studio</div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr>
+            <th>Studio</th>
+            <th class="num">Spend</th>
+            <th class="num">Impressions</th>
+            <th class="num">Clicks</th>
+            <th class="num">CTR%</th>
+            <th class="num">Leads</th>
+            <th class="num">CPL</th>
+          </tr></thead>
+          <tbody id="b1g3StudioAdsBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">Daily Spend</div>
+      <div style="position:relative;height:220px"><canvas id="b1g3SpendChart"></canvas></div>
+    </div>
+  </div>
+
   <!-- 2 Weeks for $40 ads (shown only in TW_MODE) -->
   <div id="tw-ads-content" style="display:none">
     <p class="filter-note" id="twAdsNote"></p>
@@ -456,6 +498,7 @@ let CAMP = null;
 let ALL_CAMPAIGNS = [];
 let PAID_ADS_DATA = null;     // daniel-paid-ads-data.json
 let TW_DATA = null;           // 2weeks_data.json
+let B1G3_DATA = null;         // buy1get3_data.json
 let TW_MODE = false;          // true when "2 Weeks for $40" is active
 
 // ── Email Metrics Data — keyed by campaign id ────────────────────────────────
@@ -552,6 +595,7 @@ function getFilteredData() {
 // applyFilters() is called by utils.js's buildMultiSelect when checkboxes change
 function applyFilters() {
   if (TW_MODE) { renderTwSummary(); renderTwAds(); initSortIndicators(); return; }
+  if (CAMP && CAMP.id === 'buy-1-get-3' && B1G3_DATA) { renderB1g3Ads(); }
   try {
     renderKPIs();
     renderRevBar();
@@ -1318,6 +1362,104 @@ function renderEmailTable() {
     </tr>`;
 }
 
+// ── Buy 1 Get 3 Ads Report ────────────────────────────────────────────────
+function renderB1g3Ads() {
+  if (!B1G3_DATA) return;
+  const meta = B1G3_DATA.meta;
+  const dr   = B1G3_DATA.date_range;
+  const metaLeadsData = B1G3_DATA.meta_leads || {total: 0, studios: []};
+
+  const sel    = getSelected('studioMenu');
+  const allSel = !sel || sel.length === 0 || sel.length === ALL_STUDIOS.length;
+
+  function stripBrand(s) { return (s || '').replace('SWEAT440 ', '').trim(); }
+
+  const filtStudios = allSel
+    ? meta.studios
+    : meta.studios.filter(s => sel.includes(stripBrand(s.studio)));
+
+  const filtLeadsStudios = allSel
+    ? metaLeadsData.studios
+    : metaLeadsData.studios.filter(s => sel.includes(stripBrand(s.studio)));
+
+  const totSpend  = filtStudios.reduce((s, r) => s + r.spend, 0);
+  const totImpr   = filtStudios.reduce((s, r) => s + r.impressions, 0);
+  const totClicks = filtStudios.reduce((s, r) => s + r.clicks, 0);
+  const totLeads  = filtLeadsStudios.reduce((s, r) => s + r.leads, 0);
+  const cpl  = totLeads  > 0 ? totSpend / totLeads  : 0;
+  const ctr  = totImpr   > 0 ? totClicks / totImpr * 100 : 0;
+
+  document.getElementById('b1g3AdsNote').textContent =
+    `Meta Ads · ${fmtDateStr(dr.start)} – ${fmtDateStr(dr.end)}`;
+
+  document.getElementById('b1g3AdsKpiGrid').innerHTML = [
+    {label:'Total Spend',   val: fmtM(totSpend)},
+    {label:'Meta Leads',    val: fmtN(totLeads)},
+    {label:'Cost Per Lead', val: totLeads > 0 ? fmtM(cpl) : '—'},
+    {label:'Impressions',   val: fmtN(totImpr)},
+    {label:'Clicks',        val: fmtN(totClicks)},
+    {label:'CTR',           val: totImpr > 0 ? ctr.toFixed(2) + '%' : '—'},
+  ].map(c =>
+    `<div class="kpi-card">
+       <div class="kpi-card-label">${c.label}</div>
+       <div class="kpi-card-val">${c.val}</div>
+     </div>`
+  ).join('');
+
+  // Campaigns table
+  document.getElementById('b1g3CampaignsBody').innerHTML = meta.campaigns.map(c => {
+    const cCTR = c.impressions > 0 ? (c.clicks / c.impressions * 100).toFixed(2) + '%' : '—';
+    return `<tr>
+      <td>${c.campaign_name}</td>
+      <td class="num">${fmtM(c.spend)}</td>
+      <td class="num">${fmtN(c.impressions)}</td>
+      <td class="num">${fmtN(c.clicks)}</td>
+      <td class="num">${cCTR}</td>
+    </tr>`;
+  }).join('');
+
+  // Build leads lookup by stripped studio name
+  const leadsMap = {};
+  for (const r of metaLeadsData.studios) leadsMap[stripBrand(r.studio)] = r.leads;
+
+  // Studio spend table
+  const maxSpend = Math.max(...filtStudios.map(r => r.spend), 1);
+  document.getElementById('b1g3StudioAdsBody').innerHTML = filtStudios.map(r => {
+    const name   = stripBrand(r.studio);
+    const leads  = leadsMap[name] || 0;
+    const sCTR   = r.impressions > 0 ? (r.clicks / r.impressions * 100).toFixed(2) + '%' : '—';
+    const sCPL   = leads > 0 ? fmtM(r.spend / leads) : '—';
+    return `<tr>
+      <td>${name}</td>
+      <td class="num">${fmtM(r.spend)}${miniBar(r.spend / maxSpend * 100, '#00A3E0')}</td>
+      <td class="num">${fmtN(r.impressions)}</td>
+      <td class="num">${fmtN(r.clicks)}</td>
+      <td class="num">${sCTR}</td>
+      <td class="num">${fmtN(leads)}</td>
+      <td class="num">${sCPL}</td>
+    </tr>`;
+  }).join('');
+
+  // Daily spend chart
+  const daily  = meta.daily;
+  const labels = daily.map(r => new Date(r.date + 'T12:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric'}));
+  makeChart('b1g3SpendChart', {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{label: 'Spend', data: daily.map(r => r.spend), backgroundColor: '#00A3E0', borderRadius: 4}]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {legend: {display: false}, tooltip: {callbacks: {label: ctx => fmtM(ctx.raw)}}},
+      scales: {
+        x: {ticks: {color: '#5a7a8a', font: {size: 10}}, grid: {color: 'rgba(0,0,0,.04)'}},
+        y: {ticks: {color: '#5a7a8a', font: {size: 10}, callback: v => '$' + v.toLocaleString('en-US')}, grid: {color: 'rgba(0,0,0,.04)'}},
+      }
+    }
+  });
+}
+
 // ── Ads Report ────────────────────────────────────────────────────────────
 // Finds the matching paid-ads campaign by date proximity
 function findPaidAdsCampaign() {
@@ -1332,6 +1474,21 @@ function findPaidAdsCampaign() {
 }
 
 function renderAdsReport() {
+  const b1g3El  = document.getElementById('b1g3-ads-content');
+  const stdEl   = document.getElementById('std-ads-content');
+
+  // If buy-1-get-3 and dedicated data loaded, use the B1G3 ads view
+  if (CAMP && CAMP.id === 'buy-1-get-3' && B1G3_DATA) {
+    if (stdEl)  stdEl.style.display  = 'none';
+    if (b1g3El) b1g3El.style.display = '';
+    renderB1g3Ads();
+    return;
+  }
+
+  // Otherwise show standard paid-ads view
+  if (b1g3El) b1g3El.style.display = 'none';
+  if (stdEl)  stdEl.style.display  = '';
+
   const pac = findPaidAdsCampaign();
   if (!pac) return;
 
@@ -1497,10 +1654,11 @@ function applyCampaign(camp) {
 async function loadData() {
   try {
     const ts = Date.now();
-    const [campRes, paidAdsRes, twRes] = await Promise.all([
+    const [campRes, paidAdsRes, twRes, b1g3Res] = await Promise.all([
       fetch('campaign_data.json?_=' + ts),
       fetch('../paid-ads-dashboards/daniel-paid-ads-data.json?_=' + ts).catch(() => null),
       fetch('2weeks_data.json?_=' + ts).catch(() => null),
+      fetch('buy1get3_data.json?_=' + ts).catch(() => null),
     ]);
 
     const json = await campRes.json();
@@ -1510,6 +1668,9 @@ async function loadData() {
     }
     if (twRes) {
       TW_DATA = await twRes.json().catch(() => null);
+    }
+    if (b1g3Res) {
+      B1G3_DATA = await b1g3Res.json().catch(() => null);
     }
 
     ALL_CAMPAIGNS = json.campaigns || [json];
