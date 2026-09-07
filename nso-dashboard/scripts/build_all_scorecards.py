@@ -930,8 +930,15 @@ def main():
         if is_naples:
             bounds = make_naples_bounds(num_weeks)
         elif not cfg["week1_start"]:
-            print(f"  Skipping {full}: no week1_start configured in NSO Config sheet")
-            continue
+            # No week1_start in sheet — auto-detect from first Snowflake data row
+            all_dates = sorted(leads_by_date.get(dname, {}).keys())
+            if not all_dates:
+                print(f"  Skipping {full}: no week1_start and no Snowflake data found")
+                continue
+            auto_w1 = datetime.strptime(all_dates[0], "%Y-%m-%d").date()
+            cfg["week1_start"] = auto_w1
+            print(f"  Auto-detected week1_start={auto_w1} from first Snowflake row")
+            bounds = make_sun_sat_bounds(auto_w1, num_weeks)
         else:
             bounds = make_sun_sat_bounds(cfg["week1_start"], num_weeks)
 
