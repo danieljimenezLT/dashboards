@@ -516,14 +516,22 @@ for studio in sc.get("studios", []):
     for wk in studio.get("weeks", []):
         ds_str = wk.get("date_start")
         de_str = wk.get("date_end")
-        if not ds_str or not de_str:
+        if not de_str:
             continue
         try:
-            ds_dt = datetime.strptime(ds_str, "%Y-%m-%d").date()
             de_dt = datetime.strptime(de_str, "%Y-%m-%d").date()
+            if ds_str:
+                ds_dt = datetime.strptime(ds_str, "%Y-%m-%d").date()
+                lookup_end = de_dt
+            else:
+                # Week 0 (pre-opening): no date_start, so capture everything before
+                # the opening day. Use de_dt-1 as the upper bound so calendar weeks
+                # that *start* on the opening day are attributed to WEEK 1, not WEEK 0.
+                ds_dt = date(2000, 1, 1)
+                lookup_end = de_dt - timedelta(days=1)
         except ValueError:
             continue
-        ev = _events_in_period(studio.get("name", ""), ds_dt, de_dt)
+        ev = _events_in_period(studio.get("name", ""), ds_dt, lookup_end)
         if ev is not None:
             wk["comm_events"] = ev
             ev_patched += 1
