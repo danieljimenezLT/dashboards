@@ -905,15 +905,18 @@ def main():
         events_by_code[code]      = ev
         other_spend_by_code[code] = ot
 
-    # Load date-range grassroots entries from nso_other_costs.json (Google Form responses).
-    # These are applied per-week using date-overlap in the studio loop below.
-    print("\nLoading grassroots spend from nso_other_costs.json...")
-    _oc_gr_by_name = {}  # {full_name: [(start_date, end_date, amount)]}
+    # Load date-range spend entries from nso_other_costs.json (Google Form responses).
+    # Keyed by category: "grassroots" → gr_spend, "other" → other_spend.
+    # Applied per-week using date-overlap in the studio loop below.
+    print("\nLoading spend entries from nso_other_costs.json...")
+    _oc_gr_by_name    = {}  # {full_name: [(start_date, end_date, amount)]}
+    _oc_other_by_name = {}
     try:
         with open(ROOT / "nso_other_costs.json", encoding="utf-8") as _f:
             _oc = json.load(_f)
         for _e in _oc.get("adhoc", []):
-            if _e.get("category", "").lower() != "grassroots":
+            _cat = _e.get("category", "").lower()
+            if _cat not in ("grassroots", "other"):
                 continue
             try:
                 _sd = date.fromisoformat(_e["start"])
@@ -923,11 +926,10 @@ def main():
             _amt = float(_e.get("total") or 0)
             if _amt <= 0:
                 continue
-            _oc_gr_by_name.setdefault(_e.get("studio_key", ""), []).append((_sd, _ed, _amt))
-        _oc_total = sum(len(v) for v in _oc_gr_by_name.values())
-        print(f"  {len(_oc_gr_by_name)} studios, {_oc_total} entries")
-        for _nm, _ents in sorted(_oc_gr_by_name.items()):
-            print(f"    {_nm}: {len(_ents)} entries  ${sum(e[2] for e in _ents):.2f}")
+            _dest = _oc_gr_by_name if _cat == "grassroots" else _oc_other_by_name
+            _dest.setdefault(_e.get("studio_key", ""), []).append((_sd, _ed, _amt))
+        _oc_total = sum(len(v) for v in _oc_gr_by_name.values()) + sum(len(v) for v in _oc_other_by_name.values())
+        print(f"  {_oc_total} entries across {len(_oc_gr_by_name)} grassroots + {len(_oc_other_by_name)} other studios")
     except FileNotFoundError:
         print("  nso_other_costs.json not found — skipping")
 
@@ -975,16 +977,20 @@ def main():
         events_d        = events_by_code.get(code, defaultdict(int))
         other_spend_d   = other_spend_by_code.get(code, defaultdict(float))
 
-        # Merge date-range grassroots from nso_other_costs.json into gr_spend_d
-        _oc_entries = _oc_gr_by_name.get(full, [])
-        for _wn, _ws, _we in bounds:
-            if _ws is None or not _oc_entries:
-                continue
-            for _sd, _ed, _amt in _oc_entries:
-                if _sd <= _we and _ed >= _ws:
-                    _span    = max(1, (_ed - _sd).days + 1)
-                    _overlap = (min(_ed, _we) - max(_sd, _ws)).days + 1
-                    gr_spend_d[_wn] += round(_amt * _overlap / _span, 2)
+        # Merge date-range spend from nso_other_costs.json into gr/other spend dicts
+        other_spend_d = defaultdict(float, other_spend_d)
+        for _oc_entries, _dest in (
+            (_oc_gr_by_name.get(full, []),    gr_spend_d),
+            (_oc_other_by_name.get(full, []), other_spend_d),
+        ):
+            for _wn, _ws, _we in bounds:
+                if _ws is None or not _oc_entries:
+                    continue
+                for _sd, _ed, _amt in _oc_entries:
+                    if _sd <= _we and _ed >= _ws:
+                        _span    = max(1, (_ed - _sd).days + 1)
+                        _overlap = (min(_ed, _we) - max(_sd, _ws)).days + 1
+                        _dest[_wn] += round(_amt * _overlap / _span, 2)
 
         cw_num = current_week_num(bounds)
         print(f"  current_week: {cw_num}  (today={TODAY})")
