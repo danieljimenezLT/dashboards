@@ -714,6 +714,7 @@ function renderSummary2(){
   const w=studio.weeks,tgt=studio.targets;
   const totalWeeks=studio.go_week||(w.length-1);
   const paceWeeks=studio.co_week||totalWeeks;
+  const goalWeeks=Math.min(paceWeeks,16);
   const todayStr=new Date().toISOString().slice(0,10);
   const _w1OffSumm=pwData&&pwData.week_1_start;
   const _isPreLaunchSumm=!_w1OffSumm||_w1OffSumm>todayStr;
@@ -854,7 +855,7 @@ function renderSummary2(){
   const _rawTotalPresales=_isPreLaunchSumm?Math.max(0,NSO_SALES_ROWS.filter(r=>_strip(r.studio)===_sname).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0)):null;
   const _rawTotalLeads=_isPreLaunchSumm?(RAW?.daily_detail||[]).filter(r=>_strip(r.studio)===_sname).reduce((s,r)=>s+(r.signups||0),0):null;
   const netPresales=_isPreLaunchSumm?(_rawTotalPresales||0):(_sumCurTier?(_sumCurTier.t0||0)+(_sumCurTier.t1||0)+(_sumCurTier.t2||0)+(_sumCurTier.t3||0):Math.max(0,(cur.presales_count||0)-(cur.cancellations_count||0)));
-  const weeksLeft=Math.max(0,paceWeeks-displayCw);
+  const weeksLeft=Math.max(0,goalWeeks-displayCw);
   const leadsGap=Math.max(0,annLeads-(cur.total_leads||0));
   const presalesGap=Math.max(0,annPres-netPresales);
   const wkLeadGoal=weeksLeft>0?Math.round(leadsGap/weeksLeft):leadsGap;
@@ -886,8 +887,8 @@ function renderSummary2(){
 
   h+=`<div class="chart-card summary-card"><div class="summary-card-section">Total to Date</div>${_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:-8px;margin-bottom:10px">${_dataThruLabel}</div>`:''}`;
   if(_showGoals){
-    h+=_progBar('Leads (New Accounts Created)',cur.total_leads||0,annLeads||0,'#00A3E0',annLeads?Math.round(annLeads/paceWeeks*displayCw):null,'W'+displayCw+' Pace',null,null,'sum_leads_total');
-    h+=_progBar('Presales (net)',netPresales,annPres||0,'#00C9A7',annPres?Math.round(annPres/paceWeeks*displayCw):null,'W'+displayCw+' Pace',null,null,'sum_presales_total');
+    h+=_progBar('Leads (New Accounts Created)',cur.total_leads||0,annLeads||0,'#00A3E0',annLeads?Math.round(annLeads/goalWeeks*displayCw):null,'W'+displayCw+' Pace',null,null,'sum_leads_total');
+    h+=_progBar('Presales (net)',netPresales,annPres||0,'#00C9A7',annPres?Math.round(annPres/goalWeeks*displayCw):null,'W'+displayCw+' Pace',null,null,'sum_presales_total');
     if((cur.estimated_day1_rmr||0)>0){const _rmrA=cur.estimated_day1_rmr||0,_rmrT=tgt.estimated_day1_rmr||0,_rmrPct=_rmrT>0?Math.min(100,Math.round(_rmrA/_rmrT*100)):0;h+=`<div style="margin-bottom:18px;position:relative">${_infoBtn('sum_rmr')}<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><div style="font-size:11px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Est. Day-1 RMR</div><div style="text-align:right"><span style="font-size:20px;font-weight:700;color:#1a1a2e;font-family:'Oswald',sans-serif">$${_rmrA.toLocaleString('en-US')}</span><span style="font-size:10px;color:#8aaabb;margin-left:6px">/ $${_rmrT.toLocaleString('en-US')}</span></div></div><div style="position:relative;height:14px;background:#f0f6fa;border-radius:7px"><div style="position:absolute;left:0;top:0;height:100%;width:${_rmrPct}%;background:#f4a021;border-radius:7px;min-width:${_rmrPct>0?4:0}px"></div></div></div>`;}
     if(estTotalSpend>0||cumSpendNoLT>0){
       const _fmtS=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
@@ -950,10 +951,11 @@ function drawCum2Chart(studio){
   const cw=studio.current_week||0;
   const _ann=studio.goal_announce_target||null;
   const paceW=studio.co_week||totalW;
+  const goalW=Math.min(paceW,16);
   const tPres=_ann||studio.targets.presales_count||0;
   const tLeads=_ann===300?860:(_ann===250?715:(studio.targets.total_leads||0));
-  const wkLeadPace=paceW?tLeads/paceW:0;
-  const wkPresPace=paceW?tPres/paceW:0;
+  const wkLeadPace=goalW?tLeads/goalW:0;
+  const wkPresPace=goalW?tPres/goalW:0;
   const _fmtPwLbl=pw=>{if(!pw.date_start)return`W${pw.week_num}`;const s=new Date(pw.date_start+'T00:00:00Z'),e=pw.date_end?new Date(pw.date_end+'T00:00:00Z'):null;const ms=`${s.getUTCMonth()+1}/${s.getUTCDate()}`,me=e?`${e.getUTCMonth()+1}/${e.getUTCDate()}`:'';return me?`${ms} - ${me}`:ms;};
   const preLabels=preWeeks.map(pw=>_fmtPwLbl(pw));
   const preLeadsD=preWeeks.map(pw=>pw.total_leads||0);
@@ -1045,10 +1047,11 @@ function drawWeekly2Chart(studio){
   const cw=studio.current_week||0;
   const _ann=studio.goal_announce_target||null;
   const paceW=studio.co_week||totalW;
+  const goalW=Math.min(paceW,16);
   const tPres=_ann||studio.targets.presales_count||0;
   const tLeads=_ann===300?860:(_ann===250?715:(studio.targets.total_leads||0));
-  const wkPresPace=tPres&&paceW?+(tPres/paceW).toFixed(1):0;
-  const wkLeadPace=tLeads&&paceW?+(tLeads/paceW).toFixed(1):0;
+  const wkPresPace=tPres&&goalW?+(tPres/goalW).toFixed(1):0;
+  const wkLeadPace=tLeads&&goalW?+(tLeads/goalW).toFixed(1):0;
   const _fmtPwLbl=pw=>{if(!pw.date_start)return`W${pw.week_num}`;const s=new Date(pw.date_start+'T00:00:00Z'),e=pw.date_end?new Date(pw.date_end+'T00:00:00Z'):null;const ms=`${s.getUTCMonth()+1}/${s.getUTCDate()}`,me=e?`${e.getUTCMonth()+1}/${e.getUTCDate()}`:'';return me?`${ms} - ${me}`:ms;};
   const preLabels=preWeeks.map(pw=>_fmtPwLbl(pw));
   const preLeadsDelta=preWeeks.map(pw=>pw.new_leads||0);
