@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-07",
+      "pr_number": 332,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/332",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix NSO scorecard reading studio config and community events from outdated sheet",
+      "summary": "build_all_scorecards.py now reads the NSO Config tab and Weekly Events & Spend from the current Sheet 2, fixing Reston presales (were zero due to missing Snowflake ID in old sheet) and Community Events counts."
+    },
+    {
+      "date": "2026-09-07",
       "pr_number": 331,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/331",
       "author": "Sebastian Arango",
