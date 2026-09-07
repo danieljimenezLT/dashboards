@@ -163,6 +163,29 @@ def main():
         events_by_code[code]      = ev
         other_spend_by_code[code] = ot
 
+    # Load date-range grassroots entries from nso_other_costs.json (Google Form responses)
+    print("\nLoading grassroots spend from nso_other_costs.json...")
+    _oc_gr_by_name = {}  # {full_name: [(start_date, end_date, amount)]}
+    try:
+        with open(ROOT / "nso_other_costs.json", encoding="utf-8") as _f:
+            _oc = json.load(_f)
+        for _e in _oc.get("adhoc", []):
+            if _e.get("category", "").lower() != "grassroots":
+                continue
+            try:
+                _sd = date.fromisoformat(_e["start"])
+                _ed = date.fromisoformat(_e["end"])
+            except (KeyError, ValueError):
+                continue
+            _amt = float(_e.get("total") or 0)
+            if _amt <= 0:
+                continue
+            _oc_gr_by_name.setdefault(_e.get("studio_key", ""), []).append((_sd, _ed, _amt))
+        _oc_total = sum(len(v) for v in _oc_gr_by_name.values())
+        print(f"  {len(_oc_gr_by_name)} studios, {_oc_total} entries")
+    except FileNotFoundError:
+        print("  nso_other_costs.json not found — skipping")
+
     # Load existing v1 file — for Reston copy, static pricing, and comm_events
     prev_map = {}
     v1_path  = ROOT / "nso_scorecard_data.json"
@@ -258,9 +281,20 @@ def main():
         ig_fc_s       = ig_by_code.get(code, {})
         meta_spend_d  = meta_by_code.get(code, {})
         gads_spend_d  = gads_by_code.get(code, {})
-        gr_spend_d    = gr_spend_by_code.get(code, defaultdict(float))
+        gr_spend_d    = defaultdict(float, gr_spend_by_code.get(code, {}))
         events_d      = events_by_code.get(code, defaultdict(int))
         other_spend_d = other_spend_by_code.get(code, defaultdict(float))
+
+        # Merge date-range grassroots from nso_other_costs.json into gr_spend_d
+        _oc_entries = _oc_gr_by_name.get(full, [])
+        for _wn, _ws, _we in bounds:
+            if _ws is None or not _oc_entries:
+                continue
+            for _sd, _ed, _amt in _oc_entries:
+                if _sd <= _we and _ed >= _ws:
+                    _span    = max(1, (_ed - _sd).days + 1)
+                    _overlap = (min(_ed, _we) - max(_sd, _ws)).days + 1
+                    gr_spend_d[_wn] += round(_amt * _overlap / _span, 2)
 
         cw_num    = _bac.current_week_num(bounds)
         cum_leads = cum_presales = cum_canc = 0
