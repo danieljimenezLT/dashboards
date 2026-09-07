@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-07",
+      "pr_number": 334,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/334",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix community events not reading from Sheet 2 for all studios",
+      "summary": "Community events (comm_events) were showing as 0 across all NSO studios because Sheet 2 uses calendar date columns instead of Week N columns. The fix makes Sheet 2 the authoritative source for community events, and restores Reston's historical event counts from the static data file."
+    },
+    {
+      "date": "2026-09-07",
       "pr_number": 333,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/333",
       "author": "Sebastian Arango",
