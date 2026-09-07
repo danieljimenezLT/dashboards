@@ -234,6 +234,11 @@ input::placeholder,textarea::placeholder{color:#b0c4cc}
         <input type="text" id="f_gbp_loc" placeholder="e.g. 11402535545027699120"/>
       </div>
     </div>
+    <div class="form-group">
+      <label for="f_gbp_code">GBP code <span class="opt">(optional)</span></label>
+      <input type="text" id="f_gbp_code" placeholder="e.g. S440-FortMyers"/>
+      <div class="slug-hint">Short identifier used for Google Business Profile. Format: S440-{Location}.</div>
+    </div>
 
     <!-- ── PRESALE TIER PRICING ───────────────────────────────────── -->
     <div class="section-title">Presale Tier Pricing <span class="section-tag nso">NSO</span></div>
@@ -374,6 +379,7 @@ function loadExistingStudio() {
 
   document.getElementById('f_ga4_path').value        = (s.ga4 && s.ga4.studio_page_path) || '';
   document.getElementById('f_gbp_loc').value         = (s.gbp && s.gbp.location_id) || '';
+  document.getElementById('f_gbp_code').value        = (s.gbp && s.gbp.code) || '';
 
   const tp = s.tier_pricing || {};
   document.getElementById('f_tier0').value = tp.tier0_price != null ? tp.tier0_price : '';
@@ -430,7 +436,10 @@ async function handleSubmit(e) {
       customer_id: document.getElementById('f_gads_cid').value.trim() || null,
     },
     ga4: { studio_page_path: document.getElementById('f_ga4_path').value.trim() || null },
-    gbp: { location_id: document.getElementById('f_gbp_loc').value.trim() || null },
+    gbp: {
+      location_id: document.getElementById('f_gbp_loc').value.trim() || null,
+      code: document.getElementById('f_gbp_code').value.trim() || null,
+    },
     tier_pricing: Object.keys(tierObj).length ? tierObj : null,
   };
 
