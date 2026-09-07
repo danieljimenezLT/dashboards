@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SWEAT440 — User Management</title>
+<link rel="icon" href="../favicon.jpg"/>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Open Sans',sans-serif;background:#0084B5;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 24px 80px}
+
+.back-link{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.65);font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;text-decoration:none;transition:color .15s;margin-bottom:24px;align-self:flex-start;max-width:640px;width:100%}
+.back-link:hover{color:#fff}
+
+.logo-wrap{margin-bottom:28px;text-align:center}
+.logo-wrap img{height:40px}
+
+.page-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:28px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#fff;text-align:center;margin-bottom:8px}
+
+.mode-toggle{display:flex;gap:8px;width:100%;max-width:640px;margin-bottom:20px}
+.mode-btn{flex:1;padding:11px;border:1.5px solid rgba(255,255,255,.4);border-radius:8px;background:transparent;color:rgba(255,255,255,.85);font-family:'Oswald',sans-serif;font-style:italic;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .15s}
+.mode-btn.active{background:#fff;color:#0084B5;border-color:#fff}
+.mode-btn:not(.active):hover{border-color:#fff;color:#fff}
+
+.info-banner{width:100%;max-width:640px;border-radius:10px;padding:13px 16px;font-size:12.5px;line-height:1.6;margin-bottom:16px;display:none;background:rgba(255,255,255,.12);color:rgba(255,255,255,.9)}
+.info-banner.show{display:block}
+.info-banner b{font-weight:700}
+
+.card{background:#fff;border-radius:20px;padding:36px 36px 32px;width:100%;max-width:640px;box-shadow:0 20px 60px rgba(0,0,0,.22)}
+
+.section-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#00A3E0;margin:26px 0 12px;padding-top:18px;border-top:1.5px solid #edf3f7}
+.section-title:first-child{margin-top:0;padding-top:0;border-top:none}
+.section-hint{font-size:12px;color:#8aaabb;margin:-6px 0 12px;line-height:1.5}
+
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{margin-bottom:14px}
+label{display:block;font-family:'Oswald',sans-serif;font-style:italic;font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#5a7a8a;margin-bottom:5px}
+label .opt{color:#b7cbd6;text-transform:none;font-style:normal;letter-spacing:0;font-size:11px}
+label .req{color:#e05000;font-style:normal}
+input,select{width:100%;padding:9px 12px;border:1.5px solid #c0d4df;border-radius:7px;font-size:13.5px;font-family:'Open Sans',sans-serif;color:#1a1a2e;outline:none;transition:border-color .15s;background:#fff}
+input:focus,select:focus{border-color:#00A3E0}
+input::placeholder{color:#b0c4cc}
+input:read-only{background:#f5f9fb;color:#8aaabb;cursor:default}
+
+.checkbox-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;padding:10px 12px;background:#f7fbfd;border-radius:7px;border:1.5px solid #e0ecf2}
+.checkbox-row input[type=checkbox]{width:16px;height:16px;margin-top:2px;flex-shrink:0;accent-color:#00A3E0;cursor:pointer}
+.checkbox-row .cb-label{font-size:13px;color:#2a3a44;line-height:1.4;cursor:pointer}
+.checkbox-row .cb-label b{font-weight:700;display:block;margin-bottom:1px}
+.checkbox-row .cb-label small{color:#7a9aaa;font-size:11.5px}
+
+/* Studios picker */
+.studios-picker{border:1.5px solid #c0d4df;border-radius:7px;overflow:hidden;margin-bottom:14px}
+.studios-search{padding:8px 12px;border:none;border-bottom:1.5px solid #e8f2f7;width:100%;font-size:13px;font-family:'Open Sans',sans-serif;color:#1a1a2e;outline:none;background:#fafcfd}
+.studios-search::placeholder{color:#b0c4cc}
+.studios-list{max-height:180px;overflow-y:auto;padding:4px 0}
+.studio-item{display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;transition:background .1s}
+.studio-item:hover{background:#f0f8ff}
+.studio-item input[type=checkbox]{width:14px;height:14px;flex-shrink:0;accent-color:#00A3E0;cursor:pointer}
+.studio-item span{font-size:13px;color:#2a3a44;cursor:pointer}
+.studios-count{font-size:11.5px;color:#8aaabb;padding:6px 12px;border-top:1px solid #edf3f7;background:#fafcfd}
+
+/* Password */
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:40px}
+.pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:#8aaabb;display:flex;align-items:center}
+.pw-toggle:hover{color:#00A3E0}
+.pw-hint{font-size:11px;color:#8aaabb;margin-top:4px;line-height:1.4}
+
+.submit-btn{width:100%;padding:13px;background:#00A3E0;color:#fff;border:none;border-radius:8px;font-family:'Oswald',sans-serif;font-style:italic;font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;margin-top:10px;transition:background .15s}
+.submit-btn:hover{background:#0084B5}
+.submit-btn:disabled{background:#a0c8df;cursor:not-allowed}
+
+.msg{display:none;border-radius:8px;padding:12px 16px;font-size:13px;margin-top:14px;line-height:1.6}
+.msg.show{display:block}
+.msg.error{background:#fff0f0;border:1px solid #f5c6c6;color:#c0392b}
+.msg.success{background:#e8faf0;border:1px solid #a8e6c3;color:#0a8a4a}
+.msg.success a{color:#0a8a4a;font-weight:700}
+
+.req-note{font-size:11.5px;color:rgba(255,255,255,.7);text-align:center;margin-bottom:16px}
+.req-note span{color:#DDFF00;font-weight:700}
+
+@media(max-width:600px){
+  .row{grid-template-columns:1fr}
+  .card{padding:24px 18px 20px}
+}
+</style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">← Marketing Admin Reports</a>
+
+<div class="logo-wrap">
+  <img src="../logo.png" alt="SWEAT440"/>
+</div>
+
+<div class="page-title">User Management</div>
+<p class="req-note">Fields marked <span>*</span> are required</p>
+
+<div class="mode-toggle">
+  <button type="button" id="modeAddBtn" class="mode-btn active" onclick="setMode('add')">Add New User</button>
+  <button type="button" id="modeEditBtn" class="mode-btn" onclick="setMode('edit')">Edit Existing User</button>
+</div>
+
+<div class="info-banner show" id="bannerAdd">
+  <b>How it works:</b> Opens a pull request adding the user to <code>users.js</code>. A teammate reviews and merges before the account becomes active.<br>
+  The password is hashed in your browser before being sent — the plaintext password is never transmitted.
+</div>
+<div class="info-banner" id="bannerEdit">
+  <b>Partial edits are safe:</b> Leave the password blank to keep the existing one. All other fields take the submitted values.<br>
+  Opens a pull request — changes take effect after a teammate merges it.
+</div>
+
+<div class="card">
+  <form id="userForm" onsubmit="handleSubmit(event)">
+
+    <!-- Edit picker -->
+    <div class="form-group" id="editPickerGroup" style="display:none">
+      <label for="f_pick_existing">Select user to edit <span class="req">*</span></label>
+      <select id="f_pick_existing" onchange="loadExistingUser()">
+        <option value="">— choose a user —</option>
+      </select>
+    </div>
+
+    <!-- ── IDENTITY ─────────────────────────────────────────────── -->
+    <div class="section-title">Identity</div>
+
+    <div class="row">
+      <div class="form-group">
+        <label for="f_email">Email <span class="req">*</span></label>
+        <input type="email" id="f_email" required placeholder="user@domain.com" autocomplete="off"/>
+      </div>
+      <div class="form-group">
+        <label for="f_name">Full name <span class="req">*</span></label>
+        <input type="text" id="f_name" required placeholder="e.g. Maria Garcia"/>
+      </div>
+    </div>
+
+    <!-- ── PASSWORD ────────────────────────────────────────────── -->
+    <div class="section-title">Password</div>
+
+    <div class="form-group">
+      <label for="f_password">Password <span id="pwReqLabel" class="req">*</span><span id="pwOptLabel" class="opt" style="display:none"> (leave blank to keep current)</span></label>
+      <div class="pw-wrap">
+        <input type="password" id="f_password" placeholder="Enter a temporary password" autocomplete="new-password"/>
+        <button type="button" class="pw-toggle" onclick="togglePwVisibility()" title="Show/hide password">
+          <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+      <div class="pw-hint">Minimum 8 characters. The user should change this after first login.</div>
+    </div>
+
+    <!-- ── ACCESS ─────────────────────────────────────────────── -->
+    <div class="section-title">Access</div>
+
+    <div class="form-group">
+      <label for="f_role">Role <span class="req">*</span></label>
+      <select id="f_role" onchange="onRoleChange()">
+        <option value="franchisee" selected>Franchisee</option>
+        <option value="manager">Manager</option>
+        <option value="corporate">Corporate (SWEAT440)</option>
+        <option value="admin">Admin (LeadTeam)</option>
+      </select>
+    </div>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="f_all_studios" onchange="onAllStudiosChange()"/>
+      <label class="cb-label" for="f_all_studios">
+        <b>All studios (full access)</b>
+        <small>Check for corporate or admin users who should see every studio. Leave unchecked to restrict to specific studios below.</small>
+      </label>
+    </div>
+
+    <div id="studiosPickerWrap">
+      <label style="margin-bottom:6px">Studios <span class="req" id="studiosReqMark">*</span></label>
+      <div class="studios-picker">
+        <input type="text" class="studios-search" id="studiosSearch" placeholder="Search studios…" oninput="filterStudios()" autocomplete="off"/>
+        <div class="studios-list" id="studiosList">
+          <div style="padding:20px;text-align:center;color:#b0c4cc;font-size:13px">Loading studios…</div>
+        </div>
+        <div class="studios-count" id="studiosCount">0 selected</div>
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn" id="submitBtn">Open Pull Request</button>
+    <div class="msg" id="msg"></div>
+  </form>
+</div>
+
+<script src="../users.js"></script>
+<script src="../shared/auth.js"></script>
+<script>
+const user = checkAuth();
+if (user && user.role !== 'admin') location.replace('../home.html');
+
+const _PROXY_URL    = 'https://sweat440-refresh-proxy.sweat440.workers.dev';
+const _PROXY_SECRET = 'AnwxoPAsDK9vUXVY';
+
+let _mode = 'add';
+let _editingOriginalEmail = null;
+let _allStudios = [];
+let _selectedStudios = new Set();
+
+// ── Load studios ──────────────────────────────────────────────────────────
+async function loadStudios() {
+  try {
+    const res = await fetch('../studios.json?_=' + Date.now());
+    const data = await res.json();
+    _allStudios = (data.studios || [])
+      .map(s => s.name)
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b));
+  } catch(e) {
+    _allStudios = [];
+  }
+  renderStudiosList();
+}
+loadStudios();
+
+function renderStudiosList(filter) {
+  const list = document.getElementById('studiosList');
+  const q = (filter || '').toLowerCase();
+  const visible = q ? _allStudios.filter(s => s.toLowerCase().includes(q)) : _allStudios;
+  if (!visible.length) {
+    list.innerHTML = '<div style="padding:12px 16px;color:#b0c4cc;font-size:13px">No studios found.</div>';
+    updateStudiosCount(); return;
+  }
+  list.innerHTML = visible.map(s => {
+    const checked = _selectedStudios.has(s) ? 'checked' : '';
+    const id = 'stu_' + s.replace(/[^a-zA-Z0-9]/g,'_');
+    return `<label class="studio-item"><input type="checkbox" id="${id}" value="${s}" ${checked} onchange="onStudioCheck(this)"/><span>${s}</span></label>`;
+  }).join('');
+  updateStudiosCount();
+}
+
+function filterStudios() {
+  renderStudiosList(document.getElementById('studiosSearch').value);
+}
+
+function onStudioCheck(cb) {
+  if (cb.checked) _selectedStudios.add(cb.value);
+  else _selectedStudios.delete(cb.value);
+  updateStudiosCount();
+}
+
+function updateStudiosCount() {
+  const n = _selectedStudios.size;
+  document.getElementById('studiosCount').textContent = n === 0 ? 'None selected' : n + ' selected';
+}
+
+// ── Role / All Studios logic ──────────────────────────────────────────────
+function onRoleChange() {
+  const role = document.getElementById('f_role').value;
+  if (role === 'admin' || role === 'corporate') {
+    document.getElementById('f_all_studios').checked = true;
+    onAllStudiosChange();
+  }
+}
+
+function onAllStudiosChange() {
+  const allChecked = document.getElementById('f_all_studios').checked;
+  document.getElementById('studiosPickerWrap').style.display = allChecked ? 'none' : '';
+  document.getElementById('studiosReqMark').style.display = allChecked ? 'none' : '';
+}
+
+// ── Password visibility toggle ────────────────────────────────────────────
+function togglePwVisibility() {
+  const inp = document.getElementById('f_password');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+// ── Password hashing ──────────────────────────────────────────────────────
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── Edit mode ─────────────────────────────────────────────────────────────
+function populateExistingPicker() {
+  const sel = document.getElementById('f_pick_existing');
+  const emails = Object.keys(USERS).sort();
+  sel.innerHTML = '<option value="">— choose a user —</option>';
+  for (const email of emails) {
+    const u = USERS[email];
+    const opt = document.createElement('option');
+    opt.value = email;
+    opt.textContent = email + ' — ' + (u.name || '') + ' (' + (u.role || '') + ')';
+    sel.appendChild(opt);
+  }
+}
+
+function loadExistingUser() {
+  const email = document.getElementById('f_pick_existing').value;
+  if (!email) { _editingOriginalEmail = null; return; }
+  const u = USERS[email];
+  if (!u) return;
+  _editingOriginalEmail = email;
+
+  document.getElementById('f_email').value = email;
+  document.getElementById('f_name').value  = u.name || '';
+  document.getElementById('f_role').value  = u.role || 'franchisee';
+  document.getElementById('f_password').value = '';
+
+  const allStudios = u.studios === null;
+  document.getElementById('f_all_studios').checked = allStudios;
+  onAllStudiosChange();
+
+  _selectedStudios = new Set(allStudios ? [] : (u.studios || []));
+  renderStudiosList(document.getElementById('studiosSearch').value);
+  document.getElementById('msg').className = 'msg';
+}
+
+// ── Mode toggle ───────────────────────────────────────────────────────────
+function resetForm() {
+  document.getElementById('userForm').reset();
+  document.getElementById('f_all_studios').checked = false;
+  onAllStudiosChange();
+  _selectedStudios = new Set();
+  renderStudiosList('');
+  document.getElementById('studiosSearch').value = '';
+  _editingOriginalEmail = null;
+  document.getElementById('msg').className = 'msg';
+}
+
+function setMode(mode) {
+  _mode = mode;
+  document.getElementById('modeAddBtn').classList.toggle('active', mode === 'add');
+  document.getElementById('modeEditBtn').classList.toggle('active', mode === 'edit');
+  document.getElementById('editPickerGroup').style.display = mode === 'edit' ? '' : 'none';
+  document.getElementById('bannerAdd').classList.toggle('show', mode === 'add');
+  document.getElementById('bannerEdit').classList.toggle('show', mode === 'edit');
+  document.getElementById('f_email').readOnly = false;
+  document.getElementById('pwReqLabel').style.display = mode === 'add' ? '' : 'none';
+  document.getElementById('pwOptLabel').style.display = mode === 'edit' ? '' : 'none';
+  document.getElementById('submitBtn').textContent = mode === 'add' ? 'Open Pull Request' : 'Open Update Pull Request';
+  if (mode === 'edit') {
+    document.getElementById('f_email').readOnly = true;
+    populateExistingPicker();
+  }
+  resetForm();
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────
+function showMsg(text, cls) {
+  const el = document.getElementById('msg');
+  el.textContent = text; el.className = 'msg show ' + cls;
+}
+
+async function handleSubmit(e) {
+  e.preventDefault();
+  const btn    = document.getElementById('submitBtn');
+  const email  = document.getElementById('f_email').value.trim().toLowerCase();
+  const name   = document.getElementById('f_name').value.trim();
+  const pw     = document.getElementById('f_password').value;
+  const role   = document.getElementById('f_role').value;
+  const allStu = document.getElementById('f_all_studios').checked;
+
+  if (!email || !name || !role) return;
+
+  if (_mode === 'add' && !pw) {
+    showMsg('Password is required for new users.', 'error'); return;
+  }
+  if (_mode === 'add' && pw.length < 8) {
+    showMsg('Password must be at least 8 characters.', 'error'); return;
+  }
+  if (pw && pw.length < 8) {
+    showMsg('Password must be at least 8 characters.', 'error'); return;
+  }
+  if (_mode === 'edit' && !_editingOriginalEmail) {
+    showMsg('Pick a user to edit first.', 'error'); return;
+  }
+  if (!allStu && _selectedStudios.size === 0) {
+    showMsg('Select at least one studio, or check "All studios".', 'error'); return;
+  }
+
+  const studios = allStu ? null : [..._selectedStudios].sort();
+
+  const btnLabel = _mode === 'add' ? 'Open Pull Request' : 'Open Update Pull Request';
+  const confirmText = _mode === 'add'
+    ? `Open a pull request adding "${email}" to users.js?`
+    : `Open a pull request updating "${_editingOriginalEmail}" in users.js?`;
+  if (!confirm(confirmText)) return;
+
+  btn.disabled = true;
+  btn.textContent = _mode === 'add' ? 'Hashing & opening PR…' : 'Updating…';
+  document.getElementById('msg').className = 'msg';
+
+  let passwordHash = null;
+  if (pw) {
+    try { passwordHash = await sha256(pw); }
+    catch(err) { btn.disabled=false; btn.textContent=btnLabel; showMsg('Could not hash password: '+err.message,'error'); return; }
+  }
+
+  const userPayload = { email, name, role, studios, passwordHash };
+  const payload = _mode === 'add'
+    ? { action: 'add_user', user: userPayload }
+    : { action: 'update_user', originalEmail: _editingOriginalEmail, user: userPayload };
+
+  try {
+    const res  = await fetch(_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-App-Secret': _PROXY_SECRET },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok && data.ok && data.prUrl) {
+      btn.textContent = '✓ Pull request opened';
+      const a = document.createElement('a');
+      a.href = String(data.prUrl); a.textContent = data.prUrl; a.target = '_blank'; a.rel = 'noopener';
+      const wrap = document.createElement('span');
+      wrap.textContent = 'Pull request opened: '; wrap.appendChild(a);
+      const msgEl = document.getElementById('msg');
+      msgEl.innerHTML = ''; msgEl.appendChild(wrap);
+      msgEl.className = 'msg show success';
+      setTimeout(() => { btn.disabled = false; btn.textContent = btnLabel; }, 5000);
+    } else {
+      btn.disabled = false; btn.textContent = btnLabel;
+      showMsg(data.error || `Error ${res.status}`, 'error');
+    }
+  } catch(err) {
+    btn.disabled = false; btn.textContent = btnLabel;
+    showMsg('Could not reach the proxy service: ' + err.message, 'error');
+  }
+}
+</script>
+</body>
+</html>

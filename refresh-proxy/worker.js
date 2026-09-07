@@ -278,6 +278,174 @@ async function openStudiosPr(env, { branchPrefix, commitMessage, prTitle, mutate
   return { prUrl: pr.html_url };
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// User management (users.js)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function serializeUserEntry(email, user) {
+  let studiosStr;
+  if (user.studios === null) {
+    studiosStr = 'null';
+  } else {
+    studiosStr = '[\n' + user.studios.map(s => `      '${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`).join(',\n') + ',\n    ]';
+  }
+  return [
+    `  '${email}': {`,
+    `    passwordHash: '${user.passwordHash}',`,
+    `    name: '${user.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}',`,
+    `    studios: ${studiosStr},`,
+    `    role: '${user.role}'`,
+    `  }`,
+  ].join('\n');
+}
+
+function addUserToFile(content, email, user) {
+  const entry = serializeUserEntry(email, user) + ',';
+  const closeIdx = content.lastIndexOf('\n};');
+  if (closeIdx === -1) throw new Error('Could not find end of USERS object in users.js');
+  return content.slice(0, closeIdx) + '\n' + entry + '\n' + content.slice(closeIdx);
+}
+
+function updateUserInFile(content, email, user) {
+  const esc = email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const keyRe = new RegExp(`'${esc}'\\s*:\\s*\\{`);
+  const keyMatch = keyRe.exec(content);
+  if (!keyMatch) return null;
+
+  // Walk forward from the opening brace to find the matching closing brace
+  const braceStart = content.indexOf('{', keyMatch.index + keyMatch[0].length - 1);
+  let depth = 0, end = -1;
+  for (let i = braceStart; i < content.length; i++) {
+    if (content[i] === '{') depth++;
+    else if (content[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
+  }
+  if (end === -1) return null;
+
+  let afterEnd = end + 1;
+  if (content[afterEnd] === ',') afterEnd++;
+
+  return content.slice(0, keyMatch.index) + serializeUserEntry(email, user) + ',' + content.slice(afterEnd);
+}
+
+function getUserCurrentHash(content, email) {
+  const esc = email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const m = content.match(new RegExp(`'${esc}'[\\s\\S]*?passwordHash:\\s*'([^']+)'`));
+  return m ? m[1] : null;
+}
+
+async function openUsersPr(env, { branchPrefix, commitMessage, prTitle, mutate }) {
+  const gh = ghHeaders(env);
+  const contentRes = await fetch(`https://api.github.com/repos/${REPO}/contents/users.js?ref=main`, { headers: gh });
+  if (!contentRes.ok) return { error: `Failed to read users.js (${contentRes.status})`, status: 502 };
+  const contentJson = await contentRes.json();
+  const fileContent = b64DecodeUnicode(contentJson.content);
+
+  const mutation = mutate(fileContent) || {};
+  if (mutation.error) return mutation;
+  const { newContent, prBody } = mutation;
+
+  const refRes = await fetch(`https://api.github.com/repos/${REPO}/git/ref/heads/main`, { headers: gh });
+  if (!refRes.ok) return { error: `Failed to read main ref (${refRes.status})`, status: 502 };
+  const mainSha = (await refRes.json()).object.sha;
+
+  const branch = `${branchPrefix}-${Date.now()}`;
+  const branchRes = await fetch(`https://api.github.com/repos/${REPO}/git/refs`, {
+    method: 'POST', headers: gh,
+    body: JSON.stringify({ ref: `refs/heads/${branch}`, sha: mainSha }),
+  });
+  if (!branchRes.ok) return { error: `Failed to create branch (${branchRes.status})`, status: 502 };
+
+  const commitRes = await fetch(`https://api.github.com/repos/${REPO}/contents/users.js`, {
+    method: 'PUT', headers: gh,
+    body: JSON.stringify({ message: commitMessage, content: b64EncodeUnicode(newContent), sha: contentJson.sha, branch }),
+  });
+  if (!commitRes.ok) return { error: `Failed to commit users.js (${commitRes.status})`, status: 502 };
+
+  const prRes = await fetch(`https://api.github.com/repos/${REPO}/pulls`, {
+    method: 'POST', headers: gh,
+    body: JSON.stringify({ title: prTitle, head: branch, base: 'main', body: prBody }),
+  });
+  if (!prRes.ok) return { error: `Failed to open pull request (${prRes.status})`, status: 502 };
+  return { prUrl: (await prRes.json()).html_url };
+}
+
+async function handleAddUser(body, env, headers) {
+  const { email, name, passwordHash, role, studios } = body.user || {};
+  if (!email || !name || !passwordHash || !role) {
+    return jsonResponse({ ok: false, error: 'email, name, passwordHash, and role are required.' }, 400, headers);
+  }
+  const validRoles = ['admin', 'corporate', 'franchisee', 'manager'];
+  if (!validRoles.includes(role)) {
+    return jsonResponse({ ok: false, error: `Invalid role: ${role}` }, 400, headers);
+  }
+
+  const user = { passwordHash, name, studios: studios || null, role };
+
+  const result = await openUsersPr(env, {
+    branchPrefix: `add-user-${slugify(email.split('@')[0])}`,
+    commitMessage: `Add user: ${email}`,
+    prTitle: `Add user: ${email}`,
+    mutate(content) {
+      const esc = email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      if (new RegExp(`'${esc}'\\s*:`).test(content)) {
+        return { error: `User ${email} already exists in users.js.`, status: 409 };
+      }
+      const newContent = addUserToFile(content, email, user);
+      const prBody = [
+        `Adds **${email}** to the dashboard user registry (\`users.js\`), submitted via the User Management admin widget.`,
+        '',
+        '| Field | Value |',
+        '|---|---|',
+        `| Name | ${name} |`,
+        `| Role | ${role} |`,
+        `| Studios | ${studios && studios.length ? studios.join(', ') : '_All studios_'} |`,
+        '',
+        '⚠️ The password hash is included in the commit. Review the diff before merging.',
+      ].join('\n');
+      return { newContent, prBody };
+    },
+  });
+
+  if (result.error) return jsonResponse({ ok: false, error: result.error }, result.status || 500, headers);
+  return jsonResponse({ ok: true, prUrl: result.prUrl }, 200, headers);
+}
+
+async function handleUpdateUser(body, env, headers) {
+  const originalEmail = (typeof body.originalEmail === 'string' ? body.originalEmail.trim().toLowerCase() : '');
+  const { email, name, passwordHash, role, studios } = body.user || {};
+  if (!originalEmail) return jsonResponse({ ok: false, error: 'Missing originalEmail.' }, 400, headers);
+  if (!email || !name || !role) return jsonResponse({ ok: false, error: 'email, name, and role are required.' }, 400, headers);
+  const validRoles = ['admin', 'corporate', 'franchisee', 'manager'];
+  if (!validRoles.includes(role)) return jsonResponse({ ok: false, error: `Invalid role: ${role}` }, 400, headers);
+
+  const result = await openUsersPr(env, {
+    branchPrefix: `update-user-${slugify(email.split('@')[0])}`,
+    commitMessage: `Update user: ${originalEmail}`,
+    prTitle: `Update user: ${originalEmail}`,
+    mutate(content) {
+      const finalHash = passwordHash || getUserCurrentHash(content, originalEmail);
+      if (!finalHash) return { error: `Could not find existing password hash for ${originalEmail}.`, status: 404 };
+      const user = { passwordHash: finalHash, name, studios: studios || null, role };
+      const newContent = updateUserInFile(content, originalEmail, user);
+      if (!newContent) return { error: `User ${originalEmail} not found in users.js.`, status: 404 };
+      const prBody = [
+        `Updates **${originalEmail}** in the dashboard user registry (\`users.js\`), submitted via the User Management admin widget.`,
+        '',
+        '| Field | Value |',
+        '|---|---|',
+        `| Name | ${name} |`,
+        `| Role | ${role} |`,
+        `| Studios | ${studios && studios.length ? studios.join(', ') : '_All studios_'} |`,
+        `| Password | ${passwordHash ? '_Changed_' : '_Unchanged_'} |`,
+      ].join('\n');
+      return { newContent, prBody };
+    },
+  });
+
+  if (result.error) return jsonResponse({ ok: false, error: result.error }, result.status || 500, headers);
+  return jsonResponse({ ok: true, prUrl: result.prUrl }, 200, headers);
+}
+
 async function handleAddStudio(body, env, headers) {
   const studio = normalizeStudio(body.studio || {});
   if (!studio.name || !studio.state) {
@@ -1027,6 +1195,14 @@ export default {
     if (body.action === 'add_studio' || body.action === 'update_studio') {
       try {
         return await (body.action === 'add_studio' ? handleAddStudio(body, env, headers) : handleUpdateStudio(body, env, headers));
+      } catch (e) {
+        return jsonResponse({ ok: false, error: `Unexpected error: ${e.message}` }, 500, headers);
+      }
+    }
+
+    if (body.action === 'add_user' || body.action === 'update_user') {
+      try {
+        return await (body.action === 'add_user' ? handleAddUser(body, env, headers) : handleUpdateUser(body, env, headers));
       } catch (e) {
         return jsonResponse({ ok: false, error: `Unexpected error: ${e.message}` }, 500, headers);
       }
