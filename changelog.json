@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-09-07",
+      "pr_number": 323,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/323",
+      "author": "Sebastian Arango",
+      "categories": [
+        "General"
+      ],
+      "title": "Fix Add Studio widget — GBP code preserved on edit",
+      "summary": "Editing a studio via the admin widget no longer silently removes its GBP code (S440-xxx). The GBP code field is now visible and editable in the form."
+    },
+    {
       "date": "2026-09-04",
       "pr_number": 322,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/322",
