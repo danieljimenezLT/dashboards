@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-07",
+      "pr_number": 336,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/336",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Restore Long Beach, Rose Creek and South End to NSO scorecard",
+      "summary": "These studios disappeared after switching to the new NSO Config sheet because their Week 1 Start date was not yet entered there. The scorecard now auto-detects the start date from the first available Snowflake data row, so studios without a configured date are included automatically."
+    },
+    {
+      "date": "2026-09-07",
       "pr_number": 335,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/335",
       "author": "Sebastian Arango",
