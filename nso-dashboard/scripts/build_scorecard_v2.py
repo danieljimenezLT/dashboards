@@ -268,11 +268,20 @@ def main():
         if is_naples:
             bounds = _bac.make_naples_bounds(num_weeks)
         elif not cfg["week1_start"]:
-            # No week1_start — auto-detect from first Snowflake data row
+            # No week1_start — auto-detect from first Snowflake data row.
+            # Skip leading dates isolated by a 30+ day gap (outlier leads far before
+            # real activity, same logic as fetch_pre_weeks.py).
             all_dates = sorted(leads_by_date.get(dname, {}).keys())
             if not all_dates:
                 print(f"  Skipping {full}: no week1_start and no Snowflake data found")
                 continue
+            while len(all_dates) >= 2:
+                d0 = date.fromisoformat(all_dates[0])
+                d1 = date.fromisoformat(all_dates[1])
+                if (d1 - d0).days > 30:
+                    all_dates.pop(0)
+                else:
+                    break
             auto_w1 = date.fromisoformat(all_dates[0])
             cfg["week1_start"] = auto_w1
             num_weeks = max(num_weeks, max(0, (TODAY - auto_w1).days // 7) + 3)
