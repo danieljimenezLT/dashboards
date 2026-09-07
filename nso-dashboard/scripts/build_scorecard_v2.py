@@ -227,8 +227,16 @@ def main():
         if is_naples:
             bounds = _bac.make_naples_bounds(num_weeks)
         elif not cfg["week1_start"]:
-            print(f"  Skipping: no week1_start configured")
-            continue
+            # No week1_start — auto-detect from first Snowflake data row
+            all_dates = sorted(leads_by_date.get(dname, {}).keys())
+            if not all_dates:
+                print(f"  Skipping {full}: no week1_start and no Snowflake data found")
+                continue
+            auto_w1 = date.fromisoformat(all_dates[0])
+            cfg["week1_start"] = auto_w1
+            num_weeks = max(num_weeks, max(0, (TODAY - auto_w1).days // 7) + 3)
+            print(f"  Auto-detected week1_start={auto_w1} from first Snowflake row")
+            bounds = _bac.make_sun_sat_bounds(auto_w1, num_weeks)
         else:
             bounds = _bac.make_sun_sat_bounds(cfg["week1_start"], num_weeks)
 
