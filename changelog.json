@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-07",
+      "pr_number": 338,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/338",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Grassroots spend from form responses now shows in NSO scorecard",
+      "summary": "All studios with grassroots spend submitted via the NSO Spend form (Reston, Naples, Herriman, Dr Phillips, etc.) now have that spend reflected correctly in the scorecard instead of showing $0."
+    },
+    {
+      "date": "2026-09-07",
       "pr_number": 337,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/337",
       "author": "Sebastian Arango",
