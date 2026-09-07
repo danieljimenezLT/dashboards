@@ -163,13 +163,37 @@ def main():
         events_by_code[code]      = ev
         other_spend_by_code[code] = ot
 
-    # Load existing v1 file — for Reston copy and static pricing
+    # Load existing v1 file — for Reston copy, static pricing, and comm_events
     prev_map = {}
     v1_path  = ROOT / "nso_scorecard_data.json"
     if v1_path.exists():
         with open(v1_path, encoding="utf-8") as f:
             prev_map = {s["code"]: s for s in json.load(f).get("studios", [])}
         print(f"\nLoaded nso_scorecard_data.json ({len(prev_map)} studios)")
+
+    # Build comm_events lookup from v1 by date range so v2 can inherit them.
+    # v1 is already patched by fetch_sheet_milestones.py; v2 uses different week
+    # boundaries so we match by date overlap instead of week number.
+    def _v1_comm_events(code, ws_date, we_date):
+        """Return comm_events from v1 for the week overlapping [ws_date, we_date]."""
+        s1 = prev_map.get(code)
+        if not s1 or not ws_date:
+            return None
+        best = None
+        for w1 in s1.get("weeks", []):
+            d0 = w1.get("date_start"); d1 = w1.get("date_end")
+            if not d0 or not d1:
+                continue
+            try:
+                w1s = date.fromisoformat(d0); w1e = date.fromisoformat(d1)
+            except ValueError:
+                continue
+            if w1s <= we_date and w1e >= ws_date:
+                ev = w1.get("comm_events")
+                if ev is not None:
+                    best = ev
+                    break
+        return best
 
     # ---------------------------------------------------------------------------
     # Build scorecards
@@ -302,7 +326,7 @@ def main():
                 "digital_presales_week":      _wi(w["digital_presales"]),
                 "digital_cancellations_week": _wi(w["digital_cancellations"]),
                 "conversion_rate":            conv_rate,
-                "comm_events":                _wi(w["comm_events"]),
+                "comm_events":                _v1_comm_events(code, ws_date, we_date),
                 "ig_new_followers":           w["ig"],
                 "meta_spend":                 meta_sp  if (is_active and wn >= 1) else None,
                 "google_spend":               gads_sp  if (is_active and wn >= 1) else None,
