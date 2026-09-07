@@ -1389,16 +1389,25 @@ function renderB1g3Ads() {
   const cpl  = totLeads  > 0 ? totSpend / totLeads  : 0;
   const ctr  = totImpr   > 0 ? totClicks / totImpr * 100 : 0;
 
+  // Meta-attributed purchases from campaign_data (CAMP.studios source = 'Meta Ads')
+  const metaStudioRows = (CAMP && CAMP.studios || []).filter(r =>
+    r.source === 'Meta Ads' && (allSel || sel.includes(r.studio))
+  );
+  const metaPurchases = metaStudioRows.reduce((s, r) => s + (r.purchases || 0), 0);
+  const cpp = metaPurchases > 0 ? totSpend / metaPurchases : 0;
+
   document.getElementById('b1g3AdsNote').textContent =
     `Meta Ads · ${fmtDateStr(dr.start)} – ${fmtDateStr(dr.end)}`;
 
   document.getElementById('b1g3AdsKpiGrid').innerHTML = [
-    {label:'Total Spend',   val: fmtM(totSpend)},
-    {label:'Meta Leads',    val: fmtN(totLeads)},
-    {label:'Cost Per Lead', val: totLeads > 0 ? fmtM(cpl) : '—'},
-    {label:'Impressions',   val: fmtN(totImpr)},
-    {label:'Clicks',        val: fmtN(totClicks)},
-    {label:'CTR',           val: totImpr > 0 ? ctr.toFixed(2) + '%' : '—'},
+    {label:'Total Spend',        val: fmtM(totSpend)},
+    {label:'Meta Leads',         val: fmtN(totLeads)},
+    {label:'Cost Per Lead',      val: totLeads > 0 ? fmtM(cpl) : '—'},
+    {label:'Meta Purchases',     val: fmtN(metaPurchases)},
+    {label:'Cost Per Purchase',  val: metaPurchases > 0 ? fmtM(cpp) : '—'},
+    {label:'Impressions',        val: fmtN(totImpr)},
+    {label:'Clicks',             val: fmtN(totClicks)},
+    {label:'CTR',                val: totImpr > 0 ? ctr.toFixed(2) + '%' : '—'},
   ].map(c =>
     `<div class="kpi-card">
        <div class="kpi-card-label">${c.label}</div>
