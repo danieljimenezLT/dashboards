@@ -4526,6 +4526,63 @@ function gbpKpi(label,value,icon,infoKey){
   return`<div class="kpi-card">${infoBtn}<div class="kpi-card-label">${icon?icon+' ':''} ${label}</div><div class="kpi-card-val">${value.toLocaleString('en-US')}</div></div>`;
 }
 
+let GBP_METRIC='total_views',GBP_GRAN='daily';
+const GBP_METRICS={
+  total_views:        {label:'Total Views',       icon:'',   glossary:'gbp_total_views',   source:'daily',         fields:['mobile_search','desktop_search','mobile_maps','desktop_maps']},
+  google_search:       {label:'Google Search',     icon:'🔍', glossary:'gbp_search',         source:'daily',         fields:['mobile_search','desktop_search']},
+  google_maps:         {label:'Google Maps',       icon:'📍', glossary:'gbp_maps',           source:'daily',         fields:['mobile_maps','desktop_maps']},
+  mobile_search:       {label:'Mobile Search',     icon:'📱', glossary:'gbp_mobile_search',  source:'daily',         fields:['mobile_search']},
+  desktop_search:      {label:'Desktop Search',    icon:'🖥️', glossary:'gbp_desktop_search', source:'daily',         fields:['desktop_search']},
+  mobile_maps:         {label:'Mobile Maps',       icon:'📱', glossary:'gbp_mobile_maps',    source:'daily',         fields:['mobile_maps']},
+  desktop_maps:        {label:'Desktop Maps',      icon:'🖥️', glossary:'gbp_desktop_maps',   source:'daily',         fields:['desktop_maps']},
+  direction_requests:  {label:'Direction Requests',icon:'🧭', glossary:'gbp_directions',     source:'daily',         fields:['direction_requests']},
+  website_clicks:      {label:'Website Clicks',    icon:'🌐', glossary:'gbp_website',        source:'daily',         fields:['website_clicks']},
+  calls:               {label:'Calls',             icon:'📞', glossary:'gbp_calls',          source:'daily',         fields:['calls']},
+  total_reviews:       {label:'Total Reviews',     icon:'💬', glossary:'gbp_total_reviews',  source:'reviews_daily', fields:['count']},
+  five_star_reviews:   {label:'5-Star Reviews',    icon:'🌟', glossary:'gbp_five_star',      source:'reviews_daily', fields:['five_star_count']},
+};
+function _gbpKpiCard(metricKey,value){
+  const m=GBP_METRICS[metricKey];
+  const g=m.glossary&&GLOSSARY[m.glossary];
+  const ib=g?`<button class="kpi-info-btn" onclick="showKpiInfo(this,event)" data-title="${_esc(g.title||m.label)}" data-desc="${_esc(g.desc)}" data-date="${_esc(g.date||'')}">i</button>`:'';
+  const active=metricKey===GBP_METRIC?' metric-active':'';
+  return `<div class="kpi-card kpi-card-clickable${active}" id="gbpKpi_${metricKey}" onclick="setGBPMetric('${metricKey}')">${ib}<div class="kpi-card-label">${m.icon?m.icon+' ':''}${m.label}</div><div class="kpi-card-val">${value.toLocaleString('en-US')}</div></div>`;
+}
+function setGBPMetric(metricKey){
+  GBP_METRIC=metricKey;
+  Object.keys(GBP_METRICS).forEach(m=>{const el=document.getElementById('gbpKpi_'+m);if(el)el.classList.toggle('metric-active',m===metricKey);});
+  const label=document.getElementById('gbpMetricLabel');if(label)label.textContent=GBP_METRICS[metricKey].label;
+  _drawGBPTrend();
+}
+function setGBPGran(gran){
+  const btn=document.getElementById('gbpGran'+gran.charAt(0).toUpperCase()+gran.slice(1));if(btn&&btn.disabled)return;
+  GBP_GRAN=gran;
+  ['daily','weekly','monthly'].forEach(g=>{const b=document.getElementById('gbpGran'+g.charAt(0).toUpperCase()+g.slice(1));if(b)b.classList.toggle('active',g===gran);});
+  _drawGBPTrend();
+}
+function _drawGBPTrend(){
+  const ctx=document.getElementById('gbpTrendChart');if(!ctx)return;
+  if(_ch.gbp){_ch.gbp.destroy();_ch.gbp=null;}
+  const studios=window._gbpStudios||[];
+  const from=window._gbpFrom||null,to=window._gbpTo||null;
+  const metric=GBP_METRICS[GBP_METRIC];
+  const byKey={};
+  studios.forEach(s=>{
+    (s[metric.source]||[]).forEach(r=>{
+      if(from&&r.date<from)return;
+      if(to&&r.date>to)return;
+      const val=metric.fields.reduce((sum,f)=>sum+(r[f]||0),0);
+      const key=_ga4PeriodKey(r.date,GBP_GRAN);
+      byKey[key]=(byKey[key]||0)+val;
+    });
+  });
+  if(from&&to)_periodKeysInRange(new Date(from+'T00:00:00Z'),new Date(to+'T00:00:00Z'),GBP_GRAN).forEach(k=>{if(!(k in byKey))byKey[k]=0;});
+  const keys=Object.keys(byKey).sort();
+  const labels=keys.map(k=>GBP_GRAN==='monthly'?fmMo(k):fmDay(k));
+  const isMob=window.innerWidth<=768;
+  _ch.gbp=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:metric.label,data:keys.map(k=>byKey[k]),borderColor:'#00A3E0',backgroundColor:'#00A3E033',borderWidth:2,pointRadius:0,tension:.4,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',autoSkip:true,maxTicksLimit:isMob?5:14,maxRotation:0}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'},min:0}}}});
+}
+
 function renderGBP(){
   const el=document.getElementById('gbp-content');
   if(!el)return;
@@ -4535,7 +4592,7 @@ function renderGBP(){
 
   const sec=t=>`<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#5a7a8a;margin:16px 0 10px">${t}</div>`;
 
-  function _renderAgg(studioRows){
+  function _renderAgg(studioRows,hasDaily){
     // studioRows: [{name, search_mobile, search_desktop, maps_mobile, maps_desktop, direction_requests, website_clicks, calls}]
     const agg=k=>studioRows.reduce((a,r)=>a+(r[k]||0),0);
     const totalViews=agg('search_mobile')+agg('search_desktop')+agg('maps_mobile')+agg('maps_desktop');
@@ -4543,23 +4600,23 @@ function renderGBP(){
     h+='<div class="chart-card">';
     h+=sec('Profile Views');
     h+=`<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
-    h+=gbpKpi('Total Views',totalViews,'','gbp_total_views');
-    h+=gbpKpi('Google Search',agg('search_mobile')+agg('search_desktop'),'🔍','gbp_search');
-    h+=gbpKpi('Google Maps',agg('maps_mobile')+agg('maps_desktop'),'📍','gbp_maps');
+    h+=_gbpKpiCard('total_views',totalViews);
+    h+=_gbpKpiCard('google_search',agg('search_mobile')+agg('search_desktop'));
+    h+=_gbpKpiCard('google_maps',agg('maps_mobile')+agg('maps_desktop'));
     h+=`</div>`;
     h+=sec('Search Detail');
     h+=`<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
-    h+=gbpKpi('Mobile Search',agg('search_mobile'),'📱','gbp_mobile_search');
-    h+=gbpKpi('Desktop Search',agg('search_desktop'),'🖥️','gbp_desktop_search');
-    h+=gbpKpi('Mobile Maps',agg('maps_mobile'),'📱','gbp_mobile_maps');
-    h+=gbpKpi('Desktop Maps',agg('maps_desktop'),'🖥️','gbp_desktop_maps');
+    h+=_gbpKpiCard('mobile_search',agg('search_mobile'));
+    h+=_gbpKpiCard('desktop_search',agg('search_desktop'));
+    h+=_gbpKpiCard('mobile_maps',agg('maps_mobile'));
+    h+=_gbpKpiCard('desktop_maps',agg('maps_desktop'));
     h+=`</div>`;
     h+=sec('Customer Actions');
     h+=`<div style="font-size:11px;color:#5a7a8a;margin:-4px 0 10px;font-family:'Open Sans'">Data from Google Business Profile may be delayed up to 2 weeks.</div>`;
     h+=`<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
-    h+=gbpKpi('Direction Requests',agg('direction_requests'),'🧭','gbp_directions');
-    h+=gbpKpi('Website Clicks',agg('website_clicks'),'🌐','gbp_website');
-    h+=gbpKpi('Calls',agg('calls'),'📞','gbp_calls');
+    h+=_gbpKpiCard('direction_requests',agg('direction_requests'));
+    h+=_gbpKpiCard('website_clicks',agg('website_clicks'));
+    h+=_gbpKpiCard('calls',agg('calls'));
     h+=`</div>`;
     const rvStudios=studioRows.filter(r=>r.reviews);
     if(rvStudios.length){
@@ -4570,9 +4627,18 @@ function renderGBP(){
       h+=sec('Reviews');
       h+=`<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
       h+=gbpKpi('Avg Rating',wtdRating!==null?`${wtdRating.toFixed(1)} ★`:'—','⭐','gbp_avg_rating');
-      h+=gbpKpi('Total Reviews',rvTotal,'💬','gbp_total_reviews');
-      h+=gbpKpi('5-Star Reviews',rvTotal>0?`${fiveStar.toLocaleString()} (${Math.round(fiveStar/rvTotal*100)}%)`:fiveStar.toLocaleString(),'🌟','gbp_five_star');
+      h+=_gbpKpiCard('total_reviews',rvTotal);
+      h+=_gbpKpiCard('five_star_reviews',rvTotal>0?`${fiveStar.toLocaleString()} (${Math.round(fiveStar/rvTotal*100)}%)`:fiveStar.toLocaleString());
       h+=`</div>`;
+    }
+    if(hasDaily){
+      h+=`<div style="font-size:11px;color:#5a7a8a;margin:20px 0 4px;font-family:'Open Sans'">Trend metric: <strong id="gbpMetricLabel">${GBP_METRICS[GBP_METRIC].label}</strong> &middot; selected studios combined &middot; click a card above to change metric</div>`;
+      h+='<div class="gran-group">';
+      h+=`<button class="gran-btn${GBP_GRAN==='daily'?' active':''}" id="gbpGranDaily" onclick="setGBPGran('daily')">Daily</button>`;
+      h+=`<button class="gran-btn${GBP_GRAN==='weekly'?' active':''}" id="gbpGranWeekly" onclick="setGBPGran('weekly')">Weekly</button>`;
+      h+=`<button class="gran-btn${GBP_GRAN==='monthly'?' active':''}" id="gbpGranMonthly" onclick="setGBPGran('monthly')">Monthly</button>`;
+      h+='</div>';
+      h+='<div style="position:relative;width:100%;height:240px;margin-top:12px"><canvas id="gbpTrendChart"></canvas></div>';
     }
     h+='</div>';
 
@@ -4625,16 +4691,20 @@ function renderGBP(){
       }:null;
       return{name:s.name,search_mobile:sum('mobile_search'),search_desktop:sum('desktop_search'),maps_mobile:sum('mobile_maps'),maps_desktop:sum('desktop_maps'),direction_requests:sum('direction_requests'),website_clicks:sum('website_clicks'),calls:sum('calls'),reviews};
     });
-    el.innerHTML=_renderAgg(studioRows);
+    el.innerHTML=_renderAgg(studioRows,true);
     if(studioRows.length)sortableTable('gbp-studio-table',studioRows,_renderGBPStudioRow,null);
+    window._gbpStudios=studios;
+    window._gbpFrom=from;
+    window._gbpTo=to;
+    setTimeout(()=>_drawGBPTrend(),50);
     return;
   }
 
-  // Fallback: static GBP_DATA
+  // Fallback: static GBP_DATA (no daily granularity — no trend chart)
   const filtered=GBP_DATA.filter(d=>selStudios.includes(d.studio));
   if(!filtered.length){el.innerHTML='<div style="padding:40px;text-align:center;color:#8aaabb;font-family:Oswald,sans-serif;font-style:italic">No studios selected.</div>';return;}
   const studioRows=filtered.map(d=>({name:d.studio,search_mobile:d.search_mobile,search_desktop:d.search_desktop,maps_mobile:d.maps_mobile,maps_desktop:d.maps_desktop,direction_requests:d.directions,website_clicks:d.website_clicks,calls:d.calls}));
-  el.innerHTML=_renderAgg(studioRows)+`<div style="font-size:10px;color:#aab;padding:0 20px 16px">Source: Google Business Profile CSV export.</div>`;
+  el.innerHTML=_renderAgg(studioRows,false)+`<div style="font-size:10px;color:#aab;padding:0 20px 16px">Source: Google Business Profile CSV export.</div>`;
   if(studioRows.length)sortableTable('gbp-studio-table',studioRows,_renderGBPStudioRow,null);
 }
 
