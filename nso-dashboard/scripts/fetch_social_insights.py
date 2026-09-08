@@ -468,18 +468,25 @@ def main():
             old_posts[permalink] = merged
         all_posts = sorted(old_posts.values(), key=lambda x: x.get("date", ""), reverse=True)
 
-        # Monthly aggregates: compute from full accumulated data for complete months
-        # entirely before the 90-day window. Existing stored months are preserved;
-        # recomputed months (still in accumulated daily data) overwrite the stored value.
-        new_monthly = build_monthly_aggregates(all_daily, all_posts, start_date)
+        # Monthly aggregates: compute once, from full accumulated data, for complete months
+        # entirely before the 90-day window — then archive write-once. A month's raw daily
+        # rows get pruned right after it's archived (below), but follower_count's fixed
+        # 30-day window keeps re-requesting dates regardless of archival status and can
+        # resurrect a handful of reach-less rows for an already-archived month; recomputing
+        # from those stragglers would silently overwrite a correct archive with a near-empty
+        # one. So a month already in old_monthly is never recomputed.
         old_monthly = {m["month"]: m for m in old.get("monthly", [])}
-        old_monthly.update(new_monthly)
+        new_monthly = build_monthly_aggregates(all_daily, all_posts, start_date)
+        for mk, agg in new_monthly.items():
+            if mk not in old_monthly:
+                old_monthly[mk] = agg
         new_data["monthly"] = sorted(old_monthly.values(), key=lambda x: x["month"])
 
-        # Prune daily rows from months that are now fully archived (keeps JSON lean).
-        # Boundary months (partially in the 90-day window) are kept intact so
-        # they can be correctly aggregated when they eventually fall out.
-        archived_keys = set(new_monthly.keys())
+        # Prune daily rows from any archived month (this run's or a prior run's), keeping
+        # the JSON lean and stopping stray resurrected rows from accumulating indefinitely.
+        # Boundary months (partially in the 90-day window) are kept intact so they can be
+        # correctly aggregated when they eventually fall out.
+        archived_keys = set(old_monthly.keys())
         new_data["daily"] = [r for r in all_daily
                              if _month_key(r["date"]) not in archived_keys]
 

@@ -3465,17 +3465,35 @@ function renderInstagram() {
 
   function _enrichPosts(studioList) {
     return studioList.flatMap(s => {
+      // Undefined (not 0) when a date has no daily row at all — either archived out of the
+      // rolling window and pruned, or never fetched — so it's distinguishable from a real 0.
       const reachByDate = {};
-      s.daily.forEach(r => { reachByDate[r.date] = r.reach || 0; });
+      s.daily.forEach(r => { reachByDate[r.date] = r.reach; });
       const postsPerDay = {};
       s.posts.forEach(p => { postsPerDay[p.date] = (postsPerDay[p.date] || 0) + 1; });
-      return s.posts.map(p => ({
-        ...p,
-        studio: 'SWEAT440 ' + s.studio,
-        code: s.code,
-        est_reach: postsPerDay[p.date] ? Math.round((reachByDate[p.date] || 0) / postsPerDay[p.date]) : 0,
-        er_pct: s.current_followers > 0 ? +((p.likes + p.comments) / s.current_followers * 100).toFixed(2) : null
-      }));
+      const monthlyMedianByMonth = {};
+      (s.monthly || []).forEach(m => { if (m.median_reach_per_post != null) monthlyMedianByMonth[m.month] = m.median_reach_per_post; });
+      return s.posts.map(p => {
+        const n = postsPerDay[p.date] || 1;
+        const dayReach = reachByDate[p.date];
+        let est_reach, est_reach_estimated;
+        if (dayReach != null) {
+          est_reach = Math.round(dayReach / n);
+          est_reach_estimated = false;
+        } else {
+          const med = monthlyMedianByMonth[p.date.slice(0, 7) + '-01'];
+          est_reach = med != null ? med : null;
+          est_reach_estimated = true;
+        }
+        return {
+          ...p,
+          studio: 'SWEAT440 ' + s.studio,
+          code: s.code,
+          est_reach,
+          est_reach_estimated,
+          er_pct: s.current_followers > 0 ? +((p.likes + p.comments) / s.current_followers * 100).toFixed(2) : null
+        };
+      });
     });
   }
   const allPosts   = _enrichPosts(filtered);
@@ -3515,9 +3533,9 @@ function renderInstagram() {
   const ppAvgReach = Math.round(ppTotalReach / ppDays);
 
   const medianLikes   = _median(allPosts.map(p => p.likes || 0));
-  const medianReach   = _median(allPosts.map(p => p.est_reach || 0));
+  const medianReach   = _median(allPosts.map(p => p.est_reach).filter(v => v != null));
   const ppMedianLikes = _median(ppAllPosts.map(p => p.likes || 0));
-  const ppMedianReach = _median(ppAllPosts.map(p => p.est_reach || 0));
+  const ppMedianReach = _median(ppAllPosts.map(p => p.est_reach).filter(v => v != null));
   const histMedianLikes = _weightedMedian(monthFiltered, 'median_likes');
   const histMedianReach = _weightedMedian(monthFiltered, 'median_reach_per_post');
 
@@ -3611,6 +3629,7 @@ function renderInstagram() {
   }
 
   const _showPosts = (allPosts.length || historicalPostCount) && (!igBlock || igToInWindow);
+  const _hasEstimatedReach = allPosts.some(p => p.est_reach_estimated);
   if (_showPosts) {
     h += `<div class="chart-card">
       <div class="chart-card-title">Best Performing Posts</div>
@@ -3630,6 +3649,7 @@ function renderInstagram() {
           <tbody></tbody>
         </table>
       </div>
+      ${_hasEstimatedReach ? '<p style="margin:8px 0 0;font-size:11px;color:#8aaabb">* Day-level reach is no longer stored for this post; showing the studio\'s median reach per post for that month instead.</p>' : ''}
     </div>`;
   }
 
@@ -3650,12 +3670,16 @@ function renderInstagram() {
         : ((p.caption || '').slice(0, 90) || '(no caption)');
       const typeLabel = p.media_type === 'CAROUSEL_ALBUM' ? 'CAROUSEL' : (p.media_type || '—');
       const er = p.er_pct != null ? p.er_pct.toFixed(2) + '%' : '—';
+      const reachTitle = p.est_reach_estimated ? ' title="Exact day-level reach is no longer available for this post; showing the studio\'s median reach per post for that month instead."' : '';
+      const reachCell = p.est_reach != null
+        ? `${p.est_reach.toLocaleString()}${p.est_reach_estimated ? ' *' : ''}`
+        : '—';
       return `<tr>
         <td>${img}</td>
         <td style="white-space:nowrap;color:#8aaabb;font-size:12px">${fmtDayLabel(p.date)}</td>
         <td style="font-size:12px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${caption}</td>
         <td style="font-size:12px">${typeLabel}</td>
-        <td class="num">${(p.est_reach || 0).toLocaleString()}</td>
+        <td class="num"${reachTitle}>${reachCell}</td>
         <td class="num">${(p.likes    || 0).toLocaleString()}</td>
         <td class="num">${(p.comments || 0).toLocaleString()}</td>
         <td class="num">${er}</td>
