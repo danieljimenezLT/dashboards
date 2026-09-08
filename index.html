@@ -2908,6 +2908,28 @@ let SOCIAL_RAW   = null;
 let GBP_RAW_ORG  = null;
 let GA4_RAW_ORG  = [];
 let GA4_SITE_GRAN = 'daily';
+let GA4_SITE_METRIC = 'sessions';
+let GA4_LOC_METRIC  = 'sessions';
+let GA4_LOC_GRAN    = 'daily';
+function _ga4PeriodKey(dateStr, gran) {
+  if (gran === 'monthly') return dateStr.slice(0,7)+'-01';
+  if (gran === 'weekly') {
+    const d = new Date(dateStr+'T00:00:00Z');
+    const ws = new Date(d); ws.setUTCDate(d.getUTCDate()-d.getUTCDay());
+    return ws.toISOString().slice(0,10);
+  }
+  return dateStr;
+}
+const GA4_METRICS = {
+  sessions: { field: 'sessions',    label: 'Sessions',  glossary: 'ga4_sessions' },
+  users:    { field: 'total_users', label: 'Users',     glossary: 'ga4_users' },
+  newUsers: { field: 'new_users',   label: 'New Users', glossary: 'ga4_new_users' },
+};
+function _ga4KpiCard(idPrefix, metricKey, val, activeMetric, onclickFn, fmt) {
+  const m = GA4_METRICS[metricKey];
+  const active = metricKey === activeMetric ? ' ga4-active' : '';
+  return `<div class="kpi-card kpi-card-clickable${active}" id="${idPrefix}${metricKey}" onclick="${onclickFn}('${metricKey}')">${_infoBtn(m.glossary)}<div class="kpi-card-label">${m.label}</div><div class="kpi-card-val">${fmt(val)}</div></div>`;
+}
 
 // Chart registry for organic tabs
 const _orgCharts = {};
@@ -3128,11 +3150,11 @@ function renderGA4() {
   h += '<div class="chart-card">';
   h += '<div class="chart-card-title" style="margin-bottom:16px">ENTIRE WEBSITE</div>';
   h += '<div class="kpi-grid three">';
-  h += `<div class="kpi-card">${_infoBtn('ga4_sessions')}<div class="kpi-card-label">Sessions</div><div class="kpi-card-val">${fmt(site.sessions)}</div></div>`;
-  h += `<div class="kpi-card">${_infoBtn('ga4_users')}<div class="kpi-card-label">Users</div><div class="kpi-card-val">${fmt(site.users)}</div></div>`;
-  h += `<div class="kpi-card">${_infoBtn('ga4_new_users')}<div class="kpi-card-label">New Users</div><div class="kpi-card-val">${fmt(site.newUsers)}</div></div>`;
+  h += _ga4KpiCard('ga4SiteKpi', 'sessions', site.sessions, GA4_SITE_METRIC, 'setGA4SiteMetric', fmt);
+  h += _ga4KpiCard('ga4SiteKpi', 'users',    site.users,    GA4_SITE_METRIC, 'setGA4SiteMetric', fmt);
+  h += _ga4KpiCard('ga4SiteKpi', 'newUsers', site.newUsers, GA4_SITE_METRIC, 'setGA4SiteMetric', fmt);
   h += '</div>';
-  h += '<div style="font-size:11px;color:#5a7a8a;margin:20px 0 4px;font-family:\'Open Sans\'">Metric: <strong>Sessions</strong> &middot; entire site, all studios combined &mdash; not affected by the studio filter above</div>';
+  h += `<div style="font-size:11px;color:#5a7a8a;margin:20px 0 4px;font-family:'Open Sans'">Metric: <strong id="ga4SiteMetricLabel">${GA4_METRICS[GA4_SITE_METRIC].label}</strong> &middot; entire site, all studios combined &mdash; not affected by the studio filter above &middot; click a card above to change metric</div>`;
   h += '<div class="gran-group">';
   h += `<button class="gran-btn${GA4_SITE_GRAN==='daily'?' active':''}" id="ga4SiteGranDaily" onclick="setGA4SiteGran('daily')">Daily</button>`;
   h += `<button class="gran-btn${GA4_SITE_GRAN==='weekly'?' active':''}" id="ga4SiteGranWeekly" onclick="setGA4SiteGran('weekly')">Weekly</button>`;
@@ -3150,11 +3172,17 @@ function renderGA4() {
     h += '<div class="chart-card">';
     h += '<div class="chart-card-title" style="margin-bottom:16px">LOCATION PAGES — SELECTED STUDIOS</div>';
     h += '<div class="kpi-grid three">';
-    h += `<div class="kpi-card">${_infoBtn('ga4_sessions')}<div class="kpi-card-label">Sessions</div><div class="kpi-card-val">${fmt(loc.sessions)}</div></div>`;
-    h += `<div class="kpi-card">${_infoBtn('ga4_users')}<div class="kpi-card-label">Users</div><div class="kpi-card-val">${fmt(loc.users)}</div></div>`;
-    h += `<div class="kpi-card">${_infoBtn('ga4_new_users')}<div class="kpi-card-label">New Users</div><div class="kpi-card-val">${fmt(loc.newUsers)}</div></div>`;
+    h += _ga4KpiCard('ga4LocKpi', 'sessions', loc.sessions, GA4_LOC_METRIC, 'setGA4LocMetric', fmt);
+    h += _ga4KpiCard('ga4LocKpi', 'users',    loc.users,    GA4_LOC_METRIC, 'setGA4LocMetric', fmt);
+    h += _ga4KpiCard('ga4LocKpi', 'newUsers', loc.newUsers, GA4_LOC_METRIC, 'setGA4LocMetric', fmt);
     h += '</div>';
-    h += '<div style="position:relative;width:100%;height:260px;margin-top:20px"><canvas id="ga4TrendChart"></canvas></div>';
+    h += `<div style="font-size:11px;color:#5a7a8a;margin:16px 0 4px;font-family:'Open Sans'">Metric: <strong id="ga4LocMetricLabel">${GA4_METRICS[GA4_LOC_METRIC].label}</strong> &middot; click a card above to change metric</div>`;
+    h += '<div class="gran-group">';
+    h += `<button class="gran-btn${GA4_LOC_GRAN==='daily'?' active':''}" id="ga4LocGranDaily" onclick="setGA4LocGran('daily')">Daily</button>`;
+    h += `<button class="gran-btn${GA4_LOC_GRAN==='weekly'?' active':''}" id="ga4LocGranWeekly" onclick="setGA4LocGran('weekly')">Weekly</button>`;
+    h += `<button class="gran-btn${GA4_LOC_GRAN==='monthly'?' active':''}" id="ga4LocGranMonthly" onclick="setGA4LocGran('monthly')">Monthly</button>`;
+    h += '</div>';
+    h += '<div style="position:relative;width:100%;height:260px;margin-top:12px"><canvas id="ga4TrendChart"></canvas></div>';
     h += '</div>';
 
     // ── By-studio table
@@ -3171,6 +3199,49 @@ function renderGA4() {
 
   el.innerHTML = h;
   setTimeout(() => { _drawGA4SiteTrend(from, to); _drawGA4Trend(from, to, activeStudios); }, 50);
+}
+
+function setGA4SiteMetric(metricKey) {
+  GA4_SITE_METRIC = metricKey;
+  Object.keys(GA4_METRICS).forEach(m => {
+    const el = document.getElementById('ga4SiteKpi'+m);
+    if (el) el.classList.toggle('ga4-active', m === metricKey);
+  });
+  const label = document.getElementById('ga4SiteMetricLabel');
+  if (label) label.textContent = GA4_METRICS[metricKey].label;
+  const from = document.getElementById('fFrom').value || null;
+  const to   = document.getElementById('fTo').value   || null;
+  _drawGA4SiteTrend(from, to);
+}
+
+function setGA4LocMetric(metricKey) {
+  GA4_LOC_METRIC = metricKey;
+  Object.keys(GA4_METRICS).forEach(m => {
+    const el = document.getElementById('ga4LocKpi'+m);
+    if (el) el.classList.toggle('ga4-active', m === metricKey);
+  });
+  const label = document.getElementById('ga4LocMetricLabel');
+  if (label) label.textContent = GA4_METRICS[metricKey].label;
+  const from = document.getElementById('fFrom').value || null;
+  const to   = document.getElementById('fTo').value   || null;
+  const selStudios    = getSelected('studioMenu');
+  const activeStudios = selStudios.filter(s => (GA4_SLUGS[s] || []).length);
+  _drawGA4Trend(from, to, activeStudios);
+}
+
+function setGA4LocGran(gran) {
+  const btn = document.getElementById('ga4LocGran'+gran.charAt(0).toUpperCase()+gran.slice(1));
+  if (btn && btn.disabled) return;
+  GA4_LOC_GRAN = gran;
+  ['daily','weekly','monthly'].forEach(g => {
+    const b = document.getElementById('ga4LocGran'+g.charAt(0).toUpperCase()+g.slice(1));
+    if (b) b.classList.toggle('active', g === gran);
+  });
+  const from = document.getElementById('fFrom').value || null;
+  const to   = document.getElementById('fTo').value   || null;
+  const selStudios    = getSelected('studioMenu');
+  const activeStudios = selStudios.filter(s => (GA4_SLUGS[s] || []).length);
+  _drawGA4Trend(from, to, activeStudios);
 }
 
 function setGA4SiteGran(gran) {
@@ -3190,20 +3261,12 @@ function _drawGA4SiteTrend(from, to) {
   const ctx = document.getElementById('ga4SiteTrendChart');
   if (!ctx) return;
   if (_orgCharts.ga4Site) { _orgCharts.ga4Site.destroy(); _orgCharts.ga4Site = null; }
+  const metric = GA4_METRICS[GA4_SITE_METRIC];
   const rows = GA4_RAW_ORG.filter(r => (!from || r.date >= from) && (!to || r.date <= to));
   const byKey = {};
   rows.forEach(r => {
-    let key;
-    if (GA4_SITE_GRAN === 'monthly') {
-      key = r.date.slice(0,7)+'-01';
-    } else if (GA4_SITE_GRAN === 'weekly') {
-      const d = new Date(r.date+'T00:00:00Z');
-      const ws = new Date(d); ws.setUTCDate(d.getUTCDate()-d.getUTCDay());
-      key = ws.toISOString().slice(0,10);
-    } else {
-      key = r.date;
-    }
-    byKey[key] = (byKey[key]||0) + (r.sessions||0);
+    const key = _ga4PeriodKey(r.date, GA4_SITE_GRAN);
+    byKey[key] = (byKey[key]||0) + (r[metric.field]||0);
   });
   if (from && to) {
     _periodKeysInRange(new Date(from+'T00:00:00Z'), new Date(to+'T00:00:00Z'), GA4_SITE_GRAN).forEach(k => {
@@ -3218,7 +3281,7 @@ function _drawGA4SiteTrend(from, to) {
     data: {
       labels,
       datasets: [{
-        label: 'Sessions (entire website)',
+        label: metric.label + ' (entire website)',
         data: keys.map(k => byKey[k]),
         borderColor: '#00A3E0',
         backgroundColor: '#00A3E033',
@@ -3246,22 +3309,27 @@ function _drawGA4Trend(from, to, activeStudios) {
   const ctx = document.getElementById('ga4TrendChart');
   if (!ctx) return;
   if (_orgCharts.ga4) { _orgCharts.ga4.destroy(); _orgCharts.ga4 = null; }
-  const datasets = activeStudios.map((studio, i) => {
-    const rows   = _ga4StudioRows(studio, from, to);
-    const byDate = {};
-    rows.forEach(r => { byDate[r.date] = (byDate[r.date] || 0) + (r.sessions || 0); });
-    return { studio, byDate, color: studioColor(studio) };
+  const metric = GA4_METRICS[GA4_LOC_METRIC];
+  const datasets = activeStudios.map((studio) => {
+    const rows  = _ga4StudioRows(studio, from, to);
+    const byKey = {};
+    rows.forEach(r => {
+      const key = _ga4PeriodKey(r.date, GA4_LOC_GRAN);
+      byKey[key] = (byKey[key] || 0) + (r[metric.field] || 0);
+    });
+    return { studio, byKey, color: studioColor(studio) };
   });
-  const rangeDates = (from && to) ? _periodKeysInRange(new Date(from+'T00:00:00Z'), new Date(to+'T00:00:00Z'), 'daily') : [];
-  const allDates = [...new Set([...datasets.flatMap(d => Object.keys(d.byDate)), ...rangeDates])].sort();
-  const isMob    = window.innerWidth <= 768;
+  const rangeKeys = (from && to) ? _periodKeysInRange(new Date(from+'T00:00:00Z'), new Date(to+'T00:00:00Z'), GA4_LOC_GRAN) : [];
+  const allKeys = [...new Set([...datasets.flatMap(d => Object.keys(d.byKey)), ...rangeKeys])].sort();
+  const isMob   = window.innerWidth <= 768;
+  const labels  = allKeys.map(k => GA4_LOC_GRAN === 'monthly' ? fmtMonthLabel(k) : fmtDayLabel(k));
   _orgCharts.ga4 = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: allDates.map(d => fmtDayLabel(d)),
-      datasets: datasets.map(({ studio, byDate, color }) => ({
+      labels,
+      datasets: datasets.map(({ studio, byKey, color }) => ({
         label:       studio,
-        data:        allDates.map(d => byDate[d] || 0),
+        data:        allKeys.map(k => byKey[k] || 0),
         borderColor: color,
         borderWidth: 2,
         pointRadius: 0,
@@ -3272,7 +3340,7 @@ function _drawGA4Trend(from, to, activeStudios) {
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
-        legend: { position: 'bottom', labels: { font: { family: 'Oswald', size: 12, style: 'italic' }, usePointStyle: true, padding: 14 } },
+        legend: { position: 'bottom', labels: { font: { family: 'Open Sans', size: 12, style: 'normal' }, usePointStyle: true, padding: 14 } },
         tooltip: { mode: 'index', intersect: false }
       },
       scales: {
