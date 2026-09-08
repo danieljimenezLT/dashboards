@@ -3562,19 +3562,15 @@ function renderMeta(){
   let h='';
 
   // Summary KPI cards — Snowflake-attributed leads, matches the Funnel tab
+  h+=`<div class="kpi-group-title">MBO Attribution Data</div>`;
   h+=`<div class="kpi-grid three">`;
   h+=kpiCard('Spend',totalSpend,null,null,f$,GLOSSARY.meta_spend);
   h+=kpiCard('Leads (New Accounts Created)',snowLeads,null,null,v=>v,GLOSSARY.leads);
   h+=kpiCard('Cost / Lead',snowCpl,null,null,f$2,GLOSSARY.meta_blended_cpl);
   h+=`</div>`;
 
-  h+=`<div style="border-top:1px solid #dde8ef;margin:0 0 20px"></div>`;
-  h+=`<div style="display:flex;align-items:flex-start;gap:10px;background:#fdf8ee;border-left:3px solid #f4a021;border-radius:6px;padding:12px 16px;margin-bottom:20px">
-    <span style="font-size:15px;line-height:1;color:#c8860a;flex-shrink:0;margin-top:1px">ⓘ</span>
-    <p style="margin:0;font-size:12px;color:#6b5a2e;line-height:1.55">The metrics below are reported directly by Meta Ads Manager and may differ from the lead totals shown elsewhere in this report. This is expected, as Meta uses a different attribution methodology than SWEAT440's standardized lead reporting.</p>
-  </div>`;
-
   // KPI cards
+  h+=`<div class="kpi-group-title" style="margin-top:20px">On Platform Data</div>`;
   h+=`<div class="kpi-grid">`;
   h+=kpiCard('Spend',totalSpend,null,null,f$,GLOSSARY.meta_spend);
   h+=kpiCard('Impressions',totalImp,null,null,v=>fK(v),GLOSSARY.meta_impressions);
@@ -3828,19 +3824,15 @@ function renderGoogle(){
   let h='';
 
   // Summary KPI cards — Snowflake-attributed leads, matches the Funnel tab
+  h+=`<div class="kpi-group-title">MBO Attribution Data</div>`;
   h+=`<div class="kpi-grid three">`;
   h+=kpiCard('Spend',totalSpend,null,null,f$,GLOSSARY.google_spend);
   h+=kpiCard('Leads (New Accounts Created)',snowLeads,null,null,fN,GLOSSARY.leads);
   h+=kpiCard('Cost / Lead',snowCpl,null,null,f$2,GLOSSARY.google_blended_cpl);
   h+=`</div>`;
 
-  h+=`<div style="border-top:1px solid #dde8ef;margin:0 0 20px"></div>`;
-  h+=`<div style="display:flex;align-items:flex-start;gap:10px;background:#fdf8ee;border-left:3px solid #f4a021;border-radius:6px;padding:12px 16px;margin-bottom:20px">
-    <span style="font-size:15px;line-height:1;color:#c8860a;flex-shrink:0;margin-top:1px">ⓘ</span>
-    <p style="margin:0;font-size:12px;color:#6b5a2e;line-height:1.55">Everything below is reported directly by Google Ads (in-platform) and may not line up with the summary above, which follows SWEAT440's standard attribution model.</p>
-  </div>`;
-
   // KPI cards
+  h+=`<div class="kpi-group-title" style="margin-top:20px">On Platform Data</div>`;
   h+=`<div class="kpi-grid" style="grid-template-columns:repeat(6,1fr)">`;
   h+=kpiCard('Spend',totalSpend,null,null,f$,GLOSSARY.google_spend);
   h+=kpiCard('Opportunities',totalOpportunities,null,null,v=>Number(v).toFixed(0),GLOSSARY.google_opp);

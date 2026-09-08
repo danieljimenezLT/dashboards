@@ -29,6 +29,7 @@
   .tab-content.active{max-height:none;overflow:visible;pointer-events:auto}
 
   .chart-card{background:#fff;border:0.5px solid #dde8ef;border-radius:12px;padding:22px;margin-bottom:20px}
+  .kpi-group-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#5a7a8a;margin-bottom:10px}
   .chart-card-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#1a1a2e;margin-bottom:18px}
   .chart-card-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
   .chart-card-title-row .chart-card-title{margin-bottom:0}
