@@ -139,6 +139,18 @@ const USERS = {
     role: 'franchisee'
   },
 
+  'franchisee@sweat440.com': {
+    passwordHash: '30cfb111b52271871de0b82d98af2461fd2cc7663e41eebfab0969ad7bfcefeb',
+    name: 'Franchisee preview',
+    studios: [
+      'Austin - Highland',
+      'Miami Lakes',
+      'Doral',
+      'Boca Raton',
+    ],
+    role: 'franchisee'
+  },
+
   'alex@sweat440.com': {
     passwordHash: '6148189bed46eac08ab1de3198b5b8fe4bc106155e9cc48db03f7c065ccf9112',
     name: 'Alex Avila',
