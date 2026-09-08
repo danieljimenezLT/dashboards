@@ -4483,6 +4483,7 @@ function renderGBP(){
     h+=gbpKpi('Desktop Maps',agg('maps_desktop'),'🖥️','gbp_desktop_maps');
     h+=`</div>`;
     h+=sec('Customer Actions');
+    h+=`<div style="font-size:11px;color:#5a7a8a;margin:-4px 0 10px;font-family:'Open Sans'">Data from Google Business Profile may be delayed up to 2 weeks.</div>`;
     h+=`<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
     h+=gbpKpi('Direction Requests',agg('direction_requests'),'🧭','gbp_directions');
     h+=gbpKpi('Website Clicks',agg('website_clicks'),'🌐','gbp_website');
@@ -4520,8 +4521,10 @@ function renderGBP(){
     });
     h+='<div class="chart-card"><div class="chart-card-title">By Studio</div>';
     h+='<div style="overflow-x:auto"><table class="data-table" id="gbp-studio-table"><thead><tr>';
-    h+='<th data-sort="name">Studio</th><th class="num" data-sort="tv">Total Views</th><th class="num" data-sort="search">Search</th><th class="num" data-sort="maps">Maps</th><th class="num" data-sort="direction_requests">Directions</th><th class="num" data-sort="website_clicks">Website Clicks</th><th class="num" data-sort="calls">Calls</th><th class="num" data-sort="rating">Rating</th><th class="num" data-sort="total_reviews">Reviews</th><th class="num" data-sort="five_star">5★</th><th class="num" data-sort="one_star">1★</th><th class="num" data-sort="two_star">2★</th><th class="num" data-sort="three_star">3★</th><th class="num" data-sort="four_star">4★</th>';
-    h+='</tr></thead><tbody></tbody></table></div></div>';
+    h+='<th data-sort="name">Studio</th><th class="num" data-sort="tv">Total Views</th><th class="num" data-sort="search">Search</th><th class="num" data-sort="maps">Maps</th><th class="num" data-sort="direction_requests">Directions&dagger;</th><th class="num" data-sort="website_clicks">Website Clicks&dagger;</th><th class="num" data-sort="calls">Calls&dagger;</th><th class="num" data-sort="rating">Rating</th><th class="num" data-sort="total_reviews">Reviews</th><th class="num" data-sort="five_star">5★</th><th class="num" data-sort="one_star">1★</th><th class="num" data-sort="two_star">2★</th><th class="num" data-sort="three_star">3★</th><th class="num" data-sort="four_star">4★</th>';
+    h+='</tr></thead><tbody></tbody></table></div>';
+    h+=`<div style="font-size:11px;color:#8aabbf;margin-top:8px;font-family:'Open Sans'">&dagger; Data may be delayed up to 2 weeks.</div>`;
+    h+='</div>';
     return h;
   }
 

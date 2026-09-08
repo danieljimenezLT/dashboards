@@ -3012,6 +3012,7 @@ function renderGBP() {
     h += _orgKpi('Desktop Maps',    agg('maps_desktop').toLocaleString(),   '🖥️', 'gbp_maps_views');
     h += `</div>`;
     h += sec('Customer Actions');
+    h += `<div style="font-size:11px;color:#5a7a8a;margin:-4px 0 10px;font-family:'Open Sans'">Data from Google Business Profile may be delayed up to 2 weeks.</div>`;
     h += `<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
     h += _orgKpi('Direction Requests', agg('direction_requests').toLocaleString(), '🧭', 'gbp_directions');
     h += _orgKpi('Website Clicks',     agg('website_clicks').toLocaleString(),     '🌐', 'gbp_website_clicks');
@@ -3033,8 +3034,10 @@ function renderGBP() {
     h += '</div>';
     h += '<div class="chart-card"><div class="chart-card-title">By Studio</div>';
     h += '<div style="overflow-x:auto"><table class="data-table" id="gbp-studio-table"><thead><tr>';
-    h += '<th data-sort="name">Studio</th><th class="num" data-sort="tv">Total Views</th><th class="num" data-sort="search">Search</th><th class="num" data-sort="maps">Maps</th><th class="num" data-sort="direction_requests">Directions</th><th class="num" data-sort="website_clicks">Website Clicks</th><th class="num" data-sort="calls">Calls</th><th class="num" data-sort="rating">Avg Rating</th><th class="num" data-sort="total_reviews">Total Reviews</th><th class="num" data-sort="five_star">5-Star</th><th class="num" data-sort="one_star">1-Star</th><th class="num" data-sort="two_star">2-Star</th><th class="num" data-sort="three_star">3-Star</th><th class="num" data-sort="four_star">4-Star</th>';
-    h += '</tr></thead><tbody></tbody></table></div></div>';
+    h += '<th data-sort="name">Studio</th><th class="num" data-sort="tv">Total Views</th><th class="num" data-sort="search">Search</th><th class="num" data-sort="maps">Maps</th><th class="num" data-sort="direction_requests">Directions&dagger;</th><th class="num" data-sort="website_clicks">Website Clicks&dagger;</th><th class="num" data-sort="calls">Calls&dagger;</th><th class="num" data-sort="rating">Avg Rating</th><th class="num" data-sort="total_reviews">Total Reviews</th><th class="num" data-sort="five_star">5-Star</th><th class="num" data-sort="one_star">1-Star</th><th class="num" data-sort="two_star">2-Star</th><th class="num" data-sort="three_star">3-Star</th><th class="num" data-sort="four_star">4-Star</th>';
+    h += '</tr></thead><tbody></tbody></table></div>';
+    h += `<div style="font-size:11px;color:#8aabbf;margin-top:8px;font-family:'Open Sans'">&dagger; Data may be delayed up to 2 weeks.</div>`;
+    h += '</div>';
     return h;
   }
 
