@@ -2,6 +2,18 @@
   "entries": [
     {
       "date": "2026-09-08",
+      "pr_number": 342,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/342",
+      "author": "Santiago Estrada",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Fixed Instagram reach numbers disappearing for older posts\r",
+      "summary": "Archived months were getting silently overwritten with empty data on later refreshes, making real reach numbers show as zero; this restores the lost history and stops it from happening again.\r"
+    },
+    {
+      "date": "2026-09-08",
       "pr_number": 340,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/340",
       "author": "Santiago Estrada",
