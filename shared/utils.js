@@ -588,12 +588,15 @@ function buildAreaChart(canvasId, togglesId, series, srcList, valueKey){
   return chart;
 }
 
-function buildRingChart(canvasId,legendId,labels,values){
+function buildRingChart(canvasId,legendId,rawLabels,rawValues){
   const ctx=document.getElementById(canvasId);if(!ctx)return;
   if(_areaCharts[canvasId]){_areaCharts[canvasId].destroy();_areaCharts[canvasId]=null;}
+  const order=[...rawLabels.keys()].filter(i=>rawValues[i]>0).sort((a,b)=>rawValues[b]-rawValues[a]);
+  const labels=order.map(i=>rawLabels[i]);
+  const values=order.map(i=>rawValues[i]);
   const total=values.reduce((s,v)=>s+v,0);
   const colors=labels.map((l,i)=>srcColor(l,i));
-  _areaCharts[canvasId]=new Chart(ctx,{type:'doughnut',data:{labels,datasets:[{data:values,backgroundColor:colors,borderColor:'#fff',borderWidth:2,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},cutout:'65%'}});
+  _areaCharts[canvasId]=new Chart(ctx,{type:'doughnut',data:{labels,datasets:[{data:values,backgroundColor:colors,borderColor:'#fff',borderWidth:2,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.label+': '+c.parsed.toLocaleString()+' ('+(total?(c.parsed/total*100).toFixed(1):0)+'%)'}}},cutout:'65%'}});
   const leg=document.getElementById(legendId);
   if(leg)leg.innerHTML=labels.map((l,i)=>{
     const pct=total?(values[i]/total*100).toFixed(1):0;

@@ -1253,7 +1253,7 @@ function buildStageTabs(currFiltered, ppFiltered, pyFiltered, ppLabel, pyLabel, 
   window._lastTo           = to;
   const pp  = window._lastPpFiltered;
   const py  = window._lastPyFiltered;
-  const srcList = RAW.sources.filter(s => !['ClassPass / Platforms','Grassroots'].includes(s));
+  const srcList = getSelected('sourceMenu') || [];
   const leadsTotal = currFiltered.all.reduce((s,r)=>s+r.signups,0);
   const ftTotal    = currFiltered.all.reduce((s,r)=>s+r.first_visits,0);
   const memTotal   = currFiltered.all.reduce((s,r)=>s+r.first_activations,0);
