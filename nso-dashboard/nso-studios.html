@@ -4741,6 +4741,89 @@ function _scCls(key,col){return _SOC_SORTS[key].col===col?'sc':'';}
 /* ══════════════════════════════════════════════════════════════════════════
    INSTAGRAM TAB
    ══════════════════════════════════════════════════════════════════════════ */
+let IG_METRIC='total_reach',IG_GRAN='daily';
+const IG_METRICS={
+  total_reach:     {label:'Total Reach',    mode:'sum', field:'reach', monthlyField:'reach'},
+  avg_daily_reach: {label:'Avg Daily Reach',mode:'avg', field:'reach', monthlyField:'reach'},
+  posts_in_period: {label:'Posts in Period',mode:'count',              monthlyField:'post_count'},
+};
+function _igKpiCard(metricKey,label,value,delta,note=''){
+  const noteHtml=note?`<div style="font-size:10px;color:#888;font-style:italic;margin-top:3px">${note}</div>`:'';
+  const active=metricKey===IG_METRIC?' metric-active':'';
+  return `<div class="kpi-card kpi-card-clickable${active}" id="igKpi_${metricKey}" onclick="setIGMetric('${metricKey}')"><div class="kpi-card-label">${label}</div><div class="kpi-card-val">${value}</div>${delta}${noteHtml}</div>`;
+}
+function setIGMetric(metricKey){
+  IG_METRIC=metricKey;
+  Object.keys(IG_METRICS).forEach(m=>{const el=document.getElementById('igKpi_'+m);if(el)el.classList.toggle('metric-active',m===metricKey);});
+  const label=document.getElementById('igMetricLabel');if(label)label.textContent=IG_METRICS[metricKey].label;
+  _drawIGTrend();
+}
+function setIGGran(gran){
+  const btn=document.getElementById('igGran'+gran.charAt(0).toUpperCase()+gran.slice(1));if(btn&&btn.disabled)return;
+  IG_GRAN=gran;
+  ['daily','weekly','monthly'].forEach(g=>{const b=document.getElementById('igGran'+g.charAt(0).toUpperCase()+g.slice(1));if(b)b.classList.toggle('active',g===gran);});
+  _drawIGTrend();
+}
+function _drawIGTrend(){
+  const ctx=document.getElementById('igTrendChart');if(!ctx)return;
+  if(_ch.ig){_ch.ig.destroy();_ch.ig=null;}
+  const studios=window._igStudios||[];
+  const from=window._igFrom||null,to=window._igTo||null;
+  const metric=IG_METRICS[IG_METRIC];
+  const byKey={};
+
+  const allDailyDates=studios.flatMap(s=>(s.daily||[]).map(r=>r.date));
+  const windowStart=allDailyDates.length?[...allDailyDates].sort()[0]:null;
+  const windowMonthKey=windowStart?windowStart.slice(0,7)+'-01':null;
+  const fromMonthKey=from?from.slice(0,7)+'-01':null;
+  const toMonthKey=to?to.slice(0,7)+'-01':null;
+  const monthlyRows=(IG_GRAN==='daily')?[]:studios.flatMap(s=>(s.monthly||[]).filter(m=>
+    (!windowMonthKey||m.month<windowMonthKey)&&
+    (!fromMonthKey||m.month>=fromMonthKey)&&
+    (!toMonthKey||m.month<=toMonthKey)
+  ));
+
+  if(metric.mode==='count'){
+    studios.forEach(s=>(s.posts||[]).forEach(p=>{
+      if((from&&p.date<from)||(to&&p.date>to))return;
+      const key=_ga4PeriodKey(p.date,IG_GRAN);
+      byKey[key]=(byKey[key]||0)+1;
+    }));
+    monthlyRows.forEach(m=>{
+      const key=_ga4PeriodKey(m.month,IG_GRAN);
+      byKey[key]=(byKey[key]||0)+(m[metric.monthlyField]||0);
+    });
+  } else {
+    studios.forEach(s=>(s.daily||[]).filter(r=>(!from||r.date>=from)&&(!to||r.date<=to)).forEach(r=>{
+      const key=_ga4PeriodKey(r.date,IG_GRAN);
+      byKey[key]=(byKey[key]||0)+(r[metric.field]||0);
+    }));
+    monthlyRows.forEach(m=>{
+      const key=_ga4PeriodKey(m.month,IG_GRAN);
+      byKey[key]=(byKey[key]||0)+(m[metric.monthlyField]||0);
+    });
+    if(metric.mode==='avg'&&from&&to){
+      const daysInBucket={};
+      let d=new Date(from+'T00:00:00Z');
+      const end=new Date(to+'T00:00:00Z');
+      while(d<=end){
+        const key=_ga4PeriodKey(d.toISOString().slice(0,10),IG_GRAN);
+        daysInBucket[key]=(daysInBucket[key]||0)+1;
+        d.setUTCDate(d.getUTCDate()+1);
+      }
+      Object.keys(byKey).forEach(k=>{if(daysInBucket[k])byKey[k]=Math.round(byKey[k]/daysInBucket[k]);});
+    }
+  }
+
+  if(from&&to){
+    _periodKeysInRange(new Date(from+'T00:00:00Z'),new Date(to+'T00:00:00Z'),IG_GRAN).forEach(k=>{if(!(k in byKey))byKey[k]=0;});
+  }
+  const keys=Object.keys(byKey).sort();
+  const labels=keys.map(k=>IG_GRAN==='monthly'?fmMo(k):fmDay(k));
+  const isMob=window.innerWidth<=768;
+  _ch.ig=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:metric.label,data:keys.map(k=>byKey[k]),borderColor:'#00A3E0',backgroundColor:'#00A3E033',borderWidth:2,pointRadius:0,tension:.4,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',autoSkip:true,maxTicksLimit:isMob?5:14,maxRotation:0}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'},min:0}}}});
+}
+
 function renderInstagram(){
   const el=document.getElementById('instagram-content');if(!el)return;
   const studios=_socialStudios('instagram');
@@ -4879,10 +4962,11 @@ function renderInstagram(){
     if(rCount>0){followersLabel='Followers';followersVal=rSum;hasFollowersKpi=true;}
   }
 
+  const hasAnyIGTrendData=filtered.some(s=>s.daily.length>0)||rangeExtendsBack;
   h+=`<div class="kpi-grid">`;
   if(hasFollowersKpi)h+=_igKpi(followersLabel,followersVal.toLocaleString(),'');
-  h+=_igKpi('Total Reach',totalReach.toLocaleString(),_igDelta(totalReach,ppTotalReach));
-  h+=_igKpi('Avg Daily Reach',avgReach.toLocaleString(),_igDelta(avgReach,ppAvgReach));
+  h+=_igKpiCard('total_reach','Total Reach',totalReach.toLocaleString(),_igDelta(totalReach,ppTotalReach));
+  h+=_igKpiCard('avg_daily_reach','Avg Daily Reach',avgReach.toLocaleString(),_igDelta(avgReach,ppAvgReach));
   if(allPosts.length){
     h+=_igKpi('Median Reach / Post',medianReach.toLocaleString(),_igDelta(medianReach,ppMedianReach));
     h+=_igKpi('Median Likes',medianLikes.toLocaleString(),_igDelta(medianLikes,ppMedianLikes));
@@ -4890,8 +4974,17 @@ function renderInstagram(){
     if(histMedianReach!=null)h+=_igKpi('Median Reach / Post',histMedianReach.toLocaleString(),'');
     if(histMedianLikes!=null)h+=_igKpi('Median Likes',histMedianLikes.toLocaleString(),'');
   }
-  h+=_igKpi('Posts in Period',(allPosts.length+historicalPostCount).toString(),_igDelta(allPosts.length,ppAllPosts.length));
+  h+=_igKpiCard('posts_in_period','Posts in Period',(allPosts.length+historicalPostCount).toString(),_igDelta(allPosts.length,ppAllPosts.length));
   h+=`</div>`;
+  if(hasAnyIGTrendData){
+    h+=`<div style="font-size:11px;color:#5a7a8a;margin:16px 0 4px;font-family:'Open Sans'">Trend metric: <strong id="igMetricLabel">${IG_METRICS[IG_METRIC].label}</strong> &middot; selected studios combined &middot; Daily view uses recent day-level data only; Weekly/Monthly also include historical monthly totals &middot; click a card above to change metric</div>`;
+    h+='<div class="gran-group">';
+    h+=`<button class="gran-btn${IG_GRAN==='daily'?' active':''}" id="igGranDaily" onclick="setIGGran('daily')">Daily</button>`;
+    h+=`<button class="gran-btn${IG_GRAN==='weekly'?' active':''}" id="igGranWeekly" onclick="setIGGran('weekly')">Weekly</button>`;
+    h+=`<button class="gran-btn${IG_GRAN==='monthly'?' active':''}" id="igGranMonthly" onclick="setIGGran('monthly')">Monthly</button>`;
+    h+='</div>';
+    h+='<div style="position:relative;width:100%;height:240px;margin-top:12px"><canvas id="igTrendChart"></canvas></div>';
+  }
   const _disclaimerBase=`The Instagram API provides a rolling 90-day window of daily data. As each month falls completely outside that window, it is automatically archived as a monthly aggregate (reach, post count, and median engagement).`;
   const _disclaimerExtra=rangeExtendsBack
     ?` Metrics for dates before <strong>${windowStart}</strong> come from those monthly aggregates.`
@@ -4927,6 +5020,11 @@ function renderInstagram(){
   }
 
   el.innerHTML=h;
+
+  window._igStudios=studios;
+  window._igFrom=from;
+  window._igTo=to;
+  if(hasAnyIGTrendData)setTimeout(()=>_drawIGTrend(),50);
 
   if(allPosts.length){
     sortableTable('ig-posts-table',allPosts,(p)=>{
