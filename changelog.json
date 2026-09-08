@@ -1,6 +1,18 @@
 {
   "entries": [
     {
+      "date": "2026-09-08",
+      "pr_number": 340,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/340",
+      "author": "Santiago Estrada",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Timeline charts show 0 for empty days, GBP studio table is now sortable\r",
+      "summary": "Leads, first timers, new members, and other timeline charts on the Open Studio and New Studio Opening dashboards now show a 0 for any day, week, or month with no activity instead of skipping it, and the Google Business Profile studio summary table on both dashboards can now be sorted by clicking any column.\r"
+    },
+    {
       "date": "2026-09-07",
       "pr_number": 339,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/339",
