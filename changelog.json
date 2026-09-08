@@ -2,6 +2,18 @@
   "entries": [
     {
       "date": "2026-09-08",
+      "pr_number": 343,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/343",
+      "author": "Santiago Estrada",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Source participation charts now sort by popularity and respect your source filter",
+      "summary": "The source participation donut and legend on the Funnel tabs now sort from most to least common, hide zero-value sources, show the exact count on hover, and correctly include ClassPass/Grassroots when you select them in the source filter."
+    },
+    {
+      "date": "2026-09-08",
       "pr_number": 342,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/342",
       "author": "Santiago Estrada",
