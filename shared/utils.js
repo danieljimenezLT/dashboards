@@ -456,17 +456,37 @@ function renderFreshnessNote(elId, sources) {
   el.textContent = oldest ? ('Data current through ' + fmtFullDate(oldest)) : '';
 }
 
-function toTimeSeries(dailyRows, monthlyRows) {
+// Every period key (day/week-start/month-start, as ISO date strings) between
+// fromDate and toDate inclusive, for the given granularity. Lets time-series
+// builders seed a zero-value entry for periods with no underlying rows,
+// instead of silently skipping them.
+function _periodKeysInRange(fromDate, toDate, gran) {
+  if (!fromDate || !toDate) return [];
+  const keys = [];
+  if (gran === 'monthly') {
+    const d = new Date(Date.UTC(fromDate.getUTCFullYear(), fromDate.getUTCMonth(), 1));
+    const end = new Date(Date.UTC(toDate.getUTCFullYear(), toDate.getUTCMonth(), 1));
+    while (d <= end) { keys.push(d.toISOString().slice(0,10)); d.setUTCMonth(d.getUTCMonth()+1); }
+    return keys;
+  }
+  const d = new Date(Date.UTC(fromDate.getUTCFullYear(), fromDate.getUTCMonth(), fromDate.getUTCDate()));
+  const end = new Date(Date.UTC(toDate.getUTCFullYear(), toDate.getUTCMonth(), toDate.getUTCDate()));
+  if (gran === 'weekly') d.setUTCDate(d.getUTCDate()-d.getUTCDay());
+  const step = gran === 'weekly' ? 7 : 1;
+  while (d <= end) { keys.push(d.toISOString().slice(0,10)); d.setUTCDate(d.getUTCDate()+step); }
+  return keys;
+}
+
+function toTimeSeries(dailyRows, monthlyRows, fromDate, toDate) {
+  let map, gran = GRAN;
   if (GRAN === 'daily') {
-    const map = {};
+    map = {};
     dailyRows.forEach(r => {
       if (!map[r.date]) map[r.date]={key:r.date,label:fmtDayLabel(r.date),signups:0,first_visits:0,first_activations:0};
       map[r.date].signups+=r.signups||0; map[r.date].first_visits+=r.first_visits||0; map[r.date].first_activations+=r.first_activations||0;
     });
-    return Object.values(map).sort((a,b)=>a.key.localeCompare(b.key));
-  }
-  if (GRAN === 'weekly') {
-    const map = {};
+  } else if (GRAN === 'weekly') {
+    map = {};
     [...dailyRows,...monthlyRows].forEach(r => {
       const d = new Date((r.date||r.month)+'T00:00:00Z');
       const ws = new Date(d); ws.setUTCDate(d.getUTCDate()-d.getUTCDay());
@@ -474,14 +494,16 @@ function toTimeSeries(dailyRows, monthlyRows) {
       if (!map[key]) map[key]={key,label:fmtDayLabel(key),signups:0,first_visits:0,first_activations:0};
       map[key].signups+=r.signups||0; map[key].first_visits+=r.first_visits||0; map[key].first_activations+=r.first_activations||0;
     });
-    return Object.values(map).sort((a,b)=>a.key.localeCompare(b.key));
+  } else {
+    map = {};
+    [...dailyRows,...monthlyRows].forEach(r => {
+      const key=(r.date||r.month).slice(0,7)+'-01';
+      if (!map[key]) map[key]={key,label:fmtMonthLabel(key),signups:0,first_visits:0,first_activations:0};
+      map[key].signups+=r.signups||0; map[key].first_visits+=r.first_visits||0; map[key].first_activations+=r.first_activations||0;
+    });
   }
-  // monthly
-  const map = {};
-  [...dailyRows,...monthlyRows].forEach(r => {
-    const key=(r.date||r.month).slice(0,7)+'-01';
-    if (!map[key]) map[key]={key,label:fmtMonthLabel(key),signups:0,first_visits:0,first_activations:0};
-    map[key].signups+=r.signups||0; map[key].first_visits+=r.first_visits||0; map[key].first_activations+=r.first_activations||0;
+  _periodKeysInRange(fromDate, toDate, gran).forEach(key => {
+    if (!map[key]) map[key] = {key, label: gran==='monthly'?fmtMonthLabel(key):fmtDayLabel(key), signups:0, first_visits:0, first_activations:0};
   });
   return Object.values(map).sort((a,b)=>a.key.localeCompare(b.key));
 }
@@ -656,7 +678,7 @@ function downloadCSV(filename, header, rows) {
   URL.revokeObjectURL(url);
 }
 
-function toSourceTimeSeries(dailyRows,monthlyRows,gran){
+function toSourceTimeSeries(dailyRows,monthlyRows,gran,fromDate,toDate){
   const g=gran||GRAN;
   const map={};
   const allRows=g==='daily'?dailyRows:[...dailyRows,...monthlyRows];
@@ -668,6 +690,13 @@ function toSourceTimeSeries(dailyRows,monthlyRows,gran){
     const mk=key+'|'+r.source;
     if(!map[mk])map[mk]={key,source:r.source,signups:0,first_visits:0,first_activations:0};
     map[mk].signups+=r.signups||0;map[mk].first_visits+=r.first_visits||0;map[mk].first_activations+=r.first_activations||0;
+  });
+  // Seed a zero placeholder (no real source) for any period in range that has
+  // no rows from ANY source, so it still shows up on the chart's time axis
+  // with a 0 value instead of being skipped entirely.
+  const existingKeys = new Set(Object.values(map).map(v=>v.key));
+  _periodKeysInRange(fromDate, toDate, g).forEach(key=>{
+    if(!existingKeys.has(key)) map[key+'|__zero__']={key,source:null,signups:0,first_visits:0,first_activations:0};
   });
   return Object.values(map).sort((a,b)=>a.key.localeCompare(b.key));
 }

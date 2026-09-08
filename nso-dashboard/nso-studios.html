@@ -493,9 +493,13 @@ function _wkLabel(dateStr){
   }
   return'';
 }
-function toTS(d,m){const map={};if(GRAN==='daily'){d.forEach(r=>{if(!map[r.date])map[r.date]={key:r.date,label:fmDay(r.date),signups:0,first_visits:0,first_sales:0};map[r.date].signups+=r.signups||0;map[r.date].first_visits+=r.first_visits||0;map[r.date].first_sales+=r.first_sales||0})}else if(GRAN==='weekly'){[...d,...m].forEach(r=>{const dt=new Date((r.date||r.month)+'T00:00:00Z');const ws=new Date(dt);ws.setUTCDate(dt.getUTCDate()-dt.getUTCDay());const k=ws.toISOString().slice(0,10);if(!map[k])map[k]={key:k,label:fmDay(k),signups:0,first_visits:0,first_sales:0};map[k].signups+=r.signups||0;map[k].first_visits+=r.first_visits||0;map[k].first_sales+=r.first_sales||0})}else{[...d,...m].forEach(r=>{const k=(r.date||r.month).slice(0,7)+'-01';if(!map[k])map[k]={key:k,label:fmMo(k),signups:0,first_visits:0,first_sales:0};map[k].signups+=r.signups||0;map[k].first_visits+=r.first_visits||0;map[k].first_sales+=r.first_sales||0})}return Object.values(map).sort((a,b)=>a.key.localeCompare(b.key))}
+function toTS(d,m,fromDate,toDate){const map={};if(GRAN==='daily'){d.forEach(r=>{if(!map[r.date])map[r.date]={key:r.date,label:fmDay(r.date),signups:0,first_visits:0,first_sales:0};map[r.date].signups+=r.signups||0;map[r.date].first_visits+=r.first_visits||0;map[r.date].first_sales+=r.first_sales||0})}else if(GRAN==='weekly'){[...d,...m].forEach(r=>{const dt=new Date((r.date||r.month)+'T00:00:00Z');const ws=new Date(dt);ws.setUTCDate(dt.getUTCDate()-dt.getUTCDay());const k=ws.toISOString().slice(0,10);if(!map[k])map[k]={key:k,label:fmDay(k),signups:0,first_visits:0,first_sales:0};map[k].signups+=r.signups||0;map[k].first_visits+=r.first_visits||0;map[k].first_sales+=r.first_sales||0})}else{[...d,...m].forEach(r=>{const k=(r.date||r.month).slice(0,7)+'-01';if(!map[k])map[k]={key:k,label:fmMo(k),signups:0,first_visits:0,first_sales:0};map[k].signups+=r.signups||0;map[k].first_visits+=r.first_visits||0;map[k].first_sales+=r.first_sales||0})}
+  if(fromDate&&toDate)_periodKeysInRange(fromDate,toDate,GRAN).forEach(k=>{if(!map[k])map[k]={key:k,label:GRAN==='monthly'?fmMo(k):fmDay(k),signups:0,first_visits:0,first_sales:0}});
+  return Object.values(map).sort((a,b)=>a.key.localeCompare(b.key))}
 function toSrcTS(d,m){const map={};d.forEach(r=>{const mk=r.date+'|'+r.source;if(!map[mk])map[mk]={key:r.date,source:r.source,signups:0,first_visits:0,first_sales:0};map[mk].signups+=r.signups||0;map[mk].first_visits+=r.first_visits||0;map[mk].first_sales+=r.first_sales||0});return Object.values(map).sort((a,b)=>a.key.localeCompare(b.key))}
-function toSrcTSGran(d,m){const map={};const rows=GRAN==='monthly'?[...d,...m]:d;rows.forEach(r=>{const raw=r.date||r.month;let k;if(GRAN==='weekly'){const dt=new Date(raw+'T00:00:00Z');const ws=new Date(dt);ws.setUTCDate(dt.getUTCDate()-dt.getUTCDay());k=ws.toISOString().slice(0,10)}else if(GRAN==='monthly'){k=raw.slice(0,7)+'-01'}else{k=r.date}const mk=k+'|'+r.source;if(!map[mk])map[mk]={key:k,source:r.source,signups:0,first_visits:0,first_sales:0};map[mk].signups+=r.signups||0;map[mk].first_visits+=r.first_visits||0;map[mk].first_sales+=r.first_sales||0});return Object.values(map).sort((a,b)=>a.key.localeCompare(b.key))}
+function toSrcTSGran(d,m,fromDate,toDate){const map={};const rows=GRAN==='monthly'?[...d,...m]:d;rows.forEach(r=>{const raw=r.date||r.month;let k;if(GRAN==='weekly'){const dt=new Date(raw+'T00:00:00Z');const ws=new Date(dt);ws.setUTCDate(dt.getUTCDate()-dt.getUTCDay());k=ws.toISOString().slice(0,10)}else if(GRAN==='monthly'){k=raw.slice(0,7)+'-01'}else{k=r.date}const mk=k+'|'+r.source;if(!map[mk])map[mk]={key:k,source:r.source,signups:0,first_visits:0,first_sales:0};map[mk].signups+=r.signups||0;map[mk].first_visits+=r.first_visits||0;map[mk].first_sales+=r.first_sales||0});
+  if(fromDate&&toDate){const existing=new Set(Object.values(map).map(v=>v.key));_periodKeysInRange(fromDate,toDate,GRAN).forEach(k=>{if(!existing.has(k))map[k+'|__zero__']={key:k,source:null,signups:0,first_visits:0,first_sales:0}})}
+  return Object.values(map).sort((a,b)=>a.key.localeCompare(b.key))}
 // Buckets arbitrary daily rows into the current GRAN's period key, matching toTS's key scheme exactly —
 // used to build the Funnel Over Time "Sales" line from whichever dataset backs the Total Sales KPI card,
 // so the chart's total always equals the card (see applyFilters).
@@ -1803,7 +1807,7 @@ function applyFilters(){
   const cnC=sCurr.reduce((a,r)=>a+(r.cancellations||0),0),cnP=sPP.reduce((a,r)=>a+(r.cancellations||0),0),cnY=sPY.reduce((a,r)=>a+(r.cancellations||0),0);
   const newSalesByPeriod=_bucketByPeriod(sCurr,r=>(r.first_sales||0)+_mt(r));
   const cancByPeriod=_bucketByPeriod(sCurr,r=>r.cancellations||0);
-  buildTrend(toTS(curr.daily,curr.monthly),newSalesByPeriod,cancByPeriod);
+  buildTrend(toTS(curr.daily,curr.monthly,from,to),newSalesByPeriod,cancByPeriod);
   const fkpi=document.getElementById('funnel-kpis');
   if(fkpi)fkpi.innerHTML=kpiCard('Total Leads (New Accounts Created)',cS.leads,pS.leads,yS.leads,null,GLOSSARY.leads)+kpiCard('Total New Sales',nsC,nsP||null,nsY||null,null,GLOSSARY.nso_new_sale)+kpiCard('Total Cancellations',cnC,cnP||null,cnY||null,null,GLOSSARY.nso_cancel)+kpiCard('Total Net Sales',smC,smP||null,smY||null,null,GLOSSARY.nso_sale);
   // Conversion rate: Lead → Net Sale
@@ -1811,9 +1815,9 @@ function applyFilters(){
   const cvrL2NS_c=_cvr(smC,cS.leads),cvrL2NS_p=_cvr(smP,pS.leads),cvrL2NS_y=_cvr(smY,yS.leads);
   const cvrKpis=document.getElementById('cvr-kpis');
   if(cvrKpis)cvrKpis.innerHTML=_cvrCard('Lead → Net Sale Conversion Rate',cvrL2NS_c,cvrL2NS_p,cvrL2NS_y);
-  buildCvrChart(toTS(curr.daily,curr.monthly),newSalesByPeriod,cancByPeriod);
+  buildCvrChart(toTS(curr.daily,curr.monthly,from,to),newSalesByPeriod,cancByPeriod);
   document.getElementById('leads-kpis').innerHTML=kpiCard('Total Leads (New Accounts Created)',cS.leads,pS.leads,yS.leads,null,GLOSSARY.leads);
-  const leadsSeries=toSrcTSGran(curr.daily,curr.monthly);
+  const leadsSeries=toSrcTSGran(curr.daily,curr.monthly,from,to);
   const activeSrcLeads=(sr||[]).filter(s=>leadsSeries.some(r=>r.source===s&&(r.signups||0)>0));
   buildArea('leadsChart','leads-toggles',leadsSeries,activeSrcLeads,'signups');
   buildRing('leadsRing','leadsRingLeg',curr.all,'signups');
@@ -1833,13 +1837,13 @@ function applyFilters(){
     }else{_tierEl.style.display='none';}
   }
   const _sCurrMapped=_naplesSelected?sCurr.map(r=>({...r,first_sales:(r.first_sales||0)+(r.mem_total||0)})):sCurr;
-  const newSalesSeries=toSrcTSGran(_sCurrMapped,[]);
+  const newSalesSeries=toSrcTSGran(_sCurrMapped,[],from,to);
   const activeSrcNewSales=(sr||[]).filter(s=>newSalesSeries.some(r=>r.source===s&&(r.first_sales||0)>0));
   buildArea('newsalesChart','newsales-toggles',newSalesSeries,activeSrcNewSales,'first_sales');
   buildRing('newsalesRing','newsalesRingLeg',_sCurrMapped,'first_sales');
   const cancKpis=document.getElementById('canc-kpis');if(cancKpis)cancKpis.innerHTML=kpiCard('Total Cancellations',cnC,cnP||null,cnY||null,null,GLOSSARY.nso_cancel);
   const cancRows=sCurr.map(r=>({...r,first_sales:r.cancellations||0}));
-  const cancSeries=toSrcTSGran(cancRows,[]);
+  const cancSeries=toSrcTSGran(cancRows,[],from,to);
   const activeSrcCanc=(sr||[]).filter(s=>cancSeries.some(r=>r.source===s&&(r.first_sales||0)>0));
   buildArea('cancChart','canc-toggles',cancSeries,activeSrcCanc,'first_sales');
   buildRing('cancRing','cancRingLeg',cancRows,'first_sales');
@@ -3987,6 +3991,7 @@ function _drawGoogleTrend(allRows,from,to){
     byDate[r.date].spend+=r.spend||0;
     byDate[r.date].leads+=r.conversions||0;
   });
+  if(from&&to)_periodKeysInRange(new Date(from+'T00:00:00Z'),new Date(to+'T00:00:00Z'),'daily').forEach(k=>{if(!byDate[k])byDate[k]={spend:0,leads:0}});
   const dates=Object.keys(byDate).sort();
   if(!dates.length)return;
   const isMob=window.innerWidth<=768;
@@ -4357,7 +4362,8 @@ function drawGA4Trend(from,to,activeStudios){
     const byDate={};rows.forEach(r=>{byDate[r.date]=(byDate[r.date]||0)+(r.sessions||0)});
     return{studio,byDate,color:studioColor(studio)};
   });
-  const allDates=[...new Set(datasets.flatMap(d=>Object.keys(d.byDate)))].sort();
+  const rangeDates=(from&&to)?_periodKeysInRange(new Date(from+'T00:00:00Z'),new Date(to+'T00:00:00Z'),'daily'):[];
+  const allDates=[...new Set([...datasets.flatMap(d=>Object.keys(d.byDate)),...rangeDates])].sort();
   const isMob=window.innerWidth<=768;
   _ch.ga4=new Chart(ctx,{type:'line',data:{labels:allDates.map(d=>fmDay(d)),datasets:datasets.map(({studio,byDate,color})=>({label:studio.replace('SWEAT440 ',''),data:allDates.map(d=>byDate[d]||0),borderColor:color,borderWidth:2,pointRadius:0,tension:.4,fill:false}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Oswald',size:12,style:'italic'},usePointStyle:true,padding:14}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',autoSkip:true,maxTicksLimit:isMob?5:14,maxRotation:0}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'}}}}});
 }
@@ -4498,27 +4504,31 @@ function renderGBP(){
     h+='</div>';
 
     // By-studio breakdown table
-    h+='<div class="chart-card"><div class="chart-card-title">By Studio</div>';
-    h+='<div style="overflow-x:auto"><table class="data-table"><thead><tr>';
-    h+='<th>Studio</th><th class="num">Total Views</th><th class="num">Search</th><th class="num">Maps</th><th class="num">Directions</th><th class="num">Website Clicks</th><th class="num">Calls</th><th class="num">Rating</th><th class="num">Reviews</th><th class="num">5★</th><th class="num">1★</th><th class="num">2★</th><th class="num">3★</th><th class="num">4★</th>';
-    h+='</tr></thead><tbody>';
     studioRows.forEach(r=>{
-      const tv=(r.search_mobile||0)+(r.search_desktop||0)+(r.maps_mobile||0)+(r.maps_desktop||0);
-      const sv=(r.search_mobile||0)+(r.search_desktop||0);
-      const mv=(r.maps_mobile||0)+(r.maps_desktop||0);
-      const name=r.name.replace('SWEAT440 ','');
       const rv=r.reviews;
-      const ratingCell=rv&&rv.total_count>0?`${(rv.rating_sum/rv.total_count).toFixed(1)} ★`:'—';
-      const totalCell=rv?rv.total_count.toLocaleString():'—';
-      const fiveCell=rv?rv.five_star_count.toLocaleString():'—';
-      const oneCell=rv?rv.one_star_count.toLocaleString():'—';
-      const twoCell=rv?rv.two_star_count.toLocaleString():'—';
-      const threeCell=rv?rv.three_star_count.toLocaleString():'—';
-      const fourCell=rv?rv.four_star_count.toLocaleString():'—';
-      h+=`<tr><td>${name}</td><td class="num">${tv.toLocaleString()}</td><td class="num">${sv.toLocaleString()}</td><td class="num">${mv.toLocaleString()}</td><td class="num">${(r.direction_requests||0).toLocaleString()}</td><td class="num">${(r.website_clicks||0).toLocaleString()}</td><td class="num">${(r.calls||0).toLocaleString()}</td><td class="num">${ratingCell}</td><td class="num">${totalCell}</td><td class="num">${fiveCell}</td><td class="num">${oneCell}</td><td class="num">${twoCell}</td><td class="num">${threeCell}</td><td class="num">${fourCell}</td></tr>`;
+      r.name=r.name.replace('SWEAT440 ','');
+      r.tv=(r.search_mobile||0)+(r.search_desktop||0)+(r.maps_mobile||0)+(r.maps_desktop||0);
+      r.search=(r.search_mobile||0)+(r.search_desktop||0);
+      r.maps=(r.maps_mobile||0)+(r.maps_desktop||0);
+      r.rating=rv&&rv.total_count>0?rv.rating_sum/rv.total_count:null;
+      r.total_reviews=rv?rv.total_count:null;
+      r.five_star=rv?rv.five_star_count:null;
+      r.one_star=rv?rv.one_star_count:null;
+      r.two_star=rv?rv.two_star_count:null;
+      r.three_star=rv?rv.three_star_count:null;
+      r.four_star=rv?rv.four_star_count:null;
     });
-    h+='</tbody></table></div></div>';
+    h+='<div class="chart-card"><div class="chart-card-title">By Studio</div>';
+    h+='<div style="overflow-x:auto"><table class="data-table" id="gbp-studio-table"><thead><tr>';
+    h+='<th data-sort="name">Studio</th><th class="num" data-sort="tv">Total Views</th><th class="num" data-sort="search">Search</th><th class="num" data-sort="maps">Maps</th><th class="num" data-sort="direction_requests">Directions</th><th class="num" data-sort="website_clicks">Website Clicks</th><th class="num" data-sort="calls">Calls</th><th class="num" data-sort="rating">Rating</th><th class="num" data-sort="total_reviews">Reviews</th><th class="num" data-sort="five_star">5★</th><th class="num" data-sort="one_star">1★</th><th class="num" data-sort="two_star">2★</th><th class="num" data-sort="three_star">3★</th><th class="num" data-sort="four_star">4★</th>';
+    h+='</tr></thead><tbody></tbody></table></div></div>';
     return h;
+  }
+
+  function _renderGBPStudioRow(r){
+    const ratingCell=r.rating!==null?`${r.rating.toFixed(1)} ★`:'—';
+    const cell=v=>v!==null?v.toLocaleString():'—';
+    return`<tr><td>${r.name}</td><td class="num">${r.tv.toLocaleString()}</td><td class="num">${r.search.toLocaleString()}</td><td class="num">${r.maps.toLocaleString()}</td><td class="num">${(r.direction_requests||0).toLocaleString()}</td><td class="num">${(r.website_clicks||0).toLocaleString()}</td><td class="num">${(r.calls||0).toLocaleString()}</td><td class="num">${ratingCell}</td><td class="num">${cell(r.total_reviews)}</td><td class="num">${cell(r.five_star)}</td><td class="num">${cell(r.one_star)}</td><td class="num">${cell(r.two_star)}</td><td class="num">${cell(r.three_star)}</td><td class="num">${cell(r.four_star)}</td></tr>`;
   }
 
   // Live API data path
@@ -4541,6 +4551,7 @@ function renderGBP(){
       return{name:s.name,search_mobile:sum('mobile_search'),search_desktop:sum('desktop_search'),maps_mobile:sum('mobile_maps'),maps_desktop:sum('desktop_maps'),direction_requests:sum('direction_requests'),website_clicks:sum('website_clicks'),calls:sum('calls'),reviews};
     });
     el.innerHTML=_renderAgg(studioRows);
+    if(studioRows.length)sortableTable('gbp-studio-table',studioRows,_renderGBPStudioRow,null);
     return;
   }
 
@@ -4549,6 +4560,7 @@ function renderGBP(){
   if(!filtered.length){el.innerHTML='<div style="padding:40px;text-align:center;color:#8aaabb;font-family:Oswald,sans-serif;font-style:italic">No studios selected.</div>';return;}
   const studioRows=filtered.map(d=>({name:d.studio,search_mobile:d.search_mobile,search_desktop:d.search_desktop,maps_mobile:d.maps_mobile,maps_desktop:d.maps_desktop,direction_requests:d.directions,website_clicks:d.website_clicks,calls:d.calls}));
   el.innerHTML=_renderAgg(studioRows)+`<div style="font-size:10px;color:#aab;padding:0 20px 16px">Source: Google Business Profile CSV export.</div>`;
+  if(studioRows.length)sortableTable('gbp-studio-table',studioRows,_renderGBPStudioRow,null);
 }
 
 let SOCIAL_RAW=null;
