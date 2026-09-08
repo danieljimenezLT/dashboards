@@ -2,6 +2,18 @@
   "entries": [
     {
       "date": "2026-09-08",
+      "pr_number": 344,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/344",
+      "author": "Santiago Estrada",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Website tab: clickable metric cards and per-studio granularity toggle\r",
+      "summary": "Sessions/Users/New Users cards on the Website tab are now clickable to switch each chart's metric, the per-studio chart got its own daily/weekly/monthly toggle and switched to Open Sans legend labels, and the NSO dashboard's Website tab was brought up to the same feature set.\r"
+    },
+    {
+      "date": "2026-09-08",
       "pr_number": 343,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/343",
       "author": "Santiago Estrada",
