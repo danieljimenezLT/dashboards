@@ -3032,23 +3032,16 @@ function renderGBP() {
     }
     h += '</div>';
     h += '<div class="chart-card"><div class="chart-card-title">By Studio</div>';
-    h += '<div style="overflow-x:auto"><table class="data-table"><thead><tr>';
-    h += '<th>Studio</th><th class="num">Total Views</th><th class="num">Search</th><th class="num">Maps</th><th class="num">Directions</th><th class="num">Website Clicks</th><th class="num">Calls</th><th class="num">Avg Rating</th><th class="num">Total Reviews</th><th class="num">5-Star</th><th class="num">1-Star</th><th class="num">2-Star</th><th class="num">3-Star</th><th class="num">4-Star</th>';
-    h += '</tr></thead><tbody>';
-    studioRows.forEach(r => {
-      const tv = (r.search_mobile||0)+(r.search_desktop||0)+(r.maps_mobile||0)+(r.maps_desktop||0);
-      const rv = r.reviews;
-      const ratingCell = rv && rv.total_count > 0 ? `${(rv.rating_sum / rv.total_count).toFixed(1)} &#9733;` : '—';
-      const totalCell  = rv ? rv.total_count.toLocaleString() : '—';
-      const fiveCell   = rv ? rv.five_star_count.toLocaleString()  : '—';
-      const oneCell    = rv ? rv.one_star_count.toLocaleString()   : '—';
-      const twoCell    = rv ? rv.two_star_count.toLocaleString()   : '—';
-      const threeCell  = rv ? rv.three_star_count.toLocaleString() : '—';
-      const fourCell   = rv ? rv.four_star_count.toLocaleString()  : '—';
-      h += `<tr><td>${r.name}</td><td class="num">${tv.toLocaleString()}</td><td class="num">${((r.search_mobile||0)+(r.search_desktop||0)).toLocaleString()}</td><td class="num">${((r.maps_mobile||0)+(r.maps_desktop||0)).toLocaleString()}</td><td class="num">${(r.direction_requests||0).toLocaleString()}</td><td class="num">${(r.website_clicks||0).toLocaleString()}</td><td class="num">${(r.calls||0).toLocaleString()}</td><td class="num">${ratingCell}</td><td class="num">${totalCell}</td><td class="num">${fiveCell}</td><td class="num">${oneCell}</td><td class="num">${twoCell}</td><td class="num">${threeCell}</td><td class="num">${fourCell}</td></tr>`;
-    });
-    h += '</tbody></table></div></div>';
+    h += '<div style="overflow-x:auto"><table class="data-table" id="gbp-studio-table"><thead><tr>';
+    h += '<th data-sort="name">Studio</th><th class="num" data-sort="tv">Total Views</th><th class="num" data-sort="search">Search</th><th class="num" data-sort="maps">Maps</th><th class="num" data-sort="direction_requests">Directions</th><th class="num" data-sort="website_clicks">Website Clicks</th><th class="num" data-sort="calls">Calls</th><th class="num" data-sort="rating">Avg Rating</th><th class="num" data-sort="total_reviews">Total Reviews</th><th class="num" data-sort="five_star">5-Star</th><th class="num" data-sort="one_star">1-Star</th><th class="num" data-sort="two_star">2-Star</th><th class="num" data-sort="three_star">3-Star</th><th class="num" data-sort="four_star">4-Star</th>';
+    h += '</tr></thead><tbody></tbody></table></div></div>';
     return h;
+  }
+
+  function _renderGBPStudioRow(r) {
+    const ratingCell = r.rating !== null ? `${r.rating.toFixed(1)} &#9733;` : '—';
+    const cell = v => v !== null ? v.toLocaleString() : '—';
+    return `<tr><td>${r.name}</td><td class="num">${r.tv.toLocaleString()}</td><td class="num">${r.search.toLocaleString()}</td><td class="num">${r.maps.toLocaleString()}</td><td class="num">${(r.direction_requests||0).toLocaleString()}</td><td class="num">${(r.website_clicks||0).toLocaleString()}</td><td class="num">${(r.calls||0).toLocaleString()}</td><td class="num">${ratingCell}</td><td class="num">${cell(r.total_reviews)}</td><td class="num">${cell(r.five_star)}</td><td class="num">${cell(r.one_star)}</td><td class="num">${cell(r.two_star)}</td><td class="num">${cell(r.three_star)}</td><td class="num">${cell(r.four_star)}</td></tr>`;
   }
 
   if (GBP_RAW_ORG && (GBP_RAW_ORG.studios || []).length) {
@@ -3068,9 +3061,25 @@ function renderGBP() {
         four_star_count:  revRows.reduce((a, r) => a + (r.four_star_count  || 0), 0),
         five_star_count:  revRows.reduce((a, r) => a + (r.five_star_count  || 0), 0),
       } : null;
-      return { name: s.name.replace(/^SWEAT440\s+/, ''), search_mobile: sum('mobile_search'), search_desktop: sum('desktop_search'), maps_mobile: sum('mobile_maps'), maps_desktop: sum('desktop_maps'), direction_requests: sum('direction_requests'), website_clicks: sum('website_clicks'), calls: sum('calls'), reviews };
+      const search = sum('mobile_search') + sum('desktop_search');
+      const maps   = sum('mobile_maps')   + sum('desktop_maps');
+      return {
+        name: s.name.replace(/^SWEAT440\s+/, ''),
+        search_mobile: sum('mobile_search'), search_desktop: sum('desktop_search'),
+        maps_mobile: sum('mobile_maps'), maps_desktop: sum('desktop_maps'),
+        direction_requests: sum('direction_requests'), website_clicks: sum('website_clicks'), calls: sum('calls'),
+        reviews, search, maps, tv: search + maps,
+        rating:      reviews && reviews.total_count > 0 ? reviews.rating_sum / reviews.total_count : null,
+        total_reviews: reviews ? reviews.total_count      : null,
+        five_star:     reviews ? reviews.five_star_count  : null,
+        one_star:      reviews ? reviews.one_star_count   : null,
+        two_star:      reviews ? reviews.two_star_count   : null,
+        three_star:    reviews ? reviews.three_star_count : null,
+        four_star:     reviews ? reviews.four_star_count  : null,
+      };
     });
     el.innerHTML = _renderGBPAgg(studioRows);
+    if (studioRows.length) sortableTable('gbp-studio-table', studioRows, _renderGBPStudioRow, null);
     return;
   }
 

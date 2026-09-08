@@ -4504,27 +4504,31 @@ function renderGBP(){
     h+='</div>';
 
     // By-studio breakdown table
-    h+='<div class="chart-card"><div class="chart-card-title">By Studio</div>';
-    h+='<div style="overflow-x:auto"><table class="data-table"><thead><tr>';
-    h+='<th>Studio</th><th class="num">Total Views</th><th class="num">Search</th><th class="num">Maps</th><th class="num">Directions</th><th class="num">Website Clicks</th><th class="num">Calls</th><th class="num">Rating</th><th class="num">Reviews</th><th class="num">5★</th><th class="num">1★</th><th class="num">2★</th><th class="num">3★</th><th class="num">4★</th>';
-    h+='</tr></thead><tbody>';
     studioRows.forEach(r=>{
-      const tv=(r.search_mobile||0)+(r.search_desktop||0)+(r.maps_mobile||0)+(r.maps_desktop||0);
-      const sv=(r.search_mobile||0)+(r.search_desktop||0);
-      const mv=(r.maps_mobile||0)+(r.maps_desktop||0);
-      const name=r.name.replace('SWEAT440 ','');
       const rv=r.reviews;
-      const ratingCell=rv&&rv.total_count>0?`${(rv.rating_sum/rv.total_count).toFixed(1)} ★`:'—';
-      const totalCell=rv?rv.total_count.toLocaleString():'—';
-      const fiveCell=rv?rv.five_star_count.toLocaleString():'—';
-      const oneCell=rv?rv.one_star_count.toLocaleString():'—';
-      const twoCell=rv?rv.two_star_count.toLocaleString():'—';
-      const threeCell=rv?rv.three_star_count.toLocaleString():'—';
-      const fourCell=rv?rv.four_star_count.toLocaleString():'—';
-      h+=`<tr><td>${name}</td><td class="num">${tv.toLocaleString()}</td><td class="num">${sv.toLocaleString()}</td><td class="num">${mv.toLocaleString()}</td><td class="num">${(r.direction_requests||0).toLocaleString()}</td><td class="num">${(r.website_clicks||0).toLocaleString()}</td><td class="num">${(r.calls||0).toLocaleString()}</td><td class="num">${ratingCell}</td><td class="num">${totalCell}</td><td class="num">${fiveCell}</td><td class="num">${oneCell}</td><td class="num">${twoCell}</td><td class="num">${threeCell}</td><td class="num">${fourCell}</td></tr>`;
+      r.name=r.name.replace('SWEAT440 ','');
+      r.tv=(r.search_mobile||0)+(r.search_desktop||0)+(r.maps_mobile||0)+(r.maps_desktop||0);
+      r.search=(r.search_mobile||0)+(r.search_desktop||0);
+      r.maps=(r.maps_mobile||0)+(r.maps_desktop||0);
+      r.rating=rv&&rv.total_count>0?rv.rating_sum/rv.total_count:null;
+      r.total_reviews=rv?rv.total_count:null;
+      r.five_star=rv?rv.five_star_count:null;
+      r.one_star=rv?rv.one_star_count:null;
+      r.two_star=rv?rv.two_star_count:null;
+      r.three_star=rv?rv.three_star_count:null;
+      r.four_star=rv?rv.four_star_count:null;
     });
-    h+='</tbody></table></div></div>';
+    h+='<div class="chart-card"><div class="chart-card-title">By Studio</div>';
+    h+='<div style="overflow-x:auto"><table class="data-table" id="gbp-studio-table"><thead><tr>';
+    h+='<th data-sort="name">Studio</th><th class="num" data-sort="tv">Total Views</th><th class="num" data-sort="search">Search</th><th class="num" data-sort="maps">Maps</th><th class="num" data-sort="direction_requests">Directions</th><th class="num" data-sort="website_clicks">Website Clicks</th><th class="num" data-sort="calls">Calls</th><th class="num" data-sort="rating">Rating</th><th class="num" data-sort="total_reviews">Reviews</th><th class="num" data-sort="five_star">5★</th><th class="num" data-sort="one_star">1★</th><th class="num" data-sort="two_star">2★</th><th class="num" data-sort="three_star">3★</th><th class="num" data-sort="four_star">4★</th>';
+    h+='</tr></thead><tbody></tbody></table></div></div>';
     return h;
+  }
+
+  function _renderGBPStudioRow(r){
+    const ratingCell=r.rating!==null?`${r.rating.toFixed(1)} ★`:'—';
+    const cell=v=>v!==null?v.toLocaleString():'—';
+    return`<tr><td>${r.name}</td><td class="num">${r.tv.toLocaleString()}</td><td class="num">${r.search.toLocaleString()}</td><td class="num">${r.maps.toLocaleString()}</td><td class="num">${(r.direction_requests||0).toLocaleString()}</td><td class="num">${(r.website_clicks||0).toLocaleString()}</td><td class="num">${(r.calls||0).toLocaleString()}</td><td class="num">${ratingCell}</td><td class="num">${cell(r.total_reviews)}</td><td class="num">${cell(r.five_star)}</td><td class="num">${cell(r.one_star)}</td><td class="num">${cell(r.two_star)}</td><td class="num">${cell(r.three_star)}</td><td class="num">${cell(r.four_star)}</td></tr>`;
   }
 
   // Live API data path
@@ -4547,6 +4551,7 @@ function renderGBP(){
       return{name:s.name,search_mobile:sum('mobile_search'),search_desktop:sum('desktop_search'),maps_mobile:sum('mobile_maps'),maps_desktop:sum('desktop_maps'),direction_requests:sum('direction_requests'),website_clicks:sum('website_clicks'),calls:sum('calls'),reviews};
     });
     el.innerHTML=_renderAgg(studioRows);
+    if(studioRows.length)sortableTable('gbp-studio-table',studioRows,_renderGBPStudioRow,null);
     return;
   }
 
@@ -4555,6 +4560,7 @@ function renderGBP(){
   if(!filtered.length){el.innerHTML='<div style="padding:40px;text-align:center;color:#8aaabb;font-family:Oswald,sans-serif;font-style:italic">No studios selected.</div>';return;}
   const studioRows=filtered.map(d=>({name:d.studio,search_mobile:d.search_mobile,search_desktop:d.search_desktop,maps_mobile:d.maps_mobile,maps_desktop:d.maps_desktop,direction_requests:d.directions,website_clicks:d.website_clicks,calls:d.calls}));
   el.innerHTML=_renderAgg(studioRows)+`<div style="font-size:10px;color:#aab;padding:0 20px 16px">Source: Google Business Profile CSV export.</div>`;
+  if(studioRows.length)sortableTable('gbp-studio-table',studioRows,_renderGBPStudioRow,null);
 }
 
 let SOCIAL_RAW=null;
