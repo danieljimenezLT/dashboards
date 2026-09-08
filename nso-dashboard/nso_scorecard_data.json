@@ -952,13 +952,13 @@
           "conversion_rate": 0.0,
           "comm_events": 0,
           "ig_new_followers": null,
-          "meta_spend": 59.39,
-          "google_spend": 45.55,
+          "meta_spend": 128.01,
+          "google_spend": 82.79,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 384.94,
-          "blended_cpl": 29.61,
+          "total_marketing_spend": 490.8,
+          "blended_cpl": 37.75,
           "blended_cpa": null,
           "estimated_day1_rmr": null
         },
@@ -1267,6 +1267,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-08-04",
       "tier_daily_sales": [
         {
           "date": "2026-02-11",
@@ -1852,13 +1858,7 @@
           "date": "2026-08-27",
           "count": -1
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-08-04"
+      ]
     },
     {
       "name": "Reston",
@@ -1924,7 +1924,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": null,
-          "ig_new_followers": 211,
+          "ig_new_followers": 214,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -3200,15 +3200,15 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 133.3,
           "comm_events": 0,
-          "ig_new_followers": null,
-          "meta_spend": 48.55,
-          "google_spend": 22.64,
+          "ig_new_followers": 1,
+          "meta_spend": 96.56,
+          "google_spend": 67.08,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 351.19,
-          "blended_cpl": 117.06,
-          "blended_cpa": 87.8,
+          "total_marketing_spend": 443.64,
+          "blended_cpl": 147.88,
+          "blended_cpa": 110.91,
           "estimated_day1_rmr": null
         },
         {
@@ -3274,324 +3274,324 @@
         {
           "week": 1,
           "t0": 0,
-          "t1": 0,
-          "t2": 4,
+          "t1": 4,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 2,
           "t0": 0,
-          "t1": 0,
-          "t2": 7,
+          "t1": 7,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 3,
           "t0": 0,
-          "t1": 0,
-          "t2": 7,
+          "t1": 7,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 4,
           "t0": 0,
-          "t1": 0,
-          "t2": 11,
+          "t1": 11,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 5,
           "t0": 0,
-          "t1": 0,
-          "t2": 15,
+          "t1": 15,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 6,
           "t0": 0,
-          "t1": 0,
-          "t2": 20,
+          "t1": 20,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 7,
           "t0": 0,
-          "t1": 0,
-          "t2": 21,
+          "t1": 21,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 8,
           "t0": 0,
-          "t1": 0,
-          "t2": 25,
+          "t1": 25,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 9,
           "t0": 0,
-          "t1": 0,
-          "t2": 25,
+          "t1": 25,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 10,
           "t0": 0,
-          "t1": 0,
-          "t2": 33,
+          "t1": 33,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 11,
           "t0": 0,
-          "t1": 0,
-          "t2": 43,
+          "t1": 43,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 12,
           "t0": 0,
-          "t1": 0,
-          "t2": 47,
+          "t1": 47,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 13,
           "t0": 0,
-          "t1": 0,
-          "t2": 54,
+          "t1": 54,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 14,
           "t0": 0,
-          "t1": 0,
-          "t2": 60,
+          "t1": 60,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 15,
           "t0": 0,
-          "t1": 0,
-          "t2": 68,
+          "t1": 68,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 16,
           "t0": 0,
-          "t1": 0,
-          "t2": 77,
+          "t1": 77,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 17,
           "t0": 0,
-          "t1": 0,
-          "t2": 79,
+          "t1": 79,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 18,
           "t0": 0,
-          "t1": 0,
-          "t2": 84,
+          "t1": 84,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 19,
           "t0": 0,
-          "t1": 0,
-          "t2": 94,
+          "t1": 94,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 20,
-          "t0": 0,
-          "t1": 7,
-          "t2": 100,
+          "t0": 7,
+          "t1": 100,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 21,
-          "t0": 0,
-          "t1": 14,
-          "t2": 107,
+          "t0": 14,
+          "t1": 107,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 22,
-          "t0": 0,
-          "t1": 27,
-          "t2": 108,
+          "t0": 27,
+          "t1": 108,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 23,
-          "t0": 0,
-          "t1": 31,
-          "t2": 118,
+          "t0": 31,
+          "t1": 118,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 24,
-          "t0": 0,
-          "t1": 31,
-          "t2": 124,
+          "t0": 31,
+          "t1": 124,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 25,
-          "t0": 0,
-          "t1": 39,
-          "t2": 128,
+          "t0": 39,
+          "t1": 128,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 26,
-          "t0": 0,
-          "t1": 39,
-          "t2": 138,
+          "t0": 39,
+          "t1": 138,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 27,
-          "t0": 0,
-          "t1": 43,
-          "t2": 141,
+          "t0": 43,
+          "t1": 141,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 28,
-          "t0": 0,
-          "t1": 46,
-          "t2": 148,
+          "t0": 46,
+          "t1": 148,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 29,
-          "t0": 0,
-          "t1": 48,
-          "t2": 153,
+          "t0": 48,
+          "t1": 153,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 30,
-          "t0": 0,
-          "t1": 48,
-          "t2": 159,
+          "t0": 48,
+          "t1": 159,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 31,
-          "t0": 0,
-          "t1": 48,
-          "t2": 174,
+          "t0": 48,
+          "t1": 174,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 32,
-          "t0": 0,
-          "t1": 49,
-          "t2": 179,
+          "t0": 49,
+          "t1": 179,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 33,
-          "t0": 0,
-          "t1": 54,
-          "t2": 184,
+          "t0": 54,
+          "t1": 184,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 34,
-          "t0": 0,
-          "t1": 72,
-          "t2": 220,
+          "t0": 72,
+          "t1": 220,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 35,
-          "t0": 0,
-          "t1": 76,
-          "t2": 244,
+          "t0": 76,
+          "t1": 244,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 36,
-          "t0": 0,
-          "t1": 81,
-          "t2": 257,
+          "t0": 81,
+          "t1": 257,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 37,
-          "t0": 0,
-          "t1": 86,
-          "t2": 287,
+          "t0": 86,
+          "t1": 287,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 38,
-          "t0": 0,
-          "t1": 94,
-          "t2": 302,
+          "t0": 94,
+          "t1": 302,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 39,
-          "t0": 0,
-          "t1": 100,
-          "t2": 329,
-          "t3": 3
+          "t0": 100,
+          "t1": 329,
+          "t2": 3,
+          "t3": 0
         },
         {
           "week": 40,
-          "t0": 0,
-          "t1": 102,
-          "t2": 329,
-          "t3": 9
+          "t0": 102,
+          "t1": 329,
+          "t2": 9,
+          "t3": 0
         },
         {
           "week": 41,
-          "t0": 0,
-          "t1": 109,
-          "t2": 329,
-          "t3": 21
+          "t0": 109,
+          "t1": 329,
+          "t2": 21,
+          "t3": 0
         },
         {
           "week": 42,
-          "t0": 0,
-          "t1": 113,
-          "t2": 317,
-          "t3": 47
+          "t0": 113,
+          "t1": 317,
+          "t2": 47,
+          "t3": 0
         },
         {
           "week": 43,
-          "t0": 0,
-          "t1": 109,
-          "t2": 304,
-          "t3": 45
+          "t0": 109,
+          "t1": 304,
+          "t2": 45,
+          "t3": 0
         },
         {
           "week": 44,
-          "t0": 0,
-          "t1": 109,
-          "t2": 303,
-          "t3": 45
+          "t0": 109,
+          "t1": 303,
+          "t2": 45,
+          "t3": 0
         },
         {
           "week": 45,
-          "t0": 0,
-          "t1": 109,
-          "t2": 303,
-          "t3": 45
+          "t0": 109,
+          "t1": 303,
+          "t2": 45,
+          "t3": 0
         },
         {
           "week": 46,
-          "t0": 0,
-          "t1": 109,
-          "t2": 303,
-          "t3": 45
+          "t0": 109,
+          "t1": 303,
+          "t2": 45,
+          "t3": 0
         }
       ],
       "pricing": {
@@ -3604,6 +3604,12 @@
         "estimated_roms_target": "5x",
         "tier0_price": 99
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-02-02",
       "tier_daily_sales": [
         {
           "date": "2025-10-30",
@@ -4249,13 +4255,7 @@
           "date": "2026-09-06",
           "count": -1
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-02-02"
+      ]
     },
     {
       "name": "Herriman",
@@ -4309,7 +4309,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": 48,
-          "ig_new_followers": 2239,
+          "ig_new_followers": 2233,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -4715,14 +4715,14 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 0.0,
           "comm_events": 0,
-          "ig_new_followers": null,
-          "meta_spend": 143.59,
-          "google_spend": 23.77,
+          "ig_new_followers": 8,
+          "meta_spend": 288.98,
+          "google_spend": 42.17,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 447.36,
-          "blended_cpl": 447.36,
+          "total_marketing_spend": 611.15,
+          "blended_cpl": 611.15,
           "blended_cpa": null,
           "estimated_day1_rmr": null
         },
@@ -5137,197 +5137,197 @@
         {
           "week": 1,
           "t0": 0,
-          "t1": 0,
-          "t2": 117,
+          "t1": 117,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 2,
           "t0": 0,
-          "t1": 0,
-          "t2": 125,
+          "t1": 125,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 3,
           "t0": 0,
-          "t1": 20,
-          "t2": 128,
+          "t1": 128,
+          "t2": 20,
           "t3": 0
         },
         {
           "week": 4,
           "t0": 0,
-          "t1": 27,
-          "t2": 132,
+          "t1": 132,
+          "t2": 27,
           "t3": 0
         },
         {
           "week": 5,
           "t0": 0,
-          "t1": 28,
-          "t2": 133,
+          "t1": 133,
+          "t2": 28,
           "t3": 0
         },
         {
           "week": 6,
           "t0": 0,
-          "t1": 43,
-          "t2": 133,
+          "t1": 133,
+          "t2": 43,
           "t3": 0
         },
         {
           "week": 7,
           "t0": 0,
-          "t1": 54,
-          "t2": 133,
+          "t1": 133,
+          "t2": 54,
           "t3": 0
         },
         {
           "week": 8,
           "t0": 0,
-          "t1": 70,
-          "t2": 133,
+          "t1": 133,
+          "t2": 70,
           "t3": 0
         },
         {
           "week": 9,
           "t0": 0,
-          "t1": 83,
-          "t2": 132,
+          "t1": 132,
+          "t2": 83,
           "t3": 0
         },
         {
           "week": 10,
           "t0": 0,
-          "t1": 102,
-          "t2": 132,
+          "t1": 132,
+          "t2": 102,
           "t3": 0
         },
         {
           "week": 11,
           "t0": 0,
-          "t1": 118,
-          "t2": 132,
+          "t1": 132,
+          "t2": 118,
           "t3": 0
         },
         {
           "week": 12,
           "t0": 0,
-          "t1": 128,
-          "t2": 132,
+          "t1": 132,
+          "t2": 128,
           "t3": 0
         },
         {
           "week": 13,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         },
         {
           "week": 14,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         },
         {
           "week": 15,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         },
         {
           "week": 16,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         },
         {
           "week": 17,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         },
         {
           "week": 18,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         },
         {
           "week": 19,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         },
         {
           "week": 20,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         },
         {
           "week": 21,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         },
         {
           "week": 22,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         },
         {
           "week": 23,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         },
         {
           "week": 24,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         },
         {
           "week": 25,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         },
         {
           "week": 26,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         },
         {
           "week": 27,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         },
         {
           "week": 28,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         }
       ],
@@ -5344,6 +5344,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sales Membership",
+        "price_129": "Pre Sale Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-09-08",
       "tier_daily_sales": [
         {
           "date": "2026-03-27",
@@ -5777,13 +5783,7 @@
           "date": "2026-09-05",
           "count": 2
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sales Membership",
-        "price_129": "Pre Sale Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-09-08"
+      ]
     },
     {
       "name": "Old Bridge",
@@ -5849,7 +5849,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": null,
-          "ig_new_followers": 512,
+          "ig_new_followers": 513,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -6052,15 +6052,15 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 75.0,
           "comm_events": 0,
-          "ig_new_followers": null,
-          "meta_spend": 219.8,
-          "google_spend": 20.17,
+          "ig_new_followers": 4,
+          "meta_spend": 446.12,
+          "google_spend": 41.22,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 519.97,
-          "blended_cpl": 129.99,
-          "blended_cpa": 173.32,
+          "total_marketing_spend": 767.34,
+          "blended_cpl": 191.84,
+          "blended_cpa": 255.78,
           "estimated_day1_rmr": null
         },
         {
@@ -6879,6 +6879,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-12-01",
       "tier_daily_sales": [
         {
           "date": "2026-07-23",
@@ -7040,13 +7046,7 @@
           "date": "2026-09-06",
           "count": 2
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-12-01"
+      ]
     },
     {
       "name": "Dr Phillips",
@@ -7100,7 +7100,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": 2,
-          "ig_new_followers": 1482,
+          "ig_new_followers": 1481,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -7564,15 +7564,15 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 27.8,
           "comm_events": 0,
-          "ig_new_followers": null,
-          "meta_spend": 81.21,
-          "google_spend": 18.9,
+          "ig_new_followers": 7,
+          "meta_spend": 151.33,
+          "google_spend": 39.23,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 380.11,
-          "blended_cpl": 21.12,
-          "blended_cpa": 76.02,
+          "total_marketing_spend": 470.56,
+          "blended_cpl": 26.14,
+          "blended_cpa": 94.11,
           "estimated_day1_rmr": null
         },
         {
@@ -8131,6 +8131,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-08-28",
       "tier_daily_sales": [
         {
           "date": "2026-05-19",
@@ -8380,13 +8386,7 @@
           "date": "2026-09-06",
           "count": 5
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-08-28"
+      ]
     },
     {
       "name": "Aventura",
@@ -8440,7 +8440,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": null,
-          "ig_new_followers": 771,
+          "ig_new_followers": 770,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -8904,14 +8904,14 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 0.0,
           "comm_events": 0,
-          "ig_new_followers": null,
-          "meta_spend": 140.28,
-          "google_spend": 23.36,
+          "ig_new_followers": 5,
+          "meta_spend": 319.07,
+          "google_spend": 45.0,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 443.64,
-          "blended_cpl": 221.82,
+          "total_marketing_spend": 644.07,
+          "blended_cpl": 322.04,
           "blended_cpa": null,
           "estimated_day1_rmr": null
         },
@@ -9469,6 +9469,12 @@
         "tier2_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": null,
+        "price_129": "Pre Sale Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-09-30",
       "tier_daily_sales": [
         {
           "date": "2026-05-19",
@@ -9794,13 +9800,7 @@
           "date": "2026-09-04",
           "count": 1
         }
-      ],
-      "sku_map": {
-        "price_99": null,
-        "price_129": "Pre Sale Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-09-30"
+      ]
     },
     {
       "name": "North Miami",
@@ -10318,14 +10318,14 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 0.0,
           "comm_events": 0,
-          "ig_new_followers": null,
-          "meta_spend": 85.27,
-          "google_spend": 23.72,
+          "ig_new_followers": 6,
+          "meta_spend": 201.88,
+          "google_spend": 48.65,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 388.99,
-          "blended_cpl": 194.5,
+          "total_marketing_spend": 530.53,
+          "blended_cpl": 265.26,
           "blended_cpa": null,
           "estimated_day1_rmr": null
         },
@@ -10919,6 +10919,12 @@
         "tier2_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": null,
+        "price_129": "Pre Sale Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-10-30",
       "tier_daily_sales": [
         {
           "date": "2026-05-26",
@@ -11200,13 +11206,7 @@
           "date": "2026-09-02",
           "count": 2
         }
-      ],
-      "sku_map": {
-        "price_99": null,
-        "price_129": "Pre Sale Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-10-30"
+      ]
     },
     {
       "name": "Dallas - Uptown",
@@ -11260,7 +11260,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": 9,
-          "ig_new_followers": 19765,
+          "ig_new_followers": 19759,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -11666,7 +11666,7 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 0.0,
           "comm_events": 0,
-          "ig_new_followers": null,
+          "ig_new_followers": 3,
           "meta_spend": 0.0,
           "google_spend": 0.0,
           "grassroots_spend": 0.0,
@@ -12088,197 +12088,197 @@
         {
           "week": 1,
           "t0": 0,
-          "t1": 0,
-          "t2": 51,
+          "t1": 51,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 2,
           "t0": 0,
-          "t1": 0,
-          "t2": 69,
+          "t1": 69,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 3,
           "t0": 0,
-          "t1": 0,
-          "t2": 93,
+          "t1": 93,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 4,
           "t0": 0,
-          "t1": 0,
-          "t2": 101,
+          "t1": 101,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 5,
           "t0": 0,
-          "t1": 2,
-          "t2": 109,
+          "t1": 111,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 6,
           "t0": 0,
-          "t1": 9,
-          "t2": 108,
+          "t1": 117,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 7,
           "t0": 0,
-          "t1": 20,
-          "t2": 107,
+          "t1": 127,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 8,
           "t0": 0,
-          "t1": 40,
-          "t2": 105,
+          "t1": 145,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 9,
           "t0": 0,
-          "t1": 60,
-          "t2": 104,
+          "t1": 164,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 10,
           "t0": 0,
-          "t1": 82,
-          "t2": 104,
+          "t1": 186,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 11,
           "t0": 0,
-          "t1": 98,
-          "t2": 103,
+          "t1": 201,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 12,
           "t0": 0,
-          "t1": 106,
-          "t2": 102,
+          "t1": 208,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 13,
           "t0": 0,
-          "t1": 120,
-          "t2": 102,
+          "t1": 222,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 14,
           "t0": 0,
-          "t1": 120,
-          "t2": 101,
+          "t1": 221,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 15,
           "t0": 0,
-          "t1": 120,
-          "t2": 101,
+          "t1": 221,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 16,
           "t0": 0,
-          "t1": 120,
-          "t2": 101,
+          "t1": 221,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 17,
           "t0": 0,
-          "t1": 120,
-          "t2": 101,
+          "t1": 221,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 18,
           "t0": 0,
-          "t1": 120,
-          "t2": 101,
+          "t1": 221,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 19,
           "t0": 0,
-          "t1": 120,
-          "t2": 101,
+          "t1": 221,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 20,
           "t0": 0,
-          "t1": 120,
-          "t2": 101,
+          "t1": 221,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 21,
           "t0": 0,
-          "t1": 120,
-          "t2": 101,
+          "t1": 221,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 22,
           "t0": 0,
-          "t1": 120,
-          "t2": 101,
+          "t1": 221,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 23,
           "t0": 0,
-          "t1": 120,
-          "t2": 101,
+          "t1": 221,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 24,
           "t0": 0,
-          "t1": 120,
-          "t2": 101,
+          "t1": 221,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 25,
           "t0": 0,
-          "t1": 120,
-          "t2": 101,
+          "t1": 221,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 26,
           "t0": 0,
-          "t1": 120,
-          "t2": 101,
+          "t1": 221,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 27,
           "t0": 0,
-          "t1": 120,
-          "t2": 101,
+          "t1": 221,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 28,
           "t0": 0,
-          "t1": 120,
-          "t2": 101,
+          "t1": 221,
+          "t2": 0,
           "t3": 0
         }
       ],
@@ -12293,6 +12293,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sales Membership",
+        "price_129": "Pre Sale Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-10-10",
       "tier_daily_sales": [
         {
           "date": "2026-05-15",
@@ -12622,13 +12628,7 @@
           "date": "2026-09-06",
           "count": -1
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sales Membership",
-        "price_129": "Pre Sale Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-10-10"
+      ]
     },
     {
       "name": "Fort Myers",
@@ -12694,7 +12694,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": 19,
-          "ig_new_followers": 332,
+          "ig_new_followers": 334,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -13833,6 +13833,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2027-01-08",
       "tier_daily_sales": [
         {
           "date": "2026-08-03",
@@ -13882,13 +13888,7 @@
           "date": "2026-09-05",
           "count": 10
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2027-01-08"
+      ]
     },
     {
       "name": "Dunwoody",
@@ -13954,7 +13954,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": 1,
-          "ig_new_followers": 212,
+          "ig_new_followers": 209,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -14157,15 +14157,15 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 50.0,
           "comm_events": 0,
-          "ig_new_followers": null,
-          "meta_spend": 144.79,
+          "ig_new_followers": 4,
+          "meta_spend": 258.52,
           "google_spend": 0.0,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 424.79,
-          "blended_cpl": 30.34,
-          "blended_cpa": 60.68,
+          "total_marketing_spend": 538.52,
+          "blended_cpl": 38.47,
+          "blended_cpa": 76.93,
           "estimated_day1_rmr": null
         },
         {
@@ -14985,6 +14985,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-10-09",
       "tier_daily_sales": [
         {
           "date": "2026-07-23",
@@ -15102,13 +15108,7 @@
           "date": "2026-09-06",
           "count": 7
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-10-09"
+      ]
     },
     {
       "name": "Middletown",
@@ -15174,7 +15174,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": null,
-          "ig_new_followers": 598,
+          "ig_new_followers": 591,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -15377,15 +15377,15 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 100.0,
           "comm_events": 0,
-          "ig_new_followers": null,
-          "meta_spend": 175.03,
-          "google_spend": 27.48,
+          "ig_new_followers": 10,
+          "meta_spend": 335.32,
+          "google_spend": 44.27,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 482.51,
-          "blended_cpl": 241.25,
-          "blended_cpa": 241.25,
+          "total_marketing_spend": 659.59,
+          "blended_cpl": 329.8,
+          "blended_cpa": 329.8,
           "estimated_day1_rmr": null
         },
         {
@@ -16204,6 +16204,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-12-01",
       "tier_daily_sales": [
         {
           "date": "2026-07-23",
@@ -16369,13 +16375,7 @@
           "date": "2026-09-06",
           "count": 2
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-12-01"
+      ]
     },
     {
       "name": "Burlington",
@@ -16441,7 +16441,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": 1,
-          "ig_new_followers": 504,
+          "ig_new_followers": 509,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -17472,6 +17472,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2027-02-17",
       "tier_daily_sales": [
         {
           "date": "2026-08-25",
@@ -17505,13 +17511,7 @@
           "date": "2026-09-06",
           "count": 1
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2027-02-17"
+      ]
     },
     {
       "name": "Long Beach",
@@ -17577,7 +17577,7 @@
           "digital_cancellations_week": null,
           "conversion_rate": null,
           "comm_events": null,
-          "ig_new_followers": 806,
+          "ig_new_followers": 811,
           "meta_spend": null,
           "google_spend": null,
           "grassroots_spend": null,
@@ -17838,7 +17838,7 @@
           "digital_cancellations_week": 0,
           "conversion_rate": 33.3,
           "comm_events": 0,
-          "ig_new_followers": null,
+          "ig_new_followers": 8,
           "meta_spend": 0.0,
           "google_spend": 0.0,
           "grassroots_spend": 0.0,
@@ -18716,6 +18716,12 @@
         "tier3_members_target": 165,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2027-02-12",
       "tier_daily_sales": [
         {
           "date": "2026-08-26",
@@ -18765,13 +18771,7 @@
           "date": "2026-09-06",
           "count": 6
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2027-02-12"
+      ]
     },
     {
       "name": "Rose Creek",
@@ -19976,18 +19976,18 @@
         "tier3_members_target": 165,
         "estimated_roms_target": "5x"
       },
-      "tier_daily_sales": [
-        {
-          "date": "2026-09-03",
-          "count": 1
-        }
-      ],
       "sku_map": {
         "price_99": "Pre Sale Membership",
         "price_129": "Pre Sales Membership",
         "price_149": "Pre-Sales Membership"
       },
-      "co_date": "2026-12-19"
+      "co_date": "2026-12-19",
+      "tier_daily_sales": [
+        {
+          "date": "2026-09-03",
+          "count": 1
+        }
+      ]
     },
     {
       "name": "South End",
@@ -20169,7 +20169,7 @@
           "digital_cancellations_week": 0,
           "conversion_rate": null,
           "comm_events": 0,
-          "ig_new_followers": 60,
+          "ig_new_followers": 61,
           "meta_spend": 0.0,
           "google_spend": 0.0,
           "grassroots_spend": 0.0,
@@ -21192,13 +21192,13 @@
         "tier3_members_target": 165,
         "estimated_roms_target": "5x"
       },
-      "tier_daily_sales": [],
       "sku_map": {
         "price_99": "Pre Sale Membership",
         "price_129": "Pre Sales Membership",
         "price_149": "Pre-Sales Membership"
       },
-      "co_date": "2027-03-13"
+      "co_date": "2027-03-13",
+      "tier_daily_sales": []
     }
   ]
 }
