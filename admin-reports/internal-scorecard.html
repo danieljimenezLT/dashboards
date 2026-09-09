@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SWEAT440 — Internal Performance Scorecard</title>
+<link rel="icon" href="../favicon.jpg"/>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../shared/style.css"/>
+<style>
+.preset-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 24px 0}
+.preset-row .preset-label{font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;color:#5a7a8a;text-transform:uppercase;letter-spacing:1px;margin-right:2px}
+.preset-btn{padding:6px 16px;border-radius:20px;border:1.5px solid #c0d4df;background:#f4f9fd;color:#5a7a8a;font-family:'Oswald',sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .15s}
+.preset-btn:hover{border-color:#00A3E0}
+.preset-btn.active{background:#00A3E0;border-color:#00A3E0;color:#fff}
+.preset-sep{width:1px;align-self:stretch;background:#dde8ef;margin:0 6px}
+.studio-preset-btn{padding:6px 16px;border-radius:20px;border:1.5px solid #b8c400;background:#fbfde0;color:#6b6b00;font-family:'Oswald',sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .15s}
+.studio-preset-btn:hover{background:#DDFF00;border-color:#DDFF00;color:#4a4a00}
+.section-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#1a1a2e;margin:28px 24px 4px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="../home.html"><img src="../logo.png" alt="SWEAT440"/></a>
+  <div class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" id="navTabOs" onclick="switchTab('os')">OS</button>
+    <button class="nav-tab" id="navTabNso" onclick="switchTab('nso')">NSO</button>
+  </div>
+  <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Toggle navigation">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-user" id="navUser"></div>
+</nav>
+
+<div class="main">
+
+  <!-- ============================= OS TAB ============================= -->
+  <div class="tab-content active" id="tab-os">
+
+    <div class="preset-row" id="presetRowOs">
+      <span class="preset-label">Blend:</span>
+      <button class="preset-btn active" data-preset="blended" onclick="osSourcePreset('blended')">Blended</button>
+      <button class="preset-btn" data-preset="meta" onclick="osSourcePreset('meta')">Meta Ads</button>
+      <button class="preset-btn" data-preset="google" onclick="osSourcePreset('google')">Google Ads</button>
+      <button class="preset-btn" data-preset="paid" onclick="osSourcePreset('paid')">Paid Ads</button>
+      <div class="preset-sep"></div>
+      <span class="preset-label">Studios:</span>
+      <button class="studio-preset-btn" onclick="osStudioPreset()">OS Ads w/ LeadTeam</button>
+    </div>
+
+    <div class="controls-bar">
+      <button class="controls-toggle" onclick="toggleControls(this)">Filters ▾</button>
+      <div class="controls-inner">
+        <span class="ctrl-label">Studio</span>
+        <div class="multi-select" id="studioDropdownOS">
+          <button class="ms-trigger" onclick="toggleDropdown('studioOS')">
+            <span id="studioLabelOS">All Studios</span><span class="ms-arrow">▾</span>
+          </button>
+          <div class="ms-menu" id="studioMenuOS"></div>
+        </div>
+        <div class="ctrl-sep"></div>
+        <span class="ctrl-label">Source</span>
+        <div class="multi-select" id="sourceDropdownOS">
+          <button class="ms-trigger" onclick="toggleDropdown('sourceOS')">
+            <span id="sourceLabelOS">All Sources</span><span class="ms-arrow">▾</span>
+          </button>
+          <div class="ms-menu" id="sourceMenuOS"></div>
+        </div>
+        <div class="ctrl-sep"></div>
+        <span class="ctrl-label">Date range</span>
+        <div class="ctrl-date">
+          <input type="date" id="osFFrom" onchange="applyOsFilters()"/>
+          <span style="font-size:12px;color:#5a7a8a">→</span>
+          <input type="date" id="osFTo" onchange="applyOsFilters()"/>
+        </div>
+      </div>
+    </div>
+    <div class="data-freshness-note" id="osFreshnessNote"></div>
+
+    <div class="section-title">Funnel Summary</div>
+    <div class="chart-card" style="margin:16px 24px 20px">
+      <div class="chart-card-title">Conversion funnel</div>
+      <div class="funnel-wrap" id="osFunnelBars"></div>
+    </div>
+    <div class="chart-card" style="margin:0 24px 20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div class="toggle-group" id="osTrendToggles" style="margin-bottom:0">
+          <button class="tog-btn on" data-ds="0" onclick="toggleOsTrendDs(this,0)" style="border-color:#00A3E0;background:#00A3E0;color:#000"><span class="dot" style="background:#000"></span>Leads</button>
+          <button class="tog-btn on" data-ds="1" onclick="toggleOsTrendDs(this,1)" style="border-color:#00FFC2;background:#00FFC2;color:#000"><span class="dot" style="background:#000"></span>First Timers</button>
+          <button class="tog-btn on" data-ds="2" onclick="toggleOsTrendDs(this,2)" style="border-color:#DDFF00;background:#DDFF00;color:#000"><span class="dot" style="background:#000"></span>New Members</button>
+        </div>
+        <div class="gran-group">
+          <button class="gran-btn" id="osGranDaily" onclick="setOsGran('daily')">Daily</button>
+          <button class="gran-btn active" id="osGranWeekly" onclick="setOsGran('weekly')">Weekly</button>
+          <button class="gran-btn" id="osGranMonthly" onclick="setOsGran('monthly')">Monthly</button>
+        </div>
+      </div>
+      <div style="position:relative;width:100%;height:260px"><canvas id="osTrendChart"></canvas></div>
+    </div>
+    <div id="osConvKpis" class="kpi-grid three" style="margin:0 24px 20px"></div>
+
+    <div class="section-title">Blended CPR</div>
+    <div class="chart-card" style="margin:16px 24px 20px">
+      <div class="chart-card-title">Cost sources</div>
+      <div class="cpr-filter" id="osCprCostFilter">
+        <span style="font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;color:#5a7a8a;text-transform:uppercase;letter-spacing:1px">Include:</span>
+        <button class="cpr-tog on" id="osCprCost_google" data-cost="google" onclick="toggleOsCprCost(this)" style="border-color:#34A853;background:#34A853;color:#fff">Google Ads</button>
+        <button class="cpr-tog on" id="osCprCost_meta" data-cost="meta" onclick="toggleOsCprCost(this)" style="border-color:#1877F2;background:#1877F2;color:#fff">Meta Ads</button>
+        <button class="cpr-tog on" id="osCprCost_leadteam" data-cost="leadteam" onclick="toggleOsCprCost(this)" style="border-color:#FF6B35;background:#FF6B35;color:#fff">Leadteam Fee</button>
+        <button class="cpr-tog on" id="osCprCost_external_agency" data-cost="external_agency" onclick="toggleOsCprCost(this)" style="border-color:#8E44AD;background:#8E44AD;color:#fff">External Agency</button>
+      </div>
+      <div id="osCprWarning" style="display:none;margin-top:10px;padding:10px 12px;background:#fff8e1;border-left:3px solid #f59e0b;border-radius:4px;font-size:12px;color:#92400e;line-height:1.5"></div>
+    </div>
+    <div id="osCprSpendBreakdown" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 24px 20px"></div>
+    <div class="kpi-grid" id="osCprKpis" style="margin:0 24px 20px"></div>
+    <div class="chart-card" style="margin:0 24px 20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div class="toggle-group" id="osCprToggles" style="margin-bottom:0">
+          <button class="tog-btn on" data-ds="0" onclick="toggleOsCprDs(this,0)" style="border-color:#00A3E0;background:#00A3E0;color:#000"><span class="dot" style="background:#000"></span>Blended CPL</button>
+          <button class="tog-btn on" data-ds="1" onclick="toggleOsCprDs(this,1)" style="border-color:#00FFC2;background:#00FFC2;color:#000"><span class="dot" style="background:#000"></span>Blended CPFT</button>
+          <button class="tog-btn on" data-ds="2" onclick="toggleOsCprDs(this,2)" style="border-color:#DDFF00;background:#DDFF00;color:#000"><span class="dot" style="background:#000"></span>Blended CPA</button>
+        </div>
+        <div class="gran-group">
+          <button class="gran-btn" id="osCprGranDaily" onclick="setOsCprGran('daily')">Daily</button>
+          <button class="gran-btn active" id="osCprGranWeekly" onclick="setOsCprGran('weekly')">Weekly</button>
+          <button class="gran-btn" id="osCprGranMonthly" onclick="setOsCprGran('monthly')">Monthly</button>
+        </div>
+      </div>
+      <div style="position:relative;width:100%;height:260px"><canvas id="osCprChart"></canvas></div>
+    </div>
+    <div class="chart-card" style="margin:0 24px 20px">
+      <div class="chart-card-title">Studio Summary</div>
+      <div style="overflow-x:auto">
+        <table class="data-table" id="osCprStudioTable">
+          <thead><tr>
+            <th class="row-num">#</th><th data-sort="studio">Studio</th>
+            <th class="num" data-sort="leads">Leads</th><th class="num" data-sort="ft">First Visits</th><th class="num" data-sort="mem">Memberships</th>
+            <th class="num" data-sort="spend">Total Mkt Spend</th>
+            <th class="num" data-sort="google">Google Ads</th><th class="num" data-sort="meta">Meta Ads</th>
+            <th class="num" data-sort="leadteam">Leadteam Fee</th><th class="num" data-sort="external_agency">External Agency</th>
+            <th class="num" data-sort="cpl">Blended CPL</th><th class="num" data-sort="cpft">Blended CPFT</th><th class="num" data-sort="cpa">Blended CPA</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= NSO TAB ============================= -->
+  <div class="tab-content" id="tab-nso">
+
+    <div class="preset-row" id="presetRowNso">
+      <span class="preset-label">Blend:</span>
+      <button class="preset-btn active" data-preset="blended" onclick="nsoSourcePreset('blended')">Blended</button>
+      <button class="preset-btn" data-preset="meta" onclick="nsoSourcePreset('meta')">Meta Ads</button>
+      <button class="preset-btn" data-preset="google" onclick="nsoSourcePreset('google')">Google Ads</button>
+      <button class="preset-btn" data-preset="paid" onclick="nsoSourcePreset('paid')">Paid Ads</button>
+    </div>
+
+    <div class="controls-bar">
+      <button class="controls-toggle" onclick="toggleControls(this)">Filters ▾</button>
+      <div class="controls-inner">
+        <span class="ctrl-label">Studio</span>
+        <div class="multi-select" id="studioDropdownNSO">
+          <button class="ms-trigger" onclick="toggleDropdown('studioNSO')">
+            <span id="studioLabelNSO">All NSO Studios</span><span class="ms-arrow">▾</span>
+          </button>
+          <div class="ms-menu" id="studioMenuNSO"></div>
+        </div>
+        <div class="ctrl-sep"></div>
+        <span class="ctrl-label">Source</span>
+        <div class="multi-select" id="sourceDropdownNSO">
+          <button class="ms-trigger" onclick="toggleDropdown('sourceNSO')">
+            <span id="sourceLabelNSO">All Sources</span><span class="ms-arrow">▾</span>
+          </button>
+          <div class="ms-menu" id="sourceMenuNSO"></div>
+        </div>
+        <div class="ctrl-sep"></div>
+        <span class="ctrl-label">Date range</span>
+        <div class="ctrl-date">
+          <input type="date" id="nsoFFrom" onchange="applyNsoFilters()"/>
+          <span style="font-size:12px;color:#5a7a8a">→</span>
+          <input type="date" id="nsoFTo" onchange="applyNsoFilters()"/>
+        </div>
+      </div>
+    </div>
+    <div class="data-freshness-note" id="nsoFreshnessNote"></div>
+
+    <div class="section-title">Funnel Summary</div>
+    <div id="nsoFunnelKpis" class="kpi-grid" style="margin:16px 24px 20px"></div>
+    <div class="chart-card" style="margin:0 24px 20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div class="toggle-group" id="nsoTrendToggles" style="margin-bottom:0">
+          <button class="tog-btn on" data-ds="0" onclick="toggleNsoTrendDs(this,0)" style="border-color:#00A3E0;background:#00A3E0;color:#000"><span class="dot" style="background:#000"></span>Leads</button>
+          <button class="tog-btn on" data-ds="1" onclick="toggleNsoTrendDs(this,1)" style="border-color:#00FFC2;background:#00FFC2;color:#000"><span class="dot" style="background:#000"></span>New Sales</button>
+          <button class="tog-btn on" data-ds="2" onclick="toggleNsoTrendDs(this,2)" style="border-color:#ff6b6b;background:#ff6b6b;color:#fff"><span class="dot" style="background:#fff"></span>Cancellations</button>
+        </div>
+        <div class="gran-group">
+          <button class="gran-btn" id="nsoGranDaily" onclick="setNsoGran('daily')">Daily</button>
+          <button class="gran-btn active" id="nsoGranWeekly" onclick="setNsoGran('weekly')">Weekly</button>
+          <button class="gran-btn" id="nsoGranMonthly" onclick="setNsoGran('monthly')">Monthly</button>
+        </div>
+      </div>
+      <div style="position:relative;width:100%;height:260px"><canvas id="nsoTrendChart"></canvas></div>
+    </div>
+    <div id="nsoCvrKpis" class="kpi-grid three" style="margin:0 24px 20px"></div>
+    <div class="chart-card" style="margin:0 24px 20px">
+      <div class="chart-card-title">Lead → Net Sale conversion rate over time</div>
+      <div style="position:relative;width:100%;height:260px"><canvas id="nsoCvrChart"></canvas></div>
+    </div>
+
+    <div class="section-title">Blended CPR</div>
+    <div class="chart-card" style="margin:16px 24px 20px">
+      <div class="chart-card-title">Cost sources</div>
+      <div class="cpr-filter" id="nsoCprCostFilter">
+        <span style="font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;color:#5a7a8a;text-transform:uppercase;letter-spacing:1px">Include:</span>
+        <button class="cpr-tog on" id="nsoCprCost_google" data-cost="google" onclick="toggleNsoCprCost(this)" style="border-color:#34A853;background:#34A853;color:#fff">Google Ads</button>
+        <button class="cpr-tog on" id="nsoCprCost_meta" data-cost="meta" onclick="toggleNsoCprCost(this)" style="border-color:#1877F2;background:#1877F2;color:#fff">Meta Ads</button>
+        <button class="cpr-tog on" id="nsoCprCost_lt" data-cost="lt" onclick="toggleNsoCprCost(this)" style="border-color:#FF6B35;background:#FF6B35;color:#fff">LeadTeam Fee</button>
+        <button class="cpr-tog on" id="nsoCprCost_ext" data-cost="ext" onclick="toggleNsoCprCost(this)" style="border-color:#00897B;background:#00897B;color:#fff">External Agency</button>
+      </div>
+    </div>
+    <div id="nsoCprSpendBreakdown" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 24px 20px"></div>
+    <div class="kpi-grid" id="nsoCprKpis" style="grid-template-columns:1fr 1fr;margin:0 24px 20px"></div>
+    <div class="chart-card" style="margin:0 24px 20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div class="toggle-group" id="nsoCprToggles" style="margin-bottom:0">
+          <button class="tog-btn on" data-ds="0" onclick="toggleNsoCprDs(this,0)" style="border-color:#00A3E0;background:#00A3E0;color:#000"><span class="dot" style="background:#000"></span>Blended CPL</button>
+          <button class="tog-btn on" data-ds="1" onclick="toggleNsoCprDs(this,1)" style="border-color:#00FFC2;background:#00FFC2;color:#000"><span class="dot" style="background:#000"></span>Blended CPS (Net)</button>
+        </div>
+        <div class="gran-group">
+          <button class="gran-btn" id="nsoCprGranDaily" onclick="setNsoCprGran('daily')">Daily</button>
+          <button class="gran-btn active" id="nsoCprGranWeekly" onclick="setNsoCprGran('weekly')">Weekly</button>
+          <button class="gran-btn" id="nsoCprGranMonthly" onclick="setNsoCprGran('monthly')">Monthly</button>
+        </div>
+      </div>
+      <div style="position:relative;width:100%;height:260px"><canvas id="nsoCprChart"></canvas></div>
+    </div>
+    <div class="chart-card" style="margin:0 24px 20px">
+      <div class="chart-card-title">Studio Summary</div>
+      <div style="overflow-x:auto">
+        <table class="data-table" id="nsoCprStudioTable">
+          <thead><tr>
+            <th class="row-num">#</th><th data-sort="studio">Studio</th>
+            <th class="num" data-sort="leads">Leads</th><th class="num" data-sort="sales">Net Sales</th>
+            <th class="num" data-sort="google">Google Ads</th><th class="num" data-sort="meta">Meta Ads</th>
+            <th class="num" data-sort="lt">LT Fee</th><th class="num" data-sort="ext">Ext. Agency</th>
+            <th class="num" data-sort="spend">Total Spend</th>
+            <th class="num" data-sort="cpl">Cost/Lead</th><th class="num" data-sort="cps">Cost/Net Sale</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="../users.js"></script>
+<script src="../shared/auth.js"></script>
+<script src="../shared/utils.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   INTERNAL PERFORMANCE SCORECARD — admin-only staging report.
+   Merges OS dashboard's Funnel Summary + Blended CPR into one tab, and NSO
+   dashboard's equivalents into a second tab. Self-contained (no shared
+   dashboard JS file) — mirrors nso-studios.html's own precedent.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* -- Generic date/bucket helpers (weekly = backward from selected end date,
+      not natural Sun-Sat weeks; daily/monthly are plain calendar buckets) -- */
+function isoUTC(d){ return d.toISOString().slice(0,10); }
+function dateOnlyUTC(d){ return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())); }
+
+function weekBucketsBackward(from, to){
+  const buckets=[];
+  const start=dateOnlyUTC(from);
+  let end=dateOnlyUTC(to);
+  while(end>=start){
+    let bStart=new Date(end.getTime()-6*86400000);
+    if(bStart<start) bStart=new Date(start);
+    const key=isoUTC(bStart)+'_'+isoUTC(end);
+    buckets.unshift({start:bStart, end:new Date(end), key, label:fmtDayLabel(isoUTC(bStart))+' – '+fmtDayLabel(isoUTC(end))});
+    end=new Date(bStart.getTime()-86400000);
+  }
+  return buckets;
+}
+function monthBuckets(from, to){
+  const buckets=[];
+  let cur=new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), 1));
+  const endCal=new Date(Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), 1));
+  const start=dateOnlyUTC(from), end=dateOnlyUTC(to);
+  while(cur<=endCal){
+    const mEnd=new Date(Date.UTC(cur.getUTCFullYear(), cur.getUTCMonth()+1, 0));
+    const bStart=cur<start?start:cur;
+    const bEnd=mEnd>end?end:mEnd;
+    buckets.push({start:bStart, end:bEnd, key:isoUTC(cur), label:fmtMonthLabel(isoUTC(cur))});
+    cur=new Date(Date.UTC(cur.getUTCFullYear(), cur.getUTCMonth()+1, 1));
+  }
+  return buckets;
+}
+function dayBuckets(from, to){
+  const buckets=[];
+  let cur=dateOnlyUTC(from);
+  const end=dateOnlyUTC(to);
+  while(cur<=end){
+    buckets.push({start:new Date(cur), end:new Date(cur), key:isoUTC(cur), label:fmtDayLabel(isoUTC(cur))});
+    cur=new Date(cur.getTime()+86400000);
+  }
+  return buckets;
+}
+function buildBuckets(gran, from, to){
+  if(!from||!to) return [];
+  if(gran==='weekly') return weekBucketsBackward(from, to);
+  if(gran==='monthly') return monthBuckets(from, to);
+  return dayBuckets(from, to);
+}
+// Sums the given numeric fields from `rows` (each with a .date or .month
+// string) into whichever bucket contains that date. Monthly rows are placed
+// by their first-of-month date — an accepted approximation for the rare
+// case a selected range reaches back before daily-granularity data exists.
+function aggregateRowsIntoBuckets(buckets, rows, fields){
+  const sums=buckets.map(()=>{ const o={}; fields.forEach(f=>o[f]=0); return o; });
+  rows.forEach(r=>{
+    const raw=r.date||r.month; if(!raw) return;
+    const d=new Date(raw+'T00:00:00Z');
+    const idx=buckets.findIndex(b=>d>=b.start&&d<=b.end);
+    if(idx===-1) return;
+    fields.forEach(f=>{ sums[idx][f]+=r[f]||0; });
+  });
+  return buckets.map((b,i)=>({key:b.key, label:b.label, ...sums[i]}));
+}
+function monthKeysInRange(fromStr, toStr){
+  const keys=new Set();
+  let cur=new Date(Date.UTC(+fromStr.slice(0,4), +fromStr.slice(5,7)-1, 1));
+  const end=new Date(Date.UTC(+toStr.slice(0,4), +toStr.slice(5,7)-1, 1));
+  while(cur<=end){ keys.add(isoUTC(cur).slice(0,7)); cur.setUTCMonth(cur.getUTCMonth()+1); }
+  return keys;
+}
+// Default range for both tabs: last 70 days (10 weeks), ending 2 days ago —
+// Snowflake-backed data isn't available for today/yesterday yet.
+function defaultRange(){
+  const to=new Date(); to.setDate(to.getDate()-2);
+  const from=new Date(to.getTime()-69*86400000);
+  return {from: localDateStr(from), to: localDateStr(to)};
+}
+
+/* -- Nav / tab switching --------------------------------------------------- */
+let _nsoBuilt=false;
+function switchTab(id){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  document.getElementById(id==='os'?'navTabOs':'navTabNso').classList.add('active');
+  document.getElementById('navTabs').classList.remove('open');
+  if(id==='os') applyOsFilters(); else applyNsoFilters();
+}
+function toggleNav(){ document.getElementById('navTabs').classList.toggle('open'); }
+function toggleControls(btn){
+  const el=btn.nextElementSibling;
+  el.classList.toggle('open');
+  btn.textContent=el.classList.contains('open')?'Filters ▴':'Filters ▾';
+}
+// shared/utils.js's buildMultiSelect/buildSourceSelect call _applyFilters(),
+// which calls window.applyFilters() if defined — dispatch to whichever tab
+// is currently visible (the only one a user's checkbox click could target).
+function applyFilters(){
+  if(document.getElementById('tab-os').classList.contains('active')) applyOsFilters();
+  else applyNsoFilters();
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   OS TAB
+   ══════════════════════════════════════════════════════════════════════════ */
+let OS_RAW=null, OS_SPEND_RAW=null, OS_AGENCY_OVERRIDES=[], OS_CORP_SPEND=null;
+const STUDIOS_NAME_TO_CODE={};
+const OS_EXTERNAL_AGENCY_STUDIOS=['Dallas - Prestonwood','Austin - Highland','Herriman','Dallas - Uptown','Fort Myers','Orlando - Dr Phillips','OKC - Rose Creek'];
+const LTFEE_MONTHLY=1200;
+const OS_COST_COLORS={google:'#34A853',meta:'#1877F2',leadteam:'#FF6B35',external_agency:'#8E44AD'};
+const OS_CPR_COSTS_ACTIVE={google:true,meta:true,leadteam:true,external_agency:true};
+let osGran='weekly', osCprGran='weekly';
+let osTrendChart=null, osCprChart=null;
+let OS_CPR_DS_HIDDEN=[false,false,false];
+
+function _osResolveOverrideStudio(rawName, known){
+  if(known.includes(rawName)) return rawName;
+  const lower=rawName.trim().toLowerCase();
+  const hit=known.find(s=>{ const sl=s.toLowerCase(); return sl===lower||sl.endsWith(lower)||sl.startsWith(lower); });
+  return hit||rawName;
+}
+function _osOverrideAmount(studio, category, f, t){
+  if(!f||!t||!OS_AGENCY_OVERRIDES.length) return 0;
+  const fT=f.getTime(), tT=t.getTime();
+  let total=0;
+  for(const o of OS_AGENCY_OVERRIDES){
+    if(o.studio!==studio||o.category!==category) continue;
+    const oStart=Math.max(fT,o.startMs), oEnd=Math.min(tT,o.endMs);
+    if(oEnd<oStart) continue;
+    const overlapDays=Math.round((oEnd-oStart)/86400000);
+    total+=o.monthly_amount*(overlapDays/30.4375);
+  }
+  return total;
+}
+function osLeadteamNetForStudio(studio, f, t){
+  if(!f||!t) return 0;
+  const days=Math.round((t.getTime()-f.getTime())/86400000);
+  const gross=LTFEE_MONTHLY*(days/30.4375);
+  return Math.max(0, gross-_osOverrideAmount(studio,'leadteam_discount',f,t));
+}
+function osExternalAgencyForStudio(studio, f, t){ return _osOverrideAmount(studio,'external_agency',f,t); }
+function osComputeLeadteamSpend(f,t,studios){ return (studios||[]).reduce((s,st)=>s+osLeadteamNetForStudio(st,f,t),0); }
+function osComputeExternalAgencySpend(f,t,studios){ return (studios||[]).reduce((s,st)=>s+osExternalAgencyForStudio(st,f,t),0); }
+
+// Returns {meta, google} spend for a date range + optional studio filter,
+// from spend-data.json's daily (2026+) / monthly (pre-2026) rows.
+function osSpendFor(f, t, studios){
+  if(!f||!t||!OS_SPEND_RAW) return {meta:0, google:0};
+  const fT=f.getTime(), tT=t.getTime(), bySt=studios&&studios.length>0;
+  let meta=0, google=0;
+  const dailyCovered=new Set();
+  for(const r of (OS_SPEND_RAW.daily||[])){
+    const d=new Date(r.date+'T00:00:00Z').getTime();
+    if(d<fT||d>tT) continue;
+    const nm=META_CODE_TO_STUDIO[r.studio_code]||r.studio_code;
+    if(bySt&&!studios.includes(nm)) continue;
+    meta+=r.meta_spend||0; google+=r.google_spend||0;
+    dailyCovered.add(r.studio_code+'|'+r.date.slice(0,7));
+  }
+  for(const r of (OS_SPEND_RAW.monthly||[])){
+    const d=new Date(r.month+'T00:00:00Z').getTime();
+    if(d<fT||d>tT) continue;
+    if(dailyCovered.has(r.studio_code+'|'+r.month.slice(0,7))) continue;
+    const nm=META_CODE_TO_STUDIO[r.studio_code]||r.studio_code;
+    if(bySt&&!studios.includes(nm)) continue;
+    meta+=r.meta_spend||0; google+=r.google_spend||0;
+  }
+  return {meta:Math.round(meta*100)/100, google:Math.round(google*100)/100};
+}
+
+function setOsGran(g){ osGran=g; ['Daily','Weekly','Monthly'].forEach(x=>document.getElementById('osGran'+x).classList.toggle('active', x.toLowerCase()===g)); applyOsFilters(); }
+function setOsCprGran(g){ osCprGran=g; ['Daily','Weekly','Monthly'].forEach(x=>document.getElementById('osCprGran'+x).classList.toggle('active', x.toLowerCase()===g)); buildOsCPR(); }
+
+function setOsCprCostBtn(cost, active){
+  OS_CPR_COSTS_ACTIVE[cost]=active;
+  const btn=document.getElementById('osCprCost_'+cost); if(!btn) return;
+  btn.classList.toggle('on', active);
+  const c=OS_COST_COLORS[cost];
+  if(active){ btn.style.background=c; btn.style.borderColor=c; btn.style.color='#fff'; }
+  else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
+}
+function toggleOsCprCost(btn){
+  setOsCprCostBtn(btn.dataset.cost, !OS_CPR_COSTS_ACTIVE[btn.dataset.cost]);
+  clearActivePreset('presetRowOs');
+  buildOsCPR();
+  osCheckCPRWarning();
+}
+function markActivePreset(rowId, kind){ document.querySelectorAll('#'+rowId+' .preset-btn').forEach(b=>b.classList.toggle('active', b.dataset.preset===kind)); }
+function clearActivePreset(rowId){ document.querySelectorAll('#'+rowId+' .preset-btn').forEach(b=>b.classList.remove('active')); }
+
+function osSourcePreset(kind){
+  let keep;
+  if(kind==='meta') keep=['Meta Ads'];
+  else if(kind==='google') keep=['Google Ads'];
+  else if(kind==='paid') keep=['Meta Ads','Google Ads'];
+  else keep=(OS_RAW.sources||[]).filter(s=>!DEFAULT_EXCL_SOURCES.includes(s));
+  buildSourceSelect('sourceMenuOS','sourceLabelOS', OS_RAW.sources, (OS_RAW.sources||[]).filter(s=>!keep.includes(s)));
+  const costs = kind==='meta'  ? {google:false,meta:true,leadteam:false,external_agency:false}
+              : kind==='google'? {google:true,meta:false,leadteam:false,external_agency:false}
+              : kind==='paid'  ? {google:true,meta:true,leadteam:false,external_agency:false}
+              :                  {google:true,meta:true,leadteam:true,external_agency:true};
+  Object.keys(OS_CPR_COSTS_ACTIVE).forEach(k=>setOsCprCostBtn(k, costs[k]));
+  markActivePreset('presetRowOs', kind);
+  applyOsFilters();
+  osCheckCPRWarning();
+}
+
+async function osStudioPreset(){
+  const fromStr=document.getElementById('osFFrom').value, toStr=document.getElementById('osFTo').value;
+  if(!fromStr||!toStr||!OS_CORP_SPEND) return;
+  const months=monthKeysInRange(fromStr, toStr);
+  const spendByCode={};
+  (OS_CORP_SPEND.monthly||[]).forEach(r=>{
+    if(!months.has(r.month)) return;
+    spendByCode[r.studio_code]=(spendByCode[r.studio_code]||0)+(r.spend||0);
+  });
+  const keep=(OS_RAW.studios||[]).filter(s=>{
+    if(OS_EXTERNAL_AGENCY_STUDIOS.includes(s)) return false;
+    const code=STUDIOS_NAME_TO_CODE[s];
+    return code && (spendByCode[code]||0) > 0;
+  });
+  buildMultiSelect('studioMenuOS','studioLabelOS', OS_RAW.studios, (OS_RAW.studios||[]).filter(s=>!keep.includes(s)));
+  applyOsFilters();
+}
+
+function toggleOsTrendDs(btn, i){
+  if(!osTrendChart) return;
+  const ds=osTrendChart.data.datasets[i]; ds.hidden=!ds.hidden;
+  btn.classList.toggle('on');
+  const cols=['#00A3E0','#00FFC2','#DDFF00'];
+  if(btn.classList.contains('on')){ btn.style.background=cols[i]; btn.style.borderColor=cols[i]; btn.style.color='#000'; btn.querySelector('.dot').style.background='#000'; }
+  else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
+  osTrendChart.update();
+}
+function toggleOsCprDs(btn, i){
+  if(!osCprChart) return;
+  const ds=osCprChart.data.datasets[i]; ds.hidden=!ds.hidden; OS_CPR_DS_HIDDEN[i]=ds.hidden;
+  btn.classList.toggle('on');
+  const cols=['#00A3E0','#00FFC2','#DDFF00'];
+  if(btn.classList.contains('on')){ btn.style.background=cols[i]; btn.style.borderColor=cols[i]; btn.style.color='#000'; }
+  else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
+  osCprChart.update();
+}
+
+function osCheckCPRWarning(){
+  const warn=document.getElementById('osCprWarning'); if(!warn) return;
+  const paidOnly=(OS_CPR_COSTS_ACTIVE.google||OS_CPR_COSTS_ACTIVE.meta)&&!OS_CPR_COSTS_ACTIVE.leadteam;
+  const allCosts=OS_CPR_COSTS_ACTIVE.google&&OS_CPR_COSTS_ACTIVE.meta&&OS_CPR_COSTS_ACTIVE.leadteam&&OS_CPR_COSTS_ACTIVE.external_agency;
+  const selSources=getSelected('sourceMenuOS')||[];
+  const paidSources=['Meta Ads','Google Ads'];
+  const mktgSources=['Website (unattributed)','Business Mode / App','Public API','Meta Ads','Google Ads','SWEAT440 App','MindBody App','Social Media Organic','Local Listings','Word of Mouth','Print Ads / Signs','N/A','Other'];
+  const nonPaidSelected=selSources.some(s=>!paidSources.includes(s));
+  const allMktgSelected=mktgSources.every(s=>selSources.includes(s));
+  let msgs=[];
+  if(paidOnly&&nonPaidSelected) msgs.push('⚠️ You are only seeing Ad spend (Google/Meta), but your lead sources include non-ad channels. This will understate your cost per result. Please verify your Source filter.');
+  if(allCosts&&selSources.length>0&&!allMktgSelected) msgs.push('⚠️ You are including all cost sources but some marketing lead sources are deselected. Your cost per result may be overstated. Please verify your Source filter.');
+  if(msgs.length){ warn.innerHTML=msgs.join('<br><br>'); warn.style.display='block'; } else warn.style.display='none';
+}
+
+function applyOsFilters(){
+  if(!OS_RAW) return;
+  const studios=getSelected('studioMenuOS');
+  const sources=getSelected('sourceMenuOS');
+  const fromStr=document.getElementById('osFFrom').value, toStr=document.getElementById('osFTo').value;
+  if(!fromStr||!toStr) return;
+  const from=new Date(fromStr+'T00:00:00Z'), to=new Date(toStr+'T23:59:59Z');
+  _partialPeriod.pp=false; _partialPeriod.py=false; // rolling-window scorecard: always show plain deltas
+  const {ppFrom,ppTo,pyFrom,pyTo}=computeWindows(from,to);
+  function filterAll(f,t){ return { daily: filterRows(OS_RAW.daily_detail||[], f, t, studios, sources), monthly: filterRows(OS_RAW.monthly_detail||[], f, t, studios, sources), get all(){ return [...this.daily,...this.monthly]; } }; }
+  const curr=filterAll(from,to), pp=filterAll(ppFrom,ppTo), py=filterAll(pyFrom,pyTo);
+  window._osCurr=curr; window._osFrom=from; window._osTo=to; window._osStudios=studios;
+
+  buildOsFunnel(sumRows(curr.all), sumRows(pp.all), sumRows(py.all));
+  buildOsTrend(curr, from, to);
+  buildOsCPR();
+}
+
+function buildOsFunnel(curr, prev, pyear){
+  const stages=[
+    {label:'Leads (New Accounts Created)', curr:curr.leads, prev:prev.leads, py:pyear.leads, color:'#00A3E0'},
+    {label:'First Timers (First Studio Visits)', curr:curr.ft, prev:prev.ft, py:pyear.ft, color:'#00FFC2'},
+    {label:'New Members (First Memberships Activated)', curr:curr.mem, prev:prev.mem, py:pyear.mem, color:'#DDFF00'},
+  ];
+  const max=Math.max(...stages.map(s=>s.curr),1);
+  document.getElementById('osFunnelBars').innerHTML=stages.map(s=>{
+    const w=Math.max(2,(s.curr/max)*100);
+    const dpp=calcDelta(s.curr,s.prev), dpy=calcDelta(s.curr,s.py);
+    const ppHTML=dpp!==null?`<span class="delta ${dpp>=0?'pos':'neg'}">${dpp>=0?'▲':'▼'} ${Math.abs(dpp).toFixed(1)}% prev period</span>`:'<span class="delta neu">— prev period</span>';
+    const pyHTML=dpy!==null?`<span class="delta ${dpy>=0?'pos':'neg'}">${dpy>=0?'▲':'▼'} ${Math.abs(dpy).toFixed(1)}% prev year</span>`:'<span class="delta neu">— prev year</span>';
+    return `<div><div class="funnel-stage-label">${s.label}</div><div class="funnel-row"><div class="funnel-bar-track"><div class="funnel-bar-fill" style="width:${w}%;background:${s.color}"></div></div><div class="funnel-num">${s.curr.toLocaleString()}</div><div class="funnel-deltas">${ppHTML}${pyHTML}</div></div></div>`;
+  }).join('');
+
+  const convEl=document.getElementById('osConvKpis');
+  const ftRate=v=>v.leads?v.ft/v.leads*100:null, memRate=v=>v.ft?v.mem/v.ft*100:null, lmRate=v=>v.leads?v.mem/v.leads*100:null;
+  const cC=ftRate(curr), pC=ftRate(prev), yC=ftRate(pyear);
+  const cM=memRate(curr), pM=memRate(prev), yM=memRate(pyear);
+  const cL=lmRate(curr), pL=lmRate(prev), yL=lmRate(pyear);
+  const fPct=v=>Number(v).toFixed(1)+'%';
+  convEl.innerHTML =
+    kpiCard('Lead → First Timer', cC==null?0:cC, pC, yC, fPct) +
+    kpiCard('First Timer → Member', cM==null?0:cM, pM, yM, fPct) +
+    kpiCard('Lead → Member', cL==null?0:cL, pL, yL, fPct);
+}
+
+function buildOsTrend(curr, from, to){
+  const buckets=buildBuckets(osGran, from, to);
+  const series=aggregateRowsIntoBuckets(buckets, curr.all, ['signups','first_visits','first_activations']);
+  const labels=series.map(m=>m.label);
+  const leadsD=series.map(m=>m.signups||0), ftD=series.map(m=>m.first_visits||0), memD=series.map(m=>m.first_activations||0);
+  if(osTrendChart){
+    const hidden=osTrendChart.data.datasets.map(ds=>ds.hidden);
+    osTrendChart.data.labels=labels;
+    osTrendChart.data.datasets[0].data=leadsD; osTrendChart.data.datasets[1].data=ftD; osTrendChart.data.datasets[2].data=memD;
+    osTrendChart.data.datasets.forEach((ds,i)=>ds.hidden=hidden[i]);
+    osTrendChart.update(); return;
+  }
+  const isMobile=window.innerWidth<=768;
+  osTrendChart=new Chart(document.getElementById('osTrendChart'),{ type:'line', data:{ labels, datasets:[
+    {label:'Leads', data:leadsD, borderColor:'#00A3E0', borderWidth:2.5, pointRadius:3, pointHoverRadius:6, tension:.4, fill:false},
+    {label:'First Timers', data:ftD, borderColor:'#00FFC2', borderWidth:2.5, pointRadius:3, pointHoverRadius:6, tension:.4, fill:false},
+    {label:'New Members', data:memD, borderColor:'#DDFF00', borderWidth:2.5, pointRadius:3, pointHoverRadius:6, tension:.4, fill:false},
+  ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false}},
+    scales:{ x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',autoSkip:true,maxTicksLimit:isMobile?5:12,maxRotation:0}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'}} } } });
+}
+
+function buildOsCPR(){
+  const el=document.getElementById('osCprKpis'); if(!el) return;
+  const from=window._osFrom, to=window._osTo, curr=window._osCurr, selStudios=window._osStudios||[];
+  if(!from||!to||!curr) return;
+  const allStudios=selStudios.length>0?selStudios:(OS_RAW?OS_RAW.studios:[]);
+
+  function leadteamForRange(f,t){ return osComputeLeadteamSpend(f,t,allStudios); }
+  function externalAgencyForRange(f,t){ return osComputeExternalAgencySpend(f,t,allStudios); }
+  function sumGoogleSpend(f,t){ return osSpendFor(f,t,selStudios.length>0?selStudios:null).google; }
+  function sumMetaSpend(f,t){ return osSpendFor(f,t,selStudios.length>0?selStudios:null).meta; }
+
+  const {ppFrom,ppTo,pyFrom,pyTo}=computeWindows(from,to);
+  const ltCurr=leadteamForRange(from,to), ltPp=leadteamForRange(ppFrom,ppTo), ltPy=leadteamForRange(pyFrom,pyTo);
+  const extCurr=externalAgencyForRange(from,to), extPp=externalAgencyForRange(ppFrom,ppTo), extPy=externalAgencyForRange(pyFrom,pyTo);
+  function spendTotals(f,t,lt,ext){
+    const g=OS_CPR_COSTS_ACTIVE.google?sumGoogleSpend(f,t):0, m=OS_CPR_COSTS_ACTIVE.meta?sumMetaSpend(f,t):0;
+    const l=OS_CPR_COSTS_ACTIVE.leadteam?lt:0, e=OS_CPR_COSTS_ACTIVE.external_agency?ext:0;
+    return {google:g, meta:m, leadteam:l, external_agency:e, total:g+m+l+e};
+  }
+  const spCurr=spendTotals(from,to,ltCurr,extCurr);
+  const ppRows=filterRows(OS_RAW.daily_detail||[],ppFrom,ppTo,selStudios.length?selStudios:null,getSelected('sourceMenuOS')).concat(filterRows(OS_RAW.monthly_detail||[],ppFrom,ppTo,selStudios.length?selStudios:null,getSelected('sourceMenuOS')));
+  const pyRows=filterRows(OS_RAW.daily_detail||[],pyFrom,pyTo,selStudios.length?selStudios:null,getSelected('sourceMenuOS')).concat(filterRows(OS_RAW.monthly_detail||[],pyFrom,pyTo,selStudios.length?selStudios:null,getSelected('sourceMenuOS')));
+  const pp=sumRows(ppRows), py=sumRows(pyRows);
+  const spPp=spendTotals(ppFrom,ppTo,ltPp,extPp), spPy=spendTotals(pyFrom,pyTo,ltPy,extPy);
+  const currSum=sumRows(curr.all);
+
+  const f$=v=>'$'+Math.round(v).toLocaleString('en-US');
+  const f$2=v=>'$'+Number(v).toFixed(2);
+  const cpl_curr=currSum.leads>0?spCurr.total/currSum.leads:0, cpl_pp=pp.leads>0?spPp.total/pp.leads:null, cpl_py=py.leads>0?spPy.total/py.leads:null;
+  const cpft_curr=currSum.ft>0?spCurr.total/currSum.ft:0, cpft_pp=pp.ft>0?spPp.total/pp.ft:null, cpft_py=py.ft>0?spPy.total/py.ft:null;
+  const cpa_curr=currSum.mem>0?spCurr.total/currSum.mem:0, cpa_pp=pp.mem>0?spPp.total/pp.mem:null, cpa_py=py.mem>0?spPy.total/py.mem:null;
+
+  el.innerHTML =
+    cprKpiCard('Blended CPL', cpl_curr, cpl_pp, cpl_py, f$2) +
+    cprKpiCard('Blended CPFT', cpft_curr, cpft_pp, cpft_py, f$2) +
+    cprKpiCard('Blended CPA', cpa_curr, cpa_pp, cpa_py, f$2);
+
+  const bdEl=document.getElementById('osCprSpendBreakdown');
+  if(bdEl){
+    const parts=[];
+    const bLabels={google:'Google Ads', meta:'Meta Ads', leadteam:'Leadteam Fee', external_agency:'External Agency'};
+    let first=true;
+    ['google','meta','leadteam','external_agency'].forEach(k=>{
+      if(!OS_CPR_COSTS_ACTIVE[k]) return;
+      const v=spCurr[k], vPp=spPp[k], vPy=spPy[k];
+      if(!first) parts.push('<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">+</span>');
+      const dpp=vPp>0?((v-vPp)/vPp*100).toFixed(1):null, dpy=vPy>0?((v-vPy)/vPy*100).toFixed(1):null;
+      const ppH=dpp!==null?`<div class="kpi-card-delta ${dpp>=0?'neg':'pos'}">${dpp>=0?'▲':'▼'} ${Math.abs(dpp)}% prev period</div>`:'';
+      const pyH=dpy!==null?`<div class="kpi-card-delta ${dpy>=0?'neg':'pos'}">${dpy>=0?'▲':'▼'} ${Math.abs(dpy)}% prev year</div>`:'';
+      parts.push(`<div class="kpi-card" style="flex:1;min-width:140px;border-top:3px solid ${OS_COST_COLORS[k]}"><div class="kpi-card-label">${bLabels[k]}</div><div class="kpi-card-val">${f$(v)}</div>${ppH}${pyH}</div>`);
+      first=false;
+    });
+    if(parts.length>0){
+      const totV=spCurr.total, totPp=spPp.total, totPy=spPy.total;
+      const dppT=totPp>0?((totV-totPp)/totPp*100).toFixed(1):null, dpyT=totPy>0?((totV-totPy)/totPy*100).toFixed(1):null;
+      const ppTH=dppT!==null?`<div class="kpi-card-delta ${dppT>=0?'neg':'pos'}">${dppT>=0?'▲':'▼'} ${Math.abs(dppT)}% prev period</div>`:'';
+      const pyTH=dpyT!==null?`<div class="kpi-card-delta ${dpyT>=0?'neg':'pos'}">${dpyT>=0?'▲':'▼'} ${Math.abs(dpyT)}% prev year</div>`:'';
+      parts.push('<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">=</span>');
+      parts.push(`<div class="kpi-card" style="flex:1;min-width:140px;border-top:3px solid #1a1a2e"><div class="kpi-card-label">Total Spend</div><div class="kpi-card-val">${f$(totV)}</div>${ppTH}${pyTH}</div>`);
+    }
+    bdEl.innerHTML=parts.join('');
+  }
+
+  if(osCprChart){ osCprChart.destroy(); osCprChart=null; }
+  const ctx=document.getElementById('osCprChart'); if(!ctx) return;
+  const cprBuckets=buildBuckets(osCprGran, from, to);
+  const funnelSeries=aggregateRowsIntoBuckets(cprBuckets, curr.all, ['signups','first_visits','first_activations']);
+  const cplData=cprBuckets.map((b,i)=>{
+    let s=0;
+    if(OS_CPR_COSTS_ACTIVE.google) s+=sumGoogleSpend(b.start,b.end);
+    if(OS_CPR_COSTS_ACTIVE.meta) s+=sumMetaSpend(b.start,b.end);
+    if(OS_CPR_COSTS_ACTIVE.leadteam) s+=leadteamForRange(b.start,b.end);
+    if(OS_CPR_COSTS_ACTIVE.external_agency) s+=externalAgencyForRange(b.start,b.end);
+    return {s, leads:funnelSeries[i].signups, ft:funnelSeries[i].first_visits, mem:funnelSeries[i].first_activations};
+  });
+  const labels=cprBuckets.map(b=>b.label);
+  const cpl=cplData.map(d=>d.leads>0?Math.round(d.s/d.leads*100)/100:null);
+  const cpft=cplData.map(d=>d.ft>0?Math.round(d.s/d.ft*100)/100:null);
+  const cpa=cplData.map(d=>d.mem>0?Math.round(d.s/d.mem*100)/100:null);
+  osCprChart=new Chart(ctx,{ type:'line', data:{ labels, datasets:[
+    {label:'Blended CPL', data:cpl, borderColor:'#00A3E0', borderWidth:2.5, pointRadius:4, tension:.4, fill:false, spanGaps:true, hidden:OS_CPR_DS_HIDDEN[0]},
+    {label:'Blended CPFT', data:cpft, borderColor:'#00FFC2', borderWidth:2.5, pointRadius:4, tension:.4, fill:false, spanGaps:true, hidden:OS_CPR_DS_HIDDEN[1]},
+    {label:'Blended CPA', data:cpa, borderColor:'#DDFF00', borderWidth:2.5, pointRadius:4, tension:.4, fill:false, spanGaps:true, hidden:OS_CPR_DS_HIDDEN[2]},
+  ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false,callbacks:{label:c=>c.dataset.label+': $'+(c.parsed.y!=null?c.parsed.y.toLocaleString():'-')}}},
+    scales:{ x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',maxRotation:0}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',callback:v=>'$'+v} } } } });
+
+  buildOsCprStudioTable(from,to,selStudios);
+}
+
+function buildOsCprStudioTable(from,to,selStudios){
+  const table=document.getElementById('osCprStudioTable'); if(!table||!OS_RAW) return;
+  const selSources=getSelected('sourceMenuOS')||[];
+  const studios=(selStudios&&selStudios.length?selStudios:OS_RAW.studios).slice();
+  const f$=v=>'$'+Math.round(v).toLocaleString('en-US');
+  const f$2=v=>'$'+Number(v).toFixed(2);
+  const dash='<span style="color:#8aabbf">—</span>';
+  const rows=studios.map(studio=>{
+    const daily=filterRows(OS_RAW.daily_detail||[],from,to,[studio],selSources);
+    const monthly=filterRows(OS_RAW.monthly_detail||[],from,to,[studio],selSources);
+    const {leads,ft,mem}=sumRows([...daily,...monthly]);
+    const {meta,google}=osSpendFor(from,to,[studio]);
+    const leadteam=osLeadteamNetForStudio(studio,from,to);
+    const external_agency=osExternalAgencyForStudio(studio,from,to);
+    const spend=google+meta+leadteam+external_agency;
+    return { studio, leads, ft, mem, spend, google, meta, leadteam, external_agency,
+      cpl: leads>0?spend/leads:null, cpft: ft>0?spend/ft:null, cpa: mem>0?spend/mem:null };
+  });
+  sortableTable('osCprStudioTable', rows, (r,i)=>`<tr>
+    <td class="row-num">${i}</td><td>${r.studio}</td>
+    <td class="num">${r.leads.toLocaleString()}</td><td class="num">${r.ft.toLocaleString()}</td><td class="num">${r.mem.toLocaleString()}</td>
+    <td class="num">${f$(r.spend)}</td><td class="num">${f$(r.google)}</td><td class="num">${f$(r.meta)}</td>
+    <td class="num">${f$(r.leadteam)}</td><td class="num">${f$(r.external_agency)}</td>
+    <td class="num">${r.cpl!=null?f$2(r.cpl):dash}</td><td class="num">${r.cpft!=null?f$2(r.cpft):dash}</td><td class="num">${r.cpa!=null?f$2(r.cpa):dash}</td>
+  </tr>`, (sorted)=>{
+    const t=k=>sorted.reduce((s,r)=>s+r[k],0);
+    const tLeads=t('leads'), tFt=t('ft'), tMem=t('mem'), tSpend=t('spend');
+    return `<tr><td class="row-num"></td><td style="font-weight:700">Total (${sorted.length} studios)</td>
+      <td class="num">${tLeads.toLocaleString()}</td><td class="num">${tFt.toLocaleString()}</td><td class="num">${tMem.toLocaleString()}</td>
+      <td class="num">${f$(tSpend)}</td><td class="num">${f$(t('google'))}</td><td class="num">${f$(t('meta'))}</td>
+      <td class="num">${f$(t('leadteam'))}</td><td class="num">${f$(t('external_agency'))}</td>
+      <td class="num">${tLeads>0?f$2(tSpend/tLeads):dash}</td><td class="num">${tFt>0?f$2(tSpend/tFt):dash}</td><td class="num">${tMem>0?f$2(tSpend/tMem):dash}</td>
+    </tr>`;
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NSO TAB
+   ══════════════════════════════════════════════════════════════════════════ */
+const NSO_TAB_STUDIOS=['SWEAT440 Aventura','SWEAT440 Burlington','SWEAT440 Charlotte - South End','SWEAT440 Dallas - Uptown','SWEAT440 Dunwoody','SWEAT440 Fort Myers','SWEAT440 Herriman','SWEAT440 Long Beach','SWEAT440 Middletown','SWEAT440 Naples - Mercato','SWEAT440 North Miami','SWEAT440 OKC - Rose Creek','SWEAT440 Old Bridge','SWEAT440 Orlando - Dr Phillips','SWEAT440 Reston'];
+const NSO_NORM_SHORT=['Aventura','Burlington','Charlotte - South End','Dallas - Uptown','Dunwoody','Fort Myers','Herriman','Long Beach','Middletown','Naples - Mercato','North Miami','OKC - Rose Creek','Old Bridge','Orlando - Dr Phillips','Reston'];
+const NSO_ALL_SOURCES=['Meta Ads','Google Ads','Local Listings','Social Media Organic','Website (unattributed)','Word of Mouth','SWEAT440 App','MindBody App','ClassPass / Platforms','Grassroots','Business Mode / App','Public API','Print Ads / Signs','Internet / AI Search','Other','N/A'];
+const NSO_EXCL_SRC=['ClassPass / Platforms'];
+const NSO_META_CODES={
+  'SWEAT440 Herriman':'UT-001','SWEAT440 Dallas - Prestonwood':'TX-003','SWEAT440 Naples - Mercato':'FL-019',
+  'SWEAT440 Pinecrest - Palmetto Bay':'FL-017','SWEAT440 Reston':'VA-001','SWEAT440 Orlando - Dr Phillips':'FL-020',
+  'SWEAT440 Aventura':'FL-018','SWEAT440 North Miami':'FL-021','SWEAT440 Dallas - Uptown':'TX-004',
+  'SWEAT440 Old Bridge':'NJ-004','SWEAT440 Dunwoody':'GA-001','SWEAT440 Middletown':'NJ-005',
+  'SWEAT440 Fort Myers':'FL-022','SWEAT440 Long Beach':'NY-005','SWEAT440 OKC - Rose Creek':'OK-001',
+  'SWEAT440 Charlotte - South End':'NC-002',
+};
+const NSO_GOOGLE_ACCOUNTS={
+  'SWEAT440 Herriman':'SWEAT440 - Herriman','SWEAT440 Naples - Mercato':'SWEAT440 - Naples','SWEAT440 Reston':'SWEAT440 - Reston',
+  'SWEAT440 Dallas - Uptown':'SWEAT440 - Dallas Uptown','SWEAT440 Aventura':'SWEAT440 - Aventura','SWEAT440 North Miami':'SWEAT440 - North Miami',
+  'SWEAT440 Orlando - Dr Phillips':'SWEAT440 - Dr Phillips','SWEAT440 Dallas - Prestonwood':'SWEAT440 - Prestonwood',
+  'SWEAT440 Pinecrest - Palmetto Bay':'SWEAT440 - Pinecrest','SWEAT440 Fort Myers':'SWEAT440 - Fort Myers','SWEAT440 Dunwoody':'SWEAT440 - Dunwoody',
+  'SWEAT440 Old Bridge':'SWEAT440 - Old Bridge','SWEAT440 Middletown':'SWEAT440 - Middletown','SWEAT440 Long Beach':'SWEAT440 - Long Beach',
+};
+
+let NSO_DAILY=[], NSO_MONTHLY=[], NSO_SALES_ROWS=[], NSO_META_RAW=[], NSO_GOOGLE_RAW=[], NSO_OTHER_COSTS=null, NSO_PRE_WEEKS=null;
+let nsoGran='weekly', nsoCprGran='weekly';
+let nsoTrendChart=null, nsoCvrChart=null, nsoCprChart=null;
+const NSO_COST_COLORS={google:'#34A853',meta:'#1877F2',lt:'#FF6B35',ext:'#00897B'};
+const NSO_CPR_COSTS_ACTIVE={google:true,meta:true,lt:true,ext:true};
+
+function _nsoNormalize(rows){
+  return rows.map(r=>NSO_NORM_SHORT.includes(r.studio)?{...r,studio:'SWEAT440 '+r.studio}:r);
+}
+function nsoMetaFilter(studio,fromStr,toStr){
+  const code=NSO_META_CODES[studio]; if(!code) return [];
+  return NSO_META_RAW.filter(r=>{
+    if(r.studio_code?r.studio_code!==code:!(r.campaign_name||'').includes(code)) return false;
+    if(fromStr&&r.date<fromStr) return false;
+    if(toStr&&r.date>toStr) return false;
+    return true;
+  });
+}
+function nsoGoogleFilter(studio,fromStr,toStr){
+  const acct=NSO_GOOGLE_ACCOUNTS[studio]; if(!acct) return [];
+  return NSO_GOOGLE_RAW.filter(r=>{
+    if(r.account_name!==acct) return false;
+    if(fromStr&&r.date<fromStr) return false;
+    if(toStr&&r.date>toStr) return false;
+    return true;
+  });
+}
+function nsoMetaSpend(studios,fromStr,toStr){ return studios.reduce((s,st)=>s+nsoMetaFilter(st,fromStr,toStr).reduce((a,r)=>a+(r.spend||0),0),0); }
+function nsoGoogleSpend(studios,fromStr,toStr){ return studios.reduce((s,st)=>s+nsoGoogleFilter(st,fromStr,toStr).reduce((a,r)=>a+(r.spend||0),0),0); }
+function nsoAdhoc(category,studios,fromStr,toStr){
+  if(!NSO_OTHER_COSTS||!fromStr||!toStr) return 0;
+  const f=new Date(fromStr+'T00:00:00Z'), t=new Date(toStr+'T00:00:00Z');
+  let total=0;
+  for(const e of NSO_OTHER_COSTS.adhoc||[]){
+    if(e.category!==category||!studios.includes(e.studio_key)) continue;
+    const es=new Date(e.start+'T00:00:00Z'), ee=new Date(e.end+'T00:00:00Z');
+    const olS=new Date(Math.max(f,es)), olE=new Date(Math.min(t,ee));
+    if(olS>olE) continue;
+    total+=e.daily_rate*(Math.round((olE-olS)/86400000)+1);
+  }
+  return total;
+}
+function nsoMonthlyFee(category,studios,fromStr,toStr){
+  if(!NSO_OTHER_COSTS||!fromStr||!toStr) return 0;
+  const f=new Date(fromStr+'T00:00:00Z'), t=new Date(toStr+'T00:00:00Z');
+  let total=0;
+  for(const e of NSO_OTHER_COSTS.monthly||[]){
+    if(e.category!==category||!studios.includes(e.studio_key)) continue;
+    const es=new Date(e.start+'T00:00:00Z'), ee=new Date(e.end+'T00:00:00Z');
+    const olS=new Date(Math.max(f,es)), olE=new Date(Math.min(t,ee));
+    if(olS>olE) continue;
+    let cur=new Date(Date.UTC(olS.getUTCFullYear(),olS.getUTCMonth(),1));
+    while(cur<=olE){
+      const mEnd=new Date(Date.UTC(cur.getUTCFullYear(),cur.getUTCMonth()+1,0));
+      const daysInMonth=mEnd.getUTCDate();
+      const segS=new Date(Math.max(olS,cur)), segE=new Date(Math.min(olE,mEnd));
+      if(segS<=segE) total+=e.monthly*(Math.round((segE-segS)/86400000)+1)/daysInMonth;
+      cur=new Date(Date.UTC(cur.getUTCFullYear(),cur.getUTCMonth()+1,1));
+    }
+  }
+  return total;
+}
+function nsoExtAgency(studios,fromStr,toStr){ return nsoAdhoc('External agency',studios,fromStr,toStr)+nsoMonthlyFee('External agency',studios,fromStr,toStr); }
+function nsoLtFee(studios,fromStr,toStr){
+  if(!fromStr||!toStr||!studios.length) return 0;
+  let total=0;
+  for(const st of studios){
+    const code=NSO_META_CODES[st] || Object.keys(NSO_PRE_WEEKS&&NSO_PRE_WEEKS.studios||{}).find(c=>{
+      const s=NSO_PRE_WEEKS.studios[c]; return s.full_name===st || 'SWEAT440 '+s.name===st;
+    });
+    const pwData=code&&NSO_PRE_WEEKS&&NSO_PRE_WEEKS.studios&&NSO_PRE_WEEKS.studios[code];
+    const ltStart=pwData&&pwData.lt_fee_start;
+    const effFrom=ltStart&&ltStart>fromStr?ltStart:fromStr;
+    if(effFrom>toStr) continue;
+    const days=Math.round((new Date(toStr+'T00:00:00Z')-new Date(effFrom+'T00:00:00Z'))/86400000)+1;
+    const base=1200*(days/30.4375);
+    const discount=nsoMonthlyFee('Leadteam Discount',[st],effFrom,toStr);
+    total+=Math.max(0,base-discount);
+  }
+  return total;
+}
+function nsoTotalSpend(studios,fromStr,toStr){
+  return (NSO_CPR_COSTS_ACTIVE.google?nsoGoogleSpend(studios,fromStr,toStr):0)
+       + (NSO_CPR_COSTS_ACTIVE.meta?nsoMetaSpend(studios,fromStr,toStr):0)
+       + (NSO_CPR_COSTS_ACTIVE.lt?nsoLtFee(studios,fromStr,toStr):0)
+       + (NSO_CPR_COSTS_ACTIVE.ext?nsoExtAgency(studios,fromStr,toStr):0);
+}
+function nsoLeadsCount(fromStr,toStr,studios,sources){
+  const f=fromStr?new Date(fromStr+'T00:00:00Z'):null, t=toStr?new Date(toStr+'T23:59:59Z'):new Date();
+  return filterRows(NSO_DAILY,f,t,studios,sources).reduce((a,r)=>a+(r.signups||0),0);
+}
+function nsoNetSalesCount(fromStr,toStr,studios,sources){
+  const f=fromStr?new Date(fromStr+'T00:00:00Z'):null, t=toStr?new Date(toStr+'T23:59:59Z'):new Date();
+  return filterRows(NSO_SALES_ROWS,f,t,studios,sources).reduce((a,r)=>a+(r.first_sales||0)-(r.cancellations||0),0);
+}
+
+function setNsoGran(g){ nsoGran=g; ['Daily','Weekly','Monthly'].forEach(x=>document.getElementById('nsoGran'+x).classList.toggle('active', x.toLowerCase()===g)); applyNsoFilters(); }
+function setNsoCprGran(g){ nsoCprGran=g; ['Daily','Weekly','Monthly'].forEach(x=>document.getElementById('nsoCprGran'+x).classList.toggle('active', x.toLowerCase()===g)); buildNsoCPR(); }
+
+function setNsoCprCostBtn(cost, active){
+  NSO_CPR_COSTS_ACTIVE[cost]=active;
+  const btn=document.getElementById('nsoCprCost_'+cost); if(!btn) return;
+  btn.classList.toggle('on', active);
+  const c=NSO_COST_COLORS[cost];
+  if(active){ btn.style.background=c; btn.style.borderColor=c; btn.style.color='#fff'; }
+  else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
+}
+function toggleNsoCprCost(btn){
+  setNsoCprCostBtn(btn.dataset.cost, !NSO_CPR_COSTS_ACTIVE[btn.dataset.cost]);
+  clearActivePreset('presetRowNso');
+  buildNsoCPR();
+}
+function nsoSourcePreset(kind){
+  let keep;
+  if(kind==='meta') keep=['Meta Ads'];
+  else if(kind==='google') keep=['Google Ads'];
+  else if(kind==='paid') keep=['Meta Ads','Google Ads'];
+  else keep=NSO_ALL_SOURCES.filter(s=>!NSO_EXCL_SRC.includes(s));
+  buildSourceSelect('sourceMenuNSO','sourceLabelNSO', NSO_ALL_SOURCES, NSO_ALL_SOURCES.filter(s=>!keep.includes(s)));
+  const costs = kind==='meta'  ? {google:false,meta:true,lt:false,ext:false}
+              : kind==='google'? {google:true,meta:false,lt:false,ext:false}
+              : kind==='paid'  ? {google:true,meta:true,lt:false,ext:false}
+              :                  {google:true,meta:true,lt:true,ext:true};
+  Object.keys(NSO_CPR_COSTS_ACTIVE).forEach(k=>setNsoCprCostBtn(k, costs[k]));
+  markActivePreset('presetRowNso', kind);
+  applyNsoFilters();
+}
+
+function toggleNsoTrendDs(btn, i){
+  if(!nsoTrendChart) return;
+  const ds=nsoTrendChart.data.datasets[i]; ds.hidden=!ds.hidden;
+  btn.classList.toggle('on');
+  const cols=['#00A3E0','#00FFC2','#ff6b6b'];
+  if(btn.classList.contains('on')){ btn.style.background=cols[i]; btn.style.borderColor=cols[i]; btn.style.color=i===2?'#fff':'#000'; }
+  else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
+  nsoTrendChart.update();
+}
+function toggleNsoCprDs(btn, i){
+  if(!nsoCprChart) return;
+  const ds=nsoCprChart.data.datasets[i]; ds.hidden=!ds.hidden;
+  btn.classList.toggle('on');
+  const cols=['#00A3E0','#00FFC2'];
+  if(btn.classList.contains('on')){ btn.style.background=cols[i]; btn.style.borderColor=cols[i]; btn.style.color='#000'; }
+  else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
+  nsoCprChart.update();
+}
+
+function applyNsoFilters(){
+  if(!NSO_DAILY.length && !NSO_MONTHLY.length) { /* still allow build with empty data */ }
+  const studios=getSelected('studioMenuNSO');
+  const sources=getSelected('sourceMenuNSO');
+  const fromStr=document.getElementById('nsoFFrom').value, toStr=document.getElementById('nsoFTo').value;
+  if(!fromStr||!toStr) return;
+  const from=new Date(fromStr+'T00:00:00Z'), to=new Date(toStr+'T23:59:59Z');
+  _partialPeriod.pp=false; _partialPeriod.py=false;
+  const {ppFrom,ppTo,pyFrom,pyTo}=computeWindows(from,to);
+
+  const currDaily=filterRows(NSO_DAILY,from,to,studios,sources), currMonthly=filterRows(NSO_MONTHLY,from,to,studios,sources);
+  const curr={daily:currDaily, monthly:currMonthly, all:[...currDaily,...currMonthly]};
+  const cS=sumRows(curr.all);
+  const ppS=sumRows([...filterRows(NSO_DAILY,ppFrom,ppTo,studios,sources),...filterRows(NSO_MONTHLY,ppFrom,ppTo,studios,sources)]);
+  const pyS=sumRows([...filterRows(NSO_DAILY,pyFrom,pyTo,studios,sources),...filterRows(NSO_MONTHLY,pyFrom,pyTo,studios,sources)]);
+
+  const sCurr=filterRows(NSO_SALES_ROWS,from,to,studios,sources);
+  const sPp=filterRows(NSO_SALES_ROWS,ppFrom,ppTo,studios,sources);
+  const sPy=filterRows(NSO_SALES_ROWS,pyFrom,pyTo,studios,sources);
+  const netSales=rows=>rows.reduce((a,r)=>a+(r.first_sales||0)-(r.cancellations||0),0);
+  const nsC=sCurr.reduce((a,r)=>a+(r.first_sales||0),0), nsPp=sPp.reduce((a,r)=>a+(r.first_sales||0),0), nsPy=sPy.reduce((a,r)=>a+(r.first_sales||0),0);
+  const cnC=sCurr.reduce((a,r)=>a+(r.cancellations||0),0), cnPp=sPp.reduce((a,r)=>a+(r.cancellations||0),0), cnPy=sPy.reduce((a,r)=>a+(r.cancellations||0),0);
+  const smC=netSales(sCurr), smPp=netSales(sPp), smPy=netSales(sPy);
+
+  document.getElementById('nsoFunnelKpis').innerHTML =
+    kpiCard('Total Leads', cS.leads, ppS.leads||null, pyS.leads||null) +
+    kpiCard('Total New Sales', nsC, nsPp||null, nsPy||null) +
+    kpiCard('Total Cancellations', cnC, cnPp||null, cnPy||null) +
+    kpiCard('Total Net Sales', smC, smPp||null, smPy||null);
+
+  const _cvr=(n,d)=>d>0?n/d*100:null;
+  const cvrC=_cvr(smC,cS.leads), cvrPp=_cvr(smPp,ppS.leads), cvrPy=_cvr(smPy,pyS.leads);
+  const fPct=v=>v!=null&&isFinite(v)?v.toFixed(1)+'%':'--';
+  document.getElementById('nsoCvrKpis').innerHTML = kpiCard('Lead → Net Sale Conversion Rate', cvrC==null?0:cvrC, cvrPp, cvrPy, fPct);
+
+  window._nsoFrom=from; window._nsoTo=to; window._nsoFromStr=fromStr; window._nsoToStr=toStr; window._nsoStudios=studios; window._nsoSources=sources;
+
+  buildNsoTrend(from,to,curr,sCurr);
+  buildNsoCPR();
+  _nsoBuilt=true;
+}
+
+function buildNsoTrend(from,to,curr,salesRows){
+  const buckets=buildBuckets(nsoGran, from, to);
+  const leadsSeries=aggregateRowsIntoBuckets(buckets, curr.all, ['signups']);
+  const salesSeries=aggregateRowsIntoBuckets(buckets, salesRows, ['first_sales','cancellations']);
+  const labels=buckets.map(b=>b.label);
+  const leadsD=leadsSeries.map(m=>m.signups||0);
+  const nsD=salesSeries.map(m=>m.first_sales||0);
+  const cnD=salesSeries.map(m=>m.cancellations||0);
+  if(nsoTrendChart){
+    const hidden=nsoTrendChart.data.datasets.map(ds=>ds.hidden);
+    nsoTrendChart.data.labels=labels;
+    nsoTrendChart.data.datasets[0].data=leadsD; nsoTrendChart.data.datasets[1].data=nsD; nsoTrendChart.data.datasets[2].data=cnD;
+    nsoTrendChart.data.datasets.forEach((ds,i)=>ds.hidden=hidden[i]);
+    nsoTrendChart.update();
+  } else {
+    const isMob=window.innerWidth<=768;
+    nsoTrendChart=new Chart(document.getElementById('nsoTrendChart'),{ type:'line', data:{ labels, datasets:[
+      {label:'Leads', data:leadsD, borderColor:'#00A3E0', borderWidth:2.5, pointRadius:3, pointHoverRadius:6, tension:.4, fill:false},
+      {label:'New Sales', data:nsD, borderColor:'#00FFC2', borderWidth:2.5, pointRadius:3, pointHoverRadius:6, tension:.4, fill:false, borderDash:[2,3]},
+      {label:'Cancellations', data:cnD, borderColor:'#ff6b6b', borderWidth:2, pointRadius:3, pointHoverRadius:6, tension:.4, fill:false, borderDash:[4,4]},
+    ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false}},
+      scales:{ x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',autoSkip:true,maxTicksLimit:isMob?5:12,maxRotation:0}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'}} } } });
+  }
+  const cvrPts=leadsSeries.map((m,i)=>{
+    const leads=m.signups||0;
+    const ns=Math.max(0,(salesSeries[i].first_sales||0)-(salesSeries[i].cancellations||0));
+    return leads>0? +(ns/leads*100).toFixed(2) : null;
+  });
+  const cvrData={ labels, datasets:[{label:'Lead → Net Sale', data:cvrPts, borderColor:'#00FFC2', borderWidth:2.5, pointRadius:3, pointHoverRadius:6, tension:.4, fill:false, spanGaps:false}] };
+  if(nsoCvrChart){ nsoCvrChart.data=cvrData; nsoCvrChart.update(); }
+  else {
+    const isMob=window.innerWidth<=768;
+    nsoCvrChart=new Chart(document.getElementById('nsoCvrChart'),{ type:'line', data:cvrData, options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false,callbacks:{label:c=>'Lead → Net Sale: '+(c.parsed.y!=null?c.parsed.y.toFixed(1)+'%':'—')}}},
+      scales:{ x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',autoSkip:true,maxTicksLimit:isMob?5:12,maxRotation:0}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',callback:v=>v+'%'},min:0} } } });
+  }
+}
+
+function buildNsoCPR(){
+  const el=document.getElementById('nsoCprKpis'); if(!el) return;
+  const fromStr=window._nsoFromStr, toStr=window._nsoToStr;
+  if(!fromStr||!toStr) return;
+  const selStudios=window._nsoStudios||[], selSrc=window._nsoSources||[];
+  const activeStudios=NSO_TAB_STUDIOS.filter(s=>selStudios.includes(s));
+  const spendBd=document.getElementById('nsoCprSpendBreakdown');
+  if(!activeStudios.length){
+    el.innerHTML=''; if(spendBd) spendBd.innerHTML='';
+    document.getElementById('nsoCprStudioTable').querySelector('tbody').innerHTML='';
+    return;
+  }
+
+  const totalMeta=nsoMetaSpend(activeStudios,fromStr,toStr), totalGoogle=nsoGoogleSpend(activeStudios,fromStr,toStr);
+  const totalLt=nsoLtFee(activeStudios,fromStr,toStr), totalExt=nsoExtAgency(activeStudios,fromStr,toStr);
+  const totalSpend=nsoTotalSpend(activeStudios,fromStr,toStr);
+  const totalLeads=nsoLeadsCount(fromStr,toStr,activeStudios,selSrc);
+  const totalSales=nsoNetSalesCount(fromStr,toStr,activeStudios,selSrc);
+  const cpl=totalLeads>0?totalSpend/totalLeads:0, cps=totalSales>0?totalSpend/totalSales:0;
+
+  const {ppFrom,ppTo,pyFrom,pyTo}=computeWindows(window._nsoFrom, window._nsoTo);
+  const ppFromS=isoUTC(ppFrom), ppToS=isoUTC(ppTo), pyFromS=isoUTC(pyFrom), pyToS=isoUTC(pyTo);
+  const ppMeta=nsoMetaSpend(activeStudios,ppFromS,ppToS), ppGoogle=nsoGoogleSpend(activeStudios,ppFromS,ppToS);
+  const ppLt=nsoLtFee(activeStudios,ppFromS,ppToS), ppExt=nsoExtAgency(activeStudios,ppFromS,ppToS);
+  const pyMeta=nsoMetaSpend(activeStudios,pyFromS,pyToS), pyGoogle=nsoGoogleSpend(activeStudios,pyFromS,pyToS);
+  const pyLt=nsoLtFee(activeStudios,pyFromS,pyToS), pyExt=nsoExtAgency(activeStudios,pyFromS,pyToS);
+  const ppSpend=nsoTotalSpend(activeStudios,ppFromS,ppToS), pySpend=nsoTotalSpend(activeStudios,pyFromS,pyToS);
+  const ppLeads=nsoLeadsCount(ppFromS,ppToS,activeStudios,selSrc), pyLeads=nsoLeadsCount(pyFromS,pyToS,activeStudios,selSrc);
+  const ppSales=nsoNetSalesCount(ppFromS,ppToS,activeStudios,selSrc), pySales=nsoNetSalesCount(pyFromS,pyToS,activeStudios,selSrc);
+  const ppCpl=ppLeads>0?ppSpend/ppLeads:null, pyCpl=pyLeads>0?pySpend/pyLeads:null;
+  const ppCps=ppSales>0?ppSpend/ppSales:null, pyCps=pySales>0?pySpend/pySales:null;
+
+  const f$=v=>'$'+Math.round(v).toLocaleString('en-US');
+  const f$2=v=>'$'+Number(v).toFixed(2);
+  const fN=v=>Number(v).toLocaleString();
+
+  if(spendBd){
+    const _deltaH=(v,ref)=>{ if(!(ref>0)) return ''; const d=((v-ref)/ref*100).toFixed(1); const cls=parseFloat(d)<=0?'pos':'neg'; return `<div class="kpi-card-delta ${cls}">${parseFloat(d)<=0?'▼':'▲'} ${Math.abs(d)}% prev period</div>`; };
+    const _deltaYH=(v,ref)=>{ if(!(ref>0)) return ''; const d=((v-ref)/ref*100).toFixed(1); const cls=parseFloat(d)<=0?'pos':'neg'; return `<div class="kpi-card-delta ${cls}">${parseFloat(d)<=0?'▼':'▲'} ${Math.abs(d)}% prev year</div>`; };
+    const items=[];
+    if(NSO_CPR_COSTS_ACTIVE.google) items.push({l:'Google Ads', v:totalGoogle, pp:ppGoogle, py:pyGoogle, c:NSO_COST_COLORS.google});
+    if(NSO_CPR_COSTS_ACTIVE.meta) items.push({l:'Meta Ads', v:totalMeta, pp:ppMeta, py:pyMeta, c:NSO_COST_COLORS.meta});
+    if(NSO_CPR_COSTS_ACTIVE.lt) items.push({l:'LeadTeam Fee', v:totalLt, pp:ppLt, py:pyLt, c:NSO_COST_COLORS.lt});
+    if(NSO_CPR_COSTS_ACTIVE.ext) items.push({l:'Ext. Agency', v:totalExt, pp:ppExt, py:pyExt, c:NSO_COST_COLORS.ext});
+    let h='';
+    items.forEach((c,i)=>{
+      if(i>0) h+='<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">+</span>';
+      h+=`<div class="kpi-card" style="flex:1;min-width:140px;border-top:3px solid ${c.c}"><div class="kpi-card-label">${c.l}</div><div class="kpi-card-val">${f$(c.v)}</div>${_deltaH(c.v,c.pp)}${_deltaYH(c.v,c.py)}</div>`;
+    });
+    if(items.length){
+      h+='<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">=</span>';
+      h+=`<div class="kpi-card" style="flex:1;min-width:140px;border-top:3px solid #1a1a2e"><div class="kpi-card-label">Total Spend</div><div class="kpi-card-val">${f$(totalSpend)}</div>${_deltaH(totalSpend,ppSpend)}${_deltaYH(totalSpend,pySpend)}</div>`;
+    }
+    spendBd.innerHTML=h;
+  }
+
+  el.innerHTML = cprKpiCard('Blended Cost per Lead', cpl, ppCpl, pyCpl, f$2) + cprKpiCard('Blended Cost per Net Sale', cps, ppCps, pyCps, f$2);
+
+  const buckets=buildBuckets(nsoCprGran, window._nsoFrom, window._nsoTo);
+  const cplData=buckets.map(b=>{ const bF=isoUTC(b.start), bT=isoUTC(b.end); const sp=nsoTotalSpend(activeStudios,bF,bT); const ld=nsoLeadsCount(bF,bT,activeStudios,selSrc); return ld>0? +(sp/ld).toFixed(2):null; });
+  const cpsData=buckets.map(b=>{ const bF=isoUTC(b.start), bT=isoUTC(b.end); const sp=nsoTotalSpend(activeStudios,bF,bT); const sl=nsoNetSalesCount(bF,bT,activeStudios,selSrc); return sl>0? +(sp/sl).toFixed(2):null; });
+  const chartLabels=buckets.map(b=>b.label);
+  if(nsoCprChart){ nsoCprChart.destroy(); nsoCprChart=null; }
+  const ctx=document.getElementById('nsoCprChart');
+  if(ctx){
+    nsoCprChart=new Chart(ctx,{ type:'line', data:{ labels:chartLabels, datasets:[
+      {label:'Cost per Lead', data:cplData, borderColor:'#00A3E0', fill:false, tension:.3, spanGaps:true, pointRadius:3, borderWidth:2},
+      {label:'Cost per Net Sale', data:cpsData, borderColor:'#00FFC2', fill:false, tension:.3, spanGaps:true, pointRadius:3, borderWidth:2},
+    ]}, options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>c.dataset.label+': $'+Number(c.raw||0).toFixed(2)}}},
+      scales:{ x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',maxRotation:0,maxTicksLimit:14}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',callback:v=>'$'+v.toLocaleString()},min:0} } } });
+  }
+
+  buildNsoCprStudioTable(activeStudios,fromStr,toStr,selSrc);
+}
+
+function buildNsoCprStudioTable(activeStudios,fromStr,toStr,selSrc){
+  const table=document.getElementById('nsoCprStudioTable'); if(!table) return;
+  const dash='<span style="color:#8aabbf">—</span>';
+  const f$=v=>'$'+Math.round(v).toLocaleString('en-US');
+  const f$2=v=>'$'+Number(v).toFixed(2);
+  const rows=activeStudios.map(studio=>{
+    const google=nsoGoogleSpend([studio],fromStr,toStr), meta=nsoMetaSpend([studio],fromStr,toStr);
+    const lt=nsoLtFee([studio],fromStr,toStr), ext=nsoExtAgency([studio],fromStr,toStr);
+    const spend=(NSO_CPR_COSTS_ACTIVE.google?google:0)+(NSO_CPR_COSTS_ACTIVE.meta?meta:0)+(NSO_CPR_COSTS_ACTIVE.lt?lt:0)+(NSO_CPR_COSTS_ACTIVE.ext?ext:0);
+    const leads=nsoLeadsCount(fromStr,toStr,[studio],selSrc), sales=nsoNetSalesCount(fromStr,toStr,[studio],selSrc);
+    return { studio: studio.replace('SWEAT440 ',''), leads, sales, google, meta, lt, ext, spend, cpl: leads>0?spend/leads:null, cps: sales>0?spend/sales:null };
+  });
+  sortableTable('nsoCprStudioTable', rows, (r,i)=>`<tr>
+    <td class="row-num">${i}</td><td>${r.studio}</td>
+    <td class="num">${r.leads.toLocaleString()}</td><td class="num">${r.sales.toLocaleString()}</td>
+    <td class="num">${f$(r.google)}</td><td class="num">${f$(r.meta)}</td><td class="num">${f$(r.lt)}</td><td class="num">${f$(r.ext)}</td>
+    <td class="num">${f$(r.spend)}</td>
+    <td class="num">${r.cpl!=null?f$2(r.cpl):dash}</td><td class="num">${r.cps!=null?f$2(r.cps):dash}</td>
+  </tr>`, (sorted)=>{
+    const t=k=>sorted.reduce((s,r)=>s+r[k],0);
+    const tLeads=t('leads'), tSales=t('sales'), tSpend=t('spend');
+    return `<tr><td class="row-num"></td><td style="font-weight:700">Total (${sorted.length} studios)</td>
+      <td class="num">${tLeads.toLocaleString()}</td><td class="num">${tSales.toLocaleString()}</td>
+      <td class="num">${f$(t('google'))}</td><td class="num">${f$(t('meta'))}</td><td class="num">${f$(t('lt'))}</td><td class="num">${f$(t('ext'))}</td>
+      <td class="num">${f$(tSpend)}</td>
+      <td class="num">${tLeads>0?f$2(tSpend/tLeads):dash}</td><td class="num">${tSales>0?f$2(tSpend/tSales):dash}</td>
+    </tr>`;
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BOOTSTRAP
+   ══════════════════════════════════════════════════════════════════════════ */
+async function loadData(){
+  const _authUser=checkAuth();
+  if(!_authUser) return;
+  if(_authUser.role!=='admin'){ location.replace('../home.html'); return; }
+  renderAuthNav(_authUser);
+
+  const [rawRes, spendRes, agencyRes, studiosRes, corpSpendRes,
+         mktRes, gadsRes, salesRes, otherCostRes, preWeeksRes] = await Promise.allSettled([
+    fetch('../data.json?_='+Date.now()),
+    fetch('../spend-data.json?_='+Date.now()),
+    fetch('../agency-spend-overrides.json?_='+Date.now()),
+    fetch('../studios.json?_='+Date.now()),
+    fetch('../meta-corporate-spend-monthly.json?_='+Date.now()),
+    fetch('../nso-dashboard/marketing_data.json?_='+Date.now()),
+    fetch('../nso-dashboard/nso_google_ads.json?_='+Date.now()),
+    fetch('../nso-dashboard/nso_sales_data.json?_='+Date.now()),
+    fetch('../nso-dashboard/nso_other_costs.json?_='+Date.now()),
+    fetch('../nso-dashboard/nso_pre_weeks_data.json?_='+Date.now()),
+  ]);
+
+  try{ OS_RAW=await rawRes.value.json(); if(!OS_RAW.daily_detail)OS_RAW.daily_detail=[]; if(!OS_RAW.monthly_detail)OS_RAW.monthly_detail=[]; }
+  catch(e){ console.warn('data.json unavailable:',e); OS_RAW=getMock(); }
+  try{ OS_SPEND_RAW=await spendRes.value.json(); } catch(e){ console.warn('spend-data.json unavailable:',e); }
+  try{ OS_CORP_SPEND=await corpSpendRes.value.json(); } catch(e){ console.warn('meta-corporate-spend-monthly.json unavailable:',e); }
+  try{ NSO_META_RAW=(await mktRes.value.json()).meta_ads||[]; } catch(e){ console.warn('marketing_data.json unavailable:',e); }
+  try{ NSO_GOOGLE_RAW=(await gadsRes.value.json()).google_ads||[]; } catch(e){ console.warn('nso_google_ads.json unavailable:',e); }
+  try{ NSO_OTHER_COSTS=await otherCostRes.value.json(); } catch(e){ console.warn('nso_other_costs.json unavailable:',e); }
+  try{ NSO_PRE_WEEKS=await preWeeksRes.value.json(); } catch(e){ console.warn('nso_pre_weeks_data.json unavailable:',e); }
+  try{
+    const salesJson=await salesRes.value.json();
+    NSO_SALES_ROWS=[];
+    Object.values(salesJson.studios||{}).forEach(s=>{
+      const stuKey=(s.name||'').startsWith('SWEAT440 ')?s.name:'SWEAT440 '+s.name;
+      (s.daily||[]).forEach(r=>{
+        NSO_SALES_ROWS.push({date:r.date, studio:stuKey, source:r.source||'Unknown', first_sales:r.presales||0, cancellations:r.cancellations||0});
+      });
+    });
+  } catch(e){ console.warn('nso_sales_data.json unavailable:',e); NSO_SALES_ROWS=[]; }
+  try{
+    const registry=await studiosRes.value.json();
+    (registry.studios||[]).forEach(s=>{ if(s.code) STUDIOS_NAME_TO_CODE[s.name]=s.code; });
+  } catch(e){ console.warn('studios.json unavailable:',e); }
+  try{
+    const agencyRaw=await agencyRes.value.json();
+    const known=OS_RAW.studios||[];
+    OS_AGENCY_OVERRIDES=(agencyRaw.overrides||[]).map(o=>({
+      studio:_osResolveOverrideStudio(o.studio,known), category:o.category,
+      startMs:new Date(o.start_date+'T00:00:00Z').getTime(), endMs:new Date(o.end_date+'T23:59:59Z').getTime(),
+      monthly_amount:o.monthly_amount,
+    }));
+  } catch(e){ console.warn('agency-spend-overrides.json unavailable:',e); }
+
+  NSO_DAILY=_nsoNormalize(OS_RAW.daily_detail||[]);
+  NSO_MONTHLY=_nsoNormalize(OS_RAW.monthly_detail||[]);
+
+  await loadStudiosRegistry('../');
+  NSO_STUDIOS.push(...NSO_TAB_STUDIOS);
+
+  renderFreshnessNote('osFreshnessNote', [{raw:OS_RAW, lagDays:2}]);
+  renderFreshnessNote('nsoFreshnessNote', [{raw:OS_RAW, lagDays:2}]);
+
+  const osRange=defaultRange();
+  document.getElementById('osFFrom').value=osRange.from; document.getElementById('osFTo').value=osRange.to;
+  const nsoRange=defaultRange();
+  document.getElementById('nsoFFrom').value=nsoRange.from; document.getElementById('nsoFTo').value=nsoRange.to;
+
+  buildMultiSelect('studioMenuOS','studioLabelOS', OS_RAW.studios, DEFAULT_EXCL_STUDIOS);
+  buildSourceSelect('sourceMenuOS','sourceLabelOS', OS_RAW.sources, DEFAULT_EXCL_SOURCES);
+  buildMultiSelect('studioMenuNSO','studioLabelNSO', NSO_TAB_STUDIOS, []);
+  buildSourceSelect('sourceMenuNSO','sourceLabelNSO', NSO_ALL_SOURCES, NSO_EXCL_SRC);
+
+  applyOsFilters();
+  // NSO tab's canvases are hidden (max-height:0) until its nav tab is first
+  // clicked — Chart.js needs a visible canvas to measure; switchTab('nso')
+  // calls applyNsoFilters() at that point.
+}
+
+loadData();
+</script>
+</body>
+</html>
