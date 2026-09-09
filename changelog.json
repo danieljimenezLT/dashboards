@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-09",
+      "pr_number": 347,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/347",
+      "author": "Santiago Estrada",
+      "categories": [
+        "OS Dashboard"
+      ],
+      "title": "Fixed a misleading warning on the Instagram tab of the Open Studio dashboard\r",
+      "summary": "The Instagram tab could show a \"no post details available\" warning even when individual posts were correctly displayed below it for the selected date range; that warning is now only shown when posts truly aren't available.\r"
+    },
+    {
+      "date": "2026-09-09",
       "pr_number": 346,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/346",
       "author": "Santiago Estrada",
