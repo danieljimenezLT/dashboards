@@ -1041,7 +1041,7 @@ function buildFunnel(curr, prev, pyear, ppLabel, pyLabel) {
   const stages = [
     {label:'Leads (New Accounts Created)',            key:'leads',curr:curr.leads,prev:prev.leads,py:pyear.leads,color:'#00A3E0'},
     {label:'First Timers (First Studio Visits)',      key:'ft',   curr:curr.ft,   prev:prev.ft,   py:pyear.ft,   color:'#00FFC2'},
-    {label:'New Members (First Memberships Activated)',key:'mem',  curr:curr.mem,  prev:prev.mem,  py:pyear.mem,  color:'#DDFF00'},
+    {label:'New Members (First Memberships Activated)',key:'mem',  curr:curr.mem,  prev:prev.mem,  py:null,  color:'#DDFF00'},
   ];
   const max = Math.max(...stages.map(s=>s.curr),1);
   document.getElementById('funnelBars').innerHTML = stages.map(s => {
@@ -1051,9 +1051,9 @@ function buildFunnel(curr, prev, pyear, ppLabel, pyLabel) {
     const ppHTML = _partialPeriod.pp
       ? (dpp!==null ? _partialPeriodWarnSpan('period') : '<span class="delta neu">— prev period</span>')
       : (dpp!==null ? `<span class="delta ${dpp>=0?'pos':'neg'}" title="vs ${ppLabel}">${dpp>=0?'▲':'▼'} ${Math.abs(dpp).toFixed(1)}% prev period</span>` : '<span class="delta neu">— prev period</span>');
-    const pyHTML = _partialPeriod.py
+    const pyHTML = s.py === null ? '' : (_partialPeriod.py
       ? (dpy!==null ? _partialPeriodWarnSpan('year') : '<span class="delta neu">— prev year</span>')
-      : (dpy!==null ? `<span class="delta ${dpy>=0?'pos':'neg'}" title="vs ${pyLabel}">${dpy>=0?'▲':'▼'} ${Math.abs(dpy).toFixed(1)}% prev year</span>` : '<span class="delta neu">— prev year</span>');
+      : (dpy!==null ? `<span class="delta ${dpy>=0?'pos':'neg'}" title="vs ${pyLabel}">${dpy>=0?'▲':'▼'} ${Math.abs(dpy).toFixed(1)}% prev year</span>` : '<span class="delta neu">— prev year</span>'));
     const netAvg  = _netVolumeAvg(netMaps[s.key], netStudios);
     const netHTML = netAvgSpan(s.curr, netAvg.avgPerStudio, netAvg.netCount, selCount, fCount, false, true, {label: netLabels[s.key]});
     const g = GLOSSARY[s.key];
@@ -1335,7 +1335,7 @@ function buildStageTabs(currFiltered, ppFiltered, pyFiltered, ppLabel, pyLabel, 
   //  NEW MEMBERS TAB
   const el3 = document.getElementById('mem-kpis');
   if(el3) el3.innerHTML =
-    kpiCard('Total New Members (First Memberships Activated)', memTotal, ppMem||null, pyMem||null, null, GLOSSARY.mem,
+    kpiCard('Total New Members (First Memberships Activated)', memTotal, ppMem||null, null, null, GLOSSARY.mem,
       netAvgHtml(memTotal, memNet.avgPerStudio, memNet.netCount, netSelCount, fCountStage, false, true, {label:'new members'})) +
     convCard('Conv Rate (FT→Mbr)',  currConvMem,     ppConvMem, pyConvMem, GLOSSARY.conv_ft_mem,
       netAvgHtml(currConvMem, convFtMemNet.avgPerStudio, convFtMemNet.netCount, netSelCount, fPct, false, false, {label:'First Timer → Member conversion', ratioDesc:'total members ÷ total first timers'})) +
@@ -1631,7 +1631,7 @@ function buildSummaryTab() {
       netAvgHtml(curr.leads, leadsNet.avgPerStudio, leadsNet.netCount, selCount, fCount, false, true, {label:'leads'})) +
     kpiCard('First Timers (First Studio Visits)',       curr.ft,    pp.ft||null,    py.ft||null,    null, GLOSSARY.ft,
       netAvgHtml(curr.ft, ftNet.avgPerStudio, ftNet.netCount, selCount, fCount, false, true, {label:'first timers'}))    +
-    kpiCard('New Members (First Memberships Activated)',curr.mem,   pp.mem||null,   py.mem||null,   null, GLOSSARY.mem,
+    kpiCard('New Members (First Memberships Activated)',curr.mem,   pp.mem||null,   null,   null, GLOSSARY.mem,
       netAvgHtml(curr.mem, memNet.avgPerStudio, memNet.netCount, selCount, fCount, false, true, {label:'new members'}));
 
   if (!spendEl) return;
@@ -1727,7 +1727,6 @@ function buildSummaryTab() {
   const cpft_py   = py.ft>0      ? tPy/py.ft        : null;
   const cpa_curr  = curr.mem>0   ? tCurr/curr.mem   : 0;
   const cpa_pp    = pp.mem>0     ? tPp/pp.mem       : null;
-  const cpa_py    = py.mem>0     ? tPy/py.mem       : null;
 
   const cplNet  = _netCostRatioAvg(totalMap, leadsMap, costQualifying);
   const cpftNet = _netCostRatioAvg(totalMap, ftMap,    costQualifying);
@@ -1738,7 +1737,7 @@ function buildSummaryTab() {
       netAvgHtml(cpl_curr, cplNet.avgPerStudio, cplNet.netCount, selCount, f$2, true, false, {label:'CPL', costBased:true, ratioDesc:'total spend ÷ total leads'})) +
     cprKpiCard('Blended CPFT', cpft_curr, cpft_pp, cpft_py, f$2, GLOSSARY.cpft,
       netAvgHtml(cpft_curr, cpftNet.avgPerStudio, cpftNet.netCount, selCount, f$2, true, false, {label:'CPFT', costBased:true, ratioDesc:'total spend ÷ total first timers'})) +
-    cprKpiCard('Blended CPA',  cpa_curr,  cpa_pp,  cpa_py,  f$2, GLOSSARY.cpa,
+    cprKpiCard('Blended CPA',  cpa_curr,  cpa_pp,  null,  f$2, GLOSSARY.cpa,
       netAvgHtml(cpa_curr, cpaNet.avgPerStudio, cpaNet.netCount, selCount, f$2, true, false, {label:'CPA', costBased:true, ratioDesc:'total spend ÷ total new members'}));
 }
 
@@ -1807,7 +1806,7 @@ function buildCPRTab() {
   const f$2=v=>'$'+Number(v).toFixed(2);
   const cpl_curr=curr.leads>0?spCurr.total/curr.leads:0,cpl_pp=pp.leads>0?spPp.total/pp.leads:null,cpl_py=py.leads>0?spPy.total/py.leads:null;
   const cpft_curr=curr.ft>0?spCurr.total/curr.ft:0,cpft_pp=pp.ft>0?spPp.total/pp.ft:null,cpft_py=py.ft>0?spPy.total/py.ft:null;
-  const cpa_curr=curr.mem>0?spCurr.total/curr.mem:0,cpa_pp=pp.mem>0?spPp.total/pp.mem:null,cpa_py=py.mem>0?spPy.total/py.mem:null;
+  const cpa_curr=curr.mem>0?spCurr.total/curr.mem:0,cpa_pp=pp.mem>0?spPp.total/pp.mem:null;
 
   // Network-average population, shared with the Summary tab. Total spend
   // per network studio respects the same google/meta/leadteam toggle the
@@ -1845,7 +1844,7 @@ function buildCPRTab() {
       netAvgHtml(cpl_curr, cplNetCPR.avgPerStudio, cplNetCPR.netCount, netSelCountCPR, f$2, true, false, {label:'CPL', costBased:true, ratioDesc:'total spend ÷ total leads'})) +
     cprKpiCard('Blended CPFT',cpft_curr,cpft_pp,cpft_py,f$2,GLOSSARY.cpft,
       netAvgHtml(cpft_curr, cpftNetCPR.avgPerStudio, cpftNetCPR.netCount, netSelCountCPR, f$2, true, false, {label:'CPFT', costBased:true, ratioDesc:'total spend ÷ total first timers'})) +
-    cprKpiCard('Blended CPA',cpa_curr,cpa_pp,cpa_py,f$2,GLOSSARY.cpa,
+    cprKpiCard('Blended CPA',cpa_curr,cpa_pp,null,f$2,GLOSSARY.cpa,
       netAvgHtml(cpa_curr, cpaNetCPR.avgPerStudio, cpaNetCPR.netCount, netSelCountCPR, f$2, true, false, {label:'CPA', costBased:true, ratioDesc:'total spend ÷ total new members'}));
 
   const bdEl=document.getElementById('cpr-spend-breakdown');
