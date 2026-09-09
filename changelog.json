@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-09-09",
+      "pr_number": 345,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/345",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Fixed Dallas - Uptown ad spend not updating\r",
+      "summary": "Dallas - Uptown's Meta ad spend had stopped updating in the NSO dashboard since late July; it now pulls from the studio's new ad account so spend is accurate again.\r"
+    },
+    {
       "date": "2026-09-08",
       "pr_number": 344,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/344",
