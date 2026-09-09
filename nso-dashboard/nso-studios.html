@@ -980,10 +980,15 @@ function drawCum2Chart(studio){
       allLabels=preLabels;allLeadsD=preLeadsD;allPresD=_preSalesCum;
     }else{
       // No pre-weeks configured — build Sun-Sat weekly buckets from raw data
-      const _leadRows=(RAW?.daily_detail||[]).filter(r=>_strip2(r.studio)===_sname2&&r.date<=todayStr);
-      const _allDates=[..._leadRows.map(r=>r.date),..._salesRows.map(r=>r.date)].filter(d=>d&&d<=todayStr).sort();
-      if(_allDates.length){
-        const _sd=new Date(_allDates[0]+'T00:00:00Z');
+      const _leadRowsAll=(RAW?.daily_detail||[]).filter(r=>_strip2(r.studio)===_sname2&&r.date<=todayStr);
+      const _allDatesRaw=[..._leadRowsAll.map(r=>r.date),..._salesRows.map(r=>r.date)].filter(d=>d&&d<=todayStr);
+      // 30-day gap filter: skip isolated early dates (same as fetch_pre_weeks.py)
+      const _uniqD=[...new Set(_allDatesRaw)].sort();
+      while(_uniqD.length>=2){const _g=(new Date(_uniqD[1]+'T00:00:00Z')-new Date(_uniqD[0]+'T00:00:00Z'))/864e5;if(_g>30)_uniqD.shift();else break;}
+      const _floorD=_uniqD.length?_uniqD[0]:null;
+      if(_floorD){
+        const _leadRows=_leadRowsAll.filter(r=>r.date>=_floorD);
+        const _sd=new Date(_floorD+'T00:00:00Z');
         _sd.setUTCDate(_sd.getUTCDate()-_sd.getUTCDay());
         const _rawLabels=[],_rawLeads=[],_rawPres=[];
         let _cumL=0,_cumP=0,_ws=new Date(_sd);
@@ -991,7 +996,7 @@ function drawCum2Chart(studio){
           const _we=new Date(_ws);_we.setUTCDate(_we.getUTCDate()+6);
           const ws=_ws.toISOString().slice(0,10),we=_we.toISOString().slice(0,10);
           _cumL+=_leadRows.filter(r=>r.date>=ws&&r.date<=we).reduce((s,r)=>s+(r.signups||0),0);
-          _cumP+=Math.max(0,_salesRows.filter(r=>r.date>=ws&&r.date<=we).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));
+          _cumP+=Math.max(0,_salesRows.filter(r=>r.date>=ws&&r.date<=we&&r.date>=_floorD).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));
           _rawLabels.push(`${_ws.getUTCMonth()+1}/${_ws.getUTCDate()} - ${_we.getUTCMonth()+1}/${_we.getUTCDate()}`);
           _rawLeads.push(_cumL);_rawPres.push(_cumP>0?_cumP:null);
           _ws.setUTCDate(_ws.getUTCDate()+7);
@@ -1075,10 +1080,15 @@ function drawWeekly2Chart(studio){
       allLabels=preLabels;allLeadsDelta=preLeadsDelta;allPresDelta=_preSalesPerWkW;
     }else{
       // No pre-weeks configured — build Sun-Sat weekly buckets from raw data
-      const _leadRows=(RAW?.daily_detail||[]).filter(r=>_strip2w(r.studio)===_sname2w&&r.date<=todayStr);
-      const _allDates=[..._leadRows.map(r=>r.date),..._salesRowsW.map(r=>r.date)].filter(d=>d&&d<=todayStr).sort();
-      if(_allDates.length){
-        const _sd=new Date(_allDates[0]+'T00:00:00Z');
+      const _leadRowsAllW=(RAW?.daily_detail||[]).filter(r=>_strip2w(r.studio)===_sname2w&&r.date<=todayStr);
+      const _allDatesRawW=[..._leadRowsAllW.map(r=>r.date),..._salesRowsW.map(r=>r.date)].filter(d=>d&&d<=todayStr);
+      // 30-day gap filter: skip isolated early dates (same as fetch_pre_weeks.py)
+      const _uniqDW=[...new Set(_allDatesRawW)].sort();
+      while(_uniqDW.length>=2){const _g=(new Date(_uniqDW[1]+'T00:00:00Z')-new Date(_uniqDW[0]+'T00:00:00Z'))/864e5;if(_g>30)_uniqDW.shift();else break;}
+      const _floorDW=_uniqDW.length?_uniqDW[0]:null;
+      if(_floorDW){
+        const _leadRows=_leadRowsAllW.filter(r=>r.date>=_floorDW);
+        const _sd=new Date(_floorDW+'T00:00:00Z');
         _sd.setUTCDate(_sd.getUTCDate()-_sd.getUTCDay());
         const _rawLabels=[],_rawLeads=[],_rawPres=[];
         let _ws=new Date(_sd);
@@ -1086,7 +1096,7 @@ function drawWeekly2Chart(studio){
           const _we=new Date(_ws);_we.setUTCDate(_we.getUTCDate()+6);
           const ws=_ws.toISOString().slice(0,10),we=_we.toISOString().slice(0,10);
           const wkL=_leadRows.filter(r=>r.date>=ws&&r.date<=we).reduce((s,r)=>s+(r.signups||0),0);
-          const wkP=Math.max(0,_salesRowsW.filter(r=>r.date>=ws&&r.date<=we).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));
+          const wkP=Math.max(0,_salesRowsW.filter(r=>r.date>=ws&&r.date<=we&&r.date>=_floorDW).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));
           _rawLabels.push(`${_ws.getUTCMonth()+1}/${_ws.getUTCDate()} - ${_we.getUTCMonth()+1}/${_we.getUTCDate()}`);
           _rawLeads.push(wkL);_rawPres.push(wkP>0?wkP:null);
           _ws.setUTCDate(_ws.getUTCDate()+7);
@@ -2636,7 +2646,10 @@ function renderScorecard2(){
   // first date that has any Snowflake lead/sale data (same source as the chart).
   const _unconfigLabels=(!_w1Official&&pastWeeks.length)?( ()=>{
     const _sn2=(sc.data_name||sc.full_name||sc.name||'').replace(/^SWEAT440\s+/,'');
-    const _dailyDates=(RAW?.daily_detail||[]).filter(r=>(r.studio||'').replace(/^SWEAT440\s+/,'')===_sn2&&r.date<=_todaySc2).map(r=>r.date).sort();
+    const _dailyDatesRaw=(RAW?.daily_detail||[]).filter(r=>(r.studio||'').replace(/^SWEAT440\s+/,'')===_sn2&&r.date<=_todaySc2).map(r=>r.date);
+    // 30-day gap filter: skip isolated early dates (same as fetch_pre_weeks.py)
+    const _dailyDates=[...new Set(_dailyDatesRaw)].sort();
+    while(_dailyDates.length>=2){const _g=(new Date(_dailyDates[1]+'T00:00:00Z')-new Date(_dailyDates[0]+'T00:00:00Z'))/864e5;if(_g>30)_dailyDates.shift();else break;}
     if(!_dailyDates.length)return null;
     const _anchor=new Date(_dailyDates[0]+'T00:00:00Z');
     _anchor.setUTCDate(_anchor.getUTCDate()-_anchor.getUTCDay()); // snap to Sunday
