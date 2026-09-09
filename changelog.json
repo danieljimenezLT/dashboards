@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-09",
+      "pr_number": 351,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/351",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix Long Beach (and similar studios) showing week dates from a stray early lead",
+      "summary": "Studios with an isolated lead far before their actual campaign start now correctly anchor their scorecard week labels and charts to the first clustered lead date, ignoring outliers more than 30 days before the next activity."
+    },
+    {
+      "date": "2026-09-09",
       "pr_number": 350,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/350",
       "author": "Santiago Estrada",
