@@ -3074,7 +3074,7 @@ function drawScCumChart(sc,weeks){
 /* ══════════════════════════════════════════════════════════════════════════
    BLENDED CPR TAB
    ══════════════════════════════════════════════════════════════════════════ */
-let CPR_META=true,CPR_GOOGLE=true,CPR_LT=true,CPR_GRASSROOTS=true,CPR_PRINT=true,CPR_PR=true,CPR_EXT=true,CPR_OTHER=true,CPR_GRAN='weekly',_cprChart=null;
+let CPR_META=true,CPR_GOOGLE=true,CPR_LT=true,CPR_GRASSROOTS=false,CPR_PRINT=false,CPR_PR=false,CPR_EXT=true,CPR_OTHER=false,CPR_GRAN='weekly',_cprChart=null;
 
 function _cprToggle(type){
   if(type==='meta')CPR_META=!CPR_META;
@@ -3286,11 +3286,7 @@ function renderCPR(){
       ${_tog(CPR_GOOGLE,'google','Google Ads','#34A853')}
       ${_tog(CPR_META,'meta','Meta Ads','#1877F2')}
       ${_tog(CPR_LT,'lt','LeadTeam Fee','#FF6B35')}
-      ${_tog(CPR_GRASSROOTS,'grs','Grassroots','#8B5E3C')}
-      ${_tog(CPR_PRINT,'print','Print / Signs','#9B59B6')}
-      ${_tog(CPR_PR,'pr','PR','#E91E63')}
       ${_tog(CPR_EXT,'ext','External Agency','#00897B')}
-      ${_tog(CPR_OTHER,'other','Other','#607D8B')}
     </div>
   </div>`;
 
