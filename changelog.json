@@ -2,6 +2,18 @@
   "entries": [
     {
       "date": "2026-09-09",
+      "pr_number": 349,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/349",
+      "author": "Santiago Estrada",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Hide low-volume CPR sources; drop misleading prev-year comparisons",
+      "summary": "The Blended CPR tab no longer shows Grassroots, Print/Signs, PR, or Other spend toggles by default. New Members and Blended CPA no longer show a prev-year comparison (Leads and First Timers still do)."
+    },
+    {
+      "date": "2026-09-09",
       "pr_number": 348,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/348",
       "author": "Santiago Estrada",
