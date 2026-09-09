@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-09",
+      "pr_number": 346,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/346",
+      "author": "Santiago Estrada",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Filter dropdowns now let you click a category to select/deselect it all, or click \"Only\" to pick just one option\r",
+      "summary": "Studio and source filters behave the same way on the Open Studio and NSO dashboards, and sources are now grouped into Non-Marketing, Paid Ads, and Other Marketing.\r"
+    },
+    {
+      "date": "2026-09-09",
       "pr_number": 345,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/345",
       "author": "Santiago Estrada",
