@@ -442,6 +442,13 @@ def main():
                 ig_map[studio["name"]] = ig_result
 
     # ── Merge new fetch with existing historical data ──────────────────────
+    # The archive cutoff is a fixed 90-day rolling window, independent of --days
+    # (which only controls how much fresh data this run pulls from the Meta API).
+    # Tying the cutoff to --days meant a small daily --days value (e.g. 5, used by
+    # the scheduled refresh) archived and pruned raw daily rows for any month older
+    # than 5 days instead of 90, leaving the dashboard's "daily" reach window only
+    # a few days deep even though posts (kept for a year) still showed further back.
+    rolling_window_cutoff = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
     for studio_name, new_data in ig_map.items():
         old = existing_studios.get(studio_name, {})
 
@@ -476,7 +483,7 @@ def main():
         # from those stragglers would silently overwrite a correct archive with a near-empty
         # one. So a month already in old_monthly is never recomputed.
         old_monthly = {m["month"]: m for m in old.get("monthly", [])}
-        new_monthly = build_monthly_aggregates(all_daily, all_posts, start_date)
+        new_monthly = build_monthly_aggregates(all_daily, all_posts, rolling_window_cutoff)
         for mk, agg in new_monthly.items():
             if mk not in old_monthly:
                 old_monthly[mk] = agg
