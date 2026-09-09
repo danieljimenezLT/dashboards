@@ -3687,7 +3687,7 @@ function renderInstagram() {
   }
 
   // Orange message when end date is outside the rolling window (no individual post data)
-  if (windowStart && !igToInWindow) {
+  if (windowStart && !igToInWindow && !allPosts.length) {
     const _wsFormatted = new Date(windowStart + 'T00:00:00Z').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric', timeZone:'UTC'});
     h +=
       `<div style="display:flex;align-items:flex-start;gap:10px;background:#fff3e0;border-left:3px solid #f59e0b;border-radius:6px;padding:14px 16px;margin-bottom:16px">` +
