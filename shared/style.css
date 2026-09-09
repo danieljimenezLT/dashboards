@@ -66,6 +66,9 @@
   .ms-item{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:12px;cursor:pointer;color:#1a1a2e;transition:background .1s}
   .ms-item:hover{background:#f0f6fa}
   .ms-item input[type=checkbox]{accent-color:#00A3E0;width:14px;height:14px;flex-shrink:0;cursor:pointer}
+  .ms-item label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ms-only-btn{flex-shrink:0;font-family:'Open Sans',sans-serif;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:#99DAF3;background:none;border:none;padding:2px 7px;border-radius:4px;cursor:pointer}
+  .ms-only-btn:hover{color:#fff;background:#00A3E0}
   .ms-divider{height:1px;background:#eef3f7;margin:4px 0}
   .ms-select-all{font-family:'Oswald',sans-serif;font-style:italic;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:#0084B5}
   .ms-cat-header{display:flex;align-items:center;gap:8px;padding:7px 14px 4px;margin-top:2px;font-family:'Oswald',sans-serif;font-style:italic;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#0084B5;cursor:pointer}
@@ -176,7 +179,6 @@
 .help-box{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(6px);background:#1a1a2e;color:#fff;font-family:'Open Sans',sans-serif;font-size:11px;font-weight:400;font-style:normal;text-transform:none;letter-spacing:0;line-height:1.5;padding:10px 12px;border-radius:8px;width:240px;white-space:normal;text-align:left;opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease;z-index:200;box-shadow:0 4px 16px rgba(0,0,0,.25)}
 .help-box::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#1a1a2e}
 /* ── Multi-select category labels ──────────────────────────────────────── */
-.ms-category{padding:6px 12px 3px;font-family:'Oswald',sans-serif;font-style:italic;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:#a0b8c8;pointer-events:none;user-select:none}
 
 
 

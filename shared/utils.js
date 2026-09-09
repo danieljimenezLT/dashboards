@@ -222,6 +222,7 @@ document.addEventListener('click', e => {
 
 function buildSourceSelect(menuId, labelId, items, defaultExcluded) {
   const NON_MARKETING = ['ClassPass / Platforms', 'Grassroots'];
+  const PAID_ADS      = ['Meta Ads', 'Google Ads'];
   const menu = document.getElementById(menuId);
   if (!menu) return;
   menu.innerHTML = '';
@@ -233,36 +234,63 @@ function buildSourceSelect(menuId, labelId, items, defaultExcluded) {
   menu.appendChild(allDiv);
   const div0 = document.createElement('div'); div0.className = 'ms-divider'; menu.appendChild(div0);
 
-  const marketingItems    = items.filter(i => !NON_MARKETING.includes(i));
-  const nonMarketingItems = items.filter(i =>  NON_MARKETING.includes(i));
+  const itemSafeId = item => `ms_${menuId}_${item.replace(/[^a-z0-9]/gi,'_')}`;
 
-  function addItems(arr) {
-    arr.forEach(item => {
-      const div = document.createElement('div'); div.className = 'ms-item';
-      const checked = !defaultExcluded.includes(item);
-      const safeId = `ms_${menuId}_${item.replace(/[^a-z0-9]/gi,'_')}`;
-      div.innerHTML = `<input type="checkbox" id="${safeId}" value="${item}" ${checked?'checked':''}> <label for="${safeId}" style="cursor:pointer">${item}</label>`;
-      div.querySelector('input').addEventListener('change', () => { syncSelectAll(menuId); updateLabel(menuId, labelId, items); _applyFilters(); });
-      menu.appendChild(div);
-    });
+  const categories = [
+    { key: 'nonmkt', label: 'Non-Marketing Sources',  items: items.filter(i => NON_MARKETING.includes(i)) },
+    { key: 'paid',   label: 'Paid Ads',                items: items.filter(i => PAID_ADS.includes(i)) },
+    { key: 'other',  label: 'Other Marketing Sources', items: items.filter(i => !NON_MARKETING.includes(i) && !PAID_ADS.includes(i)) },
+  ];
+
+  function syncCategory(cat) {
+    const catChk = document.getElementById(`${menuId}_cat_${cat.key}`);
+    if (!catChk) return;
+    const boxes = cat.items.map(item => document.getElementById(itemSafeId(item))).filter(Boolean);
+    const n = boxes.filter(c => c.checked).length;
+    catChk.checked = boxes.length > 0 && n === boxes.length;
+    catChk.indeterminate = n > 0 && n < boxes.length;
   }
 
-  // Non-Marketing Sources first (unchecked by default)
-  const catNon = document.createElement('div');
-  catNon.className = 'ms-category'; catNon.textContent = 'Non-Marketing Sources';
-  menu.appendChild(catNon);
-  addItems(nonMarketingItems);
+  categories.forEach(cat => {
+    if (!cat.items.length) return;
+    const catId = `${menuId}_cat_${cat.key}`;
+    const catDiv = document.createElement('div');
+    catDiv.className = 'ms-cat-header';
+    catDiv.innerHTML = `<input type="checkbox" id="${catId}"> <label for="${catId}" style="cursor:pointer">${cat.label}</label>`;
+    menu.appendChild(catDiv);
 
-  // Marketing Sources
-  const catMarketing = document.createElement('div');
-  catMarketing.className = 'ms-category'; catMarketing.textContent = 'Marketing Sources';
-  menu.appendChild(catMarketing);
-  addItems(marketingItems);
+    cat.items.forEach(item => {
+      const div = document.createElement('div'); div.className = 'ms-item';
+      const checked = !defaultExcluded.includes(item);
+      const safeId = itemSafeId(item);
+      div.innerHTML = `<input type="checkbox" id="${safeId}" value="${item}" ${checked?'checked':''}> <label for="${safeId}" style="cursor:pointer">${item}</label><button type="button" class="ms-only-btn">Only</button>`;
+      div.querySelector('input').addEventListener('change', () => {
+        syncCategory(cat); syncSelectAll(menuId); updateLabel(menuId, labelId, items); _applyFilters();
+      });
+      div.querySelector('.ms-only-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        menu.querySelectorAll('input[value]').forEach(c => { c.checked = (c.value === item); });
+        categories.forEach(syncCategory); syncSelectAll(menuId); updateLabel(menuId, labelId, items); _applyFilters();
+      });
+      menu.appendChild(div);
+    });
+
+    syncCategory(cat);
+    document.getElementById(catId).addEventListener('change', () => {
+      const catChk = document.getElementById(catId);
+      cat.items.forEach(item => {
+        const inp = document.getElementById(itemSafeId(item));
+        if (inp) inp.checked = catChk.checked;
+      });
+      syncSelectAll(menuId); updateLabel(menuId, labelId, items); _applyFilters();
+    });
+  });
 
   const allChk = document.getElementById(menuId+'_all');
   syncSelectAll(menuId);
   allChk.addEventListener('change', () => {
     menu.querySelectorAll('input[value]').forEach(c => c.checked = allChk.checked);
+    categories.forEach(syncCategory);
     updateLabel(menuId, labelId, items); _applyFilters();
   });
   updateLabel(menuId, labelId, items);
@@ -308,9 +336,14 @@ function buildMultiSelect(menuId, labelId, items, defaultExcluded) {
       const checked = !defaultExcluded.includes(item);
       const safeId = itemSafeId(item);
       const displayName = item.replace(/^-\s+/, '');
-      div.innerHTML = `<input type="checkbox" id="${safeId}" value="${item}" ${checked?'checked':''}> <label for="${safeId}" style="cursor:pointer">${displayName}</label>`;
+      div.innerHTML = `<input type="checkbox" id="${safeId}" value="${item}" ${checked?'checked':''}> <label for="${safeId}" style="cursor:pointer">${displayName}</label><button type="button" class="ms-only-btn">Only</button>`;
       div.querySelector('input').addEventListener('change', () => {
         syncCategory(cat); syncSelectAll(menuId); updateLabel(menuId, labelId, items); _applyFilters();
+      });
+      div.querySelector('.ms-only-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        menu.querySelectorAll('input[value]').forEach(c => { c.checked = (c.value === item); });
+        categories.forEach(syncCategory); syncSelectAll(menuId); updateLabel(menuId, labelId, items); _applyFilters();
       });
       menu.appendChild(div);
     });
