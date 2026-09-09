@@ -1392,6 +1392,7 @@ function setAreaGran(canvasId, gran) {
 
 const CPR_COSTS_ACTIVE={google:true,meta:true,leadteam:true,external_agency:true};
 let cprChart=null;
+let CPR_DS_HIDDEN=[false,false,false];
 let CPR_GRAN='daily';
 
 
@@ -2007,7 +2008,7 @@ function buildCPRTab() {
   const cplData=sortedKeys.map(k=>{const s=trendSpend(k),l=buckets[k].leads;return l>0?Math.round(s/l*100)/100:null;});
   const cpftData=sortedKeys.map(k=>{const s=trendSpend(k),f=buckets[k].ft;return f>0?Math.round(s/f*100)/100:null;});
   const cpaData=sortedKeys.map(k=>{const s=trendSpend(k),m=buckets[k].mem;return m>0?Math.round(s/m*100)/100:null;});
-  cprChart=new Chart(ctx,{type:'line',data:{labels:dispLabels,datasets:[{label:'Blended CPL',data:cplData,borderColor:'#00A3E0',borderWidth:2.5,pointRadius:4,tension:0.4,fill:false,spanGaps:true},{label:'Blended CPFT',data:cpftData,borderColor:'#00FFC2',borderWidth:2.5,pointRadius:4,tension:0.4,fill:false,spanGaps:true},{label:'Blended CPA',data:cpaData,borderColor:'#DDFF00',borderWidth:2.5,pointRadius:4,tension:0.4,fill:false,spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:c=>c.dataset.label+': $'+(c.parsed.y!=null?c.parsed.y.toLocaleString():'-')}}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',maxRotation:0}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',callback:v=>'$'+v},position:'left'}}}});
+  cprChart=new Chart(ctx,{type:'line',data:{labels:dispLabels,datasets:[{label:'Blended CPL',data:cplData,borderColor:'#00A3E0',borderWidth:2.5,pointRadius:4,tension:0.4,fill:false,spanGaps:true,hidden:CPR_DS_HIDDEN[0]},{label:'Blended CPFT',data:cpftData,borderColor:'#00FFC2',borderWidth:2.5,pointRadius:4,tension:0.4,fill:false,spanGaps:true,hidden:CPR_DS_HIDDEN[1]},{label:'Blended CPA',data:cpaData,borderColor:'#DDFF00',borderWidth:2.5,pointRadius:4,tension:0.4,fill:false,spanGaps:true,hidden:CPR_DS_HIDDEN[2]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:c=>c.dataset.label+': $'+(c.parsed.y!=null?c.parsed.y.toLocaleString():'-')}}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',maxRotation:0}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',callback:v=>'$'+v},position:'left'}}}});
   buildCPRStudioSummaryTable(from,to,selStudios);
 }
 
@@ -2078,7 +2079,7 @@ function buildCPRStudioSummaryTable(from,to,selStudios) {
   );
 }
 
-function toggleCPRds(btn,i){if(!cprChart)return;const ds=cprChart.data.datasets[i];ds.hidden=!ds.hidden;btn.classList.toggle('on');const cols=['#00A3E0','#00FFC2','#DDFF00','#888'];if(btn.classList.contains('on')){btn.style.background=cols[i];btn.style.borderColor=cols[i];btn.style.color='#000';}else{btn.style.background='#f4f9fd';btn.style.borderColor='#c0d4df';btn.style.color='#5a7a8a';}cprChart.update();}
+function toggleCPRds(btn,i){if(!cprChart)return;const ds=cprChart.data.datasets[i];ds.hidden=!ds.hidden;CPR_DS_HIDDEN[i]=ds.hidden;btn.classList.toggle('on');const cols=['#00A3E0','#00FFC2','#DDFF00','#888'];if(btn.classList.contains('on')){btn.style.background=cols[i];btn.style.borderColor=cols[i];btn.style.color='#000';}else{btn.style.background='#f4f9fd';btn.style.borderColor='#c0d4df';btn.style.color='#5a7a8a';}cprChart.update();}
 
 
 // -- SPEND HELPERS (used by the Blended CPR tab's per-studio summary table) --
@@ -2904,7 +2905,36 @@ function _renderFreshnessNote() {
 
 // Data loaded in loadData() alongside other sources
 let SOCIAL_RAW   = null;
+let IG_METRIC    = 'total_reach';
+let IG_GRAN      = 'daily';
+const IG_METRICS = {
+  total_reach:     { label: 'Total Reach',     glossary: 'ig_total_reach',    mode: 'sum',   field: 'reach', monthlyField: 'reach' },
+  avg_daily_reach: { label: 'Avg Daily Reach', glossary: 'ig_avg_daily_reach',mode: 'avg',   field: 'reach', monthlyField: 'reach' },
+  posts_in_period: { label: 'Posts in Period', glossary: 'ig_posts',          mode: 'count',                 monthlyField: 'post_count' },
+};
 let GBP_RAW_ORG  = null;
+let GBP_METRIC   = 'total_views';
+let GBP_GRAN     = 'daily';
+const GBP_METRICS = {
+  total_views:        { label: 'Total Views',        icon: '',   glossary: 'gbp_total_views',    source: 'daily',         fields: ['mobile_search','desktop_search','mobile_maps','desktop_maps'] },
+  google_search:       { label: 'Google Search',      icon: '🔍', glossary: 'gbp_search_views',    source: 'daily',         fields: ['mobile_search','desktop_search'] },
+  google_maps:         { label: 'Google Maps',        icon: '📍', glossary: 'gbp_maps_views',      source: 'daily',         fields: ['mobile_maps','desktop_maps'] },
+  mobile_search:       { label: 'Mobile Search',       icon: '📱', glossary: 'gbp_search_views',    source: 'daily',         fields: ['mobile_search'] },
+  desktop_search:      { label: 'Desktop Search',      icon: '🖥️', glossary: 'gbp_search_views',    source: 'daily',         fields: ['desktop_search'] },
+  mobile_maps:         { label: 'Mobile Maps',         icon: '📱', glossary: 'gbp_maps_views',      source: 'daily',         fields: ['mobile_maps'] },
+  desktop_maps:        { label: 'Desktop Maps',        icon: '🖥️', glossary: 'gbp_maps_views',      source: 'daily',         fields: ['desktop_maps'] },
+  direction_requests:  { label: 'Direction Requests',  icon: '🧭', glossary: 'gbp_directions',      source: 'daily',         fields: ['direction_requests'] },
+  website_clicks:      { label: 'Website Clicks',      icon: '🌐', glossary: 'gbp_website_clicks',  source: 'daily',         fields: ['website_clicks'] },
+  calls:               { label: 'Calls',               icon: '📞', glossary: 'gbp_calls',           source: 'daily',         fields: ['calls'] },
+  total_reviews:       { label: 'Total Reviews',       icon: '',   glossary: null,                  source: 'reviews_daily', fields: ['count'] },
+  five_star_reviews:   { label: '5-Star Reviews',      icon: '',   glossary: null,                  source: 'reviews_daily', fields: ['five_star_count'] },
+};
+function _gbpKpiCard(metricKey, value) {
+  const m = GBP_METRICS[metricKey];
+  const ib = m.glossary ? _infoBtn(m.glossary) : '';
+  const active = metricKey === GBP_METRIC ? ' metric-active' : '';
+  return `<div class="kpi-card kpi-card-clickable${active}" id="gbpKpi_${metricKey}" onclick="setGBPMetric('${metricKey}')">${ib}<div class="kpi-card-label">${m.icon ? m.icon + ' ' : ''}${m.label}</div><div class="kpi-card-val">${value}</div></div>`;
+}
 let GA4_RAW_ORG  = [];
 let GA4_SITE_GRAN = 'daily';
 let GA4_SITE_METRIC = 'sessions';
@@ -3014,23 +3044,23 @@ function renderGBP() {
     h += '<div class="chart-card">';
     h += sec('Profile Views');
     h += `<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
-    h += _orgKpi('Total Views',       totalViews.toLocaleString(), '',    'gbp_total_views');
-    h += _orgKpi('Google Search',     (agg('search_mobile') + agg('search_desktop')).toLocaleString(), '🔍', 'gbp_search_views');
-    h += _orgKpi('Google Maps',       (agg('maps_mobile')   + agg('maps_desktop')).toLocaleString(),   '📍', 'gbp_maps_views');
+    h += _gbpKpiCard('total_views',   totalViews.toLocaleString());
+    h += _gbpKpiCard('google_search', (agg('search_mobile') + agg('search_desktop')).toLocaleString());
+    h += _gbpKpiCard('google_maps',   (agg('maps_mobile')   + agg('maps_desktop')).toLocaleString());
     h += `</div>`;
     h += sec('Search Detail');
     h += `<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
-    h += _orgKpi('Mobile Search',   agg('search_mobile').toLocaleString(),  '📱', 'gbp_search_views');
-    h += _orgKpi('Desktop Search',  agg('search_desktop').toLocaleString(), '🖥️', 'gbp_search_views');
-    h += _orgKpi('Mobile Maps',     agg('maps_mobile').toLocaleString(),    '📱', 'gbp_maps_views');
-    h += _orgKpi('Desktop Maps',    agg('maps_desktop').toLocaleString(),   '🖥️', 'gbp_maps_views');
+    h += _gbpKpiCard('mobile_search',  agg('search_mobile').toLocaleString());
+    h += _gbpKpiCard('desktop_search', agg('search_desktop').toLocaleString());
+    h += _gbpKpiCard('mobile_maps',    agg('maps_mobile').toLocaleString());
+    h += _gbpKpiCard('desktop_maps',   agg('maps_desktop').toLocaleString());
     h += `</div>`;
     h += sec('Customer Actions');
     h += `<div style="font-size:11px;color:#5a7a8a;margin:-4px 0 10px;font-family:'Open Sans'">Data from Google Business Profile may be delayed up to 2 weeks.</div>`;
     h += `<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
-    h += _orgKpi('Direction Requests', agg('direction_requests').toLocaleString(), '🧭', 'gbp_directions');
-    h += _orgKpi('Website Clicks',     agg('website_clicks').toLocaleString(),     '🌐', 'gbp_website_clicks');
-    h += _orgKpi('Calls',              agg('calls').toLocaleString(),              '📞', 'gbp_calls');
+    h += _gbpKpiCard('direction_requests', agg('direction_requests').toLocaleString());
+    h += _gbpKpiCard('website_clicks',     agg('website_clicks').toLocaleString());
+    h += _gbpKpiCard('calls',              agg('calls').toLocaleString());
     h += `</div>`;
     const rvStudios = studioRows.filter(r => r.reviews);
     if (rvStudios.length) {
@@ -3041,10 +3071,17 @@ function renderGBP() {
       h += sec('Reviews');
       h += `<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:4px">`;
       h += `<div class="kpi-card"><div class="kpi-card-label">Avg Star Rating</div><div class="kpi-card-val">${wtdRating !== null ? wtdRating.toFixed(2) + ' <span style="font-size:14px">&#9733;</span>' : '—'}</div></div>`;
-      h += `<div class="kpi-card"><div class="kpi-card-label">Total Reviews</div><div class="kpi-card-val">${rvTotal.toLocaleString()}</div></div>`;
-      h += `<div class="kpi-card"><div class="kpi-card-label">5-Star Reviews</div><div class="kpi-card-val">${fiveStar.toLocaleString()}</div></div>`;
+      h += _gbpKpiCard('total_reviews',     rvTotal.toLocaleString());
+      h += _gbpKpiCard('five_star_reviews', fiveStar.toLocaleString());
       h += `</div>`;
     }
+    h += `<div style="font-size:11px;color:#5a7a8a;margin:20px 0 4px;font-family:'Open Sans'">Trend metric: <strong id="gbpMetricLabel">${GBP_METRICS[GBP_METRIC].label}</strong> &middot; selected studios combined &middot; click a card above to change metric</div>`;
+    h += '<div class="gran-group">';
+    h += `<button class="gran-btn${GBP_GRAN==='daily'?' active':''}" id="gbpGranDaily" onclick="setGBPGran('daily')">Daily</button>`;
+    h += `<button class="gran-btn${GBP_GRAN==='weekly'?' active':''}" id="gbpGranWeekly" onclick="setGBPGran('weekly')">Weekly</button>`;
+    h += `<button class="gran-btn${GBP_GRAN==='monthly'?' active':''}" id="gbpGranMonthly" onclick="setGBPGran('monthly')">Monthly</button>`;
+    h += '</div>';
+    h += '<div style="position:relative;width:100%;height:240px;margin-top:12px"><canvas id="gbpTrendChart"></canvas></div>';
     h += '</div>';
     h += '<div class="chart-card"><div class="chart-card-title">By Studio</div>';
     h += '<div style="overflow-x:auto"><table class="data-table" id="gbp-studio-table"><thead><tr>';
@@ -3097,10 +3134,91 @@ function renderGBP() {
     });
     el.innerHTML = _renderGBPAgg(studioRows);
     if (studioRows.length) sortableTable('gbp-studio-table', studioRows, _renderGBPStudioRow, null);
+    window._gbpStudios = studios;
+    window._gbpFrom    = from;
+    window._gbpTo      = to;
+    setTimeout(() => _drawGBPTrend(), 50);
     return;
   }
 
   el.innerHTML = _orgEmpty('No GBP data loaded. Data refreshes daily via GitHub Actions.');
+}
+
+function setGBPMetric(metricKey) {
+  GBP_METRIC = metricKey;
+  Object.keys(GBP_METRICS).forEach(m => {
+    const el = document.getElementById('gbpKpi_'+m);
+    if (el) el.classList.toggle('metric-active', m === metricKey);
+  });
+  const label = document.getElementById('gbpMetricLabel');
+  if (label) label.textContent = GBP_METRICS[metricKey].label;
+  _drawGBPTrend();
+}
+
+function setGBPGran(gran) {
+  const btn = document.getElementById('gbpGran'+gran.charAt(0).toUpperCase()+gran.slice(1));
+  if (btn && btn.disabled) return;
+  GBP_GRAN = gran;
+  ['daily','weekly','monthly'].forEach(g => {
+    const b = document.getElementById('gbpGran'+g.charAt(0).toUpperCase()+g.slice(1));
+    if (b) b.classList.toggle('active', g === gran);
+  });
+  _drawGBPTrend();
+}
+
+function _drawGBPTrend() {
+  const ctx = document.getElementById('gbpTrendChart');
+  if (!ctx) return;
+  if (_orgCharts.gbp) { _orgCharts.gbp.destroy(); _orgCharts.gbp = null; }
+  const studios = window._gbpStudios || [];
+  const from    = window._gbpFrom || null;
+  const to      = window._gbpTo   || null;
+  const metric  = GBP_METRICS[GBP_METRIC];
+  const byKey = {};
+  studios.forEach(s => {
+    (s[metric.source] || []).forEach(r => {
+      if (from && r.date < from) return;
+      if (to   && r.date > to)   return;
+      const val = metric.fields.reduce((sum, f) => sum + (r[f] || 0), 0);
+      const key = _ga4PeriodKey(r.date, GBP_GRAN);
+      byKey[key] = (byKey[key] || 0) + val;
+    });
+  });
+  if (from && to) {
+    _periodKeysInRange(new Date(from+'T00:00:00Z'), new Date(to+'T00:00:00Z'), GBP_GRAN).forEach(k => {
+      if (!(k in byKey)) byKey[k] = 0;
+    });
+  }
+  const keys   = Object.keys(byKey).sort();
+  const labels = keys.map(k => GBP_GRAN === 'monthly' ? fmtMonthLabel(k) : fmtDayLabel(k));
+  const isMob  = window.innerWidth <= 768;
+  _orgCharts.gbp = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: metric.label,
+        data: keys.map(k => byKey[k]),
+        borderColor: '#00A3E0',
+        backgroundColor: '#00A3E033',
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: .4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { mode: 'index', intersect: false }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { size: 10 }, color: '#5a7a8a', autoSkip: true, maxTicksLimit: isMob ? 5 : 14, maxRotation: 0 } },
+        y: { grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { size: 11 }, color: '#5a7a8a' }, min: 0 }
+      }
+    }
+  });
 }
 
 // ---- GA4 / Website -------------------------------------------------------
@@ -3650,8 +3768,15 @@ function renderInstagram() {
     const noteHtml = note ? `<div style="font-size:10px;color:#888;font-style:italic;margin-top:3px">${note}</div>` : '';
     return `<div class="kpi-card">${ib}<div class="kpi-card-label">${label}</div><div class="kpi-card-val">${value}</div>${delta}${noteHtml}</div>`;
   }
+  function _igKpiCard(metricKey, label, value, delta, infoKey, note='') {
+    const ib = infoKey ? _infoBtn(infoKey) : '';
+    const noteHtml = note ? `<div style="font-size:10px;color:#888;font-style:italic;margin-top:3px">${note}</div>` : '';
+    const active = metricKey === IG_METRIC ? ' metric-active' : '';
+    return `<div class="kpi-card kpi-card-clickable${active}" id="igKpi_${metricKey}" onclick="setIGMetric('${metricKey}')">${ib}<div class="kpi-card-label">${label}</div><div class="kpi-card-val">${value}</div>${delta}${noteHtml}</div>`;
+  }
 
   let h = '';
+  const hasAnyIGTrendData = filtered.some(s => s.daily.length > 0) || rangeExtendsBack;
 
   if (igBlock) {
     h +=
@@ -3664,8 +3789,8 @@ function renderInstagram() {
   } else {
     h += `<div class="kpi-grid">`;
     if (hasFollowersKpi) h += _igKpi(followersLabel, followersVal.toLocaleString(), '', 'ig_followers');
-    h += _igKpi('Total Reach',     totalReach.toLocaleString(), _igDelta(totalReach, ppTotalReach), 'ig_total_reach');
-    h += _igKpi('Avg Daily Reach', avgReach.toLocaleString(),   _igDelta(avgReach,   ppAvgReach),   'ig_avg_daily_reach');
+    h += _igKpiCard('total_reach',     'Total Reach',     totalReach.toLocaleString(), _igDelta(totalReach, ppTotalReach), 'ig_total_reach');
+    h += _igKpiCard('avg_daily_reach', 'Avg Daily Reach', avgReach.toLocaleString(),   _igDelta(avgReach,   ppAvgReach),   'ig_avg_daily_reach');
     if (allPosts.length) {
       h += _igKpi('Median Reach / Post', medianReach.toLocaleString(), _igDelta(medianReach, ppMedianReach), 'ig_median_reach');
       h += _igKpi('Median Likes',        medianLikes.toLocaleString(), _igDelta(medianLikes, ppMedianLikes), 'ig_median_likes');
@@ -3673,8 +3798,18 @@ function renderInstagram() {
       if (histMedianReach != null) h += _igKpi('Median Reach / Post', histMedianReach.toLocaleString(), '', 'ig_median_reach');
       if (histMedianLikes != null) h += _igKpi('Median Likes',        histMedianLikes.toLocaleString(), '', 'ig_median_likes');
     }
-    h += _igKpi('Posts in Period', (allPosts.length + historicalPostCount).toString(), _igDelta(allPosts.length, ppAllPosts.length), 'ig_posts');
+    h += _igKpiCard('posts_in_period', 'Posts in Period', (allPosts.length + historicalPostCount).toString(), _igDelta(allPosts.length, ppAllPosts.length), 'ig_posts');
     h += `</div>`;
+
+    if (hasAnyIGTrendData) {
+      h += `<div style="font-size:11px;color:#5a7a8a;margin:16px 0 4px;font-family:'Open Sans'">Trend metric: <strong id="igMetricLabel">${IG_METRICS[IG_METRIC].label}</strong> &middot; selected studios combined &middot; Daily view uses recent day-level data only; Weekly/Monthly also include historical monthly totals &middot; click a card above to change metric</div>`;
+      h += '<div class="gran-group">';
+      h += `<button class="gran-btn${IG_GRAN==='daily'?' active':''}" id="igGranDaily" onclick="setIGGran('daily')">Daily</button>`;
+      h += `<button class="gran-btn${IG_GRAN==='weekly'?' active':''}" id="igGranWeekly" onclick="setIGGran('weekly')">Weekly</button>`;
+      h += `<button class="gran-btn${IG_GRAN==='monthly'?' active':''}" id="igGranMonthly" onclick="setIGGran('monthly')">Monthly</button>`;
+      h += '</div>';
+      h += '<div style="position:relative;width:100%;height:240px;margin-top:12px"><canvas id="igTrendChart"></canvas></div>';
+    }
   }
 
   if (igDisclaimer) {
@@ -3722,6 +3857,11 @@ function renderInstagram() {
 
   el.innerHTML = h;
 
+  window._igStudios = studios;
+  window._igFrom    = from;
+  window._igTo      = to;
+  if (hasAnyIGTrendData) setTimeout(() => _drawIGTrend(), 50);
+
   if (allPosts.length) {
     sortableTable('ig-posts-table', allPosts, (p) => {
       const isVid    = p.media_type === 'VIDEO' || p.media_type === 'REELS';
@@ -3753,6 +3893,122 @@ function renderInstagram() {
       </tr>`;
     });
   }
+}
+
+function setIGMetric(metricKey) {
+  IG_METRIC = metricKey;
+  Object.keys(IG_METRICS).forEach(m => {
+    const el = document.getElementById('igKpi_'+m);
+    if (el) el.classList.toggle('metric-active', m === metricKey);
+  });
+  const label = document.getElementById('igMetricLabel');
+  if (label) label.textContent = IG_METRICS[metricKey].label;
+  _drawIGTrend();
+}
+
+function setIGGran(gran) {
+  const btn = document.getElementById('igGran'+gran.charAt(0).toUpperCase()+gran.slice(1));
+  if (btn && btn.disabled) return;
+  IG_GRAN = gran;
+  ['daily','weekly','monthly'].forEach(g => {
+    const b = document.getElementById('igGran'+g.charAt(0).toUpperCase()+g.slice(1));
+    if (b) b.classList.toggle('active', g === gran);
+  });
+  _drawIGTrend();
+}
+
+function _drawIGTrend() {
+  const ctx = document.getElementById('igTrendChart');
+  if (!ctx) return;
+  if (_orgCharts.ig) { _orgCharts.ig.destroy(); _orgCharts.ig = null; }
+  const studios = window._igStudios || [];
+  const from    = window._igFrom || null;
+  const to      = window._igTo   || null;
+  const metric  = IG_METRICS[IG_METRIC];
+  const byKey = {};
+
+  // Historical monthly rows only count for months strictly before the live daily window
+  // starts, to avoid double-counting the transition month (matches renderInstagram's own
+  // rangeExtendsBack logic). They're only merged in at weekly/monthly granularity — same
+  // convention as toTimeSeries() in utils.js — since a whole month can't be split into days.
+  const allDailyDates  = studios.flatMap(s => (s.daily || []).map(r => r.date));
+  const windowStart    = allDailyDates.length ? [...allDailyDates].sort()[0] : null;
+  const windowMonthKey = windowStart ? windowStart.slice(0,7)+'-01' : null;
+  const fromMonthKey   = from ? from.slice(0,7)+'-01' : null;
+  const toMonthKey     = to   ? to.slice(0,7)+'-01'   : null;
+  const monthlyRows = (IG_GRAN === 'daily') ? [] : studios.flatMap(s => (s.monthly || []).filter(m =>
+    (!windowMonthKey || m.month < windowMonthKey) &&
+    (!fromMonthKey   || m.month >= fromMonthKey) &&
+    (!toMonthKey     || m.month <= toMonthKey)
+  ));
+
+  if (metric.mode === 'count') {
+    studios.forEach(s => (s.posts || []).forEach(p => {
+      if ((from && p.date < from) || (to && p.date > to)) return;
+      const key = _ga4PeriodKey(p.date, IG_GRAN);
+      byKey[key] = (byKey[key] || 0) + 1;
+    }));
+    monthlyRows.forEach(m => {
+      const key = _ga4PeriodKey(m.month, IG_GRAN);
+      byKey[key] = (byKey[key] || 0) + (m[metric.monthlyField] || 0);
+    });
+  } else {
+    studios.forEach(s => (s.daily || []).filter(r => (!from || r.date >= from) && (!to || r.date <= to)).forEach(r => {
+      const key = _ga4PeriodKey(r.date, IG_GRAN);
+      byKey[key] = (byKey[key] || 0) + (r[metric.field] || 0);
+    }));
+    monthlyRows.forEach(m => {
+      const key = _ga4PeriodKey(m.month, IG_GRAN);
+      byKey[key] = (byKey[key] || 0) + (m[metric.monthlyField] || 0);
+    });
+    if (metric.mode === 'avg' && from && to) {
+      const daysInBucket = {};
+      let d = new Date(from+'T00:00:00Z');
+      const end = new Date(to+'T00:00:00Z');
+      while (d <= end) {
+        const key = _ga4PeriodKey(d.toISOString().slice(0,10), IG_GRAN);
+        daysInBucket[key] = (daysInBucket[key] || 0) + 1;
+        d.setUTCDate(d.getUTCDate()+1);
+      }
+      Object.keys(byKey).forEach(k => { if (daysInBucket[k]) byKey[k] = Math.round(byKey[k] / daysInBucket[k]); });
+    }
+  }
+
+  if (from && to) {
+    _periodKeysInRange(new Date(from+'T00:00:00Z'), new Date(to+'T00:00:00Z'), IG_GRAN).forEach(k => {
+      if (!(k in byKey)) byKey[k] = 0;
+    });
+  }
+  const keys   = Object.keys(byKey).sort();
+  const labels = keys.map(k => IG_GRAN === 'monthly' ? fmtMonthLabel(k) : fmtDayLabel(k));
+  const isMob  = window.innerWidth <= 768;
+  _orgCharts.ig = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: metric.label,
+        data: keys.map(k => byKey[k]),
+        borderColor: '#00A3E0',
+        backgroundColor: '#00A3E033',
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: .4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { mode: 'index', intersect: false }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { size: 10 }, color: '#5a7a8a', autoSkip: true, maxTicksLimit: isMob ? 5 : 14, maxRotation: 0 } },
+        y: { grid: { color: 'rgba(0,0,0,.05)' }, ticks: { font: { size: 11 }, color: '#5a7a8a' }, min: 0 }
+      }
+    }
+  });
 }
 
 // ============================================================
