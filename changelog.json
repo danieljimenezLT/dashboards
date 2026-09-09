@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-09",
+      "pr_number": 348,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/348",
+      "author": "Santiago Estrada",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fixed Instagram daily reach data being deleted too early\r",
+      "summary": "The Instagram tab's daily reach numbers were being archived and discarded after only 5 days instead of 90, causing recent months to incorrectly show \"outside 90 days\" warnings and estimated (not exact) reach numbers even though they were well within a real 90-day window.\r"
+    },
+    {
+      "date": "2026-09-09",
       "pr_number": 347,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/347",
       "author": "Santiago Estrada",
