@@ -56,12 +56,20 @@ def meta_studio_rows() -> list[dict]:
 def meta_dedicated_accounts() -> list[dict]:
     """Studios with their own Meta ad account (migrated off the shared corporate
     account). All spend/leads in that account belong 100% to the studio — no
-    name-matching needed. Shape: {code, name, account_id}."""
+    name-matching needed. Shape: {code, name, account_id}.
+
+    `meta.ad_account_id` may be a single account ID or a list of them (e.g. a
+    studio that moved to a new ad account mid-campaign) — one row per account
+    is returned, all tagged with the same code, so fetch_all_marketing.py pulls
+    each account separately and nso-studios.html's metaFilter() sums them."""
     rows = []
     for s in load_studios():
         acct = s.get("meta", {}).get("ad_account_id")
-        if acct:
-            rows.append({"code": s.get("code"), "name": s["name"], "account_id": acct})
+        if not acct:
+            continue
+        accts = acct if isinstance(acct, list) else [acct]
+        for a in accts:
+            rows.append({"code": s.get("code"), "name": s["name"], "account_id": a})
     return rows
 
 
