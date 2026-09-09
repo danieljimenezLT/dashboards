@@ -2,6 +2,18 @@
   "entries": [
     {
       "date": "2026-09-09",
+      "pr_number": 350,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/350",
+      "author": "Santiago Estrada",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "GBP and Instagram tabs now have clickable metric cards with a trend chart",
+      "summary": "On the Google Business Profile and Instagram tabs, KPI cards are now clickable - clicking one highlights it and drives a combined trend chart (selected studios summed) with a daily/weekly/monthly toggle. A few ratio-style cards (Avg Star Rating, Followers, Median Reach/Post, Median Likes) stay non-clickable since they cannot be summed per period the way counts can."
+    },
+    {
+      "date": "2026-09-09",
       "pr_number": 349,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/349",
       "author": "Santiago Estrada",
