@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-10",
+      "pr_number": 357,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/357",
+      "author": "Sebastian Arango",
+      "categories": [
+        "Campaign Dashboard"
+      ],
+      "title": "Freeze \"2 Weeks for $40\" campaign data at Sep 7 and remove daily refresh",
+      "summary": "Promotion ended Sep 7. Reverts dataset to Sep 7 snapshot and deletes the scheduled GitHub Actions workflow that was still running daily."
+    },
+    {
+      "date": "2026-09-10",
       "pr_number": 355,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/355",
       "author": "Santiago Estrada",
