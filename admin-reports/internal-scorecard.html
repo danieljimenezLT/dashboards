@@ -17,6 +17,9 @@
 .studio-preset-btn{padding:6px 16px;border-radius:20px;border:1.5px solid #b8c400;background:#fbfde0;color:#6b6b00;font-family:'Oswald',sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .15s}
 .studio-preset-btn:hover{background:#DDFF00;border-color:#DDFF00;color:#4a4a00}
 .section-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#1a1a2e;margin:28px 24px 4px}
+.cpl-good{background:#e8faf0!important;color:#0a8a4a!important}
+.cpl-warn{background:#fff8e1!important;color:#b8860b!important}
+.cpl-bad{background:#ffeaea!important;color:#c0392b!important}
 </style>
 </head>
 <body>
@@ -145,6 +148,21 @@
         </table>
       </div>
     </div>
+    <div class="chart-card" style="margin:0 24px 20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div class="chart-card-title" style="margin-bottom:0">CPL by Period (by studio)</div>
+        <div class="gran-group">
+          <button class="gran-btn active" id="osCplTableGranMonthly" onclick="setOsCplTableGran('monthly')">Monthly</button>
+          <button class="gran-btn" id="osCplTableGranWeekly" onclick="setOsCplTableGran('weekly')">Weekly</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table" id="osCplTable">
+          <thead><tr></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <!-- ============================= NSO TAB ============================= -->
@@ -253,6 +271,21 @@
         </table>
       </div>
     </div>
+    <div class="chart-card" style="margin:0 24px 20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div class="chart-card-title" style="margin-bottom:0">CPL by Period (by studio)</div>
+        <div class="gran-group">
+          <button class="gran-btn active" id="nsoCplTableGranMonthly" onclick="setNsoCplTableGran('monthly')">Monthly</button>
+          <button class="gran-btn" id="nsoCplTableGranWeekly" onclick="setNsoCplTableGran('weekly')">Weekly</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table" id="nsoCplTable">
+          <thead><tr></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -345,6 +378,33 @@ function defaultRange(){
   const to=new Date(); to.setDate(to.getDate()-2);
   const from=new Date(to.getTime()-69*86400000);
   return {from: localDateStr(from), to: localDateStr(to)};
+}
+// Day-count-sensitive fee functions (osLeadteamNetForStudio, etc.) expect
+// f/t as 00:00:00Z / 23:59:59Z boundaries so a plain day-count round is
+// already inclusive. Bucket objects only carry date-only Date instances, so
+// bump a bucket's end to end-of-day before passing it into those functions.
+function bucketEnd235959(b){ return new Date(b.end.getTime()+86399999); }
+
+/* -- CPL-by-period heatmap: thresholds depend on which cost/source preset is
+      currently active (Blended/Meta/Google/Paid Ads) — a custom cost mix has
+      no defined thresholds, so cells render uncolored. -------------------- */
+function getActivePresetKind(rowId){
+  return document.querySelector('#'+rowId+' .preset-btn.active')?.dataset.preset || null;
+}
+function cplThresholdsFor(kind){
+  switch(kind){
+    case 'blended': return {green:25, yellow:30};
+    case 'meta':    return {green:60, yellow:90};
+    case 'google':  return {green:90, yellow:110};
+    case 'paid':    return {green:80, yellow:100};
+    default:        return null;
+  }
+}
+function cplHeatClass(v, th){
+  if(v==null || !th) return '';
+  if(v<th.green) return 'cpl-good';
+  if(v<=th.yellow) return 'cpl-warn';
+  return 'cpl-bad';
 }
 
 /* -- Nav / tab switching --------------------------------------------------- */
@@ -665,8 +725,8 @@ function buildOsCPR(){
     let s=0;
     if(OS_CPR_COSTS_ACTIVE.google) s+=sumGoogleSpend(b.start,b.end);
     if(OS_CPR_COSTS_ACTIVE.meta) s+=sumMetaSpend(b.start,b.end);
-    if(OS_CPR_COSTS_ACTIVE.leadteam) s+=leadteamForRange(b.start,b.end);
-    if(OS_CPR_COSTS_ACTIVE.external_agency) s+=externalAgencyForRange(b.start,b.end);
+    if(OS_CPR_COSTS_ACTIVE.leadteam) s+=leadteamForRange(b.start,bucketEnd235959(b));
+    if(OS_CPR_COSTS_ACTIVE.external_agency) s+=externalAgencyForRange(b.start,bucketEnd235959(b));
     return {s, leads:funnelSeries[i].signups, ft:funnelSeries[i].first_visits, mem:funnelSeries[i].first_activations};
   });
   const labels=cprBuckets.map(b=>b.label);
@@ -681,6 +741,61 @@ function buildOsCPR(){
     scales:{ x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',maxRotation:0}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',callback:v=>'$'+v} } } } });
 
   buildOsCprStudioTable(from,to,selStudios);
+  buildOsCplTable(from,to,selStudios);
+}
+
+// -- CPL by Period (by studio) table — OS tab --------------------------------
+let osCplTableGran='monthly';
+function setOsCplTableGran(g){
+  osCplTableGran=g;
+  document.getElementById('osCplTableGranMonthly').classList.toggle('active', g==='monthly');
+  document.getElementById('osCplTableGranWeekly').classList.toggle('active', g==='weekly');
+  buildOsCplTable(window._osFrom, window._osTo, window._osStudios||[]);
+}
+function buildOsCplTable(from,to,selStudios){
+  const table=document.getElementById('osCplTable'); if(!table||!OS_RAW||!from||!to) return;
+  const selSources=getSelected('sourceMenuOS')||[];
+  const studios=(selStudios&&selStudios.length?selStudios:OS_RAW.studios).slice();
+  const buckets=buildBuckets(osCplTableGran, from, to);
+  const f$2=v=>'$'+Number(v).toFixed(2);
+  const dash='<span style="color:#8aabbf">—</span>';
+
+  const thead=table.querySelector('thead tr');
+  thead.innerHTML='<th class="row-num">#</th><th data-sort="studio">Studio</th>'+
+    buckets.map((b,i)=>`<th class="num" data-sort="col_${i}">${b.label}</th>`).join('');
+
+  const rows=studios.map(studio=>{
+    const row={studio};
+    const daily=filterRows(OS_RAW.daily_detail||[],from,to,[studio],selSources);
+    const monthly=filterRows(OS_RAW.monthly_detail||[],from,to,[studio],selSources);
+    const studioRows=[...daily,...monthly];
+    const leadsSeries=aggregateRowsIntoBuckets(buckets, studioRows, ['signups']);
+    buckets.forEach((b,i)=>{
+      const bEnd=bucketEnd235959(b);
+      let spend=0;
+      const sp=osSpendFor(b.start,bEnd,[studio]);
+      if(OS_CPR_COSTS_ACTIVE.google) spend+=sp.google;
+      if(OS_CPR_COSTS_ACTIVE.meta) spend+=sp.meta;
+      if(OS_CPR_COSTS_ACTIVE.leadteam) spend+=osLeadteamNetForStudio(studio,b.start,bEnd);
+      if(OS_CPR_COSTS_ACTIVE.external_agency) spend+=osExternalAgencyForStudio(studio,b.start,bEnd);
+      const leads=leadsSeries[i].signups||0;
+      row['col_'+i]=leads>0?spend/leads:null;
+    });
+    return row;
+  });
+
+  const lastKey=buckets.length?'col_'+(buckets.length-1):null;
+  if(lastKey) _sortState['osCplTable']={col:lastKey, asc:false};
+  const th=cplThresholdsFor(getActivePresetKind('presetRowOs'));
+
+  sortableTable('osCplTable', rows, (r,i)=>{
+    const cells=buckets.map((b,bi)=>{
+      const v=r['col_'+bi];
+      const cls=v!=null?cplHeatClass(v,th):'';
+      return `<td class="num ${cls}">${v!=null?f$2(v):dash}</td>`;
+    }).join('');
+    return `<tr><td class="row-num">${i}</td><td>${r.studio}</td>${cells}</tr>`;
+  });
 }
 
 function buildOsCprStudioTable(from,to,selStudios){
@@ -979,6 +1094,7 @@ function buildNsoCPR(){
   if(!activeStudios.length){
     el.innerHTML=''; if(spendBd) spendBd.innerHTML='';
     document.getElementById('nsoCprStudioTable').querySelector('tbody').innerHTML='';
+    buildNsoCplTable([],selSrc);
     return;
   }
 
@@ -1043,6 +1159,54 @@ function buildNsoCPR(){
   }
 
   buildNsoCprStudioTable(activeStudios,fromStr,toStr,selSrc);
+  buildNsoCplTable(activeStudios,selSrc);
+}
+
+// -- CPL by Period (by studio) table — NSO tab -------------------------------
+let nsoCplTableGran='monthly';
+function setNsoCplTableGran(g){
+  nsoCplTableGran=g;
+  document.getElementById('nsoCplTableGranMonthly').classList.toggle('active', g==='monthly');
+  document.getElementById('nsoCplTableGranWeekly').classList.toggle('active', g==='weekly');
+  const selStudios=window._nsoStudios||[], selSrc=window._nsoSources||[];
+  buildNsoCplTable(NSO_TAB_STUDIOS.filter(s=>selStudios.includes(s)), selSrc);
+}
+function buildNsoCplTable(activeStudios,selSrc){
+  const table=document.getElementById('nsoCplTable'); if(!table) return;
+  const from=window._nsoFrom, to=window._nsoTo;
+  if(!from||!to){ table.querySelector('thead tr').innerHTML=''; table.querySelector('tbody').innerHTML=''; return; }
+  if(!activeStudios.length){ table.querySelector('thead tr').innerHTML=''; table.querySelector('tbody').innerHTML=''; return; }
+  const buckets=buildBuckets(nsoCplTableGran, from, to);
+  const f$2=v=>'$'+Number(v).toFixed(2);
+  const dash='<span style="color:#8aabbf">—</span>';
+
+  const thead=table.querySelector('thead tr');
+  thead.innerHTML='<th class="row-num">#</th><th data-sort="studio">Studio</th>'+
+    buckets.map((b,i)=>`<th class="num" data-sort="col_${i}">${b.label}</th>`).join('');
+
+  const rows=activeStudios.map(studio=>{
+    const row={studio: studio.replace('SWEAT440 ','')};
+    buckets.forEach((b,i)=>{
+      const bF=isoUTC(b.start), bT=isoUTC(b.end);
+      const spend=nsoTotalSpend([studio],bF,bT);
+      const leads=nsoLeadsCount(bF,bT,[studio],selSrc);
+      row['col_'+i]=leads>0?spend/leads:null;
+    });
+    return row;
+  });
+
+  const lastKey=buckets.length?'col_'+(buckets.length-1):null;
+  if(lastKey) _sortState['nsoCplTable']={col:lastKey, asc:false};
+  const th=cplThresholdsFor(getActivePresetKind('presetRowNso'));
+
+  sortableTable('nsoCplTable', rows, (r,i)=>{
+    const cells=buckets.map((b,bi)=>{
+      const v=r['col_'+bi];
+      const cls=v!=null?cplHeatClass(v,th):'';
+      return `<td class="num ${cls}">${v!=null?f$2(v):dash}</td>`;
+    }).join('');
+    return `<tr><td class="row-num">${i}</td><td>${r.studio}</td>${cells}</tr>`;
+  });
 }
 
 function buildNsoCprStudioTable(activeStudios,fromStr,toStr,selSrc){
