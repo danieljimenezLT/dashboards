@@ -268,10 +268,11 @@ def load_studio_config(gc):
 
         # Milestone dates from Scheduling columns
         _MILESTONE_COLS = [
-            ("early_lead_date",       "early lead date",                  "Early Lead Date",                    "Landing page & early interest list"),
-            ("mbo_date",              "full marketing build out complete", "Full Marketing Build Out Complete",  "Lead form live on website"),
-            ("paid_presales_start_date", "paid presales start date",       "Paid Presales Start Date",           "Presales campaign begins"),
-            ("paid_lead_gen_date",    "paid lead gen date",               "Paid Lead Gen Start",                "Meta / Google paid ads begin"),
+            ("early_lead_date",          "early lead date",                  "Early Lead Date",                    "Landing page & early interest list"),
+            ("mbo_date",                 "full marketing build out complete", "Full Marketing Build Out Complete",  "Lead form live on website"),
+            ("paid_presales_start_date", "paid presales start date",         "Paid Presales Start Date",           "Presales campaign begins"),
+            ("paid_lead_gen_date",       "paid lead gen date",               "Paid Lead Gen Start",                "Meta / Google paid ads begin"),
+            ("grassroots_start_date",    "grassroots start date",            "Grassroots Start Date",              "Community & grassroots outreach begins"),
         ]
         milestones = []
         for key, col_name, label, subtitle in _MILESTONE_COLS:

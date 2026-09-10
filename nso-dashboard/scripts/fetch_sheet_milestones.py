@@ -36,6 +36,7 @@ MILESTONE_COLS = [
     ("mbo_date",                 "Full Marketing Build Out Complete"),
     ("paid_lead_gen_date",       "Paid Lead Gen Date"),
     ("paid_presales_start_date", "Paid Presales Start Date"),
+    ("grassroots_start_date",    "Grassroots Start Date"),
 ]
 
 MILESTONE_LABELS = {
@@ -43,6 +44,7 @@ MILESTONE_LABELS = {
     "mbo_date":                  "Full Marketing Build Out Complete",
     "paid_lead_gen_date":        "Paid Lead Gen Start",
     "paid_presales_start_date":  "Paid Presales Start Date",
+    "grassroots_start_date":     "Grassroots Start Date",
 }
 
 MILESTONE_SUBTITLES = {
@@ -50,6 +52,7 @@ MILESTONE_SUBTITLES = {
     "mbo_date":                  "Lead form live on website",
     "paid_lead_gen_date":        "Meta / Google paid ads begin",
     "paid_presales_start_date":  "Presales campaign begins",
+    "grassroots_start_date":     "Community & grassroots outreach begins",
 }
 
 
