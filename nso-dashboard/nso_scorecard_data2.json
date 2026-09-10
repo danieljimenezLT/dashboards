@@ -938,8 +938,8 @@
           "date_range": "9/6 - 9/12",
           "date_start": "2026-09-06",
           "date_end": "2026-09-12",
-          "new_leads": 57,
-          "total_leads": 1977.0,
+          "new_leads": 54,
+          "total_leads": 1974.0,
           "digital_leads_week": 4,
           "presales_week": 0,
           "presales_count": 682.0,
@@ -958,7 +958,7 @@
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
           "total_marketing_spend": 703.96,
-          "blended_cpl": 12.35,
+          "blended_cpl": 13.04,
           "blended_cpa": null,
           "estimated_day1_rmr": null
         },
@@ -968,7 +968,7 @@
           "date_start": "2026-09-13",
           "date_end": "2026-09-19",
           "new_leads": null,
-          "total_leads": 1977.0,
+          "total_leads": 1974.0,
           "digital_leads_week": null,
           "presales_week": null,
           "presales_count": 682.0,
@@ -997,7 +997,7 @@
           "date_start": "2026-09-20",
           "date_end": "2026-09-26",
           "new_leads": null,
-          "total_leads": 1977.0,
+          "total_leads": 1974.0,
           "digital_leads_week": null,
           "presales_week": null,
           "presales_count": 682.0,
@@ -3603,12 +3603,6 @@
         "estimated_roms_target": "5x",
         "tier0_price": 99
       },
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-02-02",
       "tier_daily_sales": [
         {
           "date": "2025-10-30",
@@ -4258,7 +4252,13 @@
           "date": "2026-09-06",
           "count": -1
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-02-02"
     },
     {
       "name": "Herriman",
@@ -4540,7 +4540,7 @@
           "cancellations_count": 12.0,
           "grassroots_leads": 21,
           "grassroots_presales": 12,
-          "digital_presales_week": 0,
+          "digital_presales_week": 1,
           "digital_cancellations_week": 0,
           "conversion_rate": 33.3,
           "comm_events": 8,
@@ -8859,7 +8859,7 @@
           "date_end": "2026-08-29",
           "new_leads": 50,
           "total_leads": 679.0,
-          "digital_leads_week": 11,
+          "digital_leads_week": 12,
           "presales_week": 18,
           "presales_count": 173.0,
           "cancellations_week": 5,
@@ -10135,12 +10135,12 @@
           "date_end": "2026-07-25",
           "new_leads": 35,
           "total_leads": 413.0,
-          "digital_leads_week": 18,
+          "digital_leads_week": 17,
           "presales_week": 12,
           "presales_count": 87.0,
           "cancellations_week": 1,
           "cancellations_count": 9.0,
-          "grassroots_leads": 5,
+          "grassroots_leads": 6,
           "grassroots_presales": 1,
           "digital_presales_week": 2,
           "digital_cancellations_week": 0,
@@ -10256,7 +10256,7 @@
           "presales_count": 138.0,
           "cancellations_week": 0,
           "cancellations_count": 11.0,
-          "grassroots_leads": 2,
+          "grassroots_leads": 1,
           "grassroots_presales": 0,
           "digital_presales_week": 4,
           "digital_cancellations_week": 0,
