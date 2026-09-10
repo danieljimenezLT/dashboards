@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-09-10",
+      "pr_number": 354,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/354",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Added a per-studio CPL-by-month/week table with color coding to the internal scorecard",
+      "summary": "The internal performance scorecard's OS and NSO tabs now include a sortable table showing each studio's blended cost per lead by month (or week), color-coded green/yellow/red based on which cost preset is active."
+    },
+    {
       "date": "2026-09-09",
       "pr_number": 353,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/353",
