@@ -30,6 +30,12 @@
           "label": "Paid Presales Start Date",
           "subtitle": "Presales campaign begins",
           "date": "2026-02-10"
+        },
+        {
+          "key": "grassroots_start_date",
+          "label": "Grassroots Start Date",
+          "subtitle": "Community & grassroots outreach begins",
+          "date": "2026-02-28"
         }
       ],
       "current_week": 31,
@@ -952,12 +958,12 @@
           "conversion_rate": 0.0,
           "comm_events": 0,
           "ig_new_followers": null,
-          "meta_spend": 254.29,
+          "meta_spend": 254.32,
           "google_spend": 169.67,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 703.96,
+          "total_marketing_spend": 703.99,
           "blended_cpl": 13.04,
           "blended_cpa": null,
           "estimated_day1_rmr": null
@@ -1267,6 +1273,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-08-04",
       "tier_daily_sales": [
         {
           "date": "2026-02-11",
@@ -1852,13 +1864,7 @@
           "date": "2026-08-27",
           "count": -1
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-08-04"
+      ]
     },
     {
       "name": "Reston",
@@ -3274,324 +3280,324 @@
         {
           "week": 1,
           "t0": 0,
-          "t1": 0,
-          "t2": 4,
+          "t1": 4,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 2,
           "t0": 0,
-          "t1": 0,
-          "t2": 7,
+          "t1": 7,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 3,
           "t0": 0,
-          "t1": 0,
-          "t2": 7,
+          "t1": 7,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 4,
           "t0": 0,
-          "t1": 0,
-          "t2": 11,
+          "t1": 11,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 5,
           "t0": 0,
-          "t1": 0,
-          "t2": 15,
+          "t1": 15,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 6,
           "t0": 0,
-          "t1": 0,
-          "t2": 20,
+          "t1": 20,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 7,
           "t0": 0,
-          "t1": 0,
-          "t2": 21,
+          "t1": 21,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 8,
           "t0": 0,
-          "t1": 0,
-          "t2": 25,
+          "t1": 25,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 9,
           "t0": 0,
-          "t1": 0,
-          "t2": 25,
+          "t1": 25,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 10,
           "t0": 0,
-          "t1": 0,
-          "t2": 33,
+          "t1": 33,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 11,
           "t0": 0,
-          "t1": 0,
-          "t2": 43,
+          "t1": 43,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 12,
           "t0": 0,
-          "t1": 0,
-          "t2": 48,
+          "t1": 48,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 13,
           "t0": 0,
-          "t1": 0,
-          "t2": 55,
+          "t1": 55,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 14,
           "t0": 0,
-          "t1": 0,
-          "t2": 61,
+          "t1": 61,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 15,
           "t0": 0,
-          "t1": 0,
-          "t2": 69,
+          "t1": 69,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 16,
           "t0": 0,
-          "t1": 0,
-          "t2": 78,
+          "t1": 78,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 17,
           "t0": 0,
-          "t1": 0,
-          "t2": 80,
+          "t1": 80,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 18,
           "t0": 0,
-          "t1": 0,
-          "t2": 85,
+          "t1": 85,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 19,
           "t0": 0,
-          "t1": 0,
-          "t2": 95,
+          "t1": 95,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 20,
-          "t0": 0,
-          "t1": 7,
-          "t2": 101,
+          "t0": 7,
+          "t1": 101,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 21,
-          "t0": 0,
-          "t1": 15,
-          "t2": 108,
+          "t0": 15,
+          "t1": 108,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 22,
-          "t0": 0,
-          "t1": 28,
-          "t2": 109,
+          "t0": 28,
+          "t1": 109,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 23,
-          "t0": 0,
-          "t1": 32,
-          "t2": 119,
+          "t0": 32,
+          "t1": 119,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 24,
-          "t0": 0,
-          "t1": 32,
-          "t2": 125,
+          "t0": 32,
+          "t1": 125,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 25,
-          "t0": 0,
-          "t1": 40,
-          "t2": 129,
+          "t0": 40,
+          "t1": 129,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 26,
-          "t0": 0,
-          "t1": 40,
-          "t2": 139,
+          "t0": 40,
+          "t1": 139,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 27,
-          "t0": 0,
-          "t1": 44,
-          "t2": 142,
+          "t0": 44,
+          "t1": 142,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 28,
-          "t0": 0,
-          "t1": 47,
-          "t2": 149,
+          "t0": 47,
+          "t1": 149,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 29,
-          "t0": 0,
-          "t1": 49,
-          "t2": 154,
+          "t0": 49,
+          "t1": 154,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 30,
-          "t0": 0,
-          "t1": 49,
-          "t2": 160,
+          "t0": 49,
+          "t1": 160,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 31,
-          "t0": 0,
-          "t1": 49,
-          "t2": 175,
+          "t0": 49,
+          "t1": 175,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 32,
-          "t0": 0,
-          "t1": 50,
-          "t2": 180,
+          "t0": 50,
+          "t1": 180,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 33,
-          "t0": 0,
-          "t1": 55,
-          "t2": 185,
+          "t0": 55,
+          "t1": 185,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 34,
-          "t0": 0,
-          "t1": 73,
-          "t2": 222,
+          "t0": 73,
+          "t1": 222,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 35,
-          "t0": 0,
-          "t1": 77,
-          "t2": 246,
+          "t0": 77,
+          "t1": 246,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 36,
-          "t0": 0,
-          "t1": 82,
-          "t2": 259,
+          "t0": 82,
+          "t1": 259,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 37,
-          "t0": 0,
-          "t1": 87,
-          "t2": 289,
+          "t0": 87,
+          "t1": 289,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 38,
-          "t0": 0,
-          "t1": 95,
-          "t2": 304,
+          "t0": 95,
+          "t1": 304,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 39,
-          "t0": 0,
-          "t1": 101,
-          "t2": 331,
-          "t3": 3
+          "t0": 101,
+          "t1": 331,
+          "t2": 3,
+          "t3": 0
         },
         {
           "week": 40,
-          "t0": 0,
-          "t1": 103,
-          "t2": 331,
-          "t3": 9
+          "t0": 103,
+          "t1": 331,
+          "t2": 9,
+          "t3": 0
         },
         {
           "week": 41,
-          "t0": 0,
-          "t1": 110,
-          "t2": 331,
-          "t3": 21
+          "t0": 110,
+          "t1": 331,
+          "t2": 21,
+          "t3": 0
         },
         {
           "week": 42,
-          "t0": 0,
-          "t1": 114,
-          "t2": 317,
-          "t3": 47
+          "t0": 114,
+          "t1": 317,
+          "t2": 47,
+          "t3": 0
         },
         {
           "week": 43,
-          "t0": 0,
-          "t1": 110,
-          "t2": 304,
-          "t3": 45
+          "t0": 110,
+          "t1": 304,
+          "t2": 45,
+          "t3": 0
         },
         {
           "week": 44,
-          "t0": 0,
-          "t1": 110,
-          "t2": 303,
-          "t3": 45
+          "t0": 110,
+          "t1": 303,
+          "t2": 45,
+          "t3": 0
         },
         {
           "week": 45,
-          "t0": 0,
-          "t1": 110,
-          "t2": 303,
-          "t3": 45
+          "t0": 110,
+          "t1": 303,
+          "t2": 45,
+          "t3": 0
         },
         {
           "week": 46,
-          "t0": 0,
-          "t1": 110,
-          "t2": 303,
-          "t3": 45
+          "t0": 110,
+          "t1": 303,
+          "t2": 45,
+          "t3": 0
         }
       ],
       "pricing": {
@@ -3604,6 +3610,12 @@
         "estimated_roms_target": "5x",
         "tier0_price": 99
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-02-02",
       "tier_daily_sales": [
         {
           "date": "2025-10-30",
@@ -4253,13 +4265,7 @@
           "date": "2026-09-06",
           "count": -1
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-02-02"
+      ]
     },
     {
       "name": "Herriman",
@@ -4285,6 +4291,12 @@
           "label": "Full Marketing Build Out Complete",
           "subtitle": "Lead form live on website",
           "date": "2026-03-09"
+        },
+        {
+          "key": "grassroots_start_date",
+          "label": "Grassroots Start Date",
+          "subtitle": "Community & grassroots outreach begins",
+          "date": "2026-05-09"
         },
         {
           "key": "paid_presales_start_date",
@@ -4720,14 +4732,14 @@
           "conversion_rate": 57.1,
           "comm_events": 0,
           "ig_new_followers": 19,
-          "meta_spend": 545.69,
+          "meta_spend": 545.9,
           "google_spend": 78.73,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 904.42,
-          "blended_cpl": 43.07,
-          "blended_cpa": 75.37,
+          "total_marketing_spend": 904.63,
+          "blended_cpl": 43.08,
+          "blended_cpa": 75.39,
           "estimated_day1_rmr": null
         },
         {
@@ -5141,197 +5153,197 @@
         {
           "week": 1,
           "t0": 0,
-          "t1": 0,
-          "t2": 117,
+          "t1": 117,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 2,
           "t0": 0,
-          "t1": 0,
-          "t2": 125,
+          "t1": 125,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 3,
           "t0": 0,
-          "t1": 20,
-          "t2": 128,
+          "t1": 128,
+          "t2": 20,
           "t3": 0
         },
         {
           "week": 4,
           "t0": 0,
-          "t1": 27,
-          "t2": 132,
+          "t1": 132,
+          "t2": 27,
           "t3": 0
         },
         {
           "week": 5,
           "t0": 0,
-          "t1": 28,
-          "t2": 133,
+          "t1": 133,
+          "t2": 28,
           "t3": 0
         },
         {
           "week": 6,
           "t0": 0,
-          "t1": 43,
-          "t2": 133,
+          "t1": 133,
+          "t2": 43,
           "t3": 0
         },
         {
           "week": 7,
           "t0": 0,
-          "t1": 54,
-          "t2": 133,
+          "t1": 133,
+          "t2": 54,
           "t3": 0
         },
         {
           "week": 8,
           "t0": 0,
-          "t1": 70,
-          "t2": 133,
+          "t1": 133,
+          "t2": 70,
           "t3": 0
         },
         {
           "week": 9,
           "t0": 0,
-          "t1": 83,
-          "t2": 132,
+          "t1": 132,
+          "t2": 83,
           "t3": 0
         },
         {
           "week": 10,
           "t0": 0,
-          "t1": 102,
-          "t2": 132,
+          "t1": 132,
+          "t2": 102,
           "t3": 0
         },
         {
           "week": 11,
           "t0": 0,
-          "t1": 118,
-          "t2": 132,
+          "t1": 132,
+          "t2": 118,
           "t3": 0
         },
         {
           "week": 12,
           "t0": 0,
-          "t1": 128,
-          "t2": 132,
+          "t1": 132,
+          "t2": 128,
           "t3": 0
         },
         {
           "week": 13,
           "t0": 0,
-          "t1": 159,
-          "t2": 132,
+          "t1": 132,
+          "t2": 159,
           "t3": 0
         },
         {
           "week": 14,
           "t0": 0,
-          "t1": 170,
-          "t2": 132,
+          "t1": 132,
+          "t2": 170,
           "t3": 0
         },
         {
           "week": 15,
           "t0": 0,
-          "t1": 170,
-          "t2": 132,
+          "t1": 132,
+          "t2": 170,
           "t3": 0
         },
         {
           "week": 16,
           "t0": 0,
-          "t1": 170,
-          "t2": 132,
+          "t1": 132,
+          "t2": 170,
           "t3": 0
         },
         {
           "week": 17,
           "t0": 0,
-          "t1": 170,
-          "t2": 132,
+          "t1": 132,
+          "t2": 170,
           "t3": 0
         },
         {
           "week": 18,
           "t0": 0,
-          "t1": 170,
-          "t2": 132,
+          "t1": 132,
+          "t2": 170,
           "t3": 0
         },
         {
           "week": 19,
           "t0": 0,
-          "t1": 170,
-          "t2": 132,
+          "t1": 132,
+          "t2": 170,
           "t3": 0
         },
         {
           "week": 20,
           "t0": 0,
-          "t1": 170,
-          "t2": 132,
+          "t1": 132,
+          "t2": 170,
           "t3": 0
         },
         {
           "week": 21,
           "t0": 0,
-          "t1": 170,
-          "t2": 132,
+          "t1": 132,
+          "t2": 170,
           "t3": 0
         },
         {
           "week": 22,
           "t0": 0,
-          "t1": 170,
-          "t2": 132,
+          "t1": 132,
+          "t2": 170,
           "t3": 0
         },
         {
           "week": 23,
           "t0": 0,
-          "t1": 170,
-          "t2": 132,
+          "t1": 132,
+          "t2": 170,
           "t3": 0
         },
         {
           "week": 24,
           "t0": 0,
-          "t1": 170,
-          "t2": 132,
+          "t1": 132,
+          "t2": 170,
           "t3": 0
         },
         {
           "week": 25,
           "t0": 0,
-          "t1": 170,
-          "t2": 132,
+          "t1": 132,
+          "t2": 170,
           "t3": 0
         },
         {
           "week": 26,
           "t0": 0,
-          "t1": 170,
-          "t2": 132,
+          "t1": 132,
+          "t2": 170,
           "t3": 0
         },
         {
           "week": 27,
           "t0": 0,
-          "t1": 170,
-          "t2": 132,
+          "t1": 132,
+          "t2": 170,
           "t3": 0
         },
         {
           "week": 28,
           "t0": 0,
-          "t1": 170,
-          "t2": 132,
+          "t1": 132,
+          "t2": 170,
           "t3": 0
         }
       ],
@@ -5348,6 +5360,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sales Membership",
+        "price_129": "Pre Sale Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-09-08",
       "tier_daily_sales": [
         {
           "date": "2026-03-27",
@@ -5789,13 +5807,7 @@
           "date": "2026-09-08",
           "count": 10
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sales Membership",
-        "price_129": "Pre Sale Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-09-08"
+      ]
     },
     {
       "name": "Old Bridge",
@@ -5833,6 +5845,12 @@
           "label": "Paid Lead Gen Start",
           "subtitle": "Meta / Google paid ads begin",
           "date": "2026-07-01"
+        },
+        {
+          "key": "grassroots_start_date",
+          "label": "Grassroots Start Date",
+          "subtitle": "Community & grassroots outreach begins",
+          "date": "2026-07-25"
         },
         {
           "key": "paid_presales_start_date",
@@ -6065,14 +6083,14 @@
           "conversion_rate": 50.0,
           "comm_events": 0,
           "ig_new_followers": 21,
-          "meta_spend": 835.54,
+          "meta_spend": 835.65,
           "google_spend": 86.79,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 1202.33,
+          "total_marketing_spend": 1202.44,
           "blended_cpl": 60.12,
-          "blended_cpa": 120.23,
+          "blended_cpa": 120.24,
           "estimated_day1_rmr": null
         },
         {
@@ -6891,6 +6909,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-12-01",
       "tier_daily_sales": [
         {
           "date": "2026-07-23",
@@ -7060,13 +7084,7 @@
           "date": "2026-09-08",
           "count": 4
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-12-01"
+      ]
     },
     {
       "name": "Dr Phillips",
@@ -7092,6 +7110,12 @@
           "label": "Full Marketing Build Out Complete",
           "subtitle": "Lead form live on website",
           "date": "2026-05-04"
+        },
+        {
+          "key": "grassroots_start_date",
+          "label": "Grassroots Start Date",
+          "subtitle": "Community & grassroots outreach begins",
+          "date": "2026-05-09"
         },
         {
           "key": "paid_presales_start_date",
@@ -7585,14 +7609,14 @@
           "conversion_rate": 36.4,
           "comm_events": 0,
           "ig_new_followers": 17,
-          "meta_spend": 275.92,
+          "meta_spend": 276.14,
           "google_spend": 69.3,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 625.22,
+          "total_marketing_spend": 625.44,
           "blended_cpl": 18.95,
-          "blended_cpa": 52.1,
+          "blended_cpa": 52.12,
           "estimated_day1_rmr": null
         },
         {
@@ -8151,6 +8175,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-08-28",
       "tier_daily_sales": [
         {
           "date": "2026-05-19",
@@ -8408,13 +8438,7 @@
           "date": "2026-09-08",
           "count": 4
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-08-28"
+      ]
     },
     {
       "name": "Aventura",
@@ -8446,6 +8470,12 @@
           "label": "Paid Presales Start Date",
           "subtitle": "Presales campaign begins",
           "date": "2026-05-27"
+        },
+        {
+          "key": "grassroots_start_date",
+          "label": "Grassroots Start Date",
+          "subtitle": "Community & grassroots outreach begins",
+          "date": "2026-06-20"
         }
       ],
       "current_week": 16,
@@ -8933,14 +8963,14 @@
           "conversion_rate": 36.4,
           "comm_events": 0,
           "ig_new_followers": 16,
-          "meta_spend": 665.95,
+          "meta_spend": 666.01,
           "google_spend": 95.35,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 1041.3,
-          "blended_cpl": 94.66,
-          "blended_cpa": 260.32,
+          "total_marketing_spend": 1041.36,
+          "blended_cpl": 94.67,
+          "blended_cpa": 260.34,
           "estimated_day1_rmr": null
         },
         {
@@ -9497,6 +9527,12 @@
         "tier2_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": null,
+        "price_129": "Pre Sale Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-09-30",
       "tier_daily_sales": [
         {
           "date": "2026-05-19",
@@ -9830,13 +9866,7 @@
           "date": "2026-09-08",
           "count": 1
         }
-      ],
-      "sku_map": {
-        "price_99": null,
-        "price_129": "Pre Sale Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-09-30"
+      ]
     },
     {
       "name": "North Miami",
@@ -9868,6 +9898,12 @@
           "label": "Paid Presales Start Date",
           "subtitle": "Presales campaign begins",
           "date": "2026-05-27"
+        },
+        {
+          "key": "grassroots_start_date",
+          "label": "Grassroots Start Date",
+          "subtitle": "Community & grassroots outreach begins",
+          "date": "2026-06-20"
         }
       ],
       "current_week": 16,
@@ -10355,14 +10391,14 @@
           "conversion_rate": 55.6,
           "comm_events": 0,
           "ig_new_followers": 30,
-          "meta_spend": 468.99,
+          "meta_spend": 469.38,
           "google_spend": 77.38,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 826.37,
-          "blended_cpl": 91.82,
-          "blended_cpa": 165.27,
+          "total_marketing_spend": 826.76,
+          "blended_cpl": 91.86,
+          "blended_cpa": 165.35,
           "estimated_day1_rmr": null
         },
         {
@@ -10955,6 +10991,12 @@
         "tier2_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": null,
+        "price_129": "Pre Sale Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-10-30",
       "tier_daily_sales": [
         {
           "date": "2026-05-26",
@@ -11244,13 +11286,7 @@
           "date": "2026-09-08",
           "count": 4
         }
-      ],
-      "sku_map": {
-        "price_99": null,
-        "price_129": "Pre Sale Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-10-30"
+      ]
     },
     {
       "name": "Dallas - Uptown",
@@ -11271,6 +11307,12 @@
       "opening_date": "2026-11-07",
       "goal_announce_target": 300.0,
       "milestones": [
+        {
+          "key": "grassroots_start_date",
+          "label": "Grassroots Start Date",
+          "subtitle": "Community & grassroots outreach begins",
+          "date": "2026-04-25"
+        },
         {
           "key": "mbo_date",
           "label": "Full Marketing Build Out Complete",
@@ -11711,13 +11753,13 @@
           "conversion_rate": 0.0,
           "comm_events": 0,
           "ig_new_followers": 16,
-          "meta_spend": 66.0,
+          "meta_spend": 66.01,
           "google_spend": 0.0,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 346.0,
-          "blended_cpl": 38.44,
+          "total_marketing_spend": 346.01,
+          "blended_cpl": 38.45,
           "blended_cpa": null,
           "estimated_day1_rmr": null
         },
@@ -12132,197 +12174,197 @@
         {
           "week": 1,
           "t0": 0,
-          "t1": 0,
-          "t2": 51,
+          "t1": 51,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 2,
           "t0": 0,
-          "t1": 0,
-          "t2": 69,
+          "t1": 69,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 3,
           "t0": 0,
-          "t1": 0,
-          "t2": 93,
+          "t1": 93,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 4,
           "t0": 0,
-          "t1": 0,
-          "t2": 101,
+          "t1": 101,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 5,
           "t0": 0,
-          "t1": 2,
-          "t2": 109,
+          "t1": 111,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 6,
           "t0": 0,
-          "t1": 9,
-          "t2": 108,
+          "t1": 117,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 7,
           "t0": 0,
-          "t1": 20,
-          "t2": 107,
+          "t1": 127,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 8,
           "t0": 0,
-          "t1": 40,
-          "t2": 105,
+          "t1": 145,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 9,
           "t0": 0,
-          "t1": 60,
-          "t2": 104,
+          "t1": 164,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 10,
           "t0": 0,
-          "t1": 82,
-          "t2": 104,
+          "t1": 186,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 11,
           "t0": 0,
-          "t1": 98,
-          "t2": 103,
+          "t1": 201,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 12,
           "t0": 0,
-          "t1": 106,
-          "t2": 102,
+          "t1": 208,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 13,
           "t0": 0,
-          "t1": 120,
-          "t2": 102,
+          "t1": 222,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 14,
           "t0": 0,
-          "t1": 120,
-          "t2": 100,
+          "t1": 220,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 15,
           "t0": 0,
-          "t1": 120,
-          "t2": 100,
+          "t1": 220,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 16,
           "t0": 0,
-          "t1": 120,
-          "t2": 100,
+          "t1": 220,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 17,
           "t0": 0,
-          "t1": 120,
-          "t2": 100,
+          "t1": 220,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 18,
           "t0": 0,
-          "t1": 120,
-          "t2": 100,
+          "t1": 220,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 19,
           "t0": 0,
-          "t1": 120,
-          "t2": 100,
+          "t1": 220,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 20,
           "t0": 0,
-          "t1": 120,
-          "t2": 100,
+          "t1": 220,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 21,
           "t0": 0,
-          "t1": 120,
-          "t2": 100,
+          "t1": 220,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 22,
           "t0": 0,
-          "t1": 120,
-          "t2": 100,
+          "t1": 220,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 23,
           "t0": 0,
-          "t1": 120,
-          "t2": 100,
+          "t1": 220,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 24,
           "t0": 0,
-          "t1": 120,
-          "t2": 100,
+          "t1": 220,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 25,
           "t0": 0,
-          "t1": 120,
-          "t2": 100,
+          "t1": 220,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 26,
           "t0": 0,
-          "t1": 120,
-          "t2": 100,
+          "t1": 220,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 27,
           "t0": 0,
-          "t1": 120,
-          "t2": 100,
+          "t1": 220,
+          "t2": 0,
           "t3": 0
         },
         {
           "week": 28,
           "t0": 0,
-          "t1": 120,
-          "t2": 100,
+          "t1": 220,
+          "t2": 0,
           "t3": 0
         }
       ],
@@ -12337,6 +12379,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sales Membership",
+        "price_129": "Pre Sale Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-10-10",
       "tier_daily_sales": [
         {
           "date": "2026-05-15",
@@ -12670,13 +12718,7 @@
           "date": "2026-09-07",
           "count": -1
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sales Membership",
-        "price_129": "Pre Sale Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-10-10"
+      ]
     },
     {
       "name": "Fort Myers",
@@ -12693,8 +12735,8 @@
         "marketing_budget": 27900.0
       },
       "co_week": 14,
-      "go_week": 28,
-      "opening_date": "2026-02-06",
+      "go_week": 18,
+      "opening_date": "2027-02-06",
       "goal_announce_target": 300.0,
       "milestones": [
         {
@@ -12708,6 +12750,12 @@
           "label": "Full Marketing Build Out Complete",
           "subtitle": "Lead form live on website",
           "date": "2026-06-25"
+        },
+        {
+          "key": "grassroots_start_date",
+          "label": "Grassroots Start Date",
+          "subtitle": "Community & grassroots outreach begins",
+          "date": "2026-07-25"
         },
         {
           "key": "paid_lead_gen_date",
@@ -13564,93 +13612,6 @@
           "blended_cpl": null,
           "blended_cpa": null,
           "estimated_day1_rmr": null
-        },
-        {
-          "week": "WEEK 29",
-          "date_range": "4/18 - 4/24",
-          "date_start": "2027-04-18",
-          "date_end": "2027-04-24",
-          "new_leads": null,
-          "total_leads": 337.0,
-          "digital_leads_week": null,
-          "presales_week": null,
-          "presales_count": 45.0,
-          "cancellations_week": null,
-          "cancellations_count": 1.0,
-          "grassroots_leads": null,
-          "grassroots_presales": null,
-          "digital_presales_week": null,
-          "digital_cancellations_week": null,
-          "conversion_rate": null,
-          "comm_events": null,
-          "ig_new_followers": null,
-          "meta_spend": null,
-          "google_spend": null,
-          "grassroots_spend": null,
-          "other_spend": null,
-          "leadteam_fee": null,
-          "total_marketing_spend": null,
-          "blended_cpl": null,
-          "blended_cpa": null,
-          "estimated_day1_rmr": null
-        },
-        {
-          "week": "WEEK 30",
-          "date_range": "4/25 - 5/1",
-          "date_start": "2027-04-25",
-          "date_end": "2027-05-01",
-          "new_leads": null,
-          "total_leads": 337.0,
-          "digital_leads_week": null,
-          "presales_week": null,
-          "presales_count": 45.0,
-          "cancellations_week": null,
-          "cancellations_count": 1.0,
-          "grassroots_leads": null,
-          "grassroots_presales": null,
-          "digital_presales_week": null,
-          "digital_cancellations_week": null,
-          "conversion_rate": null,
-          "comm_events": null,
-          "ig_new_followers": null,
-          "meta_spend": null,
-          "google_spend": null,
-          "grassroots_spend": null,
-          "other_spend": null,
-          "leadteam_fee": null,
-          "total_marketing_spend": null,
-          "blended_cpl": null,
-          "blended_cpa": null,
-          "estimated_day1_rmr": null
-        },
-        {
-          "week": "WEEK 31",
-          "date_range": "5/2 - 5/8",
-          "date_start": "2027-05-02",
-          "date_end": "2027-05-08",
-          "new_leads": null,
-          "total_leads": 337.0,
-          "digital_leads_week": null,
-          "presales_week": null,
-          "presales_count": 45.0,
-          "cancellations_week": null,
-          "cancellations_count": 1.0,
-          "grassroots_leads": null,
-          "grassroots_presales": null,
-          "digital_presales_week": null,
-          "digital_cancellations_week": null,
-          "conversion_rate": null,
-          "comm_events": null,
-          "ig_new_followers": null,
-          "meta_spend": null,
-          "google_spend": null,
-          "grassroots_spend": null,
-          "other_spend": null,
-          "leadteam_fee": null,
-          "total_marketing_spend": null,
-          "blended_cpl": null,
-          "blended_cpa": null,
-          "estimated_day1_rmr": null
         }
       ],
       "tier_rmr_by_week": [
@@ -13849,27 +13810,6 @@
           "t1": 44,
           "t2": 0,
           "t3": 0
-        },
-        {
-          "week": 29,
-          "t0": 0,
-          "t1": 44,
-          "t2": 0,
-          "t3": 0
-        },
-        {
-          "week": 30,
-          "t0": 0,
-          "t1": 44,
-          "t2": 0,
-          "t3": 0
-        },
-        {
-          "week": 31,
-          "t0": 0,
-          "t1": 44,
-          "t2": 0,
-          "t3": 0
         }
       ],
       "pricing": {
@@ -13881,6 +13821,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2027-01-08",
       "tier_daily_sales": [
         {
           "date": "2026-08-03",
@@ -13934,13 +13880,7 @@
           "date": "2026-09-08",
           "count": 3
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2027-01-08"
+      ]
     },
     {
       "name": "Dunwoody",
@@ -13978,6 +13918,12 @@
           "label": "Paid Lead Gen Start",
           "subtitle": "Meta / Google paid ads begin",
           "date": "2026-07-01"
+        },
+        {
+          "key": "grassroots_start_date",
+          "label": "Grassroots Start Date",
+          "subtitle": "Community & grassroots outreach begins",
+          "date": "2026-07-25"
         },
         {
           "key": "paid_presales_start_date",
@@ -14210,14 +14156,14 @@
           "conversion_rate": 44.4,
           "comm_events": 0,
           "ig_new_followers": 10,
-          "meta_spend": 565.79,
+          "meta_spend": 565.85,
           "google_spend": 0.0,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 845.79,
+          "total_marketing_spend": 845.85,
           "blended_cpl": 46.99,
-          "blended_cpa": 105.72,
+          "blended_cpa": 105.73,
           "estimated_day1_rmr": null
         },
         {
@@ -15037,6 +14983,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-10-09",
       "tier_daily_sales": [
         {
           "date": "2026-07-23",
@@ -15158,13 +15110,7 @@
           "date": "2026-09-08",
           "count": 1
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-10-09"
+      ]
     },
     {
       "name": "Middletown",
@@ -15202,6 +15148,12 @@
           "label": "Paid Lead Gen Start",
           "subtitle": "Meta / Google paid ads begin",
           "date": "2026-07-01"
+        },
+        {
+          "key": "grassroots_start_date",
+          "label": "Grassroots Start Date",
+          "subtitle": "Community & grassroots outreach begins",
+          "date": "2026-07-25"
         },
         {
           "key": "paid_presales_start_date",
@@ -15434,14 +15386,14 @@
           "conversion_rate": 50.0,
           "comm_events": 0,
           "ig_new_followers": 20,
-          "meta_spend": 658.92,
+          "meta_spend": 658.95,
           "google_spend": 90.92,
           "grassroots_spend": 0.0,
           "other_spend": 0.0,
           "leadteam_fee": 280.0,
-          "total_marketing_spend": 1029.84,
+          "total_marketing_spend": 1029.87,
           "blended_cpl": 128.73,
-          "blended_cpa": 257.46,
+          "blended_cpa": 257.47,
           "estimated_day1_rmr": null
         },
         {
@@ -16260,6 +16212,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-12-01",
       "tier_daily_sales": [
         {
           "date": "2026-07-23",
@@ -16433,13 +16391,7 @@
           "date": "2026-09-08",
           "count": 1
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-12-01"
+      ]
     },
     {
       "name": "Burlington",
@@ -16471,6 +16423,12 @@
           "label": "Full Marketing Build Out Complete",
           "subtitle": "Lead form live on website",
           "date": "2026-07-17"
+        },
+        {
+          "key": "grassroots_start_date",
+          "label": "Grassroots Start Date",
+          "subtitle": "Community & grassroots outreach begins",
+          "date": "2026-08-29"
         },
         {
           "key": "paid_lead_gen_date",
@@ -17536,6 +17494,12 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2027-02-17",
       "tier_daily_sales": [
         {
           "date": "2026-08-25",
@@ -17569,13 +17533,7 @@
           "date": "2026-09-06",
           "count": 1
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2027-02-17"
+      ]
     },
     {
       "name": "Long Beach",
@@ -17601,6 +17559,12 @@
           "label": "Full Marketing Build Out Complete",
           "subtitle": "Lead form live on website",
           "date": "2026-08-21"
+        },
+        {
+          "key": "grassroots_start_date",
+          "label": "Grassroots Start Date",
+          "subtitle": "Community & grassroots outreach begins",
+          "date": "2026-08-29"
         },
         {
           "key": "early_lead_date",
@@ -18780,6 +18744,12 @@
         "tier3_members_target": 165,
         "estimated_roms_target": "5x"
       },
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2027-02-12",
       "tier_daily_sales": [
         {
           "date": "2026-08-26",
@@ -18837,13 +18807,7 @@
           "date": "2026-09-08",
           "count": -1
         }
-      ],
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2027-02-12"
+      ]
     },
     {
       "name": "Rose Creek",
@@ -18881,6 +18845,12 @@
           "label": "Paid Lead Gen Start",
           "subtitle": "Meta / Google paid ads begin",
           "date": "2026-09-15"
+        },
+        {
+          "key": "grassroots_start_date",
+          "label": "Grassroots Start Date",
+          "subtitle": "Community & grassroots outreach begins",
+          "date": "2026-09-26"
         },
         {
           "key": "paid_presales_start_date",
@@ -20048,18 +20018,18 @@
         "tier3_members_target": 165,
         "estimated_roms_target": "5x"
       },
-      "tier_daily_sales": [
-        {
-          "date": "2026-09-03",
-          "count": 1
-        }
-      ],
       "sku_map": {
         "price_99": "Pre Sale Membership",
         "price_129": "Pre Sales Membership",
         "price_149": "Pre-Sales Membership"
       },
-      "co_date": "2026-12-19"
+      "co_date": "2026-12-19",
+      "tier_daily_sales": [
+        {
+          "date": "2026-09-03",
+          "count": 1
+        }
+      ]
     },
     {
       "name": "South End",
@@ -21264,13 +21234,13 @@
         "tier3_members_target": 165,
         "estimated_roms_target": "5x"
       },
-      "tier_daily_sales": [],
       "sku_map": {
         "price_99": "Pre Sale Membership",
         "price_129": "Pre Sales Membership",
         "price_149": "Pre-Sales Membership"
       },
-      "co_date": "2027-03-13"
+      "co_date": "2027-03-13",
+      "tier_daily_sales": []
     }
   ]
 }
