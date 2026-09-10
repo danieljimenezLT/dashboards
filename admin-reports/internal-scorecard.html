@@ -20,6 +20,10 @@
 .cpl-good{background:#e8faf0!important;color:#0a8a4a!important}
 .cpl-warn{background:#fff8e1!important;color:#b8860b!important}
 .cpl-bad{background:#ffeaea!important;color:#c0392b!important}
+.cpl-frozen-col{position:sticky;left:0;background:#fff;z-index:2}
+.cpl-studio-col{border-right:1.5px solid #dde8ef}
+.data-table thead .cpl-frozen-col{background:#f4f9fd;z-index:3}
+.data-table tbody tr:hover .cpl-frozen-col{background:#f7fbff}
 </style>
 </head>
 <body>
@@ -41,17 +45,6 @@
   <!-- ============================= OS TAB ============================= -->
   <div class="tab-content active" id="tab-os">
 
-    <div class="preset-row" id="presetRowOs">
-      <span class="preset-label">Blend:</span>
-      <button class="preset-btn active" data-preset="blended" onclick="osSourcePreset('blended')">Blended</button>
-      <button class="preset-btn" data-preset="meta" onclick="osSourcePreset('meta')">Meta Ads</button>
-      <button class="preset-btn" data-preset="google" onclick="osSourcePreset('google')">Google Ads</button>
-      <button class="preset-btn" data-preset="paid" onclick="osSourcePreset('paid')">Paid Ads</button>
-      <div class="preset-sep"></div>
-      <span class="preset-label">Studios:</span>
-      <button class="studio-preset-btn" onclick="osStudioPreset()">OS Ads w/ LeadTeam</button>
-    </div>
-
     <div class="controls-bar">
       <button class="controls-toggle" onclick="toggleControls(this)">Filters ▾</button>
       <div class="controls-inner">
@@ -60,7 +53,7 @@
           <button class="ms-trigger" onclick="toggleDropdown('studioOS')">
             <span id="studioLabelOS">All Studios</span><span class="ms-arrow">▾</span>
           </button>
-          <div class="ms-menu" id="studioMenuOS"></div>
+          <div class="ms-menu" id="studioOSMenu"></div>
         </div>
         <div class="ctrl-sep"></div>
         <span class="ctrl-label">Source</span>
@@ -68,7 +61,15 @@
           <button class="ms-trigger" onclick="toggleDropdown('sourceOS')">
             <span id="sourceLabelOS">All Sources</span><span class="ms-arrow">▾</span>
           </button>
-          <div class="ms-menu" id="sourceMenuOS"></div>
+          <div class="ms-menu" id="sourceOSMenu"></div>
+        </div>
+        <div class="ctrl-sep"></div>
+        <span class="ctrl-label">Cost Sources</span>
+        <div class="multi-select" id="costDropdownOS">
+          <button class="ms-trigger" onclick="toggleDropdown('costOS')">
+            <span id="costLabelOS">All</span><span class="ms-arrow">▾</span>
+          </button>
+          <div class="ms-menu" id="costOSMenu"></div>
         </div>
         <div class="ctrl-sep"></div>
         <span class="ctrl-label">Date range</span>
@@ -80,13 +81,21 @@
       </div>
     </div>
     <div class="data-freshness-note" id="osFreshnessNote"></div>
+    <div id="osCprWarning" style="display:none;margin:12px 24px 0;padding:10px 12px;background:#fff8e1;border-left:3px solid #f59e0b;border-radius:4px;font-size:12px;color:#92400e;line-height:1.5"></div>
+
+    <div class="preset-row" id="presetRowOs">
+      <span class="preset-label">Blend:</span>
+      <button class="preset-btn active" data-preset="blended" onclick="osSourcePreset('blended')">Blended</button>
+      <button class="preset-btn" data-preset="meta" onclick="osSourcePreset('meta')">Meta Ads</button>
+      <button class="preset-btn" data-preset="google" onclick="osSourcePreset('google')">Google Ads</button>
+      <button class="preset-btn" data-preset="paid" onclick="osSourcePreset('paid')">Paid Ads</button>
+      <div class="preset-sep"></div>
+      <span class="preset-label">Studios:</span>
+      <button class="studio-preset-btn" onclick="osStudioPreset()">OS Ads w/ LeadTeam</button>
+    </div>
 
     <div class="section-title">Funnel Summary</div>
     <div class="chart-card" style="margin:16px 24px 20px">
-      <div class="chart-card-title">Conversion funnel</div>
-      <div class="funnel-wrap" id="osFunnelBars"></div>
-    </div>
-    <div class="chart-card" style="margin:0 24px 20px">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
         <div class="toggle-group" id="osTrendToggles" style="margin-bottom:0">
           <button class="tog-btn on" data-ds="0" onclick="toggleOsTrendDs(this,0)" style="border-color:#00A3E0;background:#00A3E0;color:#000"><span class="dot" style="background:#000"></span>Leads</button>
@@ -101,23 +110,9 @@
       </div>
       <div style="position:relative;width:100%;height:260px"><canvas id="osTrendChart"></canvas></div>
     </div>
-    <div id="osConvKpis" class="kpi-grid three" style="margin:0 24px 20px"></div>
 
     <div class="section-title">Blended CPR</div>
     <div class="chart-card" style="margin:16px 24px 20px">
-      <div class="chart-card-title">Cost sources</div>
-      <div class="cpr-filter" id="osCprCostFilter">
-        <span style="font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;color:#5a7a8a;text-transform:uppercase;letter-spacing:1px">Include:</span>
-        <button class="cpr-tog on" id="osCprCost_google" data-cost="google" onclick="toggleOsCprCost(this)" style="border-color:#34A853;background:#34A853;color:#fff">Google Ads</button>
-        <button class="cpr-tog on" id="osCprCost_meta" data-cost="meta" onclick="toggleOsCprCost(this)" style="border-color:#1877F2;background:#1877F2;color:#fff">Meta Ads</button>
-        <button class="cpr-tog on" id="osCprCost_leadteam" data-cost="leadteam" onclick="toggleOsCprCost(this)" style="border-color:#FF6B35;background:#FF6B35;color:#fff">Leadteam Fee</button>
-        <button class="cpr-tog on" id="osCprCost_external_agency" data-cost="external_agency" onclick="toggleOsCprCost(this)" style="border-color:#8E44AD;background:#8E44AD;color:#fff">External Agency</button>
-      </div>
-      <div id="osCprWarning" style="display:none;margin-top:10px;padding:10px 12px;background:#fff8e1;border-left:3px solid #f59e0b;border-radius:4px;font-size:12px;color:#92400e;line-height:1.5"></div>
-    </div>
-    <div id="osCprSpendBreakdown" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 24px 20px"></div>
-    <div class="kpi-grid" id="osCprKpis" style="margin:0 24px 20px"></div>
-    <div class="chart-card" style="margin:0 24px 20px">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
         <div class="toggle-group" id="osCprToggles" style="margin-bottom:0">
           <button class="tog-btn on" data-ds="0" onclick="toggleOsCprDs(this,0)" style="border-color:#00A3E0;background:#00A3E0;color:#000"><span class="dot" style="background:#000"></span>Blended CPL</button>
@@ -131,22 +126,6 @@
         </div>
       </div>
       <div style="position:relative;width:100%;height:260px"><canvas id="osCprChart"></canvas></div>
-    </div>
-    <div class="chart-card" style="margin:0 24px 20px">
-      <div class="chart-card-title">Studio Summary</div>
-      <div style="overflow-x:auto">
-        <table class="data-table" id="osCprStudioTable">
-          <thead><tr>
-            <th class="row-num">#</th><th data-sort="studio">Studio</th>
-            <th class="num" data-sort="leads">Leads</th><th class="num" data-sort="ft">First Visits</th><th class="num" data-sort="mem">Memberships</th>
-            <th class="num" data-sort="spend">Total Mkt Spend</th>
-            <th class="num" data-sort="google">Google Ads</th><th class="num" data-sort="meta">Meta Ads</th>
-            <th class="num" data-sort="leadteam">Leadteam Fee</th><th class="num" data-sort="external_agency">External Agency</th>
-            <th class="num" data-sort="cpl">Blended CPL</th><th class="num" data-sort="cpft">Blended CPFT</th><th class="num" data-sort="cpa">Blended CPA</th>
-          </tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
     </div>
     <div class="chart-card" style="margin:0 24px 20px">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
@@ -168,14 +147,6 @@
   <!-- ============================= NSO TAB ============================= -->
   <div class="tab-content" id="tab-nso">
 
-    <div class="preset-row" id="presetRowNso">
-      <span class="preset-label">Blend:</span>
-      <button class="preset-btn active" data-preset="blended" onclick="nsoSourcePreset('blended')">Blended</button>
-      <button class="preset-btn" data-preset="meta" onclick="nsoSourcePreset('meta')">Meta Ads</button>
-      <button class="preset-btn" data-preset="google" onclick="nsoSourcePreset('google')">Google Ads</button>
-      <button class="preset-btn" data-preset="paid" onclick="nsoSourcePreset('paid')">Paid Ads</button>
-    </div>
-
     <div class="controls-bar">
       <button class="controls-toggle" onclick="toggleControls(this)">Filters ▾</button>
       <div class="controls-inner">
@@ -184,7 +155,7 @@
           <button class="ms-trigger" onclick="toggleDropdown('studioNSO')">
             <span id="studioLabelNSO">All NSO Studios</span><span class="ms-arrow">▾</span>
           </button>
-          <div class="ms-menu" id="studioMenuNSO"></div>
+          <div class="ms-menu" id="studioNSOMenu"></div>
         </div>
         <div class="ctrl-sep"></div>
         <span class="ctrl-label">Source</span>
@@ -192,7 +163,15 @@
           <button class="ms-trigger" onclick="toggleDropdown('sourceNSO')">
             <span id="sourceLabelNSO">All Sources</span><span class="ms-arrow">▾</span>
           </button>
-          <div class="ms-menu" id="sourceMenuNSO"></div>
+          <div class="ms-menu" id="sourceNSOMenu"></div>
+        </div>
+        <div class="ctrl-sep"></div>
+        <span class="ctrl-label">Cost Sources</span>
+        <div class="multi-select" id="costDropdownNSO">
+          <button class="ms-trigger" onclick="toggleDropdown('costNSO')">
+            <span id="costLabelNSO">All</span><span class="ms-arrow">▾</span>
+          </button>
+          <div class="ms-menu" id="costNSOMenu"></div>
         </div>
         <div class="ctrl-sep"></div>
         <span class="ctrl-label">Date range</span>
@@ -204,6 +183,14 @@
       </div>
     </div>
     <div class="data-freshness-note" id="nsoFreshnessNote"></div>
+
+    <div class="preset-row" id="presetRowNso">
+      <span class="preset-label">Blend:</span>
+      <button class="preset-btn active" data-preset="blended" onclick="nsoSourcePreset('blended')">Blended</button>
+      <button class="preset-btn" data-preset="meta" onclick="nsoSourcePreset('meta')">Meta Ads</button>
+      <button class="preset-btn" data-preset="google" onclick="nsoSourcePreset('google')">Google Ads</button>
+      <button class="preset-btn" data-preset="paid" onclick="nsoSourcePreset('paid')">Paid Ads</button>
+    </div>
 
     <div class="section-title">Funnel Summary</div>
     <div id="nsoFunnelKpis" class="kpi-grid" style="margin:16px 24px 20px"></div>
@@ -229,16 +216,6 @@
     </div>
 
     <div class="section-title">Blended CPR</div>
-    <div class="chart-card" style="margin:16px 24px 20px">
-      <div class="chart-card-title">Cost sources</div>
-      <div class="cpr-filter" id="nsoCprCostFilter">
-        <span style="font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;color:#5a7a8a;text-transform:uppercase;letter-spacing:1px">Include:</span>
-        <button class="cpr-tog on" id="nsoCprCost_google" data-cost="google" onclick="toggleNsoCprCost(this)" style="border-color:#34A853;background:#34A853;color:#fff">Google Ads</button>
-        <button class="cpr-tog on" id="nsoCprCost_meta" data-cost="meta" onclick="toggleNsoCprCost(this)" style="border-color:#1877F2;background:#1877F2;color:#fff">Meta Ads</button>
-        <button class="cpr-tog on" id="nsoCprCost_lt" data-cost="lt" onclick="toggleNsoCprCost(this)" style="border-color:#FF6B35;background:#FF6B35;color:#fff">LeadTeam Fee</button>
-        <button class="cpr-tog on" id="nsoCprCost_ext" data-cost="ext" onclick="toggleNsoCprCost(this)" style="border-color:#00897B;background:#00897B;color:#fff">External Agency</button>
-      </div>
-    </div>
     <div id="nsoCprSpendBreakdown" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 24px 20px"></div>
     <div class="kpi-grid" id="nsoCprKpis" style="grid-template-columns:1fr 1fr;margin:0 24px 20px"></div>
     <div class="chart-card" style="margin:0 24px 20px">
@@ -406,6 +383,16 @@ function cplHeatClass(v, th){
   if(v<=th.yellow) return 'cpl-warn';
   return 'cpl-bad';
 }
+// The "#" column's width is content-driven (table-layout:auto ignores a
+// fixed CSS width on individual cells), so the frozen Studio column's left
+// offset has to be measured after render rather than hardcoded.
+function syncCplFrozenOffset(tableId){
+  const table=document.getElementById(tableId); if(!table) return;
+  const rn=table.querySelector('thead th.row-num');
+  if(!rn) return;
+  const w=rn.getBoundingClientRect().width;
+  table.querySelectorAll('.cpl-studio-col').forEach(el=>{ el.style.left=w+'px'; });
+}
 
 /* -- Nav / tab switching --------------------------------------------------- */
 let _nsoBuilt=false;
@@ -436,6 +423,7 @@ function applyFilters(){
    ══════════════════════════════════════════════════════════════════════════ */
 let OS_RAW=null, OS_SPEND_RAW=null, OS_AGENCY_OVERRIDES=[], OS_CORP_SPEND=null;
 const STUDIOS_NAME_TO_CODE={};
+const STUDIOS_STATUS={}; // studio name -> 'open' | 'nso' | 'closed', from studios.json
 const OS_EXTERNAL_AGENCY_STUDIOS=['Dallas - Prestonwood','Austin - Highland','Herriman','Dallas - Uptown','Fort Myers','Orlando - Dr Phillips','OKC - Rose Creek'];
 const LTFEE_MONTHLY=1200;
 const OS_COST_COLORS={google:'#34A853',meta:'#1877F2',leadteam:'#FF6B35',external_agency:'#8E44AD'};
@@ -502,19 +490,51 @@ function osSpendFor(f, t, studios){
 function setOsGran(g){ osGran=g; ['Daily','Weekly','Monthly'].forEach(x=>document.getElementById('osGran'+x).classList.toggle('active', x.toLowerCase()===g)); applyOsFilters(); }
 function setOsCprGran(g){ osCprGran=g; ['Daily','Weekly','Monthly'].forEach(x=>document.getElementById('osCprGran'+x).classList.toggle('active', x.toLowerCase()===g)); buildOsCPR(); }
 
-function setOsCprCostBtn(cost, active){
-  OS_CPR_COSTS_ACTIVE[cost]=active;
-  const btn=document.getElementById('osCprCost_'+cost); if(!btn) return;
-  btn.classList.toggle('on', active);
-  const c=OS_COST_COLORS[cost];
-  if(active){ btn.style.background=c; btn.style.borderColor=c; btn.style.color='#fff'; }
-  else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
+// -- Cost-source dropdown (filter bar) — generic builder, used by OS and NSO --
+function updateCostLabel(menuId, labelId, keys, labels){
+  const checked=[...document.getElementById(menuId).querySelectorAll('input[value]:checked')].map(c=>c.value);
+  const label=document.getElementById(labelId);
+  if(checked.length===0) label.textContent='None';
+  else if(checked.length===keys.length) label.textContent='All';
+  else if(checked.length<=2) label.textContent=checked.map(k=>labels[k]).join(', ');
+  else label.textContent=checked.length+' selected';
 }
-function toggleOsCprCost(btn){
-  setOsCprCostBtn(btn.dataset.cost, !OS_CPR_COSTS_ACTIVE[btn.dataset.cost]);
-  clearActivePreset('presetRowOs');
-  buildOsCPR();
-  osCheckCPRWarning();
+function buildCostMenu(menuId, labelId, keys, labels, colors, costsActive, onChange){
+  const menu=document.getElementById(menuId); if(!menu) return;
+  menu.innerHTML='';
+  const allDiv=document.createElement('div'); allDiv.className='ms-item ms-select-all';
+  allDiv.innerHTML=`<input type="checkbox" id="${menuId}_all"> <label for="${menuId}_all" style="cursor:pointer">Select all</label>`;
+  menu.appendChild(allDiv);
+  const div0=document.createElement('div'); div0.className='ms-divider'; menu.appendChild(div0);
+  keys.forEach(key=>{
+    const div=document.createElement('div'); div.className='ms-item';
+    const checked=!!costsActive[key];
+    const safeId=`ms_${menuId}_${key}`;
+    div.innerHTML=`<input type="checkbox" id="${safeId}" value="${key}" ${checked?'checked':''}> <label for="${safeId}" style="cursor:pointer"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:${colors[key]}"></span>${labels[key]}</label>`;
+    div.querySelector('input').addEventListener('change', e=>{
+      costsActive[key]=e.target.checked;
+      syncSelectAll(menuId); updateCostLabel(menuId, labelId, keys, labels);
+      onChange();
+    });
+    menu.appendChild(div);
+  });
+  const allChk=document.getElementById(menuId+'_all');
+  syncSelectAll(menuId);
+  allChk.addEventListener('change', ()=>{
+    menu.querySelectorAll('input[value]').forEach(c=>{ c.checked=allChk.checked; costsActive[c.value]=allChk.checked; });
+    updateCostLabel(menuId, labelId, keys, labels);
+    onChange();
+  });
+  updateCostLabel(menuId, labelId, keys, labels);
+}
+const OS_COST_KEYS=['google','meta','leadteam','external_agency'];
+const OS_COST_LABELS={google:'Google Ads',meta:'Meta Ads',leadteam:'Leadteam Fee',external_agency:'External Agency'};
+function buildOsCostMenu(){
+  buildCostMenu('costOSMenu','costLabelOS', OS_COST_KEYS, OS_COST_LABELS, OS_COST_COLORS, OS_CPR_COSTS_ACTIVE, ()=>{
+    clearActivePreset('presetRowOs');
+    buildOsCPR();
+    osCheckCPRWarning();
+  });
 }
 function markActivePreset(rowId, kind){ document.querySelectorAll('#'+rowId+' .preset-btn').forEach(b=>b.classList.toggle('active', b.dataset.preset===kind)); }
 function clearActivePreset(rowId){ document.querySelectorAll('#'+rowId+' .preset-btn').forEach(b=>b.classList.remove('active')); }
@@ -525,12 +545,13 @@ function osSourcePreset(kind){
   else if(kind==='google') keep=['Google Ads'];
   else if(kind==='paid') keep=['Meta Ads','Google Ads'];
   else keep=(OS_RAW.sources||[]).filter(s=>!DEFAULT_EXCL_SOURCES.includes(s));
-  buildSourceSelect('sourceMenuOS','sourceLabelOS', OS_RAW.sources, (OS_RAW.sources||[]).filter(s=>!keep.includes(s)));
+  buildSourceSelect('sourceOSMenu','sourceLabelOS', OS_RAW.sources, (OS_RAW.sources||[]).filter(s=>!keep.includes(s)));
   const costs = kind==='meta'  ? {google:false,meta:true,leadteam:false,external_agency:false}
               : kind==='google'? {google:true,meta:false,leadteam:false,external_agency:false}
               : kind==='paid'  ? {google:true,meta:true,leadteam:false,external_agency:false}
               :                  {google:true,meta:true,leadteam:true,external_agency:true};
-  Object.keys(OS_CPR_COSTS_ACTIVE).forEach(k=>setOsCprCostBtn(k, costs[k]));
+  Object.assign(OS_CPR_COSTS_ACTIVE, costs);
+  buildOsCostMenu();
   markActivePreset('presetRowOs', kind);
   applyOsFilters();
   osCheckCPRWarning();
@@ -547,10 +568,11 @@ async function osStudioPreset(){
   });
   const keep=(OS_RAW.studios||[]).filter(s=>{
     if(OS_EXTERNAL_AGENCY_STUDIOS.includes(s)) return false;
+    if(STUDIOS_STATUS[s]!=='open') return false; // exclude NSO-track and closed studios
     const code=STUDIOS_NAME_TO_CODE[s];
     return code && (spendByCode[code]||0) > 0;
   });
-  buildMultiSelect('studioMenuOS','studioLabelOS', OS_RAW.studios, (OS_RAW.studios||[]).filter(s=>!keep.includes(s)));
+  buildMultiSelect('studioOSMenu','studioLabelOS', OS_RAW.studios, (OS_RAW.studios||[]).filter(s=>!keep.includes(s)));
   applyOsFilters();
 }
 
@@ -577,7 +599,7 @@ function osCheckCPRWarning(){
   const warn=document.getElementById('osCprWarning'); if(!warn) return;
   const paidOnly=(OS_CPR_COSTS_ACTIVE.google||OS_CPR_COSTS_ACTIVE.meta)&&!OS_CPR_COSTS_ACTIVE.leadteam;
   const allCosts=OS_CPR_COSTS_ACTIVE.google&&OS_CPR_COSTS_ACTIVE.meta&&OS_CPR_COSTS_ACTIVE.leadteam&&OS_CPR_COSTS_ACTIVE.external_agency;
-  const selSources=getSelected('sourceMenuOS')||[];
+  const selSources=getSelected('sourceOSMenu')||[];
   const paidSources=['Meta Ads','Google Ads'];
   const mktgSources=['Website (unattributed)','Business Mode / App','Public API','Meta Ads','Google Ads','SWEAT440 App','MindBody App','Social Media Organic','Local Listings','Word of Mouth','Print Ads / Signs','N/A','Other'];
   const nonPaidSelected=selSources.some(s=>!paidSources.includes(s));
@@ -590,8 +612,8 @@ function osCheckCPRWarning(){
 
 function applyOsFilters(){
   if(!OS_RAW) return;
-  const studios=getSelected('studioMenuOS');
-  const sources=getSelected('sourceMenuOS');
+  const studios=getSelected('studioOSMenu');
+  const sources=getSelected('sourceOSMenu');
   const fromStr=document.getElementById('osFFrom').value, toStr=document.getElementById('osFTo').value;
   if(!fromStr||!toStr) return;
   const from=new Date(fromStr+'T00:00:00Z'), to=new Date(toStr+'T23:59:59Z');
@@ -601,36 +623,8 @@ function applyOsFilters(){
   const curr=filterAll(from,to), pp=filterAll(ppFrom,ppTo), py=filterAll(pyFrom,pyTo);
   window._osCurr=curr; window._osFrom=from; window._osTo=to; window._osStudios=studios;
 
-  buildOsFunnel(sumRows(curr.all), sumRows(pp.all), sumRows(py.all));
   buildOsTrend(curr, from, to);
   buildOsCPR();
-}
-
-function buildOsFunnel(curr, prev, pyear){
-  const stages=[
-    {label:'Leads (New Accounts Created)', curr:curr.leads, prev:prev.leads, py:pyear.leads, color:'#00A3E0'},
-    {label:'First Timers (First Studio Visits)', curr:curr.ft, prev:prev.ft, py:pyear.ft, color:'#00FFC2'},
-    {label:'New Members (First Memberships Activated)', curr:curr.mem, prev:prev.mem, py:pyear.mem, color:'#DDFF00'},
-  ];
-  const max=Math.max(...stages.map(s=>s.curr),1);
-  document.getElementById('osFunnelBars').innerHTML=stages.map(s=>{
-    const w=Math.max(2,(s.curr/max)*100);
-    const dpp=calcDelta(s.curr,s.prev), dpy=calcDelta(s.curr,s.py);
-    const ppHTML=dpp!==null?`<span class="delta ${dpp>=0?'pos':'neg'}">${dpp>=0?'▲':'▼'} ${Math.abs(dpp).toFixed(1)}% prev period</span>`:'<span class="delta neu">— prev period</span>';
-    const pyHTML=dpy!==null?`<span class="delta ${dpy>=0?'pos':'neg'}">${dpy>=0?'▲':'▼'} ${Math.abs(dpy).toFixed(1)}% prev year</span>`:'<span class="delta neu">— prev year</span>';
-    return `<div><div class="funnel-stage-label">${s.label}</div><div class="funnel-row"><div class="funnel-bar-track"><div class="funnel-bar-fill" style="width:${w}%;background:${s.color}"></div></div><div class="funnel-num">${s.curr.toLocaleString()}</div><div class="funnel-deltas">${ppHTML}${pyHTML}</div></div></div>`;
-  }).join('');
-
-  const convEl=document.getElementById('osConvKpis');
-  const ftRate=v=>v.leads?v.ft/v.leads*100:null, memRate=v=>v.ft?v.mem/v.ft*100:null, lmRate=v=>v.leads?v.mem/v.leads*100:null;
-  const cC=ftRate(curr), pC=ftRate(prev), yC=ftRate(pyear);
-  const cM=memRate(curr), pM=memRate(prev), yM=memRate(pyear);
-  const cL=lmRate(curr), pL=lmRate(prev), yL=lmRate(pyear);
-  const fPct=v=>Number(v).toFixed(1)+'%';
-  convEl.innerHTML =
-    kpiCard('Lead → First Timer', cC==null?0:cC, pC, yC, fPct) +
-    kpiCard('First Timer → Member', cM==null?0:cM, pM, yM, fPct) +
-    kpiCard('Lead → Member', cL==null?0:cL, pL, yL, fPct);
 }
 
 function buildOsTrend(curr, from, to){
@@ -655,7 +649,6 @@ function buildOsTrend(curr, from, to){
 }
 
 function buildOsCPR(){
-  const el=document.getElementById('osCprKpis'); if(!el) return;
   const from=window._osFrom, to=window._osTo, curr=window._osCurr, selStudios=window._osStudios||[];
   if(!from||!to||!curr) return;
   const allStudios=selStudios.length>0?selStudios:(OS_RAW?OS_RAW.studios:[]);
@@ -664,58 +657,6 @@ function buildOsCPR(){
   function externalAgencyForRange(f,t){ return osComputeExternalAgencySpend(f,t,allStudios); }
   function sumGoogleSpend(f,t){ return osSpendFor(f,t,selStudios.length>0?selStudios:null).google; }
   function sumMetaSpend(f,t){ return osSpendFor(f,t,selStudios.length>0?selStudios:null).meta; }
-
-  const {ppFrom,ppTo,pyFrom,pyTo}=computeWindows(from,to);
-  const ltCurr=leadteamForRange(from,to), ltPp=leadteamForRange(ppFrom,ppTo), ltPy=leadteamForRange(pyFrom,pyTo);
-  const extCurr=externalAgencyForRange(from,to), extPp=externalAgencyForRange(ppFrom,ppTo), extPy=externalAgencyForRange(pyFrom,pyTo);
-  function spendTotals(f,t,lt,ext){
-    const g=OS_CPR_COSTS_ACTIVE.google?sumGoogleSpend(f,t):0, m=OS_CPR_COSTS_ACTIVE.meta?sumMetaSpend(f,t):0;
-    const l=OS_CPR_COSTS_ACTIVE.leadteam?lt:0, e=OS_CPR_COSTS_ACTIVE.external_agency?ext:0;
-    return {google:g, meta:m, leadteam:l, external_agency:e, total:g+m+l+e};
-  }
-  const spCurr=spendTotals(from,to,ltCurr,extCurr);
-  const ppRows=filterRows(OS_RAW.daily_detail||[],ppFrom,ppTo,selStudios.length?selStudios:null,getSelected('sourceMenuOS')).concat(filterRows(OS_RAW.monthly_detail||[],ppFrom,ppTo,selStudios.length?selStudios:null,getSelected('sourceMenuOS')));
-  const pyRows=filterRows(OS_RAW.daily_detail||[],pyFrom,pyTo,selStudios.length?selStudios:null,getSelected('sourceMenuOS')).concat(filterRows(OS_RAW.monthly_detail||[],pyFrom,pyTo,selStudios.length?selStudios:null,getSelected('sourceMenuOS')));
-  const pp=sumRows(ppRows), py=sumRows(pyRows);
-  const spPp=spendTotals(ppFrom,ppTo,ltPp,extPp), spPy=spendTotals(pyFrom,pyTo,ltPy,extPy);
-  const currSum=sumRows(curr.all);
-
-  const f$=v=>'$'+Math.round(v).toLocaleString('en-US');
-  const f$2=v=>'$'+Number(v).toFixed(2);
-  const cpl_curr=currSum.leads>0?spCurr.total/currSum.leads:0, cpl_pp=pp.leads>0?spPp.total/pp.leads:null, cpl_py=py.leads>0?spPy.total/py.leads:null;
-  const cpft_curr=currSum.ft>0?spCurr.total/currSum.ft:0, cpft_pp=pp.ft>0?spPp.total/pp.ft:null, cpft_py=py.ft>0?spPy.total/py.ft:null;
-  const cpa_curr=currSum.mem>0?spCurr.total/currSum.mem:0, cpa_pp=pp.mem>0?spPp.total/pp.mem:null, cpa_py=py.mem>0?spPy.total/py.mem:null;
-
-  el.innerHTML =
-    cprKpiCard('Blended CPL', cpl_curr, cpl_pp, cpl_py, f$2) +
-    cprKpiCard('Blended CPFT', cpft_curr, cpft_pp, cpft_py, f$2) +
-    cprKpiCard('Blended CPA', cpa_curr, cpa_pp, cpa_py, f$2);
-
-  const bdEl=document.getElementById('osCprSpendBreakdown');
-  if(bdEl){
-    const parts=[];
-    const bLabels={google:'Google Ads', meta:'Meta Ads', leadteam:'Leadteam Fee', external_agency:'External Agency'};
-    let first=true;
-    ['google','meta','leadteam','external_agency'].forEach(k=>{
-      if(!OS_CPR_COSTS_ACTIVE[k]) return;
-      const v=spCurr[k], vPp=spPp[k], vPy=spPy[k];
-      if(!first) parts.push('<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">+</span>');
-      const dpp=vPp>0?((v-vPp)/vPp*100).toFixed(1):null, dpy=vPy>0?((v-vPy)/vPy*100).toFixed(1):null;
-      const ppH=dpp!==null?`<div class="kpi-card-delta ${dpp>=0?'neg':'pos'}">${dpp>=0?'▲':'▼'} ${Math.abs(dpp)}% prev period</div>`:'';
-      const pyH=dpy!==null?`<div class="kpi-card-delta ${dpy>=0?'neg':'pos'}">${dpy>=0?'▲':'▼'} ${Math.abs(dpy)}% prev year</div>`:'';
-      parts.push(`<div class="kpi-card" style="flex:1;min-width:140px;border-top:3px solid ${OS_COST_COLORS[k]}"><div class="kpi-card-label">${bLabels[k]}</div><div class="kpi-card-val">${f$(v)}</div>${ppH}${pyH}</div>`);
-      first=false;
-    });
-    if(parts.length>0){
-      const totV=spCurr.total, totPp=spPp.total, totPy=spPy.total;
-      const dppT=totPp>0?((totV-totPp)/totPp*100).toFixed(1):null, dpyT=totPy>0?((totV-totPy)/totPy*100).toFixed(1):null;
-      const ppTH=dppT!==null?`<div class="kpi-card-delta ${dppT>=0?'neg':'pos'}">${dppT>=0?'▲':'▼'} ${Math.abs(dppT)}% prev period</div>`:'';
-      const pyTH=dpyT!==null?`<div class="kpi-card-delta ${dpyT>=0?'neg':'pos'}">${dpyT>=0?'▲':'▼'} ${Math.abs(dpyT)}% prev year</div>`:'';
-      parts.push('<span style="font-family:Oswald,sans-serif;font-size:20px;font-weight:600;color:#5a7a8a;padding:0 4px">=</span>');
-      parts.push(`<div class="kpi-card" style="flex:1;min-width:140px;border-top:3px solid #1a1a2e"><div class="kpi-card-label">Total Spend</div><div class="kpi-card-val">${f$(totV)}</div>${ppTH}${pyTH}</div>`);
-    }
-    bdEl.innerHTML=parts.join('');
-  }
 
   if(osCprChart){ osCprChart.destroy(); osCprChart=null; }
   const ctx=document.getElementById('osCprChart'); if(!ctx) return;
@@ -740,7 +681,6 @@ function buildOsCPR(){
   ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false,callbacks:{label:c=>c.dataset.label+': $'+(c.parsed.y!=null?c.parsed.y.toLocaleString():'-')}}},
     scales:{ x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',maxRotation:0}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',callback:v=>'$'+v} } } } });
 
-  buildOsCprStudioTable(from,to,selStudios);
   buildOsCplTable(from,to,selStudios);
 }
 
@@ -754,14 +694,14 @@ function setOsCplTableGran(g){
 }
 function buildOsCplTable(from,to,selStudios){
   const table=document.getElementById('osCplTable'); if(!table||!OS_RAW||!from||!to) return;
-  const selSources=getSelected('sourceMenuOS')||[];
+  const selSources=getSelected('sourceOSMenu')||[];
   const studios=(selStudios&&selStudios.length?selStudios:OS_RAW.studios).slice();
   const buckets=buildBuckets(osCplTableGran, from, to);
   const f$2=v=>'$'+Number(v).toFixed(2);
   const dash='<span style="color:#8aabbf">—</span>';
 
   const thead=table.querySelector('thead tr');
-  thead.innerHTML='<th class="row-num">#</th><th data-sort="studio">Studio</th>'+
+  thead.innerHTML='<th class="row-num cpl-frozen-col">#</th><th data-sort="studio" class="cpl-frozen-col cpl-studio-col">Studio</th>'+
     buckets.map((b,i)=>`<th class="num" data-sort="col_${i}">${b.label}</th>`).join('');
 
   const rows=studios.map(studio=>{
@@ -794,44 +734,9 @@ function buildOsCplTable(from,to,selStudios){
       const cls=v!=null?cplHeatClass(v,th):'';
       return `<td class="num ${cls}">${v!=null?f$2(v):dash}</td>`;
     }).join('');
-    return `<tr><td class="row-num">${i}</td><td>${r.studio}</td>${cells}</tr>`;
+    return `<tr><td class="row-num cpl-frozen-col">${i}</td><td class="cpl-frozen-col cpl-studio-col">${r.studio}</td>${cells}</tr>`;
   });
-}
-
-function buildOsCprStudioTable(from,to,selStudios){
-  const table=document.getElementById('osCprStudioTable'); if(!table||!OS_RAW) return;
-  const selSources=getSelected('sourceMenuOS')||[];
-  const studios=(selStudios&&selStudios.length?selStudios:OS_RAW.studios).slice();
-  const f$=v=>'$'+Math.round(v).toLocaleString('en-US');
-  const f$2=v=>'$'+Number(v).toFixed(2);
-  const dash='<span style="color:#8aabbf">—</span>';
-  const rows=studios.map(studio=>{
-    const daily=filterRows(OS_RAW.daily_detail||[],from,to,[studio],selSources);
-    const monthly=filterRows(OS_RAW.monthly_detail||[],from,to,[studio],selSources);
-    const {leads,ft,mem}=sumRows([...daily,...monthly]);
-    const {meta,google}=osSpendFor(from,to,[studio]);
-    const leadteam=osLeadteamNetForStudio(studio,from,to);
-    const external_agency=osExternalAgencyForStudio(studio,from,to);
-    const spend=google+meta+leadteam+external_agency;
-    return { studio, leads, ft, mem, spend, google, meta, leadteam, external_agency,
-      cpl: leads>0?spend/leads:null, cpft: ft>0?spend/ft:null, cpa: mem>0?spend/mem:null };
-  });
-  sortableTable('osCprStudioTable', rows, (r,i)=>`<tr>
-    <td class="row-num">${i}</td><td>${r.studio}</td>
-    <td class="num">${r.leads.toLocaleString()}</td><td class="num">${r.ft.toLocaleString()}</td><td class="num">${r.mem.toLocaleString()}</td>
-    <td class="num">${f$(r.spend)}</td><td class="num">${f$(r.google)}</td><td class="num">${f$(r.meta)}</td>
-    <td class="num">${f$(r.leadteam)}</td><td class="num">${f$(r.external_agency)}</td>
-    <td class="num">${r.cpl!=null?f$2(r.cpl):dash}</td><td class="num">${r.cpft!=null?f$2(r.cpft):dash}</td><td class="num">${r.cpa!=null?f$2(r.cpa):dash}</td>
-  </tr>`, (sorted)=>{
-    const t=k=>sorted.reduce((s,r)=>s+r[k],0);
-    const tLeads=t('leads'), tFt=t('ft'), tMem=t('mem'), tSpend=t('spend');
-    return `<tr><td class="row-num"></td><td style="font-weight:700">Total (${sorted.length} studios)</td>
-      <td class="num">${tLeads.toLocaleString()}</td><td class="num">${tFt.toLocaleString()}</td><td class="num">${tMem.toLocaleString()}</td>
-      <td class="num">${f$(tSpend)}</td><td class="num">${f$(t('google'))}</td><td class="num">${f$(t('meta'))}</td>
-      <td class="num">${f$(t('leadteam'))}</td><td class="num">${f$(t('external_agency'))}</td>
-      <td class="num">${tLeads>0?f$2(tSpend/tLeads):dash}</td><td class="num">${tFt>0?f$2(tSpend/tFt):dash}</td><td class="num">${tMem>0?f$2(tSpend/tMem):dash}</td>
-    </tr>`;
-  });
+  syncCplFrozenOffset('osCplTable');
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -956,18 +861,13 @@ function nsoNetSalesCount(fromStr,toStr,studios,sources){
 function setNsoGran(g){ nsoGran=g; ['Daily','Weekly','Monthly'].forEach(x=>document.getElementById('nsoGran'+x).classList.toggle('active', x.toLowerCase()===g)); applyNsoFilters(); }
 function setNsoCprGran(g){ nsoCprGran=g; ['Daily','Weekly','Monthly'].forEach(x=>document.getElementById('nsoCprGran'+x).classList.toggle('active', x.toLowerCase()===g)); buildNsoCPR(); }
 
-function setNsoCprCostBtn(cost, active){
-  NSO_CPR_COSTS_ACTIVE[cost]=active;
-  const btn=document.getElementById('nsoCprCost_'+cost); if(!btn) return;
-  btn.classList.toggle('on', active);
-  const c=NSO_COST_COLORS[cost];
-  if(active){ btn.style.background=c; btn.style.borderColor=c; btn.style.color='#fff'; }
-  else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
-}
-function toggleNsoCprCost(btn){
-  setNsoCprCostBtn(btn.dataset.cost, !NSO_CPR_COSTS_ACTIVE[btn.dataset.cost]);
-  clearActivePreset('presetRowNso');
-  buildNsoCPR();
+const NSO_COST_KEYS=['google','meta','lt','ext'];
+const NSO_COST_LABELS={google:'Google Ads',meta:'Meta Ads',lt:'LeadTeam Fee',ext:'External Agency'};
+function buildNsoCostMenu(){
+  buildCostMenu('costNSOMenu','costLabelNSO', NSO_COST_KEYS, NSO_COST_LABELS, NSO_COST_COLORS, NSO_CPR_COSTS_ACTIVE, ()=>{
+    clearActivePreset('presetRowNso');
+    buildNsoCPR();
+  });
 }
 function nsoSourcePreset(kind){
   let keep;
@@ -975,12 +875,13 @@ function nsoSourcePreset(kind){
   else if(kind==='google') keep=['Google Ads'];
   else if(kind==='paid') keep=['Meta Ads','Google Ads'];
   else keep=NSO_ALL_SOURCES.filter(s=>!NSO_EXCL_SRC.includes(s));
-  buildSourceSelect('sourceMenuNSO','sourceLabelNSO', NSO_ALL_SOURCES, NSO_ALL_SOURCES.filter(s=>!keep.includes(s)));
+  buildSourceSelect('sourceNSOMenu','sourceLabelNSO', NSO_ALL_SOURCES, NSO_ALL_SOURCES.filter(s=>!keep.includes(s)));
   const costs = kind==='meta'  ? {google:false,meta:true,lt:false,ext:false}
               : kind==='google'? {google:true,meta:false,lt:false,ext:false}
               : kind==='paid'  ? {google:true,meta:true,lt:false,ext:false}
               :                  {google:true,meta:true,lt:true,ext:true};
-  Object.keys(NSO_CPR_COSTS_ACTIVE).forEach(k=>setNsoCprCostBtn(k, costs[k]));
+  Object.assign(NSO_CPR_COSTS_ACTIVE, costs);
+  buildNsoCostMenu();
   markActivePreset('presetRowNso', kind);
   applyNsoFilters();
 }
@@ -1006,8 +907,8 @@ function toggleNsoCprDs(btn, i){
 
 function applyNsoFilters(){
   if(!NSO_DAILY.length && !NSO_MONTHLY.length) { /* still allow build with empty data */ }
-  const studios=getSelected('studioMenuNSO');
-  const sources=getSelected('sourceMenuNSO');
+  const studios=getSelected('studioNSOMenu');
+  const sources=getSelected('sourceNSOMenu');
   const fromStr=document.getElementById('nsoFFrom').value, toStr=document.getElementById('nsoFTo').value;
   if(!fromStr||!toStr) return;
   const from=new Date(fromStr+'T00:00:00Z'), to=new Date(toStr+'T23:59:59Z');
@@ -1181,7 +1082,7 @@ function buildNsoCplTable(activeStudios,selSrc){
   const dash='<span style="color:#8aabbf">—</span>';
 
   const thead=table.querySelector('thead tr');
-  thead.innerHTML='<th class="row-num">#</th><th data-sort="studio">Studio</th>'+
+  thead.innerHTML='<th class="row-num cpl-frozen-col">#</th><th data-sort="studio" class="cpl-frozen-col cpl-studio-col">Studio</th>'+
     buckets.map((b,i)=>`<th class="num" data-sort="col_${i}">${b.label}</th>`).join('');
 
   const rows=activeStudios.map(studio=>{
@@ -1205,8 +1106,9 @@ function buildNsoCplTable(activeStudios,selSrc){
       const cls=v!=null?cplHeatClass(v,th):'';
       return `<td class="num ${cls}">${v!=null?f$2(v):dash}</td>`;
     }).join('');
-    return `<tr><td class="row-num">${i}</td><td>${r.studio}</td>${cells}</tr>`;
+    return `<tr><td class="row-num cpl-frozen-col">${i}</td><td class="cpl-frozen-col cpl-studio-col">${r.studio}</td>${cells}</tr>`;
   });
+  syncCplFrozenOffset('nsoCplTable');
 }
 
 function buildNsoCprStudioTable(activeStudios,fromStr,toStr,selSrc){
@@ -1282,7 +1184,10 @@ async function loadData(){
   } catch(e){ console.warn('nso_sales_data.json unavailable:',e); NSO_SALES_ROWS=[]; }
   try{
     const registry=await studiosRes.value.json();
-    (registry.studios||[]).forEach(s=>{ if(s.code) STUDIOS_NAME_TO_CODE[s.name]=s.code; });
+    (registry.studios||[]).forEach(s=>{
+      if(s.code) STUDIOS_NAME_TO_CODE[s.name]=s.code;
+      STUDIOS_STATUS[s.name]=s.status;
+    });
   } catch(e){ console.warn('studios.json unavailable:',e); }
   try{
     const agencyRaw=await agencyRes.value.json();
@@ -1308,10 +1213,12 @@ async function loadData(){
   const nsoRange=defaultRange();
   document.getElementById('nsoFFrom').value=nsoRange.from; document.getElementById('nsoFTo').value=nsoRange.to;
 
-  buildMultiSelect('studioMenuOS','studioLabelOS', OS_RAW.studios, DEFAULT_EXCL_STUDIOS);
-  buildSourceSelect('sourceMenuOS','sourceLabelOS', OS_RAW.sources, DEFAULT_EXCL_SOURCES);
-  buildMultiSelect('studioMenuNSO','studioLabelNSO', NSO_TAB_STUDIOS, []);
-  buildSourceSelect('sourceMenuNSO','sourceLabelNSO', NSO_ALL_SOURCES, NSO_EXCL_SRC);
+  buildMultiSelect('studioOSMenu','studioLabelOS', OS_RAW.studios, DEFAULT_EXCL_STUDIOS);
+  buildSourceSelect('sourceOSMenu','sourceLabelOS', OS_RAW.sources, DEFAULT_EXCL_SOURCES);
+  buildOsCostMenu();
+  buildMultiSelect('studioNSOMenu','studioLabelNSO', NSO_TAB_STUDIOS, []);
+  buildSourceSelect('sourceNSOMenu','sourceLabelNSO', NSO_ALL_SOURCES, NSO_EXCL_SRC);
+  buildNsoCostMenu();
 
   applyOsFilters();
   // NSO tab's canvases are hidden (max-height:0) until its nav tab is first
