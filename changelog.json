@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-10",
+      "pr_number": 355,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/355",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Fixed broken filter dropdowns and the LeadTeam studio preset, redesigned cost filters, froze the studio column in the CPL table",
+      "summary": "The internal performance scorecard's Studio/Source filters now actually open, cost sources moved into a dropdown in the filter bar, the LeadTeam studio preset no longer pulls in NSO or closed studios, and the studio name stays visible while scrolling the CPL-by-period table."
+    },
+    {
+      "date": "2026-09-10",
       "pr_number": 354,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/354",
       "author": "Santiago Estrada",
