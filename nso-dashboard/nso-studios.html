@@ -748,13 +748,15 @@ function renderSummary2(){
   const startDate=(pwData&&pwData.week_0_start)||w[0]?.date_end||w[1]?.date_start||null;
   const curPct=Math.max(4,Math.min(96,pct));
 
-  // Studio switcher (inline onclick stays in Summary Test tab)
-  h+=`<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">`;
-  _scVis.forEach(s=>{
-    const active=s.code===studio.code;
-    h+=`<button onclick="var _sc=(SC2||SC).studios.find(x=>x.code==='${s.code}');if(_sc){_sumStudio=_sc;renderSummary2();}" style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;padding:6px 16px;border-radius:4px;border:2px solid ${active?'#00A3E0':'#c0d4df'};background:${active?'#00A3E0':'transparent'};color:${active?'#fff':'#5a7a8a'};cursor:pointer;letter-spacing:.5px">${s.name}</button>`;
-  });
-  h+=`</div>`;
+  // Studio switcher — Pre-Launch above, Opened below
+  {const _tS=new Date().toISOString().slice(0,10);
+  const _preL=_scVis.filter(s=>!s.opening_date||s.opening_date>_tS);
+  const _opn=_scVis.filter(s=>s.opening_date&&s.opening_date<=_tS);
+  const _btn=(s)=>{const active=s.code===studio.code;return`<button onclick="var _sc=(SC2||SC).studios.find(x=>x.code==='${s.code}');if(_sc){_sumStudio=_sc;renderSummary2();}" style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;padding:6px 16px;border-radius:4px;border:2px solid ${active?'#00A3E0':'#c0d4df'};background:${active?'#00A3E0':'transparent'};color:${active?'#fff':'#5a7a8a'};cursor:pointer;letter-spacing:.5px">${s.name}</button>`;};
+  h+=`<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">`;
+  h+=`<div style="display:flex;gap:8px;flex-wrap:wrap">${_preL.map(_btn).join('')}</div>`;
+  if(_opn.length){h+=`<div style="display:flex;align-items:center;gap:10px;margin-top:2px"><span style="font-size:10px;font-family:Oswald,sans-serif;font-style:italic;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:#5a7a8a;white-space:nowrap">Opened</span><div style="height:1px;background:#c0d4df;flex:1"></div></div>`;h+=`<div style="display:flex;gap:8px;flex-wrap:wrap">${_opn.map(_btn).join('')}</div>`;}
+  h+=`</div>`;}
 
   // Milestones + Goal to Announce Opening (Goal hidden in pre-launch mode)
   const milestones=(studio.milestones||[]).filter(m=>m.date);
@@ -1286,13 +1288,15 @@ function renderSummary(){
   const startDate=w[0]?.date_end||w[1]?.date_start||null;
   const curPct=Math.max(4,Math.min(96,pct));
 
-  // Studio switcher tabs (only allowed studios visible)
-  h+=`<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">`;
-  _scVis.forEach(s=>{
-    const active=s.code===studio.code;
-    h+=`<button onclick="switchSumStudio('${s.code}')" style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;padding:6px 16px;border-radius:4px;border:2px solid ${active?'#00A3E0':'#c0d4df'};background:${active?'#00A3E0':'transparent'};color:${active?'#fff':'#5a7a8a'};cursor:pointer;letter-spacing:.5px">${s.name}</button>`;
-  });
-  h+=`</div>`;
+  // Studio switcher tabs — Pre-Launch above, Opened below
+  {const _tS2=new Date().toISOString().slice(0,10);
+  const _preL2=_scVis.filter(s=>!s.opening_date||s.opening_date>_tS2);
+  const _opn2=_scVis.filter(s=>s.opening_date&&s.opening_date<=_tS2);
+  const _btn2=(s)=>{const active=s.code===studio.code;return`<button onclick="switchSumStudio('${s.code}')" style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;padding:6px 16px;border-radius:4px;border:2px solid ${active?'#00A3E0':'#c0d4df'};background:${active?'#00A3E0':'transparent'};color:${active?'#fff':'#5a7a8a'};cursor:pointer;letter-spacing:.5px">${s.name}</button>`;};
+  h+=`<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">`;
+  h+=`<div style="display:flex;gap:8px;flex-wrap:wrap">${_preL2.map(_btn2).join('')}</div>`;
+  if(_opn2.length){h+=`<div style="display:flex;align-items:center;gap:10px;margin-top:2px"><span style="font-size:10px;font-family:Oswald,sans-serif;font-style:italic;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:#5a7a8a;white-space:nowrap">Opened</span><div style="height:1px;background:#c0d4df;flex:1"></div></div>`;h+=`<div style="display:flex;gap:8px;flex-wrap:wrap">${_opn2.map(_btn2).join('')}</div>`;}
+  h+=`</div>`;}
 
   // ── Pre-launch milestones + Goal to Announce Opening ──────────────────
   const milestones=(studio.milestones||[]).filter(m=>m.date);
@@ -1806,16 +1810,16 @@ function applyFilters(){
   const sCurr=fR(NSO_SALES_ROWS,from,to,st,sr);
   const sPP=wins.ppFrom?fR(NSO_SALES_ROWS,wins.ppFrom,wins.ppTo,st,sr):[];
   const sPY=wins.pyFrom?fR(NSO_SALES_ROWS,wins.pyFrom,wins.pyTo,st,sr):[];
-  // Membership tiers — Naples only
-  const _naplesSelected=!st||st.length===0||st.some(s=>s.toLowerCase().includes('naples'));
+  // Membership tiers — opened studios (Naples, Reston); shown separately, NOT added to presale counts
+  const _openedCodes=new Set(['FL-019','VA-001']);
+  const _openedSelected=!st||st.length===0||st.some(s=>{const _sc=(SC2||SC)?.studios?.find(x=>(x.full_name||x.name||'').replace(/^SWEAT440\s+/,'')===s);return _sc&&_openedCodes.has(_sc.code);});
   const _tierKeys=['unl_mo','unl_yr','std_mil','visit','other'];
   const _tierLabels={unl_mo:'Unlimited Monthly',unl_yr:'Unlimited Yearly',std_mil:'Student / Military / Teacher',visit:'Visit Packs (4/8/12)',other:'Other'};
-  const _mt=r=>_naplesSelected?(r.mem_total||0):0;
-  const netSales=rows=>rows.reduce((a,r)=>a+(r.first_sales||0)+_mt(r)-(r.cancellations||0),0);
+  const netSales=rows=>rows.reduce((a,r)=>a+(r.first_sales||0)-(r.cancellations||0),0);
   let smC=netSales(sCurr),smP=netSales(sPP),smY=netSales(sPY);
-  const nsC=sCurr.reduce((a,r)=>a+(r.first_sales||0)+_mt(r),0),nsP=sPP.reduce((a,r)=>a+(r.first_sales||0)+_mt(r),0),nsY=sPY.reduce((a,r)=>a+(r.first_sales||0)+_mt(r),0);
+  const nsC=sCurr.reduce((a,r)=>a+(r.first_sales||0),0),nsP=sPP.reduce((a,r)=>a+(r.first_sales||0),0),nsY=sPY.reduce((a,r)=>a+(r.first_sales||0),0);
   const cnC=sCurr.reduce((a,r)=>a+(r.cancellations||0),0),cnP=sPP.reduce((a,r)=>a+(r.cancellations||0),0),cnY=sPY.reduce((a,r)=>a+(r.cancellations||0),0);
-  const newSalesByPeriod=_bucketByPeriod(sCurr,r=>(r.first_sales||0)+_mt(r));
+  const newSalesByPeriod=_bucketByPeriod(sCurr,r=>(r.first_sales||0));
   const cancByPeriod=_bucketByPeriod(sCurr,r=>r.cancellations||0);
   buildTrend(toTS(curr.daily,curr.monthly,from,to),newSalesByPeriod,cancByPeriod);
   const fkpi=document.getElementById('funnel-kpis');
@@ -1832,10 +1836,10 @@ function applyFilters(){
   buildArea('leadsChart','leads-toggles',leadsSeries,activeSrcLeads,'signups');
   buildRing('leadsRing','leadsRingLeg',curr.all,'signups');
   const newsalesKpis=document.getElementById('newsales-kpis');if(newsalesKpis)newsalesKpis.innerHTML=kpiCard('Total New Sales',nsC,nsP||null,nsY||null,null,GLOSSARY.nso_new_sale);
-  // Tier breakdown table — Naples only, hidden until membership sales exist
+  // Tier breakdown table — opened studios only, hidden until membership sales exist
   const _tierEl=document.getElementById('newsales-tiers');
   if(_tierEl){
-    if(_naplesSelected){
+    if(_openedSelected){
       const _memTotal=sCurr.reduce((a,r)=>a+(r.mem_total||0),0);
       if(_memTotal>0){
         const _tt={};_tierKeys.forEach(k=>{_tt[k]=sCurr.reduce((a,r)=>a+((r.tiers&&r.tiers[k])||0),0);});
@@ -1846,11 +1850,10 @@ function applyFilters(){
       }else{_tierEl.style.display='none';}
     }else{_tierEl.style.display='none';}
   }
-  const _sCurrMapped=_naplesSelected?sCurr.map(r=>({...r,first_sales:(r.first_sales||0)+(r.mem_total||0)})):sCurr;
-  const newSalesSeries=toSrcTSGran(_sCurrMapped,[],from,to);
+  const newSalesSeries=toSrcTSGran(sCurr,[],from,to);
   const activeSrcNewSales=(sr||[]).filter(s=>newSalesSeries.some(r=>r.source===s&&(r.first_sales||0)>0));
   buildArea('newsalesChart','newsales-toggles',newSalesSeries,activeSrcNewSales,'first_sales');
-  buildRing('newsalesRing','newsalesRingLeg',_sCurrMapped,'first_sales');
+  buildRing('newsalesRing','newsalesRingLeg',sCurr,'first_sales');
   const cancKpis=document.getElementById('canc-kpis');if(cancKpis)cancKpis.innerHTML=kpiCard('Total Cancellations',cnC,cnP||null,cnY||null,null,GLOSSARY.nso_cancel);
   const cancRows=sCurr.map(r=>({...r,first_sales:r.cancellations||0}));
   const cancSeries=toSrcTSGran(cancRows,[],from,to);
@@ -2129,13 +2132,15 @@ function renderScorecard(){
   });
 
   let h='';
-  // Studio switcher tabs (only allowed studios visible)
-  h+=`<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">`;
-  _scVisCard.forEach(s=>{
-    const active=s.code===sc.code;
-    h+=`<button onclick="switchScStudio('${s.code}')" style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;padding:6px 16px;border-radius:4px;border:2px solid ${active?'#00A3E0':'#c0d4df'};background:${active?'#00A3E0':'transparent'};color:${active?'#fff':'#5a7a8a'};cursor:pointer;letter-spacing:.5px">${s.name}</button>`;
-  });
-  h+=`</div>`;
+  // Studio switcher tabs — Pre-Launch above, Opened below
+  {const _tSC=new Date().toISOString().slice(0,10);
+  const _preLSC=_scVisCard.filter(s=>!s.opening_date||s.opening_date>_tSC);
+  const _opnSC=_scVisCard.filter(s=>s.opening_date&&s.opening_date<=_tSC);
+  const _btnSC=(s)=>{const active=s.code===sc.code;return`<button onclick="switchScStudio('${s.code}')" style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;padding:6px 16px;border-radius:4px;border:2px solid ${active?'#00A3E0':'#c0d4df'};background:${active?'#00A3E0':'transparent'};color:${active?'#fff':'#5a7a8a'};cursor:pointer;letter-spacing:.5px">${s.name}</button>`;};
+  h+=`<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">`;
+  h+=`<div style="display:flex;gap:8px;flex-wrap:wrap">${_preLSC.map(_btnSC).join('')}</div>`;
+  if(_opnSC.length){h+=`<div style="display:flex;align-items:center;gap:10px;margin-top:2px"><span style="font-size:10px;font-family:Oswald,sans-serif;font-style:italic;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:#5a7a8a;white-space:nowrap">Opened</span><div style="height:1px;background:#c0d4df;flex:1"></div></div>`;h+=`<div style="display:flex;gap:8px;flex-wrap:wrap">${_opnSC.map(_btnSC).join('')}</div>`;}
+  h+=`</div>`;}
   // Mini RMR table
   h+=`<div class="chart-card" style="padding:14px 20px;margin-bottom:12px">`;
   h+=`<div style="font-family:Oswald,sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;color:#5a7a8a;letter-spacing:1px;margin-bottom:10px">`;
@@ -2720,13 +2725,15 @@ function renderScorecard2(){
 
   let h='';
 
-  // Studio switcher
-  h+=`<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">`;
-  _scVisCard.forEach(s=>{
-    const active=s.code===sc.code;
-    h+=`<button onclick="switchScStudio2('${s.code}')" style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;padding:6px 16px;border-radius:4px;border:2px solid ${active?'#00A3E0':'#c0d4df'};background:${active?'#00A3E0':'transparent'};color:${active?'#fff':'#5a7a8a'};cursor:pointer;letter-spacing:.5px">${s.name}</button>`;
-  });
-  h+=`</div>`;
+  // Studio switcher — Pre-Launch above, Opened below
+  {const _tSC2=new Date().toISOString().slice(0,10);
+  const _preLSC2=_scVisCard.filter(s=>!s.opening_date||s.opening_date>_tSC2);
+  const _opnSC2=_scVisCard.filter(s=>s.opening_date&&s.opening_date<=_tSC2);
+  const _btnSC2=(s)=>{const active=s.code===sc.code;return`<button onclick="switchScStudio2('${s.code}')" style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;padding:6px 16px;border-radius:4px;border:2px solid ${active?'#00A3E0':'#c0d4df'};background:${active?'#00A3E0':'transparent'};color:${active?'#fff':'#5a7a8a'};cursor:pointer;letter-spacing:.5px">${s.name}</button>`;};
+  h+=`<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">`;
+  h+=`<div style="display:flex;gap:8px;flex-wrap:wrap">${_preLSC2.map(_btnSC2).join('')}</div>`;
+  if(_opnSC2.length){h+=`<div style="display:flex;align-items:center;gap:10px;margin-top:2px"><span style="font-size:10px;font-family:Oswald,sans-serif;font-style:italic;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:#5a7a8a;white-space:nowrap">Opened</span><div style="height:1px;background:#c0d4df;flex:1"></div></div>`;h+=`<div style="display:flex;gap:8px;flex-wrap:wrap">${_opnSC2.map(_btnSC2).join('')}</div>`;}
+  h+=`</div>`;}
 
 
   // ── PRE-LAUNCH VARIABLES (kept for _plRows defs below, no longer early-exit) ──
