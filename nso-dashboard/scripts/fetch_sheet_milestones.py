@@ -27,7 +27,7 @@ _COL_TIER3 = 5
 
 # Studios that show Preview Week + Grand Opening milestone cards.
 # Add a studio code here when it's approaching its opening date.
-PREVIEW_WEEK_STUDIOS = {"VA-001"}  # Reston
+PREVIEW_WEEK_STUDIOS = {"VA-001", "FL-019"}  # Reston, Naples
 
 # Pre-launch milestone columns (ordered by appearance in the pre-launch timeline).
 # Each entry: (key, sheet_header_name)

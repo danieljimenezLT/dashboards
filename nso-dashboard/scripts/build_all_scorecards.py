@@ -137,6 +137,7 @@ SHEET_CONFIG = {
 # Week 1 starts Feb 9 (Mon, "Ads Go Live") and ends Sat Feb 14.
 # All subsequent weeks run Sunday–Saturday.
 NAPLES_EXPLICIT_WEEKS = {
+   -1:  (date(2026, 1, 26),  date(2026, 1, 31)),  # Mon Jan 26 – Sat Jan 31  (pre-presale week)
     0:  (None,               date(2026, 2,  8)),  # Pre Feb 9 (ends Sun Feb 8)
     1:  (date(2026, 2,  9),  date(2026, 2, 14)),  # Mon Feb 9  – Sat Feb 14
     2:  (date(2026, 2, 15),  date(2026, 2, 21)),  # Sun Feb 15 – Sat Feb 21
@@ -344,6 +345,9 @@ def make_naples_bounds(num_weeks):
     last_end = date(2026, 4, 18)   # Week 10 end (Saturday)
     next_sun = last_end + timedelta(days=1)  # 4/19 = Sunday
 
+    # Include any pre-weeks (negative week numbers) from explicit dict
+    for wn in sorted(k for k in explicit if k < 0):
+        bounds.append((wn, explicit[wn][0], explicit[wn][1]))
     bounds.append((0, explicit[0][0], explicit[0][1]))
     for wn in range(1, num_weeks + 1):
         if wn in explicit:
@@ -1029,6 +1033,9 @@ def main():
                 else:
                     d0 = cfg["week1_start"]
                     dr = f"Pre {d0.month}/{d0.day}"
+            elif wn < 0:
+                wk_label = f"WEEK {wn}"
+                dr = fmt_dr(ws_date, we_date) if ws_date and we_date else ""
             else:
                 wk_label = f"WEEK {wn}"
                 if is_naples and wn in NAPLES_SPECIAL_LABELS:
