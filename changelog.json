@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-09-11",
+      "pr_number": 356,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/356",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO Dashboard — handle opened studios (Naples & Reston) with presale cap and separate selector",
+      "summary": "Caps presale data at the day before each studio's opening date, removes membership_total from presale KPI counts, and moves opened studios to a separate \"Opened\" section in all studio selectors. Also fixes a bug where Long Beach's stray March lead set the chart start date in the JS dashboard."
+    },
+    {
       "date": "2026-09-10",
       "pr_number": 358,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/358",
