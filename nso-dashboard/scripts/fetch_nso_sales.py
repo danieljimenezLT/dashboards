@@ -53,8 +53,15 @@ import studios as studios_registry
 NSO_STUDIOS = studios_registry.nso_studios_by_snowflake_id()
 
 ID_LIST            = ",".join(str(i) for i in NSO_STUDIOS)
-TIER_STUDIOS       = {5751381}   # Naples - Mercato; expand when other studios open
+TIER_STUDIOS       = {5751381, 5750130}  # Naples - Mercato, Reston
 TIER_ID_LIST       = ",".join(str(i) for i in TIER_STUDIOS)
+
+# Opening dates for studios that have already launched.
+# Presale data is capped at opening_date - 1 for these studios.
+OPENED_STUDIOS: dict[int, str] = {
+    5751381: "2026-08-22",  # Naples - Mercato
+    5750130: "2026-09-05",  # Reston
+}
 DEFAULT_START      = "2026-01-01"
 LOOKBACK_DAYS      = 14   # days re-queried on every incremental run
 
@@ -450,6 +457,12 @@ def build_studios(existing_daily: dict[str, list], fresh_rows: list[dict],
             if key in tier_lookup:
                 row["tiers"] = tier_lookup[key]
                 row["membership_total"] = sum(tier_lookup[key].values())
+
+    for sid_str, s in studios.items():
+        # Cap presale data at opening_date - 1 for studios that have already opened.
+        opening = OPENED_STUDIOS.get(int(sid_str))
+        if opening:
+            s["daily"] = [r for r in s["daily"] if r["date"] < opening]
 
     for s in studios.values():
         s["daily"].sort(key=lambda x: (x["date"], x["source"]))
