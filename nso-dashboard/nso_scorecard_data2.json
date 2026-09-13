@@ -3717,12 +3717,6 @@
         "estimated_roms_target": "5x",
         "tier0_price": 99
       },
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-02-02",
       "tier_daily_sales": [
         {
           "date": "2025-10-30",
@@ -4368,7 +4362,13 @@
           "date": "2026-09-06",
           "count": -1
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-02-02"
     },
     {
       "name": "Herriman",
@@ -7573,7 +7573,7 @@
           "date_end": "2026-08-08",
           "new_leads": 24,
           "total_leads": 493.0,
-          "digital_leads_week": 11,
+          "digital_leads_week": 10,
           "presales_week": 7,
           "presales_count": 56.0,
           "cancellations_week": 0,
