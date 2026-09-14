@@ -37,6 +37,12 @@ const USERS = {
     studios: null,
     role: 'admin'
   },
+  'lynsay@sweat440.com': {
+    passwordHash: '30cfb111b52271871de0b82d98af2461fd2cc7663e41eebfab0969ad7bfcefeb',
+    name: 'Lynsay Flint',
+    studios: null,
+    role: 'admin'
+  },
   'andre@studioseven.agency': {
     passwordHash: 'c61231d836ec478aed49c3f25a2c9b7b488bae81aabfa53020cceceb4d6e4bd3',
     name: 'Andre T',
@@ -136,18 +142,6 @@ const USERS = {
     passwordHash: '88082350dadbc545b5677894efbd991700073bf79eb7d78c3c583692124a7e96',
     name: 'Marketing',
     studios: null,
-    role: 'franchisee'
-  },
-
-  'franchisee@sweat440.com': {
-    passwordHash: '30cfb111b52271871de0b82d98af2461fd2cc7663e41eebfab0969ad7bfcefeb',
-    name: 'Franchisee preview',
-    studios: [
-      'Austin - Highland',
-      'Miami Lakes',
-      'Doral',
-      'Boca Raton',
-    ],
     role: 'franchisee'
   },
 
