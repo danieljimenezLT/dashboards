@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-14",
+      "pr_number": 360,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/360",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO pre-weeks now start from MBO date; Dallas Uptown T1/T2 tier split fixed",
+      "summary": "Pre-launch lead chart weeks now start from the \"Full Marketing Build Out Complete\" date per studio instead of the earliest lead data. Earlier leads accumulate into the first visible week's total so the chart is continuous. Dallas Uptown presale tier counts now correctly split between T1 ($99) and T2 ($129) after fixing a pricing mismatch in the studio registry."
+    },
+    {
+      "date": "2026-09-14",
       "pr_number": 359,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/359",
       "author": "Sebastian Arango",
