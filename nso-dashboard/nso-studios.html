@@ -5435,7 +5435,10 @@ function renderInstagram(){
   const totalFollowers=filtered.reduce((a,s)=>a+(s.current_followers||0),0);
   const hasFollowers=filtered.some(s=>s.current_followers>0);
   const medianLikes=_median(allPosts.map(p=>p.likes||0));
-  const medianReach=_median(allPosts.map(p=>p.est_reach||0));
+  // Per-post reach estimate is only reliable for posts in the rolling window (reachByDate is
+  // only populated for recent dates); pre-window posts have est_reach=0 and skew the median.
+  const _windowPosts=windowStart?allPosts.filter(p=>p.date>=windowStart):allPosts;
+  const medianReach=_median(_windowPosts.map(p=>p.est_reach||0));
   const ppMedianLikes=_median(ppAllPosts.map(p=>p.likes||0));
   const ppMedianReach=_median(ppAllPosts.map(p=>p.est_reach||0));
 
@@ -5496,9 +5499,16 @@ function renderInstagram(){
   if(hasFollowersKpi)h+=_igKpi(followersLabel,followersVal.toLocaleString(),'');
   h+=_igKpiCard('total_reach','Total Reach',totalReach.toLocaleString(),_igDelta(totalReach,ppTotalReach));
   h+=_igKpiCard('avg_daily_reach','Avg Daily Reach',avgReach.toLocaleString(),_igDelta(avgReach,ppAvgReach));
+  // For opened studios spanning historical months: prefer the archived weighted median
+  // (stored per month in social_insights) — more accurate than the per-post estimate
+  // which has est_reach=0 for pre-window dates. For recent-month-only selections the
+  // archived median is null, so we fall back to the rolling-window post estimate.
+  const _useArchiveMedian=_igOpenCap&&rangeExtendsBack;
+  const _dispMedianReach=(_useArchiveMedian&&histMedianReach!=null)?histMedianReach:medianReach;
+  const _dispMedianLikes=(_useArchiveMedian&&histMedianLikes!=null)?histMedianLikes:medianLikes;
   if(allPosts.length){
-    h+=_igKpi('Median Reach / Post',medianReach.toLocaleString(),_igDelta(medianReach,ppMedianReach));
-    h+=_igKpi('Median Likes',medianLikes.toLocaleString(),_igDelta(medianLikes,ppMedianLikes));
+    h+=_igKpi('Median Reach / Post',_dispMedianReach.toLocaleString(),_igDelta(medianReach,ppMedianReach));
+    h+=_igKpi('Median Likes',_dispMedianLikes.toLocaleString(),_igDelta(medianLikes,ppMedianLikes));
   } else if(rangeExtendsBack){
     if(histMedianReach!=null)h+=_igKpi('Median Reach / Post',histMedianReach.toLocaleString(),'');
     if(histMedianLikes!=null)h+=_igKpi('Median Likes',histMedianLikes.toLocaleString(),'');
