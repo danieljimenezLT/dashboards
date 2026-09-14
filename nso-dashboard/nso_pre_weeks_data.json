@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-14T16:10:02.861472",
+  "generated_at": "2026-09-14T14:15:34.129101",
   "source_sheet": "https://docs.google.com/spreadsheets/d/1KhXfeofzltGyllmrfIm9UN2xqLUgBtjAxPhT-E0SQmk",
   "studios": {
     "FL-019": {
@@ -35,11 +35,13 @@
       "week_0_start": "2026-05-31",
       "week_1_start": "2026-06-07",
       "lt_fee_start": "2026-03-09",
+      "presales_training_complete": "2026-03-09",
+      "offset_leads": 0,
       "pre_weeks": [
         {
           "week_num": -12,
           "week": "WEEK -12",
-          "date_start": "2026-03-10",
+          "date_start": "2026-03-08",
           "date_end": "2026-03-14",
           "new_leads": 5,
           "grassroots_leads": null,
@@ -73,7 +75,7 @@
           "date_end": "2026-04-04",
           "new_leads": 9,
           "grassroots_leads": 1,
-          "comm_events": 1,
+          "comm_events": null,
           "total_leads": 27
         },
         {
@@ -83,7 +85,7 @@
           "date_end": "2026-04-11",
           "new_leads": 41,
           "grassroots_leads": 6,
-          "comm_events": 7,
+          "comm_events": null,
           "total_leads": 68
         },
         {
@@ -93,7 +95,7 @@
           "date_end": "2026-04-18",
           "new_leads": 8,
           "grassroots_leads": null,
-          "comm_events": 1,
+          "comm_events": null,
           "total_leads": 76
         },
         {
@@ -103,7 +105,7 @@
           "date_end": "2026-04-25",
           "new_leads": 17,
           "grassroots_leads": 9,
-          "comm_events": 7,
+          "comm_events": null,
           "total_leads": 93
         },
         {
@@ -123,7 +125,7 @@
           "date_end": "2026-05-09",
           "new_leads": 30,
           "grassroots_leads": 7,
-          "comm_events": 6,
+          "comm_events": null,
           "total_leads": 154
         },
         {
@@ -133,7 +135,7 @@
           "date_end": "2026-05-16",
           "new_leads": 47,
           "grassroots_leads": 8,
-          "comm_events": 8,
+          "comm_events": null,
           "total_leads": 201
         },
         {
@@ -143,7 +145,7 @@
           "date_end": "2026-05-23",
           "new_leads": 24,
           "grassroots_leads": 5,
-          "comm_events": 7,
+          "comm_events": null,
           "total_leads": 225
         },
         {
@@ -153,7 +155,7 @@
           "date_end": "2026-05-30",
           "new_leads": 38,
           "grassroots_leads": 5,
-          "comm_events": 9,
+          "comm_events": null,
           "total_leads": 263
         }
       ]
@@ -164,87 +166,9 @@
       "week_0_start": "2026-07-19",
       "week_1_start": "2026-07-26",
       "lt_fee_start": "2026-06-01",
+      "presales_training_complete": "2026-06-30",
+      "offset_leads": 16,
       "pre_weeks": [
-        {
-          "week_num": -11,
-          "week": "WEEK -11",
-          "date_start": "2026-05-08",
-          "date_end": "2026-05-09",
-          "new_leads": 4,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 4
-        },
-        {
-          "week_num": -10,
-          "week": "WEEK -10",
-          "date_start": "2026-05-10",
-          "date_end": "2026-05-16",
-          "new_leads": 2,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 6
-        },
-        {
-          "week_num": -9,
-          "week": "WEEK -9",
-          "date_start": "2026-05-17",
-          "date_end": "2026-05-23",
-          "new_leads": 2,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 8
-        },
-        {
-          "week_num": -8,
-          "week": "WEEK -8",
-          "date_start": "2026-05-24",
-          "date_end": "2026-05-30",
-          "new_leads": 2,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 10
-        },
-        {
-          "week_num": -7,
-          "week": "WEEK -7",
-          "date_start": "2026-05-31",
-          "date_end": "2026-06-06",
-          "new_leads": 3,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 13
-        },
-        {
-          "week_num": -6,
-          "week": "WEEK -6",
-          "date_start": "2026-06-07",
-          "date_end": "2026-06-13",
-          "new_leads": 0,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 13
-        },
-        {
-          "week_num": -5,
-          "week": "WEEK -5",
-          "date_start": "2026-06-14",
-          "date_end": "2026-06-20",
-          "new_leads": 0,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 13
-        },
-        {
-          "week_num": -4,
-          "week": "WEEK -4",
-          "date_start": "2026-06-21",
-          "date_end": "2026-06-27",
-          "new_leads": 3,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 16
-        },
         {
           "week_num": -3,
           "week": "WEEK -3",
@@ -283,15 +207,17 @@
       "week_0_start": "2026-05-17",
       "week_1_start": "2026-05-24",
       "lt_fee_start": "2026-04-16",
+      "presales_training_complete": "2026-05-04",
+      "offset_leads": 0,
       "pre_weeks": [
         {
           "week_num": -2,
           "week": "WEEK -2",
-          "date_start": "2026-05-06",
+          "date_start": "2026-05-03",
           "date_end": "2026-05-09",
           "new_leads": 2,
           "grassroots_leads": null,
-          "comm_events": 1,
+          "comm_events": null,
           "total_leads": 2
         },
         {
@@ -301,7 +227,7 @@
           "date_end": "2026-05-16",
           "new_leads": 0,
           "grassroots_leads": null,
-          "comm_events": 1,
+          "comm_events": null,
           "total_leads": 2
         }
       ]
@@ -312,18 +238,9 @@
       "week_0_start": "2026-05-17",
       "week_1_start": "2026-05-24",
       "lt_fee_start": "2026-05-08",
-      "pre_weeks": [
-        {
-          "week_num": -1,
-          "week": "WEEK -1",
-          "date_start": "2026-05-13",
-          "date_end": "2026-05-16",
-          "new_leads": 3,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 3
-        }
-      ]
+      "presales_training_complete": "2026-05-19",
+      "offset_leads": 0,
+      "pre_weeks": []
     },
     "FL-021": {
       "name": "North Miami",
@@ -331,18 +248,9 @@
       "week_0_start": "2026-05-17",
       "week_1_start": "2026-05-24",
       "lt_fee_start": "2026-05-08",
-      "pre_weeks": [
-        {
-          "week_num": -1,
-          "week": "WEEK -1",
-          "date_start": "2026-05-15",
-          "date_end": "2026-05-16",
-          "new_leads": 2,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 2
-        }
-      ]
+      "presales_training_complete": "2026-05-19",
+      "offset_leads": 0,
+      "pre_weeks": []
     },
     "TX-004": {
       "name": "Dallas - Uptown",
@@ -350,27 +258,9 @@
       "week_0_start": "2026-05-31",
       "week_1_start": "2026-06-07",
       "lt_fee_start": "2026-05-19",
+      "presales_training_complete": "2026-05-14",
+      "offset_leads": 3,
       "pre_weeks": [
-        {
-          "week_num": -5,
-          "week": "WEEK -5",
-          "date_start": "2026-04-28",
-          "date_end": "2026-05-02",
-          "new_leads": 2,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 2
-        },
-        {
-          "week_num": -4,
-          "week": "WEEK -4",
-          "date_start": "2026-05-03",
-          "date_end": "2026-05-09",
-          "new_leads": 0,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 2
-        },
         {
           "week_num": -3,
           "week": "WEEK -3",
@@ -379,7 +269,7 @@
           "new_leads": 4,
           "grassroots_leads": null,
           "comm_events": null,
-          "total_leads": 6
+          "total_leads": 7
         },
         {
           "week_num": -2,
@@ -388,8 +278,8 @@
           "date_end": "2026-05-23",
           "new_leads": 24,
           "grassroots_leads": 1,
-          "comm_events": 4,
-          "total_leads": 30
+          "comm_events": null,
+          "total_leads": 31
         },
         {
           "week_num": -1,
@@ -398,8 +288,8 @@
           "date_end": "2026-05-30",
           "new_leads": 38,
           "grassroots_leads": null,
-          "comm_events": 3,
-          "total_leads": 68
+          "comm_events": null,
+          "total_leads": 69
         }
       ]
     },
@@ -409,16 +299,18 @@
       "week_0_start": "2026-09-27",
       "week_1_start": "2026-10-04",
       "lt_fee_start": "2026-09-01",
+      "presales_training_complete": "2026-06-25",
+      "offset_leads": 2,
       "pre_weeks": [
         {
           "week_num": -14,
           "week": "WEEK -14",
-          "date_start": "2026-06-26",
+          "date_start": "2026-06-21",
           "date_end": "2026-06-27",
           "new_leads": 1,
           "grassroots_leads": 1,
           "comm_events": null,
-          "total_leads": 1
+          "total_leads": 3
         },
         {
           "week_num": -13,
@@ -428,7 +320,7 @@
           "new_leads": 8,
           "grassroots_leads": null,
           "comm_events": null,
-          "total_leads": 9
+          "total_leads": 11
         },
         {
           "week_num": -12,
@@ -438,7 +330,7 @@
           "new_leads": 3,
           "grassroots_leads": 1,
           "comm_events": null,
-          "total_leads": 12
+          "total_leads": 14
         },
         {
           "week_num": -11,
@@ -448,7 +340,7 @@
           "new_leads": 10,
           "grassroots_leads": 1,
           "comm_events": null,
-          "total_leads": 22
+          "total_leads": 24
         },
         {
           "week_num": -10,
@@ -457,8 +349,8 @@
           "date_end": "2026-07-25",
           "new_leads": 41,
           "grassroots_leads": 2,
-          "comm_events": 3,
-          "total_leads": 63
+          "comm_events": null,
+          "total_leads": 65
         },
         {
           "week_num": -9,
@@ -467,8 +359,8 @@
           "date_end": "2026-08-01",
           "new_leads": 83,
           "grassroots_leads": 13,
-          "comm_events": 3,
-          "total_leads": 146
+          "comm_events": null,
+          "total_leads": 148
         },
         {
           "week_num": -8,
@@ -477,8 +369,8 @@
           "date_end": "2026-08-08",
           "new_leads": 17,
           "grassroots_leads": 2,
-          "comm_events": 2,
-          "total_leads": 163
+          "comm_events": null,
+          "total_leads": 165
         },
         {
           "week_num": -7,
@@ -487,8 +379,8 @@
           "date_end": "2026-08-15",
           "new_leads": 13,
           "grassroots_leads": 2,
-          "comm_events": 1,
-          "total_leads": 176
+          "comm_events": null,
+          "total_leads": 178
         },
         {
           "week_num": -6,
@@ -497,8 +389,8 @@
           "date_end": "2026-08-22",
           "new_leads": 39,
           "grassroots_leads": 10,
-          "comm_events": 4,
-          "total_leads": 215
+          "comm_events": null,
+          "total_leads": 217
         },
         {
           "week_num": -5,
@@ -507,8 +399,8 @@
           "date_end": "2026-08-29",
           "new_leads": 22,
           "grassroots_leads": 11,
-          "comm_events": 6,
-          "total_leads": 237
+          "comm_events": null,
+          "total_leads": 239
         },
         {
           "week_num": -4,
@@ -518,7 +410,7 @@
           "new_leads": 89,
           "grassroots_leads": 44,
           "comm_events": null,
-          "total_leads": 326
+          "total_leads": 328
         },
         {
           "week_num": -3,
@@ -528,7 +420,7 @@
           "new_leads": 65,
           "grassroots_leads": 46,
           "comm_events": null,
-          "total_leads": 391
+          "total_leads": 393
         },
         {
           "week_num": -2,
@@ -538,7 +430,7 @@
           "new_leads": 0,
           "grassroots_leads": null,
           "comm_events": null,
-          "total_leads": 391
+          "total_leads": 393
         },
         {
           "week_num": -1,
@@ -548,7 +440,7 @@
           "new_leads": 0,
           "grassroots_leads": null,
           "comm_events": null,
-          "total_leads": 391
+          "total_leads": 393
         }
       ]
     },
@@ -558,17 +450,9 @@
       "week_0_start": "2026-07-19",
       "week_1_start": "2026-07-26",
       "lt_fee_start": "2026-07-06",
+      "presales_training_complete": "2026-06-24",
+      "offset_leads": 5,
       "pre_weeks": [
-        {
-          "week_num": -5,
-          "week": "WEEK -5",
-          "date_start": "2026-06-19",
-          "date_end": "2026-06-20",
-          "new_leads": 4,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 4
-        },
         {
           "week_num": -4,
           "week": "WEEK -4",
@@ -577,7 +461,7 @@
           "new_leads": 12,
           "grassroots_leads": null,
           "comm_events": null,
-          "total_leads": 16
+          "total_leads": 17
         },
         {
           "week_num": -3,
@@ -587,7 +471,7 @@
           "new_leads": 29,
           "grassroots_leads": null,
           "comm_events": null,
-          "total_leads": 45
+          "total_leads": 46
         },
         {
           "week_num": -2,
@@ -597,7 +481,7 @@
           "new_leads": 38,
           "grassroots_leads": null,
           "comm_events": null,
-          "total_leads": 83
+          "total_leads": 84
         },
         {
           "week_num": -1,
@@ -607,7 +491,7 @@
           "new_leads": 27,
           "grassroots_leads": null,
           "comm_events": null,
-          "total_leads": 110
+          "total_leads": 111
         }
       ]
     },
@@ -617,47 +501,9 @@
       "week_0_start": "2026-07-19",
       "week_1_start": "2026-07-26",
       "lt_fee_start": "2026-06-24",
+      "presales_training_complete": "2026-06-30",
+      "offset_leads": 7,
       "pre_weeks": [
-        {
-          "week_num": -7,
-          "week": "WEEK -7",
-          "date_start": "2026-06-01",
-          "date_end": "2026-06-06",
-          "new_leads": 3,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 3
-        },
-        {
-          "week_num": -6,
-          "week": "WEEK -6",
-          "date_start": "2026-06-07",
-          "date_end": "2026-06-13",
-          "new_leads": 2,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 5
-        },
-        {
-          "week_num": -5,
-          "week": "WEEK -5",
-          "date_start": "2026-06-14",
-          "date_end": "2026-06-20",
-          "new_leads": 1,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 6
-        },
-        {
-          "week_num": -4,
-          "week": "WEEK -4",
-          "date_start": "2026-06-21",
-          "date_end": "2026-06-27",
-          "new_leads": 1,
-          "grassroots_leads": null,
-          "comm_events": null,
-          "total_leads": 7
-        },
         {
           "week_num": -3,
           "week": "WEEK -3",
@@ -696,11 +542,13 @@
       "week_0_start": "2026-11-08",
       "week_1_start": "2026-11-15",
       "lt_fee_start": "2026-10-01",
+      "presales_training_complete": "2026-07-17",
+      "offset_leads": 0,
       "pre_weeks": [
         {
           "week_num": -17,
           "week": "WEEK -17",
-          "date_start": "2026-07-15",
+          "date_start": "2026-07-12",
           "date_end": "2026-07-18",
           "new_leads": 1,
           "grassroots_leads": null,
@@ -764,7 +612,7 @@
           "date_end": "2026-08-29",
           "new_leads": 9,
           "grassroots_leads": 3,
-          "comm_events": 1,
+          "comm_events": null,
           "total_leads": 30
         },
         {
@@ -875,6 +723,8 @@
       "week_0_start": null,
       "week_1_start": null,
       "lt_fee_start": "2026-10-01",
+      "presales_training_complete": "2026-08-21",
+      "offset_leads": 0,
       "pre_weeks": []
     },
     "OK-001": {
@@ -883,6 +733,8 @@
       "week_0_start": null,
       "week_1_start": null,
       "lt_fee_start": "2026-09-01",
+      "presales_training_complete": "2026-08-25",
+      "offset_leads": 0,
       "pre_weeks": []
     },
     "NC-002": {
@@ -891,6 +743,8 @@
       "week_0_start": null,
       "week_1_start": null,
       "lt_fee_start": "2026-10-01",
+      "presales_training_complete": "2026-08-27",
+      "offset_leads": 0,
       "pre_weeks": []
     }
   }

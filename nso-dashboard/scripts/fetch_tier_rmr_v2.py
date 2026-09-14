@@ -214,7 +214,9 @@ for studio in sc.get("studios", []):
         print(f"  {code}: no Snowflake ID configured, skipping")
         continue
 
-    pricing = STUDIO_PRICING.get(code) or {}
+    # Prefer pricing from the scorecard JSON (kept up-to-date by fetch_sheet_milestones.py)
+    # so tier1/2/3 prices are always correct; fall back to the studio registry.
+    pricing = studio.get("pricing") or STUDIO_PRICING.get(code) or {}
     sku_map = studio.get("sku_map") or {}
     weeks   = studio.get("weeks", [])
 
