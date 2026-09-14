@@ -5267,14 +5267,20 @@ function _drawIGTrend(){
   const windowMonthKey=windowStart?windowStart.slice(0,7)+'-01':null;
   const fromMonthKey=from?from.slice(0,7)+'-01':null;
   const toMonthKey=to?to.slice(0,7)+'-01':null;
-  // For monthly mode: show full archive history (ignore from/to — pickers constrain KPIs, not chart)
-  const monthlyRows=(_igGran==='daily')?[]:studios.flatMap(s=>(s.monthly||[]).filter(m=>
-    !windowMonthKey||m.month<windowMonthKey
-  ));
+  // Monthly archive rows: for opened studios, apply from/to so month nav filters the chart too
+  const monthlyRows=(_igGran==='daily')?[]:studios.flatMap(s=>(s.monthly||[]).filter(m=>{
+    if(!windowMonthKey||m.month>=windowMonthKey)return false;
+    if(window._igIsOpened){
+      if(fromMonthKey&&m.month<fromMonthKey)return false;
+      if(toMonthKey&&m.month>toMonthKey)return false;
+    }
+    return true;
+  }));
 
   if(metric.mode==='count'){
+    // Posts from rolling window — apply from/to for opened studios (month nav must filter chart)
     studios.forEach(s=>(s.posts||[]).forEach(p=>{
-      if(_igGran!=='monthly'&&((from&&p.date<from)||(to&&p.date>to)))return;
+      if((window._igIsOpened||_igGran!=='monthly')&&((from&&p.date<from)||(to&&p.date>to)))return;
       const key=_ga4PeriodKey(p.date,_igGran);
       byKey[key]=(byKey[key]||0)+1;
     }));
@@ -5283,7 +5289,11 @@ function _drawIGTrend(){
       byKey[key]=(byKey[key]||0)+(m[metric.monthlyField]||0);
     });
   } else {
-    studios.forEach(s=>(s.daily||[]).filter(r=>_igGran==='monthly'||((!from||r.date>=from)&&(!to||r.date<=to))).forEach(r=>{
+    // For opened studios in monthly mode: also apply from/to to daily rows so the chart reflects the month nav
+    studios.forEach(s=>(s.daily||[]).filter(r=>window._igIsOpened
+      ? ((!from||r.date>=from)&&(!to||r.date<=to))
+      : (_igGran==='monthly'||((!from||r.date>=from)&&(!to||r.date<=to)))
+    ).forEach(r=>{
       const key=_ga4PeriodKey(r.date,_igGran);
       byKey[key]=(byKey[key]||0)+(r[metric.field]||0);
     }));
@@ -5291,16 +5301,25 @@ function _drawIGTrend(){
       const key=_ga4PeriodKey(m.month,_igGran);
       byKey[key]=(byKey[key]||0)+(m[metric.monthlyField]||0);
     });
-    if(metric.mode==='avg'&&from&&to&&_igGran!=='monthly'){
-      const daysInBucket={};
-      let d=new Date(from+'T00:00:00Z');
-      const end=new Date(to+'T00:00:00Z');
-      while(d<=end){
-        const key=_ga4PeriodKey(d.toISOString().slice(0,10),_igGran);
-        daysInBucket[key]=(daysInBucket[key]||0)+1;
-        d.setUTCDate(d.getUTCDate()+1);
+    if(metric.mode==='avg'){
+      if(_igGran==='monthly'){
+        // Divide each month's total by the number of days in that month
+        Object.keys(byKey).forEach(k=>{
+          const d=new Date(k+'T00:00:00Z');
+          const daysInMonth=new Date(d.getUTCFullYear(),d.getUTCMonth()+1,0).getDate();
+          byKey[k]=Math.round(byKey[k]/daysInMonth);
+        });
+      } else if(from&&to){
+        const daysInBucket={};
+        let d=new Date(from+'T00:00:00Z');
+        const end=new Date(to+'T00:00:00Z');
+        while(d<=end){
+          const key=_ga4PeriodKey(d.toISOString().slice(0,10),_igGran);
+          daysInBucket[key]=(daysInBucket[key]||0)+1;
+          d.setUTCDate(d.getUTCDate()+1);
+        }
+        Object.keys(byKey).forEach(k=>{if(daysInBucket[k])byKey[k]=Math.round(byKey[k]/daysInBucket[k]);});
       }
-      Object.keys(byKey).forEach(k=>{if(daysInBucket[k])byKey[k]=Math.round(byKey[k]/daysInBucket[k]);});
     }
   }
 
@@ -5341,7 +5360,11 @@ function renderInstagram(){
   // Determine rolling window start from available daily data
   const allDailyDates=studios.flatMap(s=>(s.daily||[]).map(r=>r.date));
   const windowStart=allDailyDates.length?[...allDailyDates].sort()[0]:null;
-  const rangeExtendsBack=!!(from&&windowStart&&from<windowStart);
+  // For opened studios, rangeExtendsBack is true whenever monthly archive data exists
+  // (so "All" months still includes the full archived history, not just the rolling 90-day window)
+  const rangeExtendsBack=_igOpenCap
+    ? studios.some(s=>(s.monthly||[]).length>0)
+    : !!(from&&windowStart&&from<windowStart);
   const rangeEndsInHistory=!!(to&&windowStart&&to<windowStart);
   const fromMonthKey=from?from.substring(0,7)+'-01':null;
   const toMonthKey=to?to.substring(0,7)+'-01':null;
@@ -5368,10 +5391,15 @@ function renderInstagram(){
     posts:(s.posts||[]).filter(p=>p.date>=ppFromStr&&p.date<=ppToStr)
   })):[];
 
-  // Monthly data for the pre-window portion of the selected range, capped at toMonthKey
+  // Monthly archive data: pre-window portion of selected range, capped at toMonthKey.
+  // For opened studios: no lower-bound required (fromMonthKey may be null when "All" is selected).
   const monthFiltered=rangeExtendsBack?studios.map(s=>({
     ...s,
-    monthly:(s.monthly||[]).filter(m=>m.month>=fromMonthKey&&m.month<windowMonthKey&&(!toMonthKey||m.month<=toMonthKey))
+    monthly:(s.monthly||[]).filter(m=>
+      (!fromMonthKey||m.month>=fromMonthKey)&&
+      (!windowMonthKey||m.month<windowMonthKey)&&
+      (!toMonthKey||m.month<=toMonthKey)
+    )
   })):[];
 
   function _enrichPosts(studioList){
@@ -5407,7 +5435,10 @@ function renderInstagram(){
   const totalFollowers=filtered.reduce((a,s)=>a+(s.current_followers||0),0);
   const hasFollowers=filtered.some(s=>s.current_followers>0);
   const medianLikes=_median(allPosts.map(p=>p.likes||0));
-  const medianReach=_median(allPosts.map(p=>p.est_reach||0));
+  // Per-post reach estimate is only reliable for posts in the rolling window (reachByDate is
+  // only populated for recent dates); pre-window posts have est_reach=0 and skew the median.
+  const _windowPosts=windowStart?allPosts.filter(p=>p.date>=windowStart):allPosts;
+  const medianReach=_median(_windowPosts.map(p=>p.est_reach||0));
   const ppMedianLikes=_median(ppAllPosts.map(p=>p.likes||0));
   const ppMedianReach=_median(ppAllPosts.map(p=>p.est_reach||0));
 
@@ -5468,9 +5499,16 @@ function renderInstagram(){
   if(hasFollowersKpi)h+=_igKpi(followersLabel,followersVal.toLocaleString(),'');
   h+=_igKpiCard('total_reach','Total Reach',totalReach.toLocaleString(),_igDelta(totalReach,ppTotalReach));
   h+=_igKpiCard('avg_daily_reach','Avg Daily Reach',avgReach.toLocaleString(),_igDelta(avgReach,ppAvgReach));
+  // For opened studios spanning historical months: prefer the archived weighted median
+  // (stored per month in social_insights) — more accurate than the per-post estimate
+  // which has est_reach=0 for pre-window dates. For recent-month-only selections the
+  // archived median is null, so we fall back to the rolling-window post estimate.
+  const _useArchiveMedian=_igOpenCap&&rangeExtendsBack;
+  const _dispMedianReach=(_useArchiveMedian&&histMedianReach!=null)?histMedianReach:medianReach;
+  const _dispMedianLikes=(_useArchiveMedian&&histMedianLikes!=null)?histMedianLikes:medianLikes;
   if(allPosts.length){
-    h+=_igKpi('Median Reach / Post',medianReach.toLocaleString(),_igDelta(medianReach,ppMedianReach));
-    h+=_igKpi('Median Likes',medianLikes.toLocaleString(),_igDelta(medianLikes,ppMedianLikes));
+    h+=_igKpi('Median Reach / Post',_dispMedianReach.toLocaleString(),_igDelta(medianReach,ppMedianReach));
+    h+=_igKpi('Median Likes',_dispMedianLikes.toLocaleString(),_igDelta(medianLikes,ppMedianLikes));
   } else if(rangeExtendsBack){
     if(histMedianReach!=null)h+=_igKpi('Median Reach / Post',histMedianReach.toLocaleString(),'');
     if(histMedianLikes!=null)h+=_igKpi('Median Likes',histMedianLikes.toLocaleString(),'');
