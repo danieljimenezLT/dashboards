@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-14",
+      "pr_number": 361,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/361",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO leads chart starts from MBO date for studios without week 0 configured",
+      "summary": "For studios that don't yet have a Week 0 start date, the Leads & Presales chart now starts from the \"Full Marketing Build Out Complete\" date instead of the earliest available data point."
+    },
+    {
+      "date": "2026-09-14",
       "pr_number": 360,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/360",
       "author": "Sebastian Arango",
