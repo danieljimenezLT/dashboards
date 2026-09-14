@@ -5267,10 +5267,15 @@ function _drawIGTrend(){
   const windowMonthKey=windowStart?windowStart.slice(0,7)+'-01':null;
   const fromMonthKey=from?from.slice(0,7)+'-01':null;
   const toMonthKey=to?to.slice(0,7)+'-01':null;
-  // For monthly mode: show full archive history (ignore from/to — pickers constrain KPIs, not chart)
-  const monthlyRows=(_igGran==='daily')?[]:studios.flatMap(s=>(s.monthly||[]).filter(m=>
-    !windowMonthKey||m.month<windowMonthKey
-  ));
+  // Monthly archive rows: for opened studios, apply from/to so month nav filters the chart too
+  const monthlyRows=(_igGran==='daily')?[]:studios.flatMap(s=>(s.monthly||[]).filter(m=>{
+    if(!windowMonthKey||m.month>=windowMonthKey)return false;
+    if(window._igIsOpened){
+      if(fromMonthKey&&m.month<fromMonthKey)return false;
+      if(toMonthKey&&m.month>toMonthKey)return false;
+    }
+    return true;
+  }));
 
   if(metric.mode==='count'){
     studios.forEach(s=>(s.posts||[]).forEach(p=>{
@@ -5283,7 +5288,11 @@ function _drawIGTrend(){
       byKey[key]=(byKey[key]||0)+(m[metric.monthlyField]||0);
     });
   } else {
-    studios.forEach(s=>(s.daily||[]).filter(r=>_igGran==='monthly'||((!from||r.date>=from)&&(!to||r.date<=to))).forEach(r=>{
+    // For opened studios in monthly mode: also apply from/to to daily rows so the chart reflects the month nav
+    studios.forEach(s=>(s.daily||[]).filter(r=>window._igIsOpened
+      ? ((!from||r.date>=from)&&(!to||r.date<=to))
+      : (_igGran==='monthly'||((!from||r.date>=from)&&(!to||r.date<=to)))
+    ).forEach(r=>{
       const key=_ga4PeriodKey(r.date,_igGran);
       byKey[key]=(byKey[key]||0)+(r[metric.field]||0);
     }));
@@ -5341,7 +5350,11 @@ function renderInstagram(){
   // Determine rolling window start from available daily data
   const allDailyDates=studios.flatMap(s=>(s.daily||[]).map(r=>r.date));
   const windowStart=allDailyDates.length?[...allDailyDates].sort()[0]:null;
-  const rangeExtendsBack=!!(from&&windowStart&&from<windowStart);
+  // For opened studios, rangeExtendsBack is true whenever monthly archive data exists
+  // (so "All" months still includes the full archived history, not just the rolling 90-day window)
+  const rangeExtendsBack=_igOpenCap
+    ? studios.some(s=>(s.monthly||[]).length>0)
+    : !!(from&&windowStart&&from<windowStart);
   const rangeEndsInHistory=!!(to&&windowStart&&to<windowStart);
   const fromMonthKey=from?from.substring(0,7)+'-01':null;
   const toMonthKey=to?to.substring(0,7)+'-01':null;
@@ -5368,10 +5381,15 @@ function renderInstagram(){
     posts:(s.posts||[]).filter(p=>p.date>=ppFromStr&&p.date<=ppToStr)
   })):[];
 
-  // Monthly data for the pre-window portion of the selected range, capped at toMonthKey
+  // Monthly archive data: pre-window portion of selected range, capped at toMonthKey.
+  // For opened studios: no lower-bound required (fromMonthKey may be null when "All" is selected).
   const monthFiltered=rangeExtendsBack?studios.map(s=>({
     ...s,
-    monthly:(s.monthly||[]).filter(m=>m.month>=fromMonthKey&&m.month<windowMonthKey&&(!toMonthKey||m.month<=toMonthKey))
+    monthly:(s.monthly||[]).filter(m=>
+      (!fromMonthKey||m.month>=fromMonthKey)&&
+      (!windowMonthKey||m.month<windowMonthKey)&&
+      (!toMonthKey||m.month<=toMonthKey)
+    )
   })):[];
 
   function _enrichPosts(studioList){
