@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-09-14",
+      "pr_number": 359,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/359",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO scorecard tier counts fixed for opened studios (Naples, Reston); week nav scroll preserved",
+      "summary": "Scorecard RMR table now uses SKU-based tier assignment so Naples and Reston show correct T1/T2/T3 presale counts as of their opening dates. Clicking week pills in Paid/Organic Channels no longer resets horizontal scroll position."
+    },
+    {
       "date": "2026-09-11",
       "pr_number": 356,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/356",
