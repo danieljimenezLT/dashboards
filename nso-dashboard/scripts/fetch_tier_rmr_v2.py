@@ -73,7 +73,14 @@ def connect():
     )
 
 
-def fetch_daily_sales(cur, studio_id, end_date):
+def fetch_daily_sales(cur, studio_id, end_date, opening_date=None):
+    # For opened studios: cap buys strictly before opening_date so post-opening
+    # members don't inflate the presale tier counts.
+    # For opened studios: cap both buys and cancels before opening_date to match
+    # the pre-opening net presales view (consistent with nso_sales_data.json / Summary tab).
+    buy_op    = "< " + f"'{opening_date}'" if opening_date else "<= " + f"'{end_date}'"
+    cancel_op = "< " + f"'{opening_date}'" if opening_date else "<= " + f"'{end_date}'"
+
     cur.execute(f"""
         SELECT CLIENT_ID, PRODUCT_DESCRIPTION,
                COALESCE(ROUND(AVG(CASE WHEN GROSS_PAYMENTAMT_LOCAL > 0
@@ -85,7 +92,7 @@ def fetch_daily_sales(cur, studio_id, end_date):
           AND ITEM_TYPE = 'Pricing Option'
           AND LOWER(PRODUCT_DESCRIPTION) LIKE '%pre%sale%'
           AND QUANTITY = 1 AND IS_RETURN = 0
-          AND SALE_DATE::DATE <= '{end_date}'
+          AND SALE_DATE::DATE {buy_op}
           AND (EMAIL_ID IS NULL OR (
               LOWER(TRIM(EMAIL_ID)) NOT LIKE 'test%'
               AND LOWER(TRIM(EMAIL_ID)) NOT LIKE '%sweat440%'
@@ -104,7 +111,7 @@ def fetch_daily_sales(cur, studio_id, end_date):
           AND ITEM_TYPE = 'Pricing Option'
           AND LOWER(PRODUCT_DESCRIPTION) LIKE '%pre%sale%'
           AND (QUANTITY = -1 OR IS_RETURN = 1)
-          AND SALE_DATE::DATE <= '{end_date}'
+          AND SALE_DATE::DATE {cancel_op}
         GROUP BY 1, 2
     """)
     cancel_map = {
@@ -115,23 +122,33 @@ def fetch_daily_sales(cur, studio_id, end_date):
     from collections import defaultdict
     daily = defaultdict(float)
 
-    for client_id, prod_desc, price, total_buys, first_buy in buy_rows:
-        key_cp        = (str(client_id), str(prod_desc))
-        c_info        = cancel_map.get(key_cp, {"n": 0, "date": None})
-        total_cancels = c_info["n"]
-        last_cancel   = c_info["date"]
-        net = int(total_buys) - total_cancels
-        d0  = str(first_buy)
-        if net > 0:
-            daily[(d0, prod_desc)] += net
-        elif net == 0 and last_cancel:
-            daily[(d0, prod_desc)]          += int(total_buys)
-            daily[(last_cancel, prod_desc)] -= total_cancels
+    if opening_date:
+        # Opened studio: count pre-opening buys minus ALL cancellations (including post-opening).
+        # Net = buys_before_open - all_cancels. Only emit if net > 0.
+        for client_id, prod_desc, price, total_buys, first_buy in buy_rows:
+            key_cp        = (str(client_id), str(prod_desc))
+            total_cancels = cancel_map.get(key_cp, {"n": 0})["n"]
+            net = int(total_buys) - total_cancels
+            if net > 0:
+                daily[(str(first_buy), prod_desc)] += net
+    else:
+        for client_id, prod_desc, price, total_buys, first_buy in buy_rows:
+            key_cp        = (str(client_id), str(prod_desc))
+            c_info        = cancel_map.get(key_cp, {"n": 0, "date": None})
+            total_cancels = c_info["n"]
+            last_cancel   = c_info["date"]
+            net = int(total_buys) - total_cancels
+            d0  = str(first_buy)
+            if net > 0:
+                daily[(d0, prod_desc)] += net
+            elif net == 0 and last_cancel:
+                daily[(d0, prod_desc)]          += int(total_buys)
+                daily[(last_cancel, prod_desc)] -= total_cancels
 
     return [(d, pd, int(n)) for (d, pd), n in sorted(daily.items()) if n != 0]
 
 
-def build_tier_rmr(daily_sales, weeks, pricing, sku_map=None, code=""):
+def build_tier_rmr(daily_sales, weeks, pricing, sku_map=None, code="", opening_date=None):
     import re
     sku_tier_map = build_sku_tier_map(sku_map or {}, pricing)
     cum = {"t0": 0, "t1": 0, "t2": 0, "t3": 0}
@@ -140,7 +157,8 @@ def build_tier_rmr(daily_sales, weeks, pricing, sku_map=None, code=""):
     past_weeks = sorted(
         [w for w in weeks
          if w.get("week", "").strip() not in ("Week 0", "WEEK 0", "")
-         and w.get("date_end")],
+         and w.get("date_end")
+         and (not opening_date or w["date_end"] <= opening_date)],
         key=lambda w: w["date_end"]
     )
 
@@ -200,9 +218,15 @@ for studio in sc.get("studios", []):
     sku_map = studio.get("sku_map") or {}
     weeks   = studio.get("weeks", [])
 
-    print(f"  Fetching {studio['name']} (id={sid}) up to {YESTERDAY}...")
-    daily    = fetch_daily_sales(cur, sid, YESTERDAY)
-    tier_rmr = build_tier_rmr(daily, weeks, pricing, sku_map, code)
+    # For studios that have already opened, cap buys before opening_date and
+    # count all cancellations so tier counts reflect true pre-opening net presales.
+    op_date = studio.get("opening_date")
+    opening_date = op_date if op_date and op_date <= YESTERDAY else None
+
+    print(f"  Fetching {studio['name']} (id={sid}) up to {YESTERDAY}"
+          + (f" [opened {opening_date}]" if opening_date else "") + "...")
+    daily    = fetch_daily_sales(cur, sid, YESTERDAY, opening_date)
+    tier_rmr = build_tier_rmr(daily, weeks, pricing, sku_map, code, opening_date)
 
     studio["tier_rmr_by_week"] = tier_rmr
 
