@@ -343,6 +343,8 @@ let _sumView='cum',_sumStudio=null,_scStudio=null,_dataThruLabel='',_sumD7End=nu
 let _mktSel={meta:null,google:null,ga4:null,gbp:null,instagram:null};
 // Toggle a week number in/out of _mktSel[tabKey] (null=All, int[]=selection)
 function _wkToggle(tabKey,num){const c=_mktSel[tabKey];if(!Array.isArray(c)){_mktSel[tabKey]=[num];}else{const n=c.includes(num)?c.filter(x=>x!==num):[...c,num].sort((a,b)=>a-b);_mktSel[tabKey]=n.length?n:null;}}
+// Click a week pill: toggle selection and re-render, preserving the nav scroll position.
+function _wkNavClick(tabKey,num,renderFnName){const nav=document.getElementById('wk-nav-'+tabKey);const saved=nav?nav.scrollLeft:0;_wkToggle(tabKey,num);if(typeof window[renderFnName]==='function')window[renderFnName]();requestAnimationFrame(()=>{const n=document.getElementById('wk-nav-'+tabKey);if(n)n.scrollLeft=saved;});}
 // Toggle a month key in/out of _mktSel['instagram'] (null=All, string[]=selection)
 function _moToggle(key){const c=_mktSel['instagram'];if(!Array.isArray(c)){_mktSel['instagram']=[key];}else{const n=c.includes(key)?c.filter(m=>m!==key):[...c,key].sort();_mktSel['instagram']=n.length?n:null;}}
 const TODAY=new Date(),fom=new Date(TODAY.getFullYear(),TODAY.getMonth(),1),lpm=new Date(fom.getTime()-864e5),fpm=new Date(lpm.getFullYear(),lpm.getMonth(),1);
@@ -838,14 +840,14 @@ function _openedWkNav(tabKey,cap,renderFn){
     wkTo=maxEnd&&maxEnd<=cap.capDate?maxEnd:cap.capDate;
   }
   const cs=a=>`flex-shrink:0;font-size:11px;font-family:Oswald,sans-serif;font-style:italic;padding:3px 10px;border-radius:12px;border:1px solid ${a?'#00A3E0':'#2a4a5a'};background:${a?'rgba(0,163,224,.15)':'transparent'};color:${a?'#00A3E0':'#8aaabb'};cursor:pointer`;
-  let h=`<div style="overflow-x:auto;padding-bottom:6px;margin-bottom:4px"><div style="display:flex;gap:5px;align-items:center;min-width:max-content;padding:2px 0">`;
+  let h=`<div id="wk-nav-${tabKey}" style="overflow-x:auto;padding-bottom:6px;margin-bottom:4px"><div style="display:flex;gap:5px;align-items:center;min-width:max-content;padding:2px 0">`;
   h+=`<span style="font-size:10px;font-family:Oswald,sans-serif;font-style:italic;color:#5a7a8a;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;margin-right:4px">NSO Week:</span>`;
   h+=`<button onclick="_mktSel['${tabKey}']=null;${renderFn}()" style="${cs(sel===null)}">All</button>`;
   wks.forEach(w=>{
     const num=rawToNum(w);
     if(num==null)return;
     const active=Array.isArray(sel)&&sel.includes(num);
-    h+=`<button onclick="_wkToggle('${tabKey}',${num});${renderFn}()" title="${w.date_start||'–'} – ${w.date_end||''}" style="${cs(active)}">W${num}</button>`;
+    h+=`<button onclick="_wkNavClick('${tabKey}',${num},'${renderFn}')" title="${w.date_start||'–'} – ${w.date_end||''}" style="${cs(active)}">W${num}</button>`;
   });
   h+=`</div></div>`;
   // Subtitle: show selected range
