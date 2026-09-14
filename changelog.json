@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-14",
+      "pr_number": 362,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/362",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix Instagram KPIs and chart for opened studios",
+      "summary": "Total Reach and other KPIs now correctly include all archived monthly history when All is selected. The trend chart now filters to the selected month when a month pill is clicked."
+    },
+    {
+      "date": "2026-09-14",
       "pr_number": 361,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/361",
       "author": "Sebastian Arango",
