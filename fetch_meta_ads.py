@@ -454,42 +454,101 @@ def run(start_override: str | None = None, end_override: str | None = None):
         log.warning(f"  ⚠ {rows_reattributed} (date, ad_id) rows changed studio attribution this run — see warnings above")
     log.info(f"  ad_daily:  {len(ad_daily_idx)} total (date×ad) rows")
 
-    # ── 3b. Dedicated per-studio accounts (account-level spend only) ──
-    # Studios that migrated off the shared account onto their own — 100% of an
-    # account's spend belongs to that studio, so no name-matching is needed.
-    # Account-level only for now (no ad list/creatives), one synthetic row per
-    # day keyed by a per-studio ad_id ("ACCOUNT_TOTAL:<code>", not the shared
-    # literal "ACCOUNT_TOTAL" — ad_daily_idx is now keyed by (date, ad_id) only,
-    # so a shared literal would let one dedicated studio's row overwrite
-    # another's for the same day) so build_spend_data.py's per-studio_code sum
-    # picks it up like any other ad_daily row.
+    # ── 3b. Dedicated per-studio accounts (ad-level with creatives) ──
+    # Studios on their own Meta account — 100% of the account belongs to that
+    # studio (no name-matching needed). Now fetches full ad list + creative
+    # thumbnails so the Ad Preview tab works for these studios too.
     for studio in dedicated_accounts:
         code, name, account_id = studio["code"], studio["name"], studio["account_id"]
-        log.info(f"Fetching account-level daily insights [{daily_start} → {daily_end}] "
-                 f"from {account_id} ({name}) ...")
+        log.info(f"Fetching dedicated account [{daily_start} → {daily_end}] from {account_id} ({name}) ...")
+
+        # 3b-i. Ad list — populates cids_per_ad, status_by_ad, preview/post URLs
         try:
-            raw_account_daily = meta.get_insights(
+            ded_ads = meta.list_ads_for_account(account_id)
+            log.info(f"  {len(ded_ads)} ads")
+        except Exception as e:
+            log.warning(f"  list_ads_for_account failed for {name}: {e}")
+            ded_ads = []
+
+        for ad in ded_ads:
+            ad_id = ad.get("id")
+            if not ad_id:
+                continue
+            cid = (ad.get("creative") or {}).get("id")
+            if cid:
+                cids_per_ad[ad_id] = cid
+            status_by_ad[ad_id] = ad.get("status", "UNKNOWN")
+            psl = ad.get("preview_shareable_link") or ""
+            if psl:
+                preview_link_by_ad[ad_id] = psl
+            eosi = ad.get("effective_object_story_id") or ""
+            if "_" in eosi:
+                page_id, post_id = eosi.split("_", 1)
+                library_id_by_ad[ad_id] = post_id
+                post_url_by_ad[ad_id] = f"https://www.facebook.com/{page_id}/posts/{post_id}/"
+            elif eosi:
+                library_id_by_ad[ad_id] = eosi
+
+        # 3b-ii. Creative thumbnails for this dedicated account
+        ded_cids = list({(ad.get("creative") or {}).get("id") for ad in ded_ads
+                         if (ad.get("creative") or {}).get("id") and
+                         (ad.get("creative") or {}).get("id") not in cdetails})
+        if ded_cids:
+            log.info(f"  Fetching {len(ded_cids)} creatives ...")
+            try:
+                ded_cdetails = meta.get_creatives_by_ids(ded_cids)
+                cdetails.update(ded_cdetails)
+                log.info(f"  {len(ded_cdetails)} creatives fetched")
+            except Exception as e:
+                log.warning(f"  creatives batch failed for {name}: {e}")
+
+        # 3b-iii. Ad-level daily insights — same shape as the corporate account loop
+        try:
+            raw_ded_daily = meta.get_insights(
                 account_id,
-                level="account",
+                level="ad",
                 date_start=daily_start,
                 date_end=daily_end,
                 time_increment=1,
             )
-            log.info(f"  {len(raw_account_daily)} day rows")
+            log.info(f"  {len(raw_ded_daily)} ad×day rows")
         except Exception as e:
-            log.warning(f"  ❌ account-level insights failed for {name} ({account_id}): {e}")
+            log.warning(f"  ❌ ad-level insights failed for {name} ({account_id}): {e} — falling back to account-level")
+            try:
+                raw_ded_daily = meta.get_insights(account_id, level="account",
+                                                  date_start=daily_start, date_end=daily_end,
+                                                  time_increment=1)
+                for row in raw_ded_daily:
+                    d = row.get("date_start")
+                    if not d:
+                        continue
+                    account_ad_id = f"ACCOUNT_TOTAL:{code}"
+                    ad_daily_idx[(d, account_ad_id)] = {
+                        "date": d, "studio_code": code, "ad_id": account_ad_id,
+                        "ad_name": "(account-level total)",
+                        "spend": round(safe_float(row.get("spend")), 2),
+                        "impressions": int(safe_float(row.get("impressions"))),
+                        "clicks": int(safe_float(row.get("clicks"))),
+                        "leads": leads_of(row), "offsite_leads": offsite_leads_of(row),
+                        "trials": trials_of(row),
+                    }
+            except Exception as e2:
+                log.warning(f"  ❌ account-level fallback also failed for {name}: {e2}")
             continue
 
-        for row in raw_account_daily:
-            d = row.get("date_start")
-            if not d:
+        for row in raw_ded_daily:
+            ad_id  = row.get("ad_id")
+            d      = row.get("date_start")
+            if not ad_id or not d:
                 continue
-            account_ad_id = f"ACCOUNT_TOTAL:{code}"
-            ad_daily_idx[(d, account_ad_id)] = {
+            ad_name = row.get("ad_name", "")
+            ad_name_seen[ad_id]   = ad_name
+            ad_studio_seen[ad_id] = code
+            ad_daily_idx[(d, ad_id)] = {
                 "date":          d,
                 "studio_code":   code,
-                "ad_id":         account_ad_id,
-                "ad_name":       "(account-level total)",
+                "ad_id":         ad_id,
+                "ad_name":       ad_name,
                 "spend":         round(safe_float(row.get("spend")), 2),
                 "impressions":   int(safe_float(row.get("impressions"))),
                 "clicks":        int(safe_float(row.get("clicks"))),
