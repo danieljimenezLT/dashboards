@@ -1228,10 +1228,10 @@ function drawCum2Chart(studio){
       // No pre-weeks configured — build Sun-Sat weekly buckets from raw data
       const _leadRowsAll=(RAW?.daily_detail||[]).filter(r=>_strip2(r.studio)===_sname2&&r.date<=todayStr);
       const _allDatesRaw=[..._leadRowsAll.map(r=>r.date),..._salesRows.map(r=>r.date)].filter(d=>d&&d<=todayStr);
-      // 30-day gap filter: skip isolated early dates (same as fetch_pre_weeks.py)
-      const _uniqD=[...new Set(_allDatesRaw)].sort();
-      while(_uniqD.length>=2){const _g=(new Date(_uniqD[1]+'T00:00:00Z')-new Date(_uniqD[0]+'T00:00:00Z'))/864e5;if(_g>30)_uniqD.shift();else break;}
-      const _floorD=_uniqD.length?_uniqD[0]:null;
+      // Use MBO date as floor if set, otherwise 30-day gap filter
+      const _mboD=pwData&&pwData.presales_training_complete||null;
+      let _floorD=_mboD||null;
+      if(!_floorD){const _uniqD=[...new Set(_allDatesRaw)].sort();while(_uniqD.length>=2){const _g=(new Date(_uniqD[1]+'T00:00:00Z')-new Date(_uniqD[0]+'T00:00:00Z'))/864e5;if(_g>30)_uniqD.shift();else break;}_floorD=_uniqD.length?_uniqD[0]:null;}
       if(_floorD){
         const _leadRows=_leadRowsAll.filter(r=>r.date>=_floorD);
         const _sd=new Date(_floorD+'T00:00:00Z');
@@ -1330,10 +1330,10 @@ function drawWeekly2Chart(studio){
       // No pre-weeks configured — build Sun-Sat weekly buckets from raw data
       const _leadRowsAllW=(RAW?.daily_detail||[]).filter(r=>_strip2w(r.studio)===_sname2w&&r.date<=todayStr);
       const _allDatesRawW=[..._leadRowsAllW.map(r=>r.date),..._salesRowsW.map(r=>r.date)].filter(d=>d&&d<=todayStr);
-      // 30-day gap filter: skip isolated early dates (same as fetch_pre_weeks.py)
-      const _uniqDW=[...new Set(_allDatesRawW)].sort();
-      while(_uniqDW.length>=2){const _g=(new Date(_uniqDW[1]+'T00:00:00Z')-new Date(_uniqDW[0]+'T00:00:00Z'))/864e5;if(_g>30)_uniqDW.shift();else break;}
-      const _floorDW=_uniqDW.length?_uniqDW[0]:null;
+      // Use MBO date as floor if set, otherwise 30-day gap filter
+      const _mboDW=pwData&&pwData.presales_training_complete||null;
+      let _floorDW=_mboDW||null;
+      if(!_floorDW){const _uniqDW=[...new Set(_allDatesRawW)].sort();while(_uniqDW.length>=2){const _g=(new Date(_uniqDW[1]+'T00:00:00Z')-new Date(_uniqDW[0]+'T00:00:00Z'))/864e5;if(_g>30)_uniqDW.shift();else break;}_floorDW=_uniqDW.length?_uniqDW[0]:null;}
       if(_floorDW){
         const _leadRows=_leadRowsAllW.filter(r=>r.date>=_floorDW);
         const _sd=new Date(_floorDW+'T00:00:00Z');
