@@ -42,6 +42,7 @@ def _public_thumb(url: str) -> str:
 
 
 import re as _re
+import time as _time
 
 def _is_small_thumb(url: str) -> bool:
     """Return True if the URL is a tiny Meta CDN thumbnail (< 300px)."""
@@ -49,6 +50,22 @@ def _is_small_thumb(url: str) -> bool:
         return True
     m = _re.search(r'[_/]p(\d+)x\d+', url)
     return bool(m and int(m.group(1)) < 300)
+
+
+def _thumb_still_valid(url: str, now: int | None = None) -> bool:
+    """Return True if the cached thumbnail URL is still usable.
+    facebook.com/ads/image/ URLs are permanent.
+    scontent-*.fbcdn.net URLs carry oe=<hex-unix-expiry>; treat as
+    valid only if they expire more than 2 days from now."""
+    if not url:
+        return False
+    if "facebook.com/ads/image/" in url:
+        return True
+    m = _re.search(r'[?&]oe=([0-9A-Fa-f]+)', url)
+    if m:
+        _now = now or int(_time.time())
+        return int(m.group(1), 16) > _now + 2 * 86400
+    return False  # unknown expiry — re-fetch to be safe
 
 
 def safe(val, default=0):
@@ -108,21 +125,7 @@ def fetch_meta_ads(start_date, end_date, existing_ad_meta=None):
     # bad creative kills the whole batch.
     if cids_per_name:
         cache = existing_ad_meta or {}
-        import time as _time, re as _re2
         _now = int(_time.time())
-        def _thumb_still_valid(url: str) -> bool:
-            """Return True if the cached thumbnail URL is still usable.
-            facebook.com/ads/image/ URLs are permanent.
-            scontent-*.fbcdn.net URLs carry oe=<hex-unix-expiry>; treat as
-            valid only if they expire more than 2 days from now."""
-            if not url:
-                return False
-            if "facebook.com/ads/image/" in url:
-                return True
-            m = _re2.search(r'[?&]oe=([0-9A-Fa-f]+)', url)
-            if m:
-                return int(m.group(1), 16) > _now + 2 * 86400
-            return False  # unknown expiry — re-fetch to be safe
         cid_to_names: dict[str, list[str]] = {}
         for name, cid in cids_per_name.items():
             cached_thumb = _public_thumb(cache.get(name, {}).get("thumbnail_url", ""))
@@ -244,58 +247,173 @@ def fetch_meta_ads(start_date, end_date, existing_ad_meta=None):
     except Exception as e:
         print(f"  ERROR: Meta Ads insights failed: {e}", flush=True)
 
-    # ── 4. Dedicated per-studio accounts (account-level spend only) ────────
-    # Studios that migrated off the shared account onto their own — 100% of an
-    # account's spend belongs to that studio, so no name-matching is needed.
-    # Account-level only for now (no ad list/creatives): one row per day,
-    # tagged with an explicit studio_code that nso-studios.html's metaFilter()
-    # matches on directly instead of scanning campaign_name.
+    # ── 4. Dedicated per-studio accounts (ad-level with creatives) ────────
+    # Studios on their own Meta account — 100% of the account's spend belongs
+    # to that studio (no name-matching needed). Now fetches full ad list +
+    # creative thumbnails so the Ad Preview tab works for these studios too.
+    _ded_now = int(_time.time())
+    cache = existing_ad_meta or {}
     for studio in studios_registry.meta_dedicated_accounts():
         code, name, account_id = studio["code"], studio["name"], studio["account_id"]
-        print(f"  Fetching account-level data from {account_id} ({name})...", flush=True)
+        print(f"  Fetching dedicated account {account_id} ({name})...", flush=True)
+
+        # 4a. Ad list — creative IDs + preview links + status
+        ded_cids_per_name: dict[str, str] = {}
         try:
-            raw_account_rows = meta.get_insights(
+            ded_ads = meta.list_ads_with_status(account_id)
+            for ad in ded_ads:
+                ad_name = ad.get("name", "")
+                if not ad_name:
+                    continue
+                creatives.setdefault(ad_name, {
+                    "thumbnail_url":    "",
+                    "image_url":        "",
+                    "preview_link":     ad.get("preview_shareable_link", ""),
+                    "object_type":      "",
+                    "effective_status": ad.get("effective_status", ""),
+                })
+                creatives[ad_name]["effective_status"] = ad.get("effective_status", "")
+                if ad.get("preview_shareable_link"):
+                    creatives[ad_name]["preview_link"] = ad["preview_shareable_link"]
+                cid = (ad.get("creative") or {}).get("id")
+                if cid:
+                    ded_cids_per_name[ad_name] = cid
+            print(f"    {len(ded_ads)} ads found", flush=True)
+        except Exception as e:
+            print(f"    WARNING: ad list failed for {name}: {e}", flush=True)
+
+        # 4b. Creative thumbnails for this dedicated account
+        if ded_cids_per_name:
+            ded_cid_to_names: dict[str, list[str]] = {}
+            for ad_name, cid in ded_cids_per_name.items():
+                cached_thumb = _public_thumb(cache.get(ad_name, {}).get("thumbnail_url", ""))
+                if not _thumb_still_valid(cached_thumb, _ded_now):
+                    ded_cid_to_names.setdefault(cid, []).append(ad_name)
+                else:
+                    entry = creatives.setdefault(ad_name, {
+                        "thumbnail_url": "", "image_url": "", "preview_link": "",
+                        "object_type": "", "effective_status": "",
+                    })
+                    entry["thumbnail_url"] = cached_thumb
+                    for field in ("image_url", "object_type", "video_id", "post_url"):
+                        if cache.get(ad_name, {}).get(field):
+                            entry[field] = cache[ad_name][field]
+
+            if ded_cid_to_names:
+                skipped = len(ded_cids_per_name) - len(ded_cid_to_names)
+                print(f"    {skipped} creatives cached; fetching {len(ded_cid_to_names)} new...", flush=True)
+                try:
+                    ded_cdetails = meta.get_creatives_by_ids(list(ded_cid_to_names.keys()))
+                    for cid, cdata in ded_cdetails.items():
+                        thumb = (
+                            _public_thumb(cdata.get("thumbnail_url")) or
+                            _public_thumb(cdata.get("image_url")) or
+                            _public_thumb(((cdata.get("object_story_spec") or {}).get("video_data") or {}).get("image_url")) or
+                            _public_thumb((((cdata.get("asset_feed_spec") or {}).get("images") or [{}])[0]).get("url")) or ""
+                        )
+                        obj_type = cdata.get("object_type", "")
+                        for ad_name in ded_cid_to_names.get(cid, []):
+                            entry = creatives.setdefault(ad_name, {
+                                "thumbnail_url": "", "image_url": "", "preview_link": "",
+                                "object_type": "", "effective_status": "",
+                            })
+                            if thumb:
+                                entry["thumbnail_url"] = thumb
+                            if obj_type:
+                                entry["object_type"] = obj_type
+                            vid = cdata.get("video_id", "")
+                            if vid:
+                                entry["video_id"] = vid
+                            ih = (
+                                cdata.get("image_hash") or
+                                ((cdata.get("object_story_spec") or {}).get("link_data") or {}).get("image_hash") or
+                                ((cdata.get("object_story_spec") or {}).get("photo_data") or {}).get("image_hash") or
+                                (((cdata.get("asset_feed_spec") or {}).get("images") or [{}])[0]).get("hash") or ""
+                            )
+                            if ih:
+                                entry["image_hash"] = ih
+                            eso = cdata.get("effective_object_story_id", "")
+                            if eso and "_" in eso and obj_type == "SHARE":
+                                page_id, post_id = eso.split("_", 1)
+                                entry["post_url"] = f"https://www.facebook.com/{page_id}/posts/{post_id}/"
+                    print(f"    {len(ded_cdetails)} creatives fetched", flush=True)
+                except Exception as e:
+                    print(f"    WARNING: creatives failed for {name}: {e}", flush=True)
+
+        # 4c. Ad-level insights (tagged with studio_code for metaFilter())
+        try:
+            raw_ad_rows = meta.get_insights(
                 account_id,
-                level="account",
+                level="ad",
                 date_start=start_date,
                 date_end=end_date,
                 time_increment=1,
+                extra_fields=["ctr", "cpc", "cost_per_action_type"],
+                filtering=[{
+                    "field": "ad.effective_status", "operator": "IN",
+                    "value": ["ACTIVE", "PAUSED", "COMPLETED", "DELETED", "ARCHIVED",
+                              "CAMPAIGN_PAUSED", "ADSET_PAUSED"],
+                }],
             )
+            for row in raw_ad_rows:
+                leads, offsite_leads, cost_per_lead = 0, 0, 0.0
+                for action in (row.get("actions") or []):
+                    at = action.get("action_type")
+                    v  = int(float(action.get("value", 0)))
+                    if at == "lead":
+                        leads += v
+                    elif at == "offsite_conversion.fb_pixel_lead":
+                        offsite_leads += v
+                for cpa in (row.get("cost_per_action_type") or []):
+                    if cpa.get("action_type") in ("lead", "offsite_conversion.fb_pixel_lead"):
+                        cost_per_lead = float(cpa.get("value", 0))
+                ad_name  = row.get("ad_name", "")
+                creative = creatives.get(ad_name, {})
+                rows.append({
+                    "date":          row.get("date_start", ""),
+                    "campaign_name": row.get("campaign_name", ""),
+                    "campaign_id":   row.get("campaign_id", ""),
+                    "adset_name":    row.get("adset_name", ""),
+                    "ad_name":       ad_name,
+                    "studio_code":   code,
+                    "spend":         round(safe(row.get("spend")), 2),
+                    "impressions":   int(safe(row.get("impressions"))),
+                    "clicks":        int(safe(row.get("clicks"))),
+                    "ctr":           round(safe(row.get("ctr")), 2),
+                    "cpc":           round(safe(row.get("cpc")), 2),
+                    "leads":         leads,
+                    "offsite_leads": offsite_leads,
+                    "cost_per_lead": round(cost_per_lead, 2),
+                    "thumbnail_url": creative.get("thumbnail_url", ""),
+                    "image_url":     creative.get("image_url", ""),
+                    "preview_link":  creative.get("preview_link", ""),
+                    "object_type":   creative.get("object_type", ""),
+                })
+            print(f"    {len(raw_ad_rows)} ad-day rows fetched for {name}", flush=True)
         except Exception as e:
-            print(f"  WARNING: account-level insights failed for {name} ({account_id}): {e}", flush=True)
-            continue
-
-        for row in raw_account_rows:
-            leads, offsite_leads = 0, 0
-            for action in (row.get("actions") or []):
-                at = action.get("action_type")
-                v  = int(float(action.get("value", 0)))
-                if at == "lead":
-                    leads += v
-                elif at == "offsite_conversion.fb_pixel_lead":
-                    offsite_leads += v
-            spend = round(safe(row.get("spend")), 2)
-            rows.append({
-                "date":          row.get("date_start", ""),
-                "campaign_name": "",
-                "campaign_id":   "",
-                "adset_name":    "",
-                "ad_name":       "",
-                "studio_code":   code,
-                "spend":         spend,
-                "impressions":   int(safe(row.get("impressions"))),
-                "clicks":        int(safe(row.get("clicks"))),
-                "ctr":           0,
-                "cpc":           0,
-                "leads":         leads,
-                "offsite_leads": offsite_leads,
-                "cost_per_lead": round(spend / leads, 2) if leads else 0,
-                "thumbnail_url": "",
-                "image_url":     "",
-                "preview_link":  "",
-                "object_type":   "",
-            })
-        print(f"  {len(raw_account_rows)} account-day rows fetched for {name}", flush=True)
+            print(f"    WARNING: ad-level insights failed for {name} ({account_id}): {e}", flush=True)
+            # Fall back to account-level (spend/impressions only, no creatives)
+            try:
+                raw_acct_rows = meta.get_insights(account_id, level="account",
+                                                  date_start=start_date, date_end=end_date,
+                                                  time_increment=1)
+                for row in raw_acct_rows:
+                    leads = sum(int(float(a.get("value", 0))) for a in (row.get("actions") or [])
+                                if a.get("action_type") == "lead")
+                    spend = round(safe(row.get("spend")), 2)
+                    rows.append({
+                        "date": row.get("date_start", ""), "campaign_name": "",
+                        "campaign_id": "", "adset_name": "", "ad_name": "",
+                        "studio_code": code, "spend": spend,
+                        "impressions": int(safe(row.get("impressions"))),
+                        "clicks": int(safe(row.get("clicks"))),
+                        "ctr": 0, "cpc": 0, "leads": leads, "offsite_leads": 0,
+                        "cost_per_lead": round(spend / leads, 2) if leads else 0,
+                        "thumbnail_url": "", "image_url": "", "preview_link": "", "object_type": "",
+                    })
+                print(f"    {len(raw_acct_rows)} account-day rows (fallback) for {name}", flush=True)
+            except Exception as e2:
+                print(f"    ERROR: all insights failed for {name}: {e2}", flush=True)
 
     return rows, creatives
 
