@@ -5278,8 +5278,9 @@ function _drawIGTrend(){
   }));
 
   if(metric.mode==='count'){
+    // Posts from rolling window — apply from/to for opened studios (month nav must filter chart)
     studios.forEach(s=>(s.posts||[]).forEach(p=>{
-      if(_igGran!=='monthly'&&((from&&p.date<from)||(to&&p.date>to)))return;
+      if((window._igIsOpened||_igGran!=='monthly')&&((from&&p.date<from)||(to&&p.date>to)))return;
       const key=_ga4PeriodKey(p.date,_igGran);
       byKey[key]=(byKey[key]||0)+1;
     }));
@@ -5300,16 +5301,25 @@ function _drawIGTrend(){
       const key=_ga4PeriodKey(m.month,_igGran);
       byKey[key]=(byKey[key]||0)+(m[metric.monthlyField]||0);
     });
-    if(metric.mode==='avg'&&from&&to&&_igGran!=='monthly'){
-      const daysInBucket={};
-      let d=new Date(from+'T00:00:00Z');
-      const end=new Date(to+'T00:00:00Z');
-      while(d<=end){
-        const key=_ga4PeriodKey(d.toISOString().slice(0,10),_igGran);
-        daysInBucket[key]=(daysInBucket[key]||0)+1;
-        d.setUTCDate(d.getUTCDate()+1);
+    if(metric.mode==='avg'){
+      if(_igGran==='monthly'){
+        // Divide each month's total by the number of days in that month
+        Object.keys(byKey).forEach(k=>{
+          const d=new Date(k+'T00:00:00Z');
+          const daysInMonth=new Date(d.getUTCFullYear(),d.getUTCMonth()+1,0).getDate();
+          byKey[k]=Math.round(byKey[k]/daysInMonth);
+        });
+      } else if(from&&to){
+        const daysInBucket={};
+        let d=new Date(from+'T00:00:00Z');
+        const end=new Date(to+'T00:00:00Z');
+        while(d<=end){
+          const key=_ga4PeriodKey(d.toISOString().slice(0,10),_igGran);
+          daysInBucket[key]=(daysInBucket[key]||0)+1;
+          d.setUTCDate(d.getUTCDate()+1);
+        }
+        Object.keys(byKey).forEach(k=>{if(daysInBucket[k])byKey[k]=Math.round(byKey[k]/daysInBucket[k]);});
       }
-      Object.keys(byKey).forEach(k=>{if(daysInBucket[k])byKey[k]=Math.round(byKey[k]/daysInBucket[k]);});
     }
   }
 
