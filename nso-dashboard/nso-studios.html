@@ -2332,7 +2332,7 @@ function renderScorecard(){
     {label:_ib('sc_presales_gross')+'Presales (gross)', key:'pc',  fmt:fInt, color:true,
      cumReqFn:wk=>tgt.presales_count&&scPaceWeeks?Math.round(tgt.presales_count/scPaceWeeks*wk.w):null,
      cumReqDisplay:tgt.presales_count||null},
-    {label:_ib('sc_net_presales')+'Net Presales',       key:null, pwKey:'netPres', computed:wk=>{const td=_tierReal[wk.w];if(td)return(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0);if(_isOpened&&_openedCumMap)return _openedCumMap[wk.w]||0;return Math.max(0,(wk.pc||0)-(wk.cancTot||0));}, fmt:fInt, color:true,
+    {label:_ib('sc_net_presales')+'Net Presales',       key:null, pwKey:'netPres', computed:wk=>{if(_isOpened&&_openedCumMap)return _openedCumMap[wk.w]||0;const td=_tierReal[wk.w];if(td)return(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0);return Math.max(0,(wk.pc||0)-(wk.cancTot||0));}, fmt:fInt, color:true,
      cumReqFn:wk=>tgt.presales_count&&scPaceWeeks?Math.round(tgt.presales_count/scPaceWeeks*wk.w):null,
      cumReqDisplay:tgt.presales_count||null},
     {label:_ib('sc_cum_cvr')+'Conversion Rate',         key:'cumCr', fmt:fPct, color:true,
@@ -2353,7 +2353,7 @@ function renderScorecard(){
      colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
     {label:_ib('sc_ads_cpl')+'Ads CPL', computed:wk=>wk.cumDsp&&wk.cumDl>0?wk.cumDsp/wk.cumDl:null, fmt:fCur, reqLabel:'—', color:false, cplSub:true,
      colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
-    {label:_ib('sc_blended_cpa')+'▶ Blended CPA', computed:wk=>{const td=_tierReal[wk.w];const np=td?(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0):(_isOpened&&_openedCumMap)?(_openedCumMap[wk.w]||0):Math.max(0,(wk.pc||0)-(wk.cancTot||0));const sp=_wCumTs(wk);return sp&&np>0?sp/np:null;}, fmt:fCur, reqLabel:'$80 – $116', color:false, cpaParent:true,
+    {label:_ib('sc_blended_cpa')+'▶ Blended CPA', computed:wk=>{const np=(_isOpened&&_openedCumMap)?(_openedCumMap[wk.w]||0):(()=>{const td=_tierReal[wk.w];return td?(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0):Math.max(0,(wk.pc||0)-(wk.cancTot||0));})();const sp=_wCumTs(wk);return sp&&np>0?sp/np:null;}, fmt:fCur, reqLabel:'$80 – $116', color:false, cpaParent:true,
      colorFn:v=>!v?'':(v<=116?'sc-cell-good':v<=116*1.3?'sc-cell-warn':'sc-cell-bad')},
     {label:_ib('sc_ads_cpa')+'Ads CPA', computed:wk=>wk.cumDsp&&((wk.cumDp||0)-(wk.cumDCanc||0))>0?wk.cumDsp/((wk.cumDp||0)-(wk.cumDCanc||0)):null, fmt:fCur, reqLabel:'—', color:false, cpaSub:true,
      colorFn:v=>!v?'':(v<=116?'sc-cell-good':v<=116*1.3?'sc-cell-warn':'sc-cell-bad')},
@@ -2402,15 +2402,16 @@ function renderScorecard(){
     if(_w0&&_w0.t1m==null){_t1+=_w0.np||0;let _c0=_w0.canc||0;_t1=Math.max(0,_t1-_c0);}
   }
   const rmrtRows=pastWeeks.map(wk=>{
-    if(_tierReal[wk.w]){
-      // Use actual prices from Snowflake (prioritized for all studios, including opened)
+    if(_isOpened&&_openedTierMap){
+      // For opened studios: use NSO_SALES_ROWS presale data (matches Summary tab)
+      const _otd=_openedTierMap[wk.w]||{t0:0,t1:0,t2:0,t3:0};
+      _t0=_otd.t0;_t1=_otd.t1;_t2=_otd.t2;_t3=_otd.t3;
+    } else if(_tierReal[wk.w]){
+      // Use actual tier counts from scorecard sheet (non-opened studios)
       _t0=_tierReal[wk.w].t0||0;
       _t1=_tierReal[wk.w].t1||0;
       _t2=_tierReal[wk.w].t2||0;
       _t3=_tierReal[wk.w].t3||0;
-    } else if(_isOpened&&_openedTierMap){
-      const _otd=_openedTierMap[wk.w]||{t0:0,t1:0,t2:0,t3:0};
-      _t0=_otd.t0;_t1=_otd.t1;_t2=_otd.t2;_t3=_otd.t3;
     } else if(wk.t1m!=null){
       // Use cumulative tier counts from scorecard data (e.g., from sheet patch)
       _t0=wk.t0m||0;
@@ -2917,7 +2918,7 @@ function renderScorecard2(){
     {label:_ib('sc_presales_gross')+'Presales (gross)', key:'pc',  fmt:fInt, color:true,
      cumReqFn:wk=>tgt.presales_count&&scPaceWeeks?Math.round(tgt.presales_count/scPaceWeeks*wk.w):null,
      cumReqDisplay:tgt.presales_count||null},
-    {label:_ib('sc_net_presales')+'Net Presales',       key:null, pwKey:'netPres', computed:wk=>{const td=_tierReal[wk.w];if(td)return(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0);if(_isOpened2&&_openedCumMap2)return _openedCumMap2[wk.w]||0;return Math.max(0,(wk.pc||0)-(wk.cancTot||0));}, fmt:fInt, color:true,
+    {label:_ib('sc_net_presales')+'Net Presales',       key:null, pwKey:'netPres', computed:wk=>{if(_isOpened2&&_openedCumMap2)return _openedCumMap2[wk.w]||0;const td=_tierReal[wk.w];if(td)return(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0);return Math.max(0,(wk.pc||0)-(wk.cancTot||0));}, fmt:fInt, color:true,
      cumReqFn:wk=>tgt.presales_count&&scPaceWeeks?Math.round(tgt.presales_count/scPaceWeeks*wk.w):null,
      cumReqDisplay:tgt.presales_count||null},
     {label:_ib('sc_cum_cvr')+'Conversion Rate',         key:'cumCr', fmt:fPct, color:true,
@@ -2942,7 +2943,7 @@ function renderScorecard2(){
      colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
     {label:_ib('sc_ads_cpl')+'Ads CPL', computed:wk=>wk.cumDsp&&wk.cumDl>0?wk.cumDsp/wk.cumDl:null, fmt:fCur, reqLabel:'—', color:false, cplSub:true,
      colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
-    {label:_ib('sc_blended_cpa')+'▶ Blended CPA', pwKey:'cumCpa', computed:wk=>{const td=_tierReal[wk.w];const np=td?(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0):(_isOpened2&&_openedCumMap2)?(_openedCumMap2[wk.w]||0):Math.max(0,(wk.pc||0)-(wk.cancTot||0));const sp=_wCumTs(wk);return sp&&np>0?sp/np:null;}, fmt:fCur, reqLabel:'$80 – $116', color:false, cpaParent:true,
+    {label:_ib('sc_blended_cpa')+'▶ Blended CPA', pwKey:'cumCpa', computed:wk=>{const np=(_isOpened2&&_openedCumMap2)?(_openedCumMap2[wk.w]||0):(()=>{const td=_tierReal[wk.w];return td?(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0):Math.max(0,(wk.pc||0)-(wk.cancTot||0));})();const sp=_wCumTs(wk);return sp&&np>0?sp/np:null;}, fmt:fCur, reqLabel:'$80 – $116', color:false, cpaParent:true,
      colorFn:v=>!v?'':(v<=116?'sc-cell-good':v<=116*1.3?'sc-cell-warn':'sc-cell-bad')},
     {label:_ib('sc_ads_cpa')+'Ads CPA', computed:wk=>wk.cumDsp&&((wk.cumDp||0)-(wk.cumDCanc||0))>0?wk.cumDsp/((wk.cumDp||0)-(wk.cumDCanc||0)):null, fmt:fCur, reqLabel:'—', color:false, cpaSub:true,
      colorFn:v=>!v?'':(v<=116?'sc-cell-good':v<=116*1.3?'sc-cell-warn':'sc-cell-bad')},
@@ -3007,12 +3008,13 @@ function renderScorecard2(){
     if(_w0&&_w0.t1m==null){_t1+=_w0.np||0;let _c0=_w0.canc||0;_t1=Math.max(0,_t1-_c0);}
   }
   const rmrtRows=pastWeeks.map(wk=>{
-    if(_tierReal[wk.w]){
-      // Use actual prices from Snowflake (prioritized for all studios, including opened)
-      _t0=_tierReal[wk.w].t0||0;_t1=_tierReal[wk.w].t1||0;_t2=_tierReal[wk.w].t2||0;_t3=_tierReal[wk.w].t3||0;
-    } else if(_isOpened2&&_openedTierMap2){
+    if(_isOpened2&&_openedTierMap2){
+      // For opened studios: use NSO_SALES_ROWS presale data (matches Summary tab)
       const _otd=_openedTierMap2[wk.w]||{t0:0,t1:0,t2:0,t3:0};
       _t0=_otd.t0;_t1=_otd.t1;_t2=_otd.t2;_t3=_otd.t3;
+    } else if(_tierReal[wk.w]){
+      // Use actual tier counts from scorecard sheet (non-opened studios)
+      _t0=_tierReal[wk.w].t0||0;_t1=_tierReal[wk.w].t1||0;_t2=_tierReal[wk.w].t2||0;_t3=_tierReal[wk.w].t3||0;
     } else if(wk.t1m!=null){
       _t0=wk.t0m||0;_t1=wk.t1m||0;_t2=wk.t2m||0;_t3=0;
     } else {
