@@ -2376,26 +2376,19 @@ function renderScorecard(){
   const t2sw=pricing.tier2_start_week||99;
   const t3sw=pricing.tier3_start_week||null;
   let _t0=0,_t1=0,_t2=0,_t3=0;
-  // For opened studios: build NSO_SALES_ROWS weekly cumulative + tier-aware map
+  // For opened studios: build NSO_SALES_ROWS weekly cumulative (used for Net Presales / CPA rows)
   let _openedCumMap=null;
-  let _openedTierMap=null;
   if(_isOpened){
     const _sno=sc.data_name||sc.name;const _sto=s=>(s||'').replace(/^SWEAT440\s+/,'');const _nro=NSO_SALES_ROWS.filter(r=>_sto(r.studio)===_sno&&(!_scOpDate||r.date<_scOpDate));
     let _cpno=0;_openedCumMap={};
-    let _ot0=0,_ot1=0,_ot2=0,_ot3=0;_openedTierMap={};
     pastWeeks.forEach(wk=>{
       if(wk.ds&&wk.de){
         const _dayR=_nro.filter(r=>r.date>=wk.ds&&r.date<=wk.de);
         const _ns=_dayR.reduce((s,r)=>s+(r.first_sales||0),0);
         const _nc=_dayR.reduce((s,r)=>s+(r.cancellations||0),0);
         _cpno=Math.max(0,_cpno+_ns-_nc);
-        if(t3sw&&wk.w>=t3sw)_ot3=Math.max(0,_ot3+_ns);
-        else if(t2sw&&wk.w>=t2sw)_ot2=Math.max(0,_ot2+_ns);
-        else _ot1=Math.max(0,_ot1+_ns);
-        let _c=_nc;if(t3p){const _c3=Math.min(_c,_ot3);_ot3-=_c3;_c-=_c3;}const _c2=Math.min(_c,_ot2);_ot2-=_c2;_c-=_c2;_ot1=Math.max(0,_ot1-_c);
       }
       _openedCumMap[wk.w]=_cpno;
-      _openedTierMap[wk.w]={t0:_ot0,t1:_ot1,t2:_ot2,t3:_ot3};
     });
   }
   // Seed from W0 only when using week-based accumulation fallback
@@ -2404,12 +2397,8 @@ function renderScorecard(){
     if(_w0&&_w0.t1m==null){_t1+=_w0.np||0;let _c0=_w0.canc||0;_t1=Math.max(0,_t1-_c0);}
   }
   const rmrtRows=pastWeeks.map(wk=>{
-    if(_isOpened&&_openedTierMap){
-      // For opened studios: use NSO_SALES_ROWS presale data (matches Summary tab)
-      const _otd=_openedTierMap[wk.w]||{t0:0,t1:0,t2:0,t3:0};
-      _t0=_otd.t0;_t1=_otd.t1;_t2=_otd.t2;_t3=_otd.t3;
-    } else if(_tierReal[wk.w]){
-      // Use actual tier counts from scorecard sheet (non-opened studios)
+    if(_tierReal[wk.w]){
+      // SKU-based tier counts from fetch_tier_rmr_v2.py (correctly capped at opening_date for opened studios)
       _t0=_tierReal[wk.w].t0||0;
       _t1=_tierReal[wk.w].t1||0;
       _t2=_tierReal[wk.w].t2||0;
@@ -2985,24 +2974,17 @@ function renderScorecard2(){
   const t3sw=pricing.tier3_start_week||null;
   let _t0=0,_t1=0,_t2=0,_t3=0;
   let _openedCumMap2=null;
-  let _openedTierMap2=null;
   if(_isOpened2){
     const _sno2=sc.data_name||sc.name;const _sto2=s=>(s||'').replace(/^SWEAT440\s+/,'');const _nro2=NSO_SALES_ROWS.filter(r=>_sto2(r.studio)===_sno2&&(!_sc2OpDate||r.date<_sc2OpDate));
     let _cpno2=0;_openedCumMap2={};
-    let _ot0=0,_ot1=0,_ot2=0,_ot3=0;_openedTierMap2={};
     pastWeeks.forEach(wk=>{
       if(wk.ds&&wk.de){
         const _dayR=_nro2.filter(r=>r.date>=wk.ds&&r.date<=wk.de);
         const _ns=_dayR.reduce((s,r)=>s+(r.first_sales||0),0);
         const _nc=_dayR.reduce((s,r)=>s+(r.cancellations||0),0);
         _cpno2=Math.max(0,_cpno2+_ns-_nc);
-        if(t3sw&&wk.w>=t3sw)_ot3=Math.max(0,_ot3+_ns);
-        else if(t2sw&&wk.w>=t2sw)_ot2=Math.max(0,_ot2+_ns);
-        else _ot1=Math.max(0,_ot1+_ns);
-        let _c=_nc;if(t3p){const _c3=Math.min(_c,_ot3);_ot3-=_c3;_c-=_c3;}const _c2=Math.min(_c,_ot2);_ot2-=_c2;_c-=_c2;_ot1=Math.max(0,_ot1-_c);
       }
       _openedCumMap2[wk.w]=_cpno2;
-      _openedTierMap2[wk.w]={t0:_ot0,t1:_ot1,t2:_ot2,t3:_ot3};
     });
   }
   if(!_hasReal&&!_isOpened2){
@@ -3010,12 +2992,8 @@ function renderScorecard2(){
     if(_w0&&_w0.t1m==null){_t1+=_w0.np||0;let _c0=_w0.canc||0;_t1=Math.max(0,_t1-_c0);}
   }
   const rmrtRows=pastWeeks.map(wk=>{
-    if(_isOpened2&&_openedTierMap2){
-      // For opened studios: use NSO_SALES_ROWS presale data (matches Summary tab)
-      const _otd=_openedTierMap2[wk.w]||{t0:0,t1:0,t2:0,t3:0};
-      _t0=_otd.t0;_t1=_otd.t1;_t2=_otd.t2;_t3=_otd.t3;
-    } else if(_tierReal[wk.w]){
-      // Use actual tier counts from scorecard sheet (non-opened studios)
+    if(_tierReal[wk.w]){
+      // SKU-based tier counts from fetch_tier_rmr_v2.py (correctly capped at opening_date for opened studios)
       _t0=_tierReal[wk.w].t0||0;_t1=_tierReal[wk.w].t1||0;_t2=_tierReal[wk.w].t2||0;_t3=_tierReal[wk.w].t3||0;
     } else if(wk.t1m!=null){
       _t0=wk.t0m||0;_t1=wk.t1m||0;_t2=wk.t2m||0;_t3=0;
