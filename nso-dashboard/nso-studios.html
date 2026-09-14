@@ -1221,6 +1221,7 @@ function drawCum2Chart(studio){
         return Math.max(0,_salesRows.filter(r=>r.date>=pw.date_start&&r.date<=de).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));
       });
       let _cumPres=0;
+      if(preWeeks.length>0&&preWeeks[0].date_start){_cumPres=Math.max(0,_salesRows.filter(r=>r.date<preWeeks[0].date_start).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));}
       const _preSalesCum=_preSalesPerWk.map(v=>{_cumPres+=v;return _cumPres>0?_cumPres:null;});
       allLabels=preLabels;allLeadsD=preLeadsD;allPresD=_preSalesCum;
     }else{
@@ -1269,6 +1270,7 @@ function drawCum2Chart(studio){
     const _sn2=studio.data_name||studio.name;const _st2=s=>(s||'').replace(/^SWEAT440\s+/,'');
     const _psr=NSO_SALES_ROWS.filter(r=>_st2(r.studio)===_sn2);
     let _cPP=0;
+    if(preWeeks.length>0&&preWeeks[0].date_start){_cPP=Math.max(0,_psr.filter(r=>r.date<preWeeks[0].date_start).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));}
     const _prePresD=preWeeks.map(pw=>{if(!pw.date_start)return null;const de=pw.date_end||pw.date_start;_cPP+=Math.max(0,_psr.filter(r=>r.date>=pw.date_start&&r.date<=de).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));return _cPP>0?_cPP:null;});
     allPresD=[..._prePresD,...scPresD];
     allLeadsPace=[...preWeeks.map(()=>null),...leadsPace];
@@ -2759,6 +2761,13 @@ function renderScorecard2(){
   const _scSname=_scStrip(sc.data_name||sc.full_name||sc.name);
   const _scSalesRows=NSO_SALES_ROWS.filter(r=>_scStrip(r.studio)===_scSname);
   let _cumGrsPre=0,_cumGlPre=0,_cumEvPre=0,_cumNpPre=0,_cumCancPre=0,_cumGpPre=0;
+  // Include presales from before the first visible pre-week in the cumulative
+  if(_pwList.length>0&&_pwList[0].date_start){
+    const _earlyRows=_scSalesRows.filter(r=>r.date<_pwList[0].date_start);
+    _cumNpPre=_earlyRows.reduce((s,r)=>s+(r.first_sales||0),0);
+    _cumCancPre=_earlyRows.reduce((s,r)=>s+(r.cancellations||0),0);
+    _cumGpPre=_earlyRows.filter(r=>r.source==='Grassroots').reduce((s,r)=>s+(r.first_sales||0),0);
+  }
   const preWeekCols=_pwList.map(pw=>{
     const grsW=_sheetGrs(pw.date_start,pw.date_end);
     const _pwSales=pw.date_start?_scSalesRows.filter(r=>r.date>=pw.date_start&&r.date<=(pw.date_end||pw.date_start)):[];

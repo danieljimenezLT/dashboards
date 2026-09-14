@@ -156,11 +156,13 @@ def load_sheet_config() -> list[dict]:
         if not name or not code:
             continue
         out.append({
-            "name":         name,
-            "code":         code,
-            "week_0_start": _parse_date(_col(row, "week 0 start")),
-            "week_1_start": _parse_date(_col(row, "week 1 start")),
-            "lt_fee_start": _parse_date(_col(row, "lt fees start date")),
+            "name":                      name,
+            "code":                      code,
+            "week_0_start":              _parse_date(_col(row, "week 0 start")),
+            "week_1_start":              _parse_date(_col(row, "week 1 start")),
+            "lt_fee_start":              _parse_date(_col(row, "lt fees start date")),
+            "opening_date":              _parse_date(_col(row, "target opening date")),
+            "presales_training_complete": _parse_date(_col(row, "full marketing build out complete")),
         })
     return out
 
@@ -185,45 +187,65 @@ def load_daily_leads() -> dict[str, dict[str, dict]]:
 
 
 def build_pre_weeks(cfg: dict, daily_leads: dict,
-                    events_by_studio: dict | None = None) -> list[dict]:
+                    events_by_studio: dict | None = None) -> tuple[list[dict], int]:
     """
-    Build Week -N ... Week -1 entries using all lead data that exists
-    before week_0_start. No organic start date needed — just go as far
-    back as data.json has data for this studio.
+    Build Week -N ... Week -1 entries using lead data before week_0_start.
 
-    Week -1 = last 7 days before week_0_start
-    Week -2 = 7 days before that
-    etc.
-    The earliest bucket may be shorter than 7 days.
+    If presales_training_complete is set: the first visible week is the 7-day
+    bucket (counting back from week_0_start) that contains that date. Leads from
+    before that bucket are accumulated into offset_leads and included in the
+    cumulative total_leads of the first visible week (so the chart is continuous).
+
+    If presales_training_complete is not set: fall back to the 30-day gap filter
+    to find the earliest real activity date.
+
+    Returns (weeks, offset_leads).
     """
     week0_start = cfg["week_0_start"]
     if not week0_start:
-        return []
+        return [], 0
+
+    training_date = cfg.get("presales_training_complete")
 
     data_name     = NAME_MAP.get(cfg["name"], cfg["name"])
     leads_by_date = daily_leads.get(data_name, {})
 
-    # Find earliest date with lead data before week_0_start.
-    # Ignore isolated early outliers: skip any leading dates that are more than
-    # 30 days before the next lead date (catches test/staff accounts far before
-    # the real lead gen period started).
     pre_dates = sorted(d for d in leads_by_date if d < week0_start.isoformat())
     if not pre_dates:
-        return []
+        return [], 0
 
-    # Drop leading dates isolated by a 30+ day gap from the next date with leads
-    while len(pre_dates) >= 2:
-        d0 = date.fromisoformat(pre_dates[0])
-        d1 = date.fromisoformat(pre_dates[1])
-        if (d1 - d0).days > 30:
-            pre_dates.pop(0)
-        else:
-            break
+    if training_date and training_date >= week0_start:
+        # MBO completed on or after Week 0 — no pre-launch period to show.
+        return [], 0
 
-    if not pre_dates:
-        return []
+    if training_date and training_date < week0_start:
+        # Find the 7-day bucket (counting back from week_0_start) that contains
+        # training_date — that becomes the first visible negative week.
+        days_before = (week0_start - training_date).days
+        bucket_idx  = (days_before - 1) // 7          # 0 = W-1, 1 = W-2, …
+        first_bucket_end   = week0_start - timedelta(days=1 + bucket_idx * 7)
+        first_bucket_start = first_bucket_end - timedelta(days=6)
+        earliest = first_bucket_start
 
-    earliest = date.fromisoformat(pre_dates[0])
+        # Leads that occurred before the first visible bucket → offset
+        offset_leads = sum(
+            leads_by_date.get(d, {}).get("total", 0)
+            for d in pre_dates
+            if d < earliest.isoformat()
+        )
+    else:
+        # No MBO date — drop leading dates isolated by a 30+ day gap (catches test accounts)
+        while len(pre_dates) >= 2:
+            d0 = date.fromisoformat(pre_dates[0])
+            d1 = date.fromisoformat(pre_dates[1])
+            if (d1 - d0).days > 30:
+                pre_dates.pop(0)
+            else:
+                break
+        if not pre_dates:
+            return [], 0
+        earliest     = date.fromisoformat(pre_dates[0])
+        offset_leads = 0
 
     weeks    = []
     bucket_end = week0_start - timedelta(days=1)
@@ -236,20 +258,20 @@ def build_pre_weeks(cfg: dict, daily_leads: dict,
         d = bucket_start
         while d <= bucket_end:
             day_data = leads_by_date.get(d.isoformat(), {})
-            new_leads       += day_data.get("total", 0)
+            new_leads        += day_data.get("total", 0)
             grassroots_leads += day_data.get("grassroots", 0)
             d += timedelta(days=1)
 
         weeks.append({
-            "week_num":        week_num,
-            "week":            f"WEEK {week_num}",
-            "date_start":      bucket_start.isoformat(),
-            "date_end":        bucket_end.isoformat(),
-            "new_leads":       new_leads,
+            "week_num":         week_num,
+            "week":             f"WEEK {week_num}",
+            "date_start":       bucket_start.isoformat(),
+            "date_end":         bucket_end.isoformat(),
+            "new_leads":        new_leads,
             "grassroots_leads": grassroots_leads if grassroots_leads > 0 else None,
-            "comm_events":     events_in_period(events_by_studio or {}, cfg["name"],
-                                               bucket_start, bucket_end),
-            "total_leads":     None,  # filled below
+            "comm_events":      events_in_period(events_by_studio or {}, cfg["name"],
+                                                bucket_start, bucket_end),
+            "total_leads":      None,  # filled below
         })
 
         bucket_end = bucket_start - timedelta(days=1)
@@ -257,13 +279,13 @@ def build_pre_weeks(cfg: dict, daily_leads: dict,
 
     weeks.reverse()  # Week -N first, Week -1 last
 
-    # Cumulative total_leads
-    cumulative = 0
+    # Cumulative total_leads — start from offset so the chart is continuous
+    cumulative = offset_leads
     for wk in weeks:
-        cumulative        += wk["new_leads"]
-        wk["total_leads"]  = cumulative
+        cumulative       += wk["new_leads"]
+        wk["total_leads"] = cumulative
 
-    return weeks
+    return weeks, offset_leads
 
 
 # ---------------------------------------------------------------------------
@@ -296,6 +318,18 @@ def main():
         print(f"  WARNING: Could not load events: {e}\n")
         events_by_studio = {}
 
+    # Load existing JSON to preserve already-opened studio entries unchanged.
+    existing_studios = {}
+    if OUTPUT_DEFAULT.exists():
+        try:
+            existing_studios = json.loads(
+                OUTPUT_DEFAULT.read_text(encoding="utf-8")
+            ).get("studios", {})
+        except Exception:
+            pass
+
+    today = date.today()
+
     result = {
         "generated_at": datetime.now().isoformat(),
         "source_sheet": f"https://docs.google.com/spreadsheets/d/{SHEET_ID}",
@@ -305,23 +339,34 @@ def main():
     for cfg in studios:
         code    = cfg["code"]
         name    = cfg["name"]
-        w0 = cfg["week_0_start"]
-        w1 = cfg["week_1_start"]
+        w0      = cfg["week_0_start"]
+        w1      = cfg["week_1_start"]
 
-        pre_weeks       = build_pre_weeks(cfg, daily_leads, events_by_studio)
+        # Preserve already-opened studios exactly as they are — don't regenerate.
+        op = cfg.get("opening_date")
+        if op and op <= today and code in existing_studios:
+            print(f"  {name:<30}  OPENED ({op}) — preserving existing entry")
+            result["studios"][code] = existing_studios[code]
+            continue
+
+        pre_weeks, offset_leads = build_pre_weeks(cfg, daily_leads, events_by_studio)
         total_pre_leads = sum(w["new_leads"] for w in pre_weeks)
 
+        training = cfg.get("presales_training_complete")
         print(f"  {name:<30}  w0={str(w0):<12}  w1={str(w1):<12}  "
-              f"pre_weeks={len(pre_weeks):>3}  leads={total_pre_leads:>4}")
+              f"pre_weeks={len(pre_weeks):>3}  leads={total_pre_leads:>4}"
+              + (f"  offset={offset_leads}" if offset_leads else ""))
 
         lt = cfg["lt_fee_start"]
         result["studios"][code] = {
-            "name":         name,
-            "full_name":    f"SWEAT440 {name}",
-            "week_0_start": w0.isoformat() if w0 else None,
-            "week_1_start": w1.isoformat() if w1 else None,
-            "lt_fee_start": lt.isoformat() if lt else None,
-            "pre_weeks":    pre_weeks,
+            "name":                       name,
+            "full_name":                  f"SWEAT440 {name}",
+            "week_0_start":               w0.isoformat() if w0 else None,
+            "week_1_start":               w1.isoformat() if w1 else None,
+            "lt_fee_start":               lt.isoformat() if lt else None,
+            "presales_training_complete": training.isoformat() if training else None,
+            "offset_leads":               offset_leads,
+            "pre_weeks":                  pre_weeks,
         }
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
