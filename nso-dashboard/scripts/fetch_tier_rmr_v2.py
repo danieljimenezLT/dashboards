@@ -76,7 +76,10 @@ def connect():
 def fetch_daily_sales(cur, studio_id, end_date, opening_date=None):
     # For opened studios: cap buys strictly before opening_date so post-opening
     # members don't inflate the presale tier counts.
-    buy_op = "< " + f"'{opening_date}'" if opening_date else "<= " + f"'{end_date}'"
+    # For opened studios: cap both buys and cancels before opening_date to match
+    # the pre-opening net presales view (consistent with nso_sales_data.json / Summary tab).
+    buy_op    = "< " + f"'{opening_date}'" if opening_date else "<= " + f"'{end_date}'"
+    cancel_op = "< " + f"'{opening_date}'" if opening_date else "<= " + f"'{end_date}'"
 
     cur.execute(f"""
         SELECT CLIENT_ID, PRODUCT_DESCRIPTION,
@@ -108,7 +111,7 @@ def fetch_daily_sales(cur, studio_id, end_date, opening_date=None):
           AND ITEM_TYPE = 'Pricing Option'
           AND LOWER(PRODUCT_DESCRIPTION) LIKE '%pre%sale%'
           AND (QUANTITY = -1 OR IS_RETURN = 1)
-          AND SALE_DATE::DATE <= '{end_date}'
+          AND SALE_DATE::DATE {cancel_op}
         GROUP BY 1, 2
     """)
     cancel_map = {
