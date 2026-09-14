@@ -1092,7 +1092,8 @@ function renderSummary2(){
   const annPres=_goalAnn||tgt.presales_count||0;
   const annLeads=_goalAnn===300?860:(_goalAnn===250?715:tgt.total_leads||0);
   // For pre-launch studios scorecard Week 0 may be unpopulated — use raw sales data instead
-  const _rawTotalPresales=(_isPreLaunchSumm||_isOpened2)?Math.max(0,NSO_SALES_ROWS.filter(r=>_strip(r.studio)===_sname).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0)):null;
+  const _opCap2=_isOpened2&&studio.opening_date?studio.opening_date:null;
+  const _rawTotalPresales=(_isPreLaunchSumm||_isOpened2)?Math.max(0,NSO_SALES_ROWS.filter(r=>_strip(r.studio)===_sname&&(!_opCap2||r.date<_opCap2)).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0)):null;
   const _rawTotalLeads=_isPreLaunchSumm?(RAW?.daily_detail||[]).filter(r=>_strip(r.studio)===_sname).reduce((s,r)=>s+(r.signups||0),0):null;
   const netPresales=(_isPreLaunchSumm||_isOpened2)?(_rawTotalPresales||0):(_sumCurTier?(_sumCurTier.t0||0)+(_sumCurTier.t1||0)+(_sumCurTier.t2||0)+(_sumCurTier.t3||0):Math.max(0,(cur.presales_count||0)-(cur.cancellations_count||0)));
   const weeksLeft=Math.max(0,goalWeeks-displayCw);
@@ -1253,7 +1254,7 @@ function drawCum2Chart(studio){
     const scLeadsD=w.map((x,i)=>i<=cw?x.total_leads||0:null);
     const _cumTierMap={};(studio.tier_rmr_by_week||[]).forEach(r=>{_cumTierMap[r.week]=r;});
     let scPresD=w.map((x,i)=>{if(i>cw)return null;const tr=_cumTierMap[i];return tr?(tr.t0||0)+(tr.t1||0)+(tr.t2||0)+(tr.t3||0):Math.max(0,(x.presales_count||0)-(x.cancellations_count||0));});
-    if(_isOpenedChart2){const _sn2b=studio.data_name||studio.name;const _st2b=s=>(s||'').replace(/^SWEAT440\s+/,'');const _nrb=NSO_SALES_ROWS.filter(r=>_st2b(r.studio)===_sn2b);let _cpb=0;scPresD=w.map((wk,i)=>{if(i>cw)return null;const ds=wk.date_start,de=wk.date_end||ds;if(!ds)return _cpb>0?_cpb:null;_cpb=Math.max(0,_cpb+_nrb.filter(r=>r.date>=ds&&r.date<=de).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));return _cpb>0?_cpb:null;});}
+    if(_isOpenedChart2){const _sn2b=studio.data_name||studio.name;const _st2b=s=>(s||'').replace(/^SWEAT440\s+/,'');const _opD2b=studio.opening_date||null;const _nrb=NSO_SALES_ROWS.filter(r=>_st2b(r.studio)===_sn2b&&(!_opD2b||r.date<_opD2b));let _cpb=0;scPresD=w.map((wk,i)=>{if(i>cw)return null;const ds=wk.date_start,de=wk.date_end||ds;if(!ds)return _cpb>0?_cpb:null;_cpb=Math.max(0,_cpb+_nrb.filter(r=>r.date>=ds&&r.date<=de).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));return _cpb>0?_cpb:null;});}
     const leadsPace=w.map((_,i)=>Math.min(tLeads,Math.round(wkLeadPace*i)));
     const presPace=w.map((_,i)=>Math.min(tPres,Math.round(wkPresPace*i)));
     const _wkNumLabels=preWeeks.map(pw=>`W${pw.week_num}`);
@@ -1659,9 +1660,10 @@ function renderSummary(){
   const _isReston=studio.code==='VA-001';
   const annPres=_goalAnn||tgt.presales_count||0;
   const annLeads=_goalAnn===300?860:(_goalAnn===250?715:tgt.total_leads||0);
-  // Cumulative actuals — for opened studios use nso_sales_data (already capped at opening_date-1)
+  // Cumulative actuals — for opened studios cap at opening_date (exclude day of opening onwards)
+  const _opCap=_isOpened&&studio.opening_date?studio.opening_date:null;
   const netPresales=_isOpened
-    ? Math.max(0,NSO_SALES_ROWS.filter(r=>_strip(r.studio)===_sname).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0))
+    ? Math.max(0,NSO_SALES_ROWS.filter(r=>_strip(r.studio)===_sname&&(!_opCap||r.date<_opCap)).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0))
     : (_sumCurTier?(_sumCurTier.t0||0)+(_sumCurTier.t1||0)+(_sumCurTier.t2||0)+(_sumCurTier.t3||0):Math.max(0,(cur.presales_count||0)-(cur.cancellations_count||0)));
   // Dynamic weekly goal: remaining target ÷ weeks left until C/O
   const weeksLeft=Math.max(0,paceWeeks-displayCw);
@@ -1788,7 +1790,7 @@ function drawCumChart(studio){
   const presD=w.map((x,i)=>{if(i>cw)return null;const tr=_cumTierMap[i];return tr?(tr.t0||0)+(tr.t1||0)+(tr.t2||0)+(tr.t3||0):Math.max(0,(x.presales_count||0)-(x.cancellations_count||0));});
   // For opened studios override presales with NSO_SALES_ROWS capped weekly cumulative
   let presD2=presD;
-  if(_isOpenedChart){const _sn=studio.data_name||studio.name;const _str=s=>(s||'').replace(/^SWEAT440\s+/,'');const _nr=NSO_SALES_ROWS.filter(r=>_str(r.studio)===_sn);let _cp=0;presD2=w.map((wk,i)=>{if(i>cw)return null;const ds=wk.date_start,de=wk.date_end||ds;if(!ds)return _cp>0?_cp:null;_cp=Math.max(0,_cp+_nr.filter(r=>r.date>=ds&&r.date<=de).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));return _cp>0?_cp:null;});}
+  if(_isOpenedChart){const _sn=studio.data_name||studio.name;const _str=s=>(s||'').replace(/^SWEAT440\s+/,'');const _opD=studio.opening_date||null;const _nr=NSO_SALES_ROWS.filter(r=>_str(r.studio)===_sn&&(!_opD||r.date<_opD));let _cp=0;presD2=w.map((wk,i)=>{if(i>cw)return null;const ds=wk.date_start,de=wk.date_end||ds;if(!ds)return _cp>0?_cp:null;_cp=Math.max(0,_cp+_nr.filter(r=>r.date>=ds&&r.date<=de).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));return _cp>0?_cp:null;});}
   const leadsPace=w.map((_,i)=>Math.min(tLeads,Math.round(wkLeadPace*i)));
   const presPace=w.map((_,i)=>Math.min(tPres,Math.round(wkPresPace*i)));
   _ch.sum=new Chart(ctx,{type:'line',data:{labels,datasets:[
@@ -2378,7 +2380,7 @@ function renderScorecard(){
   let _openedCumMap=null;
   let _openedTierMap=null;
   if(_isOpened){
-    const _sno=sc.data_name||sc.name;const _sto=s=>(s||'').replace(/^SWEAT440\s+/,'');const _nro=NSO_SALES_ROWS.filter(r=>_sto(r.studio)===_sno);
+    const _sno=sc.data_name||sc.name;const _sto=s=>(s||'').replace(/^SWEAT440\s+/,'');const _nro=NSO_SALES_ROWS.filter(r=>_sto(r.studio)===_sno&&(!_scOpDate||r.date<_scOpDate));
     let _cpno=0;_openedCumMap={};
     let _ot0=0,_ot1=0,_ot2=0,_ot3=0;_openedTierMap={};
     pastWeeks.forEach(wk=>{
@@ -2985,7 +2987,7 @@ function renderScorecard2(){
   let _openedCumMap2=null;
   let _openedTierMap2=null;
   if(_isOpened2){
-    const _sno2=sc.data_name||sc.name;const _sto2=s=>(s||'').replace(/^SWEAT440\s+/,'');const _nro2=NSO_SALES_ROWS.filter(r=>_sto2(r.studio)===_sno2);
+    const _sno2=sc.data_name||sc.name;const _sto2=s=>(s||'').replace(/^SWEAT440\s+/,'');const _nro2=NSO_SALES_ROWS.filter(r=>_sto2(r.studio)===_sno2&&(!_sc2OpDate||r.date<_sc2OpDate));
     let _cpno2=0;_openedCumMap2={};
     let _ot0=0,_ot1=0,_ot2=0,_ot3=0;_openedTierMap2={};
     pastWeeks.forEach(wk=>{
