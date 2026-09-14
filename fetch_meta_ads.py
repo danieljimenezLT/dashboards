@@ -633,6 +633,29 @@ def run(start_override: str | None = None, end_override: str | None = None):
     studio_daily_out = sorted(studio_daily_idx.values(), key=lambda r: (r["date"], r["studio_code"]))
     log.info(f"  studio_daily: {len(studio_daily_out)} total (date×studio) rows, floor {STUDIO_DAILY_FLOOR}")
 
+    # ── 4c. Drop ACCOUNT_TOTAL stubs superseded by real ad-level rows ─────────
+    # When a studio is upgraded from account-level fallback to ad-level fetch,
+    # both sets of rows coexist in ad_daily_idx (different ad_id keys) and would
+    # double-count spend. Remove any ACCOUNT_TOTAL:* row for a studio+date combo
+    # that already has at least one real ad-level row.
+    real_studio_dates = {
+        (r["date"], r["studio_code"])
+        for r in ad_daily_idx.values()
+        if not r["ad_id"].startswith("ACCOUNT_TOTAL:")
+    }
+    stub_removed = sum(
+        1 for r in ad_daily_idx.values()
+        if r["ad_id"].startswith("ACCOUNT_TOTAL:")
+        and (r["date"], r["studio_code"]) in real_studio_dates
+    )
+    if stub_removed:
+        log.info(f"  Removing {stub_removed} ACCOUNT_TOTAL stubs superseded by ad-level rows")
+        ad_daily_idx = {
+            k: r for k, r in ad_daily_idx.items()
+            if not r["ad_id"].startswith("ACCOUNT_TOTAL:")
+            or (r["date"], r["studio_code"]) not in real_studio_dates
+        }
+
     # ── 5. Sort, trim to 90-day rolling window, and write ────────────
     ad_daily_out = sorted(
         ad_daily_idx.values(),
