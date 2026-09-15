@@ -14,7 +14,6 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 NSO_CONFIG_SHEET_ID = "1KhXfeofzltGyllmrfIm9UN2xqLUgBtjAxPhT-E0SQmk"
-SPEND_SHEET_ID      = "1oLvrjTfcGUmt-mi1bp2xnqmESgt4uu4QlLCfAOKoRd8"
 CREDS_FILE     = "credentials/service_account.json"
 SCORECARD_FILE = "nso_scorecard_data.json"
 
@@ -164,83 +163,6 @@ def _match_sku_map(studio_name_raw):
     return _standard_sku or {}
 
 
-# ── Read spend data from Marketing Spend Records (Form Responses) ─────────────
-print("Reading spend data from Marketing Spend Records sheet...")
-# {studio_lower: [(start_date, end_date, category, amount), ...]}
-_form_spend: dict = {}
-try:
-    _sp_res = svc.spreadsheets().values().get(
-        spreadsheetId=SPEND_SHEET_ID, range="Form Responses 1"
-    ).execute()
-    _sp_rows = _sp_res.get("values", [])
-    for _sr in _sp_rows[1:]:  # skip header row
-        if len(_sr) < 7:
-            continue
-        _sp_studio   = _sr[2].strip()
-        _sp_start_s  = _sr[3].strip()
-        _sp_end_s    = _sr[4].strip()
-        _sp_cat      = _sr[5].strip().lower()   # "grassroots" or "other"
-        _sp_amt_s    = _sr[6].strip()
-        if not _sp_studio or not _sp_start_s or not _sp_amt_s:
-            continue
-        _sp_start = None
-        _sp_end   = None
-        for _fmt in ("%m/%d/%Y", "%Y-%m-%d"):
-            try:
-                _sp_start = datetime.strptime(_sp_start_s, _fmt).date(); break
-            except ValueError:
-                pass
-        for _fmt in ("%m/%d/%Y", "%Y-%m-%d"):
-            try:
-                _sp_end = datetime.strptime(_sp_end_s, _fmt).date(); break
-            except ValueError:
-                pass
-        if not _sp_start:
-            continue
-        if not _sp_end:
-            _sp_end = _sp_start
-        try:
-            _sp_amount = float(re.sub(r"[^0-9.]", "", _sp_amt_s))
-        except (ValueError, TypeError):
-            continue
-        _form_spend.setdefault(_sp_studio.lower(), []).append(
-            (_sp_start, _sp_end, _sp_cat, _sp_amount)
-        )
-    print(f"  {len(_form_spend)} studio(s) with spend records, "
-          f"{sum(len(v) for v in _form_spend.values())} total rows")
-except Exception as _sp_err:
-    print(f"  WARNING: Could not load spend data: {_sp_err}")
-    _form_spend = {}
-
-
-def _norm_studio_key(raw: str) -> str:
-    """Normalize studio name for fuzzy matching (lowercase, strip prefix/dashes/spaces)."""
-    s = raw.strip().lower()
-    if s.startswith("sweat440 "):
-        s = s[9:]
-    return re.sub(r"[\s\-]+", " ", s).strip()
-
-
-def _form_spend_in_period(studio_name_raw: str, period_start: date, period_end: date):
-    """Sum grassroots and other spend from Form Responses overlapping [period_start, period_end]."""
-    needle = _norm_studio_key(studio_name_raw)
-    entries = None
-    for k, v in _form_spend.items():
-        if _norm_studio_key(k) in needle or needle in _norm_studio_key(k):
-            entries = v
-            break
-    if not entries:
-        return None, None
-    grassroots = sum(
-        amt for s, e, cat, amt in entries
-        if cat == "grassroots" and s <= period_end and e >= period_start
-    )
-    other = sum(
-        amt for s, e, cat, amt in entries
-        if cat == "other" and s <= period_end and e >= period_start
-    )
-    return (round(grassroots, 2) if grassroots > 0 else None,
-            round(other, 2)      if other      > 0 else None)
 
 
 # ── Read Weekly Events & Spend from NSO Manual Metrics sheet ─────────────────
@@ -492,44 +414,7 @@ for studio in sc.get("studios", []):
     if info.get("goal_announce_target") is not None:
         studio["goal_announce_target"] = info["goal_announce_target"]
 
-    # Patch Grassroots Spend and Other Spend from Marketing Spend Records sheet (date-based).
-    # Only patch studios that have ANY records in the spend sheet (avoids touching studios
-    # with no entries while still clearing stale values for studios that do have entries).
-    _studio_has_spend = _norm_studio_key(studio.get("name", ""))
-    _studio_in_spend = any(
-        _norm_studio_key(k) in _studio_has_spend or _studio_has_spend in _norm_studio_key(k)
-        for k in _form_spend
-    )
-    es_weeks_updated = 0
-    for wk in studio.get("weeks", []):
-        ds_str = wk.get("date_start")
-        de_str = wk.get("date_end")
-        if not ds_str or not de_str:
-            continue
-        try:
-            ds_dt = datetime.strptime(ds_str, "%Y-%m-%d").date()
-            de_dt = datetime.strptime(de_str, "%Y-%m-%d").date()
-        except ValueError:
-            continue
-        if _studio_in_spend:
-            gr, oth = _form_spend_in_period(studio.get("name", ""), ds_dt, de_dt)
-            # Always write (None clears any stale value from a previous run)
-            wk["grassroots_spend"] = gr
-            wk["other_spend"]      = oth
-            total = round(
-                (wk.get("meta_spend") or 0) +
-                (wk.get("google_spend") or 0) +
-                (gr or 0) +
-                (oth or 0) +
-                (wk.get("leadteam_fee") or 0), 2
-            )
-            wk["total_marketing_spend"] = total or None
-            leads = wk.get("new_leads") or 0
-            wk["blended_cpl"] = round(total / leads, 2) if leads > 0 else None
-            presales = wk.get("presales_week") or 0
-            wk["blended_cpa"] = round(total / presales, 2) if presales > 0 else None
-            if gr or oth:
-                es_weeks_updated += 1
+    es_weeks_updated = 0  # spend is applied by build_all_scorecards.py via nso_other_costs.json
 
     # Patch comm_events from NSO Manual Metrics "Weekly Events & Spend" tab
     # (calendar-week columns → scorecard week by date overlap)
