@@ -1,6 +1,18 @@
 {
   "entries": [
     {
+      "date": "2026-09-15",
+      "pr_number": 364,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/364",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Fix ad thumbnails for dedicated-account studios (Highland, Prestonwood, Uptown, Herriman, Fort Myers, Dr Phillips)",
+      "summary": "Ad creative images now load from Google Drive when available, fixing the small/missing thumbnail issue caused by Facebook auth-gated URLs."
+    },
+    {
       "date": "2026-09-14",
       "pr_number": 363,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/363",
