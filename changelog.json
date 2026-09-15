@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-15",
+      "pr_number": 365,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/365",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix \"Unable to parse range\" error for Weekly Events & Spend tab",
+      "summary": "Google Sheets API requires single quotes around tab names with special characters like &. fetch_sheet_milestones.py now quotes the tab name correctly."
+    },
+    {
+      "date": "2026-09-15",
       "pr_number": 364,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/364",
       "author": "Sebastian Arango",
