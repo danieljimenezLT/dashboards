@@ -14,6 +14,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 NSO_CONFIG_SHEET_ID = "1KhXfeofzltGyllmrfIm9UN2xqLUgBtjAxPhT-E0SQmk"
+SPEND_SHEET_ID      = "1oLvrjTfcGUmt-mi1bp2xnqmESgt4uu4QlLCfAOKoRd8"
 CREDS_FILE     = "credentials/service_account.json"
 SCORECARD_FILE = "nso_scorecard_data.json"
 
@@ -163,69 +164,83 @@ def _match_sku_map(studio_name_raw):
     return _standard_sku or {}
 
 
-# ── Read Weekly Events & Spend tab ───────────────────────────────────────────
-print("Reading Weekly Events & Spend tab...")
-es_res = svc.spreadsheets().values().get(
-    spreadsheetId=NSO_CONFIG_SHEET_ID, range="Weekly Events"
-).execute()
-es_rows = es_res.get("values", [])
-
-# Layout: row 0=group header, row 1=col headers (Name|Week1Start|Metric|Week1|Week2|...)
-# Data: groups of 3 rows per studio — Community Events, Grassroots Spend, Other Spend
-
-def _parse_count(s):
-    s = (s or "").strip()
-    if not s or s == "-":
-        return None
-    try:
-        return int(s)
-    except (ValueError, TypeError):
-        return None
-
-def _parse_currency(s):
-    s = (s or "").strip()
-    if not s or s == "-":
-        return None
-    try:
-        return round(float(re.sub(r"[^0-9.]", "", s)), 2)
-    except (ValueError, TypeError):
-        return None
-
-_events_spend = {}  # studio_name_lower → {week_num: {comm_events, grassroots_spend, other_spend}}
-
-i = 2
-while i < len(es_rows):
-    r0 = es_rows[i]     if i     < len(es_rows) else []
-    r1 = es_rows[i + 1] if i + 1 < len(es_rows) else []
-    r2 = es_rows[i + 2] if i + 2 < len(es_rows) else []
-    sname = (r0[0] if r0 else "").strip()
-    if not sname:
-        i += 1
-        continue
-    m0 = (r0[2] if len(r0) > 2 else "").lower()
-    if "community" not in m0 and "event" not in m0:
-        i += 1
-        continue
-    week_data = {}
-    for col in range(3, max(len(r0), len(r1), len(r2), 4)):
-        wnum = col - 2   # col 3 → Week 1, col 4 → Week 2, …
-        ev  = _parse_count(r0[col]    if col < len(r0) else "")
-        gr  = _parse_currency(r1[col] if col < len(r1) else "")
-        oth = _parse_currency(r2[col] if col < len(r2) else "")
-        if ev is not None or gr is not None or oth is not None:
-            week_data[wnum] = {"comm_events": ev, "grassroots_spend": gr, "other_spend": oth}
-    _events_spend[sname.lower()] = week_data
-    i += 3
+# ── Read spend data from Marketing Spend Records (Form Responses) ─────────────
+print("Reading spend data from Marketing Spend Records sheet...")
+# {studio_lower: [(start_date, end_date, category, amount), ...]}
+_form_spend: dict = {}
+try:
+    _sp_res = svc.spreadsheets().values().get(
+        spreadsheetId=SPEND_SHEET_ID, range="Form Responses 1"
+    ).execute()
+    _sp_rows = _sp_res.get("values", [])
+    for _sr in _sp_rows[1:]:  # skip header row
+        if len(_sr) < 7:
+            continue
+        _sp_studio   = _sr[2].strip()
+        _sp_start_s  = _sr[3].strip()
+        _sp_end_s    = _sr[4].strip()
+        _sp_cat      = _sr[5].strip().lower()   # "grassroots" or "other"
+        _sp_amt_s    = _sr[6].strip()
+        if not _sp_studio or not _sp_start_s or not _sp_amt_s:
+            continue
+        _sp_start = None
+        _sp_end   = None
+        for _fmt in ("%m/%d/%Y", "%Y-%m-%d"):
+            try:
+                _sp_start = datetime.strptime(_sp_start_s, _fmt).date(); break
+            except ValueError:
+                pass
+        for _fmt in ("%m/%d/%Y", "%Y-%m-%d"):
+            try:
+                _sp_end = datetime.strptime(_sp_end_s, _fmt).date(); break
+            except ValueError:
+                pass
+        if not _sp_start:
+            continue
+        if not _sp_end:
+            _sp_end = _sp_start
+        try:
+            _sp_amount = float(re.sub(r"[^0-9.]", "", _sp_amt_s))
+        except (ValueError, TypeError):
+            continue
+        _form_spend.setdefault(_sp_studio.lower(), []).append(
+            (_sp_start, _sp_end, _sp_cat, _sp_amount)
+        )
+    print(f"  {len(_form_spend)} studio(s) with spend records, "
+          f"{sum(len(v) for v in _form_spend.values())} total rows")
+except Exception as _sp_err:
+    print(f"  WARNING: Could not load spend data: {_sp_err}")
+    _form_spend = {}
 
 
-def _match_events_spend(studio_name_raw):
-    name = studio_name_raw.strip().lower()
-    if name.startswith("sweat440 "):
-        name = name[9:]
-    for es_name, data in _events_spend.items():
-        if es_name in name or name in es_name:
-            return data
-    return {}
+def _norm_studio_key(raw: str) -> str:
+    """Normalize studio name for fuzzy matching (lowercase, strip prefix/dashes/spaces)."""
+    s = raw.strip().lower()
+    if s.startswith("sweat440 "):
+        s = s[9:]
+    return re.sub(r"[\s\-]+", " ", s).strip()
+
+
+def _form_spend_in_period(studio_name_raw: str, period_start: date, period_end: date):
+    """Sum grassroots and other spend from Form Responses overlapping [period_start, period_end]."""
+    needle = _norm_studio_key(studio_name_raw)
+    entries = None
+    for k, v in _form_spend.items():
+        if _norm_studio_key(k) in needle or needle in _norm_studio_key(k):
+            entries = v
+            break
+    if not entries:
+        return None, None
+    grassroots = sum(
+        amt for s, e, cat, amt in entries
+        if cat == "grassroots" and s <= period_end and e >= period_start
+    )
+    other = sum(
+        amt for s, e, cat, amt in entries
+        if cat == "other" and s <= period_end and e >= period_start
+    )
+    return (round(grassroots, 2) if grassroots > 0 else None,
+            round(other, 2)      if other      > 0 else None)
 
 
 # ── Read Weekly Events & Spend from NSO Manual Metrics sheet ─────────────────
@@ -477,33 +492,35 @@ for studio in sc.get("studios", []):
     if info.get("goal_announce_target") is not None:
         studio["goal_announce_target"] = info["goal_announce_target"]
 
-    # Patch Community Events, Grassroots Spend, Other Spend from Weekly Events & Spend tab
-    es_data = _match_events_spend(studio.get("name", ""))
+    # Patch Grassroots Spend and Other Spend from Marketing Spend Records sheet (date-based).
+    # Only patch studios that have ANY records in the spend sheet (avoids touching studios
+    # with no entries while still clearing stale values for studios that do have entries).
+    _studio_has_spend = _norm_studio_key(studio.get("name", ""))
+    _studio_in_spend = any(
+        _norm_studio_key(k) in _studio_has_spend or _studio_has_spend in _norm_studio_key(k)
+        for k in _form_spend
+    )
     es_weeks_updated = 0
     for wk in studio.get("weeks", []):
-        m = re.search(r"\d+", wk.get("week", ""))
-        if not m:
+        ds_str = wk.get("date_start")
+        de_str = wk.get("date_end")
+        if not ds_str or not de_str:
             continue
-        wnum = int(m.group())
-        es = es_data.get(wnum)
-        if not es:
+        try:
+            ds_dt = datetime.strptime(ds_str, "%Y-%m-%d").date()
+            de_dt = datetime.strptime(de_str, "%Y-%m-%d").date()
+        except ValueError:
             continue
-        changed = False
-        if es["comm_events"] is not None:
-            wk["comm_events"] = es["comm_events"]
-        if es["grassroots_spend"] is not None:
-            wk["grassroots_spend"] = es["grassroots_spend"]
-            changed = True
-        if es["other_spend"] is not None:
-            wk["other_spend"] = es["other_spend"]
-            changed = True
-        if changed:
-            # Recalculate total_marketing_spend and blended metrics
+        if _studio_in_spend:
+            gr, oth = _form_spend_in_period(studio.get("name", ""), ds_dt, de_dt)
+            # Always write (None clears any stale value from a previous run)
+            wk["grassroots_spend"] = gr
+            wk["other_spend"]      = oth
             total = round(
                 (wk.get("meta_spend") or 0) +
                 (wk.get("google_spend") or 0) +
-                (wk.get("grassroots_spend") or 0) +
-                (wk.get("other_spend") or 0) +
+                (gr or 0) +
+                (oth or 0) +
                 (wk.get("leadteam_fee") or 0), 2
             )
             wk["total_marketing_spend"] = total or None
@@ -511,7 +528,8 @@ for studio in sc.get("studios", []):
             wk["blended_cpl"] = round(total / leads, 2) if leads > 0 else None
             presales = wk.get("presales_week") or 0
             wk["blended_cpa"] = round(total / presales, 2) if presales > 0 else None
-        es_weeks_updated += 1
+            if gr or oth:
+                es_weeks_updated += 1
 
     # Patch comm_events from NSO Manual Metrics "Weekly Events & Spend" tab
     # (calendar-week columns → scorecard week by date overlap)
