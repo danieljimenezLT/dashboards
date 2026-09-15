@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-15",
+      "pr_number": 366,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/366",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix Multiple Memberships table showing 0 for all values in Client History",
+      "summary": "Studio name comparison was using wrong prefix-stripping logic, causing per-email detail rows to always be empty."
+    },
+    {
+      "date": "2026-09-15",
       "pr_number": 365,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/365",
       "author": "Sebastian Arango",
