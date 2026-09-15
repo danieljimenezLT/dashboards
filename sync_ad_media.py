@@ -51,6 +51,16 @@ logging.basicConfig(
 
 REPO_ROOT = Path(__file__).resolve().parent
 
+try:
+    sys.path.insert(0, str(REPO_ROOT))
+    import studios as _studios_mod
+    _STUDIO_CODE_TO_ACCOUNT: dict[str, str] = {
+        d["code"]: d["account_id"]
+        for d in _studios_mod.meta_dedicated_accounts()
+    }
+except Exception:
+    _STUDIO_CODE_TO_ACCOUNT = {}
+
 OS_JSON       = REPO_ROOT / "meta-ads-data.json"
 NSO_JSON      = REPO_ROOT / "nso-dashboard" / "nso_ad_meta.json"
 OS_CACHE      = REPO_ROOT / "os_media_cache.json"
@@ -189,6 +199,10 @@ def _download(url: str, timeout: int = 60) -> bytes | None:
     try:
         r = requests.get(url, timeout=timeout, allow_redirects=True, headers=_BROWSER_HEADERS)
         if r.status_code == 200:
+            ct = r.headers.get("Content-Type", "")
+            if ct and "image" not in ct:
+                log.warning(f"  Non-image response ({ct[:60]}) from {url[:70]}")
+                return None
             return r.content
         log.warning(f"  HTTP {r.status_code} downloading {url[:80]}")
         return None
@@ -250,11 +264,11 @@ def _best_image_url(entry: dict) -> str:
     return entry.get("image_url", "") or entry.get("thumbnail_url", "")
 
 
-def _fullres_via_hash(image_hash: str, token: str) -> str:
-    """Call adimages API with image_hash to get the permanent full-res URL."""
+def _fullres_via_hash(image_hash: str, token: str, account_id: str = META_AD_ACCOUNT_ID) -> str:
+    """Call adimages API with image_hash to get the permanent full-res CDN URL."""
     try:
         r = requests.get(
-            f"https://graph.facebook.com/v20.0/{META_AD_ACCOUNT_ID}/adimages",
+            f"https://graph.facebook.com/v20.0/{account_id}/adimages",
             params={"hashes[]": image_hash, "fields": "url", "access_token": token},
             timeout=30,
         )
@@ -345,11 +359,17 @@ def process(
                 log.info(f"  image  dedup(hash) {key_raw[:50]}")
             else:
                 img_url = _best_image_url(entry)
-                # If hash is available but URL is missing or non-permanent, use adimages API
-                if ih and token and (not img_url or "facebook.com/ads/image/" not in img_url):
-                    full = _fullres_via_hash(ih, token)
-                    if full:
-                        img_url = full
+                if ih and token:
+                    # facebook.com/ads/image/ requires a browser FB session and can't be
+                    # downloaded server-side. Use hash API (with the studio's own account)
+                    # to get a proper CDN URL instead.
+                    if not img_url or "facebook.com/ads/image/" in img_url:
+                        acct = _STUDIO_CODE_TO_ACCOUNT.get(
+                            entry.get("studio_code", ""), META_AD_ACCOUNT_ID
+                        )
+                        full = _fullres_via_hash(ih, token, acct)
+                        if full:
+                            img_url = full
                 if img_url:
                     log.info(f"  image  <- {key_raw[:60]}")
                     img_data = _download(img_url)
