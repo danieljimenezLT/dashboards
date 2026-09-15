@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-15",
+      "pr_number": 368,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/368",
+      "author": "Santiago Estrada",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fixed Instagram daily reach staying stuck as monthly-only after the earlier archive-cutoff fix\r",
+      "summary": "Months like June-August that were already incorrectly archived before the Sep 9 fix landed were permanently locked out of getting their daily reach data back, even from a manual backfill; they can now self-heal once real day-level data is re-fetched for them.\r"
+    },
+    {
+      "date": "2026-09-15",
       "pr_number": 366,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/366",
       "author": "Sebastian Arango",
