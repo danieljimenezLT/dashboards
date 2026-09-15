@@ -17,6 +17,7 @@ import os
 import sys
 import time
 import requests
+from calendar import monthrange
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -481,8 +482,31 @@ def main():
         # 30-day window keeps re-requesting dates regardless of archival status and can
         # resurrect a handful of reach-less rows for an already-archived month; recomputing
         # from those stragglers would silently overwrite a correct archive with a near-empty
-        # one. So a month already in old_monthly is never recomputed.
+        # one. So a month already in old_monthly is never recomputed — with one exception
+        # (below): a month the old --days-based cutoff bug archived too early, before it
+        # was genuinely outside the 90-day window.
         old_monthly = {m["month"]: m for m in old.get("monthly", [])}
+
+        # Repair pass for months archived by that bug: if an already-archived month's
+        # last day is still inside today's real 90-day window, it never should have been
+        # archived. Un-archive it — but only once a fetch (typically a manual --days 90
+        # backfill) has actually returned near-complete day-level reach for it, so a
+        # handful of follower_count-only stragglers (see above) or a normal small --days
+        # run can't accidentally trigger this before a real backfill has run.
+        cutoff_dt = datetime.strptime(rolling_window_cutoff, "%Y-%m-%d")
+        for mk in list(old_monthly.keys()):
+            y, mo = int(mk[:4]), int(mk[5:7])
+            days_in_month = monthrange(y, mo)[1]
+            month_last_day = datetime(y, mo, days_in_month)
+            if month_last_day < cutoff_dt:
+                continue  # genuinely outside the window — stays archived
+            fresh_days_with_reach = sum(
+                1 for r in all_daily
+                if _month_key(r["date"]) == mk and r.get("reach") is not None
+            )
+            if fresh_days_with_reach >= days_in_month * 0.9:
+                del old_monthly[mk]
+
         new_monthly = build_monthly_aggregates(all_daily, all_posts, rolling_window_cutoff)
         for mk, agg in new_monthly.items():
             if mk not in old_monthly:
