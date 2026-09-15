@@ -4615,7 +4615,7 @@ function renderClientHistory(){
     h+=`<th>Email</th><th>Name</th><th class="num">Sales</th><th class="num">Cancels</th><th class="num">Net Sales</th><th>Studios</th><th>Products</th>`;
     h+=`</tr></thead><tbody>`;
     for(const [email, count] of dupList){
-      const allRecs=(()=>{let a=[];for(const s of CH_RAW.studios){const sn=s.name.replace(/^SWEAT440\s+/,'');if(_chEffSt&&!_chEffSt.includes(sn))continue;if(selStudios.size&&!selStudios.has(sn))continue;(s.records||[]).filter(r=>r.email===email&&r.date<=_chCap).forEach(r=>a.push({...r,studio:sn}));}return a;})();
+      const allRecs=(()=>{let a=[];for(const s of CH_RAW.studios){const sn=s.name.replace(/^SWEAT440\s+/,'');if(_chEffSt&&!_chEffSt.some(x=>x.replace(/^SWEAT440\s+/,'')===sn))continue;if(selStudios.size&&!selStudios.has(sn))continue;(s.records||[]).filter(r=>r.email===email&&r.date<=_chEffCap).forEach(r=>a.push({...r,studio:sn}));}return a;})();
       const name=allRecs[0]?.client_name||'—';
       const nSales=allRecs.filter(r=>r.type==='sale').length;
       const nCancels=allRecs.filter(r=>r.type==='cancel').length;
