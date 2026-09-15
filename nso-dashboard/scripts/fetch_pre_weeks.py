@@ -70,7 +70,7 @@ def load_weekly_events(creds_path: Path, sheet_id: str) -> dict:
     """
     creds = Credentials.from_service_account_file(str(creds_path), scopes=SCOPES)
     gc    = gspread.authorize(creds)
-    ws    = gc.open_by_key(sheet_id).worksheet("Weekly Events & Spend")
+    ws    = gc.open_by_key(sheet_id).worksheet("Weekly Events")
     rows  = ws.get_all_values()
     if len(rows) < 2:
         return {}

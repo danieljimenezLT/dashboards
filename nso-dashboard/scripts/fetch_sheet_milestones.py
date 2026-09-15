@@ -166,7 +166,7 @@ def _match_sku_map(studio_name_raw):
 # ── Read Weekly Events & Spend tab ───────────────────────────────────────────
 print("Reading Weekly Events & Spend tab...")
 es_res = svc.spreadsheets().values().get(
-    spreadsheetId=NSO_CONFIG_SHEET_ID, range="'Weekly Events & Spend'"
+    spreadsheetId=NSO_CONFIG_SHEET_ID, range="Weekly Events"
 ).execute()
 es_rows = es_res.get("values", [])
 
@@ -255,7 +255,7 @@ def _parse_week_range_header(s, base_year):
 
 print("Reading Weekly Events & Spend from NSO Manual Metrics sheet...")
 _ev_res = svc.spreadsheets().values().get(
-    spreadsheetId=NSO_CONFIG_SHEET_ID, range="'Weekly Events & Spend'"
+    spreadsheetId=NSO_CONFIG_SHEET_ID, range="Weekly Events"
 ).execute()
 _ev_rows = _ev_res.get("values", [])
 

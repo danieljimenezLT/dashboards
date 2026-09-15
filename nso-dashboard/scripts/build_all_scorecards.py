@@ -577,7 +577,7 @@ def load_events_spend_from_nso_config(gc, studio_cfgs=None):
 
     try:
         sh = gc.open_by_url(NSO_CONFIG_SHEET_URL)
-        ws = sh.worksheet("Weekly Events & Spend")
+        ws = sh.worksheet("Weekly Events")
         all_rows = ws.get_all_values()
     except Exception as e:
         print(f"  Warning: could not read Weekly Events & Spend from NSO Config: {e}")
