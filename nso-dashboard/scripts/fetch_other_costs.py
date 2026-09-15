@@ -33,6 +33,7 @@ STUDIO_MAP = {
     "pinecrest - palmetto bay": "SWEAT440 Pinecrest - Palmetto Bay",
     "reston":                   "SWEAT440 Reston",
     "uptown":                   "SWEAT440 Dallas - Uptown",
+    "dallas uptown":            "SWEAT440 Dallas - Uptown",
     "dallas - uptown":          "SWEAT440 Dallas - Uptown",
     "dr phillips":              "SWEAT440 Orlando - Dr Phillips",
     "orlando - dr phillips":    "SWEAT440 Orlando - Dr Phillips",
@@ -112,8 +113,8 @@ hdr_idx = next((i for i, r in enumerate(raw_rows) if any("studio" in str(c).lowe
 hdr = [str(c).strip().lower() for c in raw_rows[hdr_idx]]
 
 ci_studio = find_col(hdr, "studio")
-ci_start  = find_col(hdr, "start")
-ci_end    = find_col(hdr, "end")
+ci_start  = find_col(hdr, "start date", "start")
+ci_end    = find_col(hdr, "end date", "end_date")
 ci_cat    = find_col(hdr, "category", "spend cat")
 ci_amt    = find_col(hdr, "amount")
 
@@ -161,8 +162,8 @@ if monthly_tab:
     hdr2 = [str(c).strip().lower() for c in raw_rows2[hdr2_idx]]
 
     ci2_studio  = find_col(hdr2, "studio")
-    ci2_start   = find_col(hdr2, "start")
-    ci2_end     = find_col(hdr2, "end")
+    ci2_start   = find_col(hdr2, "start date", "start")
+    ci2_end     = find_col(hdr2, "end date", "end_date")
     ci2_cat     = find_col(hdr2, "category", "spend")
     ci2_monthly = find_col(hdr2, "monthly")
 
