@@ -4055,8 +4055,9 @@ function renderMeta(){
       const driveImg=!isVid?(g.drive_img||''):'';
       const thumbAttrs=`class="ad-thumb-btn" data-thumb="${(g.thumb||'').replace(/"/g,'&quot;')}" data-full="${(g.full_img||g.thumb||'').replace(/"/g,'&quot;')}" data-vid="${isVid?1:0}" data-vurl="${driveUrl}" data-dimg="${driveImg.replace(/"/g,'&quot;')}" data-prev="${(g.preview||'').replace(/"/g,'&quot;')}" data-name="${g.name.replace(/"/g,'&quot;')}"`;
       const fallback=`<div ${thumbAttrs} style="width:44px;height:44px;background:#0084b5;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">${isVid?'&#9654;':'&#128444;'}</div>`;
-      const thumbCell=g.thumb
-        ?`<div ${thumbAttrs} style="width:44px;height:44px;border-radius:6px;overflow:hidden;border:1px solid rgba(0,163,224,0.2);cursor:pointer"><img src="${(g.thumb||'').replace(/_p\d+x\d+/g,'')}" style="width:100%;height:100%;object-fit:cover;pointer-events:none" loading="lazy" data-fb="${fallback.replace(/"/g,'&quot;')}" data-orig="${(g.thumb||'').replace(/"/g,'&quot;')}" onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src=this.dataset.orig||''}else{this.parentElement.outerHTML=this.dataset.fb}" /></div>`
+      const thumbImgSrc=(driveImg||(g.thumb||'').replace(/_p\d+x\d+/g,'')).replace(/"/g,'&quot;');
+      const thumbCell=(driveImg||g.thumb)
+        ?`<div ${thumbAttrs} style="width:44px;height:44px;border-radius:6px;overflow:hidden;border:1px solid rgba(0,163,224,0.2);cursor:pointer"><img src="${thumbImgSrc}" style="width:100%;height:100%;object-fit:cover;pointer-events:none" loading="lazy" data-fb="${fallback.replace(/"/g,'&quot;')}" data-orig="${(g.thumb||'').replace(/"/g,'&quot;')}" onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src=this.dataset.orig||''}else{this.parentElement.outerHTML=this.dataset.fb}" /></div>`
         :fallback;
       const nameCell=`<span ${thumbAttrs} style="cursor:pointer;font-weight:600;font-size:13px;color:#1a4d6e">${g.name}</span>`;
       const ctrStr=g.impressions>0?(g.clicks/g.impressions*100).toFixed(2)+'%':'—';
