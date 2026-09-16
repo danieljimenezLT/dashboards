@@ -1357,12 +1357,6 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-08-04",
       "tier_daily_sales": [
         {
           "date": "2026-02-11",
@@ -1948,7 +1942,13 @@
           "date": "2026-08-27",
           "count": -1
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-08-04"
     },
     {
       "name": "Reston",
@@ -2407,8 +2407,8 @@
           "date_range": "2/8 - 2/14",
           "date_start": "2026-02-08",
           "date_end": "2026-02-14",
-          "new_leads": 14,
-          "total_leads": 148.0,
+          "new_leads": 13,
+          "total_leads": 147.0,
           "digital_leads_week": 5,
           "presales_week": 4,
           "presales_count": 25.0,
@@ -2418,7 +2418,7 @@
           "grassroots_presales": 0,
           "digital_presales_week": 0,
           "digital_cancellations_week": 0,
-          "conversion_rate": 28.6,
+          "conversion_rate": 30.8,
           "comm_events": 1,
           "ig_new_followers": 8,
           "meta_spend": 464.91,
@@ -2427,7 +2427,7 @@
           "other_spend": 0.0,
           "leadteam_fee": 300.0,
           "total_marketing_spend": 972.19,
-          "blended_cpl": 69.44,
+          "blended_cpl": 74.78,
           "blended_cpa": 243.05,
           "estimated_day1_rmr": null
         },
@@ -2437,7 +2437,7 @@
           "date_start": "2026-02-15",
           "date_end": "2026-02-21",
           "new_leads": 9,
-          "total_leads": 157.0,
+          "total_leads": 156.0,
           "digital_leads_week": 3,
           "presales_week": 5,
           "presales_count": 30.0,
@@ -2466,7 +2466,7 @@
           "date_start": "2026-02-22",
           "date_end": "2026-02-28",
           "new_leads": 25,
-          "total_leads": 182.0,
+          "total_leads": 181.0,
           "digital_leads_week": 6,
           "presales_week": 7,
           "presales_count": 37.0,
@@ -2495,7 +2495,7 @@
           "date_start": "2026-03-01",
           "date_end": "2026-03-07",
           "new_leads": 15,
-          "total_leads": 197.0,
+          "total_leads": 196.0,
           "digital_leads_week": 11,
           "presales_week": 1,
           "presales_count": 38.0,
@@ -2524,7 +2524,7 @@
           "date_start": "2026-03-08",
           "date_end": "2026-03-14",
           "new_leads": 21,
-          "total_leads": 218.0,
+          "total_leads": 217.0,
           "digital_leads_week": 10,
           "presales_week": 4,
           "presales_count": 42.0,
@@ -2553,7 +2553,7 @@
           "date_start": "2026-03-15",
           "date_end": "2026-03-21",
           "new_leads": 27,
-          "total_leads": 245.0,
+          "total_leads": 244.0,
           "digital_leads_week": 10,
           "presales_week": 6,
           "presales_count": 48.0,
@@ -2582,7 +2582,7 @@
           "date_start": "2026-03-22",
           "date_end": "2026-03-28",
           "new_leads": 30,
-          "total_leads": 275.0,
+          "total_leads": 274.0,
           "digital_leads_week": 4,
           "presales_week": 11,
           "presales_count": 59.0,
@@ -2611,7 +2611,7 @@
           "date_start": "2026-03-29",
           "date_end": "2026-04-04",
           "new_leads": 18,
-          "total_leads": 293.0,
+          "total_leads": 292.0,
           "digital_leads_week": 6,
           "presales_week": 11,
           "presales_count": 70.0,
@@ -2640,7 +2640,7 @@
           "date_start": "2026-04-05",
           "date_end": "2026-04-11",
           "new_leads": 19,
-          "total_leads": 312.0,
+          "total_leads": 311.0,
           "digital_leads_week": 7,
           "presales_week": 8,
           "presales_count": 78.0,
@@ -2669,7 +2669,7 @@
           "date_start": "2026-04-12",
           "date_end": "2026-04-18",
           "new_leads": 13,
-          "total_leads": 325.0,
+          "total_leads": 324.0,
           "digital_leads_week": 3,
           "presales_week": 9,
           "presales_count": 87.0,
@@ -2698,7 +2698,7 @@
           "date_start": "2026-04-19",
           "date_end": "2026-04-25",
           "new_leads": 14,
-          "total_leads": 339.0,
+          "total_leads": 338.0,
           "digital_leads_week": 6,
           "presales_week": 3,
           "presales_count": 90.0,
@@ -2727,7 +2727,7 @@
           "date_start": "2026-04-26",
           "date_end": "2026-05-02",
           "new_leads": 8,
-          "total_leads": 347.0,
+          "total_leads": 346.0,
           "digital_leads_week": 4,
           "presales_week": 7,
           "presales_count": 97.0,
@@ -2756,7 +2756,7 @@
           "date_start": "2026-05-03",
           "date_end": "2026-05-09",
           "new_leads": 20,
-          "total_leads": 367.0,
+          "total_leads": 366.0,
           "digital_leads_week": 5,
           "presales_week": 8,
           "presales_count": 105.0,
@@ -2785,7 +2785,7 @@
           "date_start": "2026-05-10",
           "date_end": "2026-05-16",
           "new_leads": 27,
-          "total_leads": 394.0,
+          "total_leads": 393.0,
           "digital_leads_week": 4,
           "presales_week": 6,
           "presales_count": 111.0,
@@ -2814,7 +2814,7 @@
           "date_start": "2026-05-17",
           "date_end": "2026-05-23",
           "new_leads": 13,
-          "total_leads": 407.0,
+          "total_leads": 406.0,
           "digital_leads_week": 8,
           "presales_week": 6,
           "presales_count": 117.0,
@@ -2843,7 +2843,7 @@
           "date_start": "2026-05-24",
           "date_end": "2026-05-30",
           "new_leads": 21,
-          "total_leads": 428.0,
+          "total_leads": 427.0,
           "digital_leads_week": 13,
           "presales_week": 4,
           "presales_count": 121.0,
@@ -2872,7 +2872,7 @@
           "date_start": "2026-05-31",
           "date_end": "2026-06-06",
           "new_leads": 30,
-          "total_leads": 458.0,
+          "total_leads": 457.0,
           "digital_leads_week": 7,
           "presales_week": 5,
           "presales_count": 126.0,
@@ -2901,7 +2901,7 @@
           "date_start": "2026-06-07",
           "date_end": "2026-06-13",
           "new_leads": 31,
-          "total_leads": 489.0,
+          "total_leads": 488.0,
           "digital_leads_week": 5,
           "presales_week": 9,
           "presales_count": 135.0,
@@ -2930,7 +2930,7 @@
           "date_start": "2026-06-14",
           "date_end": "2026-06-20",
           "new_leads": 22,
-          "total_leads": 511.0,
+          "total_leads": 510.0,
           "digital_leads_week": 7,
           "presales_week": 5,
           "presales_count": 140.0,
@@ -2959,7 +2959,7 @@
           "date_start": "2026-06-21",
           "date_end": "2026-06-27",
           "new_leads": 115,
-          "total_leads": 626.0,
+          "total_leads": 625.0,
           "digital_leads_week": 3,
           "presales_week": 7,
           "presales_count": 147.0,
@@ -2988,7 +2988,7 @@
           "date_start": "2026-06-28",
           "date_end": "2026-07-04",
           "new_leads": 108,
-          "total_leads": 734.0,
+          "total_leads": 733.0,
           "digital_leads_week": 5,
           "presales_week": 32,
           "presales_count": 179.0,
@@ -3017,7 +3017,7 @@
           "date_start": "2026-07-05",
           "date_end": "2026-07-11",
           "new_leads": 38,
-          "total_leads": 772.0,
+          "total_leads": 771.0,
           "digital_leads_week": 7,
           "presales_week": 14,
           "presales_count": 193.0,
@@ -3046,7 +3046,7 @@
           "date_start": "2026-07-12",
           "date_end": "2026-07-18",
           "new_leads": 37,
-          "total_leads": 809.0,
+          "total_leads": 808.0,
           "digital_leads_week": 8,
           "presales_week": 15,
           "presales_count": 208.0,
@@ -3075,7 +3075,7 @@
           "date_start": "2026-07-19",
           "date_end": "2026-07-25",
           "new_leads": 61,
-          "total_leads": 870.0,
+          "total_leads": 869.0,
           "digital_leads_week": 14,
           "presales_week": 22,
           "presales_count": 230.0,
@@ -3104,7 +3104,7 @@
           "date_start": "2026-07-26",
           "date_end": "2026-08-01",
           "new_leads": 35,
-          "total_leads": 905.0,
+          "total_leads": 904.0,
           "digital_leads_week": 2,
           "presales_week": 13,
           "presales_count": 243.0,
@@ -3133,7 +3133,7 @@
           "date_start": "2026-08-02",
           "date_end": "2026-08-08",
           "new_leads": 36,
-          "total_leads": 941.0,
+          "total_leads": 940.0,
           "digital_leads_week": 7,
           "presales_week": 24,
           "presales_count": 267.0,
@@ -3162,7 +3162,7 @@
           "date_start": "2026-08-09",
           "date_end": "2026-08-15",
           "new_leads": 17,
-          "total_leads": 958.0,
+          "total_leads": 957.0,
           "digital_leads_week": 2,
           "presales_week": 8,
           "presales_count": 275.0,
@@ -3191,7 +3191,7 @@
           "date_start": "2026-08-16",
           "date_end": "2026-08-22",
           "new_leads": 15,
-          "total_leads": 973.0,
+          "total_leads": 972.0,
           "digital_leads_week": 4,
           "presales_week": 17,
           "presales_count": 292.0,
@@ -3220,7 +3220,7 @@
           "date_start": "2026-08-23",
           "date_end": "2026-08-29",
           "new_leads": 35,
-          "total_leads": 1008.0,
+          "total_leads": 1007.0,
           "digital_leads_week": 3,
           "presales_week": 35,
           "presales_count": 327.0,
@@ -3249,7 +3249,7 @@
           "date_start": "2026-08-30",
           "date_end": "2026-09-05",
           "new_leads": 58,
-          "total_leads": 1066.0,
+          "total_leads": 1065.0,
           "digital_leads_week": 6,
           "presales_week": 0,
           "presales_count": 327.0,
@@ -3278,7 +3278,7 @@
           "date_start": "2026-09-06",
           "date_end": "2026-09-12",
           "new_leads": 41,
-          "total_leads": 1107.0,
+          "total_leads": 1106.0,
           "digital_leads_week": 2,
           "presales_week": 0,
           "presales_count": 327.0,
@@ -3307,7 +3307,7 @@
           "date_start": "2026-09-13",
           "date_end": "2026-09-19",
           "new_leads": 6,
-          "total_leads": 1113.0,
+          "total_leads": 1112.0,
           "digital_leads_week": 2,
           "presales_week": 0,
           "presales_count": 327.0,
@@ -3336,7 +3336,7 @@
           "date_start": "2026-09-20",
           "date_end": "2026-09-26",
           "new_leads": null,
-          "total_leads": 1113.0,
+          "total_leads": 1112.0,
           "digital_leads_week": null,
           "presales_week": null,
           "presales_count": 327.0,
@@ -3365,7 +3365,7 @@
           "date_start": "2026-09-27",
           "date_end": "2026-10-03",
           "new_leads": null,
-          "total_leads": 1113.0,
+          "total_leads": 1112.0,
           "digital_leads_week": null,
           "presales_week": null,
           "presales_count": 327.0,
@@ -3393,331 +3393,331 @@
         {
           "week": 1,
           "t0": 0,
-          "t1": 4,
-          "t2": 0,
+          "t1": 0,
+          "t2": 4,
           "t3": 0
         },
         {
           "week": 2,
           "t0": 0,
-          "t1": 7,
-          "t2": 0,
+          "t1": 0,
+          "t2": 7,
           "t3": 0
         },
         {
           "week": 3,
           "t0": 0,
-          "t1": 7,
-          "t2": 0,
+          "t1": 0,
+          "t2": 7,
           "t3": 0
         },
         {
           "week": 4,
           "t0": 0,
-          "t1": 11,
-          "t2": 0,
+          "t1": 0,
+          "t2": 11,
           "t3": 0
         },
         {
           "week": 5,
           "t0": 0,
-          "t1": 15,
-          "t2": 0,
+          "t1": 0,
+          "t2": 15,
           "t3": 0
         },
         {
           "week": 6,
           "t0": 0,
-          "t1": 20,
-          "t2": 0,
+          "t1": 0,
+          "t2": 20,
           "t3": 0
         },
         {
           "week": 7,
           "t0": 0,
-          "t1": 21,
-          "t2": 0,
+          "t1": 0,
+          "t2": 21,
           "t3": 0
         },
         {
           "week": 8,
           "t0": 0,
-          "t1": 25,
-          "t2": 0,
+          "t1": 0,
+          "t2": 25,
           "t3": 0
         },
         {
           "week": 9,
           "t0": 0,
-          "t1": 25,
-          "t2": 0,
+          "t1": 0,
+          "t2": 25,
           "t3": 0
         },
         {
           "week": 10,
           "t0": 0,
-          "t1": 33,
-          "t2": 0,
+          "t1": 0,
+          "t2": 33,
           "t3": 0
         },
         {
           "week": 11,
           "t0": 0,
-          "t1": 43,
-          "t2": 0,
+          "t1": 0,
+          "t2": 43,
           "t3": 0
         },
         {
           "week": 12,
           "t0": 0,
-          "t1": 48,
-          "t2": 0,
+          "t1": 0,
+          "t2": 48,
           "t3": 0
         },
         {
           "week": 13,
           "t0": 0,
-          "t1": 55,
-          "t2": 0,
+          "t1": 0,
+          "t2": 55,
           "t3": 0
         },
         {
           "week": 14,
           "t0": 0,
-          "t1": 60,
-          "t2": 0,
+          "t1": 0,
+          "t2": 60,
           "t3": 0
         },
         {
           "week": 15,
           "t0": 0,
-          "t1": 68,
-          "t2": 0,
+          "t1": 0,
+          "t2": 68,
           "t3": 0
         },
         {
           "week": 16,
           "t0": 0,
-          "t1": 77,
-          "t2": 0,
+          "t1": 0,
+          "t2": 77,
           "t3": 0
         },
         {
           "week": 17,
           "t0": 0,
-          "t1": 79,
-          "t2": 0,
+          "t1": 0,
+          "t2": 79,
           "t3": 0
         },
         {
           "week": 18,
           "t0": 0,
-          "t1": 84,
-          "t2": 0,
+          "t1": 0,
+          "t2": 84,
           "t3": 0
         },
         {
           "week": 19,
           "t0": 0,
-          "t1": 94,
-          "t2": 0,
+          "t1": 0,
+          "t2": 94,
           "t3": 0
         },
         {
           "week": 20,
-          "t0": 7,
-          "t1": 100,
-          "t2": 0,
+          "t0": 0,
+          "t1": 7,
+          "t2": 100,
           "t3": 0
         },
         {
           "week": 21,
-          "t0": 15,
-          "t1": 107,
-          "t2": 0,
+          "t0": 0,
+          "t1": 15,
+          "t2": 107,
           "t3": 0
         },
         {
           "week": 22,
-          "t0": 28,
-          "t1": 108,
-          "t2": 0,
+          "t0": 0,
+          "t1": 28,
+          "t2": 108,
           "t3": 0
         },
         {
           "week": 23,
-          "t0": 32,
-          "t1": 118,
-          "t2": 0,
+          "t0": 0,
+          "t1": 32,
+          "t2": 118,
           "t3": 0
         },
         {
           "week": 24,
-          "t0": 32,
-          "t1": 124,
-          "t2": 0,
+          "t0": 0,
+          "t1": 32,
+          "t2": 124,
           "t3": 0
         },
         {
           "week": 25,
-          "t0": 40,
-          "t1": 128,
-          "t2": 0,
+          "t0": 0,
+          "t1": 40,
+          "t2": 128,
           "t3": 0
         },
         {
           "week": 26,
-          "t0": 40,
-          "t1": 138,
-          "t2": 0,
+          "t0": 0,
+          "t1": 40,
+          "t2": 138,
           "t3": 0
         },
         {
           "week": 27,
-          "t0": 44,
-          "t1": 141,
-          "t2": 0,
+          "t0": 0,
+          "t1": 44,
+          "t2": 141,
           "t3": 0
         },
         {
           "week": 28,
-          "t0": 47,
-          "t1": 149,
-          "t2": 0,
+          "t0": 0,
+          "t1": 47,
+          "t2": 149,
           "t3": 0
         },
         {
           "week": 29,
-          "t0": 49,
-          "t1": 154,
-          "t2": 0,
+          "t0": 0,
+          "t1": 49,
+          "t2": 154,
           "t3": 0
         },
         {
           "week": 30,
-          "t0": 49,
-          "t1": 160,
-          "t2": 0,
+          "t0": 0,
+          "t1": 49,
+          "t2": 160,
           "t3": 0
         },
         {
           "week": 31,
-          "t0": 49,
-          "t1": 174,
-          "t2": 0,
+          "t0": 0,
+          "t1": 49,
+          "t2": 174,
           "t3": 0
         },
         {
           "week": 32,
-          "t0": 50,
-          "t1": 179,
-          "t2": 0,
+          "t0": 0,
+          "t1": 50,
+          "t2": 179,
           "t3": 0
         },
         {
           "week": 33,
-          "t0": 55,
-          "t1": 184,
-          "t2": 0,
+          "t0": 0,
+          "t1": 55,
+          "t2": 184,
           "t3": 0
         },
         {
           "week": 34,
-          "t0": 73,
-          "t1": 222,
-          "t2": 0,
+          "t0": 0,
+          "t1": 73,
+          "t2": 222,
           "t3": 0
         },
         {
           "week": 35,
-          "t0": 77,
-          "t1": 246,
-          "t2": 0,
+          "t0": 0,
+          "t1": 77,
+          "t2": 246,
           "t3": 0
         },
         {
           "week": 36,
-          "t0": 82,
-          "t1": 259,
-          "t2": 0,
+          "t0": 0,
+          "t1": 82,
+          "t2": 259,
           "t3": 0
         },
         {
           "week": 37,
-          "t0": 87,
-          "t1": 289,
-          "t2": 0,
+          "t0": 0,
+          "t1": 87,
+          "t2": 289,
           "t3": 0
         },
         {
           "week": 38,
-          "t0": 95,
-          "t1": 303,
-          "t2": 0,
+          "t0": 0,
+          "t1": 95,
+          "t2": 303,
           "t3": 0
         },
         {
           "week": 39,
-          "t0": 101,
-          "t1": 330,
-          "t2": 3,
-          "t3": 0
+          "t0": 0,
+          "t1": 101,
+          "t2": 330,
+          "t3": 3
         },
         {
           "week": 40,
-          "t0": 103,
-          "t1": 330,
-          "t2": 8,
-          "t3": 0
+          "t0": 0,
+          "t1": 103,
+          "t2": 330,
+          "t3": 8
         },
         {
           "week": 41,
-          "t0": 110,
-          "t1": 330,
-          "t2": 20,
-          "t3": 0
+          "t0": 0,
+          "t1": 110,
+          "t2": 330,
+          "t3": 20
         },
         {
           "week": 42,
-          "t0": 114,
-          "t1": 316,
-          "t2": 46,
-          "t3": 0
+          "t0": 0,
+          "t1": 114,
+          "t2": 316,
+          "t3": 46
         },
         {
           "week": 43,
-          "t0": 110,
-          "t1": 303,
-          "t2": 44,
-          "t3": 0
+          "t0": 0,
+          "t1": 110,
+          "t2": 303,
+          "t3": 44
         },
         {
           "week": 44,
-          "t0": 110,
-          "t1": 301,
-          "t2": 44,
-          "t3": 0
+          "t0": 0,
+          "t1": 110,
+          "t2": 301,
+          "t3": 44
         },
         {
           "week": 45,
-          "t0": 110,
-          "t1": 301,
-          "t2": 44,
-          "t3": 0
+          "t0": 0,
+          "t1": 110,
+          "t2": 301,
+          "t3": 44
         },
         {
           "week": 46,
-          "t0": 110,
-          "t1": 301,
-          "t2": 44,
-          "t3": 0
+          "t0": 0,
+          "t1": 110,
+          "t2": 301,
+          "t3": 44
         },
         {
           "week": 47,
-          "t0": 110,
-          "t1": 301,
-          "t2": 44,
-          "t3": 0
+          "t0": 0,
+          "t1": 110,
+          "t2": 301,
+          "t3": 44
         }
       ],
       "pricing": {
@@ -3730,12 +3730,6 @@
         "estimated_roms_target": "5x",
         "tier0_price": 99
       },
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-02-02",
       "tier_daily_sales": [
         {
           "date": "2025-10-30",
@@ -4385,7 +4379,13 @@
           "date": "2026-09-12",
           "count": -1
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-02-02"
     },
     {
       "name": "Herriman",
@@ -5273,197 +5273,197 @@
         {
           "week": 1,
           "t0": 0,
-          "t1": 117,
-          "t2": 0,
+          "t1": 0,
+          "t2": 117,
           "t3": 0
         },
         {
           "week": 2,
           "t0": 0,
-          "t1": 125,
-          "t2": 0,
+          "t1": 0,
+          "t2": 125,
           "t3": 0
         },
         {
           "week": 3,
           "t0": 0,
-          "t1": 128,
-          "t2": 20,
+          "t1": 20,
+          "t2": 128,
           "t3": 0
         },
         {
           "week": 4,
           "t0": 0,
-          "t1": 132,
-          "t2": 27,
+          "t1": 27,
+          "t2": 132,
           "t3": 0
         },
         {
           "week": 5,
           "t0": 0,
-          "t1": 133,
-          "t2": 28,
+          "t1": 28,
+          "t2": 133,
           "t3": 0
         },
         {
           "week": 6,
           "t0": 0,
-          "t1": 133,
-          "t2": 43,
+          "t1": 43,
+          "t2": 133,
           "t3": 0
         },
         {
           "week": 7,
           "t0": 0,
-          "t1": 133,
-          "t2": 54,
+          "t1": 54,
+          "t2": 133,
           "t3": 0
         },
         {
           "week": 8,
           "t0": 0,
-          "t1": 133,
-          "t2": 70,
+          "t1": 70,
+          "t2": 133,
           "t3": 0
         },
         {
           "week": 9,
           "t0": 0,
-          "t1": 132,
-          "t2": 83,
+          "t1": 83,
+          "t2": 132,
           "t3": 0
         },
         {
           "week": 10,
           "t0": 0,
-          "t1": 132,
-          "t2": 102,
+          "t1": 102,
+          "t2": 132,
           "t3": 0
         },
         {
           "week": 11,
           "t0": 0,
-          "t1": 132,
-          "t2": 118,
+          "t1": 118,
+          "t2": 132,
           "t3": 0
         },
         {
           "week": 12,
           "t0": 0,
-          "t1": 132,
-          "t2": 128,
+          "t1": 128,
+          "t2": 132,
           "t3": 0
         },
         {
           "week": 13,
           "t0": 0,
-          "t1": 132,
-          "t2": 159,
+          "t1": 159,
+          "t2": 132,
           "t3": 0
         },
         {
           "week": 14,
           "t0": 0,
-          "t1": 132,
-          "t2": 171,
+          "t1": 171,
+          "t2": 132,
           "t3": 2
         },
         {
           "week": 15,
           "t0": 0,
-          "t1": 132,
-          "t2": 171,
+          "t1": 171,
+          "t2": 132,
           "t3": 7
         },
         {
           "week": 16,
           "t0": 0,
-          "t1": 132,
-          "t2": 171,
+          "t1": 171,
+          "t2": 132,
           "t3": 7
         },
         {
           "week": 17,
           "t0": 0,
-          "t1": 132,
-          "t2": 171,
+          "t1": 171,
+          "t2": 132,
           "t3": 7
         },
         {
           "week": 18,
           "t0": 0,
-          "t1": 132,
-          "t2": 171,
+          "t1": 171,
+          "t2": 132,
           "t3": 7
         },
         {
           "week": 19,
           "t0": 0,
-          "t1": 132,
-          "t2": 171,
+          "t1": 171,
+          "t2": 132,
           "t3": 7
         },
         {
           "week": 20,
           "t0": 0,
-          "t1": 132,
-          "t2": 171,
+          "t1": 171,
+          "t2": 132,
           "t3": 7
         },
         {
           "week": 21,
           "t0": 0,
-          "t1": 132,
-          "t2": 171,
+          "t1": 171,
+          "t2": 132,
           "t3": 7
         },
         {
           "week": 22,
           "t0": 0,
-          "t1": 132,
-          "t2": 171,
+          "t1": 171,
+          "t2": 132,
           "t3": 7
         },
         {
           "week": 23,
           "t0": 0,
-          "t1": 132,
-          "t2": 171,
+          "t1": 171,
+          "t2": 132,
           "t3": 7
         },
         {
           "week": 24,
           "t0": 0,
-          "t1": 132,
-          "t2": 171,
+          "t1": 171,
+          "t2": 132,
           "t3": 7
         },
         {
           "week": 25,
           "t0": 0,
-          "t1": 132,
-          "t2": 171,
+          "t1": 171,
+          "t2": 132,
           "t3": 7
         },
         {
           "week": 26,
           "t0": 0,
-          "t1": 132,
-          "t2": 171,
+          "t1": 171,
+          "t2": 132,
           "t3": 7
         },
         {
           "week": 27,
           "t0": 0,
-          "t1": 132,
-          "t2": 171,
+          "t1": 171,
+          "t2": 132,
           "t3": 7
         },
         {
           "week": 28,
           "t0": 0,
-          "t1": 132,
-          "t2": 171,
+          "t1": 171,
+          "t2": 132,
           "t3": 7
         }
       ],
@@ -5480,12 +5480,6 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
-      "sku_map": {
-        "price_99": "Pre Sales Membership",
-        "price_129": "Pre Sale Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-09-08",
       "tier_daily_sales": [
         {
           "date": "2026-03-27",
@@ -5939,7 +5933,13 @@
           "date": "2026-09-14",
           "count": 5
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": "Pre Sales Membership",
+        "price_129": "Pre Sale Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-09-08"
     },
     {
       "name": "Old Bridge",
@@ -7041,12 +7041,6 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-12-01",
       "tier_daily_sales": [
         {
           "date": "2026-07-23",
@@ -7236,7 +7230,13 @@
           "date": "2026-09-14",
           "count": 2
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-12-01"
     },
     {
       "name": "Dr Phillips",
@@ -8327,12 +8327,6 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-08-28",
       "tier_daily_sales": [
         {
           "date": "2026-05-19",
@@ -8610,7 +8604,13 @@
           "date": "2026-09-14",
           "count": -1
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-08-28"
     },
     {
       "name": "Aventura",
@@ -8867,7 +8867,7 @@
           "presales_count": 58.0,
           "cancellations_week": 0,
           "cancellations_count": 4.0,
-          "grassroots_leads": 8,
+          "grassroots_leads": 9,
           "grassroots_presales": 4,
           "digital_presales_week": 3,
           "digital_cancellations_week": 0,
@@ -9699,12 +9699,6 @@
         "tier2_members_target": 240,
         "estimated_roms_target": "5x"
       },
-      "sku_map": {
-        "price_99": null,
-        "price_129": "Pre Sale Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-09-30",
       "tier_daily_sales": [
         {
           "date": "2026-05-19",
@@ -10058,7 +10052,13 @@
           "date": "2026-09-14",
           "count": 1
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": null,
+        "price_129": "Pre Sale Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-09-30"
     },
     {
       "name": "North Miami",
@@ -11183,12 +11183,6 @@
         "tier2_members_target": 240,
         "estimated_roms_target": "5x"
       },
-      "sku_map": {
-        "price_99": null,
-        "price_129": "Pre Sale Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-10-30",
       "tier_daily_sales": [
         {
           "date": "2026-05-26",
@@ -11502,7 +11496,13 @@
           "date": "2026-09-14",
           "count": 2
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": null,
+        "price_129": "Pre Sale Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-10-30"
     },
     {
       "name": "Dallas - Uptown",
@@ -11556,7 +11556,7 @@
           "presales_count": 44.0,
           "cancellations_week": 1,
           "cancellations_count": 1.0,
-          "grassroots_leads": 3,
+          "grassroots_leads": 4,
           "grassroots_presales": null,
           "digital_presales_week": null,
           "digital_cancellations_week": null,
@@ -12390,197 +12390,197 @@
         {
           "week": 1,
           "t0": 0,
-          "t1": 51,
-          "t2": 0,
+          "t1": 0,
+          "t2": 51,
           "t3": 0
         },
         {
           "week": 2,
           "t0": 0,
-          "t1": 69,
-          "t2": 0,
+          "t1": 0,
+          "t2": 69,
           "t3": 0
         },
         {
           "week": 3,
           "t0": 0,
-          "t1": 93,
-          "t2": 0,
+          "t1": 0,
+          "t2": 93,
           "t3": 0
         },
         {
           "week": 4,
           "t0": 0,
-          "t1": 101,
-          "t2": 0,
+          "t1": 0,
+          "t2": 101,
           "t3": 0
         },
         {
           "week": 5,
           "t0": 0,
-          "t1": 111,
-          "t2": 0,
+          "t1": 2,
+          "t2": 109,
           "t3": 0
         },
         {
           "week": 6,
           "t0": 0,
-          "t1": 117,
-          "t2": 0,
+          "t1": 9,
+          "t2": 108,
           "t3": 0
         },
         {
           "week": 7,
           "t0": 0,
-          "t1": 127,
-          "t2": 0,
+          "t1": 20,
+          "t2": 107,
           "t3": 0
         },
         {
           "week": 8,
           "t0": 0,
-          "t1": 145,
-          "t2": 0,
+          "t1": 40,
+          "t2": 105,
           "t3": 0
         },
         {
           "week": 9,
           "t0": 0,
-          "t1": 164,
-          "t2": 0,
+          "t1": 60,
+          "t2": 104,
           "t3": 0
         },
         {
           "week": 10,
           "t0": 0,
-          "t1": 186,
-          "t2": 0,
+          "t1": 82,
+          "t2": 104,
           "t3": 0
         },
         {
           "week": 11,
           "t0": 0,
-          "t1": 201,
-          "t2": 0,
+          "t1": 98,
+          "t2": 103,
           "t3": 0
         },
         {
           "week": 12,
           "t0": 0,
-          "t1": 208,
-          "t2": 0,
+          "t1": 106,
+          "t2": 102,
           "t3": 0
         },
         {
           "week": 13,
           "t0": 0,
-          "t1": 222,
-          "t2": 0,
+          "t1": 120,
+          "t2": 102,
           "t3": 0
         },
         {
           "week": 14,
           "t0": 0,
-          "t1": 269,
-          "t2": 0,
+          "t1": 170,
+          "t2": 99,
           "t3": 0
         },
         {
           "week": 15,
           "t0": 0,
-          "t1": 279,
-          "t2": 0,
+          "t1": 181,
+          "t2": 98,
           "t3": 0
         },
         {
           "week": 16,
           "t0": 0,
-          "t1": 279,
-          "t2": 0,
+          "t1": 181,
+          "t2": 98,
           "t3": 0
         },
         {
           "week": 17,
           "t0": 0,
-          "t1": 279,
-          "t2": 0,
+          "t1": 181,
+          "t2": 98,
           "t3": 0
         },
         {
           "week": 18,
           "t0": 0,
-          "t1": 279,
-          "t2": 0,
+          "t1": 181,
+          "t2": 98,
           "t3": 0
         },
         {
           "week": 19,
           "t0": 0,
-          "t1": 279,
-          "t2": 0,
+          "t1": 181,
+          "t2": 98,
           "t3": 0
         },
         {
           "week": 20,
           "t0": 0,
-          "t1": 279,
-          "t2": 0,
+          "t1": 181,
+          "t2": 98,
           "t3": 0
         },
         {
           "week": 21,
           "t0": 0,
-          "t1": 279,
-          "t2": 0,
+          "t1": 181,
+          "t2": 98,
           "t3": 0
         },
         {
           "week": 22,
           "t0": 0,
-          "t1": 279,
-          "t2": 0,
+          "t1": 181,
+          "t2": 98,
           "t3": 0
         },
         {
           "week": 23,
           "t0": 0,
-          "t1": 279,
-          "t2": 0,
+          "t1": 181,
+          "t2": 98,
           "t3": 0
         },
         {
           "week": 24,
           "t0": 0,
-          "t1": 279,
-          "t2": 0,
+          "t1": 181,
+          "t2": 98,
           "t3": 0
         },
         {
           "week": 25,
           "t0": 0,
-          "t1": 279,
-          "t2": 0,
+          "t1": 181,
+          "t2": 98,
           "t3": 0
         },
         {
           "week": 26,
           "t0": 0,
-          "t1": 279,
-          "t2": 0,
+          "t1": 181,
+          "t2": 98,
           "t3": 0
         },
         {
           "week": 27,
           "t0": 0,
-          "t1": 279,
-          "t2": 0,
+          "t1": 181,
+          "t2": 98,
           "t3": 0
         },
         {
           "week": 28,
           "t0": 0,
-          "t1": 279,
-          "t2": 0,
+          "t1": 181,
+          "t2": 98,
           "t3": 0
         }
       ],
@@ -12595,12 +12595,6 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
-      "sku_map": {
-        "price_99": "Pre Sales Membership",
-        "price_129": "Pre Sale Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-10-10",
       "tier_daily_sales": [
         {
           "date": "2026-05-15",
@@ -12954,7 +12948,13 @@
           "date": "2026-09-14",
           "count": 4
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": "Pre Sales Membership",
+        "price_129": "Pre Sale Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-10-10"
     },
     {
       "name": "Fort Myers",
@@ -13020,7 +13020,7 @@
           "presales_count": 75.0,
           "cancellations_week": 3,
           "cancellations_count": 3.0,
-          "grassroots_leads": 147,
+          "grassroots_leads": 150,
           "grassroots_presales": 66,
           "digital_presales_week": null,
           "digital_cancellations_week": null,
@@ -14057,12 +14057,6 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2027-01-08",
       "tier_daily_sales": [
         {
           "date": "2026-08-03",
@@ -14140,7 +14134,13 @@
           "date": "2026-09-14",
           "count": 6
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2027-01-08"
     },
     {
       "name": "Dunwoody",
@@ -14346,7 +14346,7 @@
           "date_end": "2026-08-29",
           "new_leads": 36,
           "total_leads": 286.0,
-          "digital_leads_week": 15,
+          "digital_leads_week": 14,
           "presales_week": 18,
           "presales_count": 68.0,
           "cancellations_week": 4,
@@ -15243,12 +15243,6 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-10-09",
       "tier_daily_sales": [
         {
           "date": "2026-07-23",
@@ -15394,7 +15388,13 @@
           "date": "2026-09-14",
           "count": 2
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-10-09"
     },
     {
       "name": "Middletown",
@@ -16496,12 +16496,6 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-12-01",
       "tier_daily_sales": [
         {
           "date": "2026-07-23",
@@ -16695,7 +16689,13 @@
           "date": "2026-09-14",
           "count": 2
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-12-01"
     },
     {
       "name": "Burlington",
@@ -17798,12 +17798,6 @@
         "tier3_members_target": 240,
         "estimated_roms_target": "5x"
       },
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2027-02-17",
       "tier_daily_sales": [
         {
           "date": "2026-08-25",
@@ -17841,7 +17835,13 @@
           "date": "2026-09-09",
           "count": 2
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2027-02-17"
     },
     {
       "name": "Long Beach",
@@ -19052,12 +19052,6 @@
         "tier3_members_target": 165,
         "estimated_roms_target": "5x"
       },
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2027-02-12",
       "tier_daily_sales": [
         {
           "date": "2026-08-26",
@@ -19139,7 +19133,13 @@
           "date": "2026-09-14",
           "count": 6
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2027-02-12"
     },
     {
       "name": "Rose Creek",
@@ -20350,12 +20350,6 @@
         "tier3_members_target": 165,
         "estimated_roms_target": "5x"
       },
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-12-19",
       "tier_daily_sales": [
         {
           "date": "2026-09-03",
@@ -20365,7 +20359,13 @@
           "date": "2026-09-09",
           "count": 1
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-12-19"
     },
     {
       "name": "South End",
@@ -21570,13 +21570,13 @@
         "tier3_members_target": 165,
         "estimated_roms_target": "5x"
       },
+      "tier_daily_sales": [],
       "sku_map": {
         "price_99": "Pre Sale Membership",
         "price_129": "Pre Sales Membership",
         "price_149": "Pre-Sales Membership"
       },
-      "co_date": "2027-03-13",
-      "tier_daily_sales": []
+      "co_date": "2027-03-13"
     }
   ]
 }
