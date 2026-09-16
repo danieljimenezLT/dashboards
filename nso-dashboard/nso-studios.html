@@ -2238,12 +2238,12 @@ function renderScorecard(){
   // Build week list with running cumulative spend/ig
   let _cMs=0,_cGs=0,_cGrs=0,_cOth=0,_cLtf=0,_cTs=0,_cDs=0,_cIg=0,_cNl=0,_cDl=0,_cDp=0,_cDCanc=0,_cGl=0,_cGp=0,_cEv=0;
   const weeks=sc.weeks.map(w=>{
-    const wn=parseInt(String(w.week).replace(/[^0-9]/g,''))||0;
+    const wn=parseInt(String(w.week).match(/-?\d+/)?.[0])||0;
     const nl=w.new_leads??null, np=w.presales_week??null;
     const crRaw=w.conversion_rate;
-    _cMs+=w.meta_spend||0;_cGs+=w.google_spend||0;_cGrs+=w.grassroots_spend||0;_cOth+=w.other_spend||0;
+    if(wn>=0){_cMs+=w.meta_spend||0;_cGs+=w.google_spend||0;_cGrs+=w.grassroots_spend||0;_cOth+=w.other_spend||0;
     _cLtf+=w.leadteam_fee||0;_cTs+=w.total_marketing_spend||0;_cDs+=(w.meta_spend||0)+(w.google_spend||0);_cIg+=w.ig_new_followers||0;_cNl+=w.new_leads||0;
-    _cDl+=w.digital_leads_week||0;_cDp+=w.digital_presales_week||0;_cDCanc+=w.digital_cancellations_week||0;_cGl+=w.grassroots_leads||0;_cGp+=w.grassroots_presales||0;_cEv+=w.comm_events||0;
+    _cDl+=w.digital_leads_week||0;_cDp+=w.digital_presales_week||0;_cDCanc+=w.digital_cancellations_week||0;_cGl+=w.grassroots_leads||0;_cGp+=w.grassroots_presales||0;_cEv+=w.comm_events||0;}
     return{
       w:wn, date:w.date_range||'', isCur:wn===cw,
       ds:w.date_start||null, de:w.date_end||null,
@@ -2678,7 +2678,7 @@ function renderScorecard2(){
   const tgt=sc.targets||{};
 
   // ── GRS_SPEND lookup — sheet-sourced grassroots spend for this studio ────
-  const _grsNameMap={'Dallas - Uptown':'Uptown'};
+  const _grsNameMap={};
   const _grsName=_grsNameMap[sc.name]||sc.name;
   const _grsEntries=(GRS_SPEND&&GRS_SPEND.studios&&GRS_SPEND.studios[_grsName])||[];
   function _sheetGrs(ds,de){
@@ -2695,14 +2695,14 @@ function renderScorecard2(){
   // Build week list — override grassroots spend from sheet when available
   let _cMs=0,_cGs=0,_cGrs=0,_cOth=0,_cLtf=0,_cTs=0,_cDs=0,_cIg=0,_cNl=0,_cDl=0,_cDp=0,_cDCanc=0,_cGl=0,_cGp=0,_cEv=0;
   const weeks=sc.weeks.map(w=>{
-    const wn=parseInt(String(w.week).replace(/[^0-9]/g,''))||0;
+    const wn=parseInt(String(w.week).match(/-?\d+/)?.[0])||0;
     const nl=w.new_leads??null, np=w.presales_week??null;
     const crRaw=w.conversion_rate;
     const grsSheet=_sheetGrs(w.date_start,w.date_end);
     const grsVal=grsSheet!==null?grsSheet:(w.grassroots_spend??null);
-    _cMs+=w.meta_spend||0;_cGs+=w.google_spend||0;_cGrs+=grsVal||0;_cOth+=w.other_spend||0;
+    if(wn>=0){_cMs+=w.meta_spend||0;_cGs+=w.google_spend||0;_cGrs+=grsVal||0;_cOth+=w.other_spend||0;
     _cLtf+=w.leadteam_fee||0;_cTs+=w.total_marketing_spend||0;_cDs+=(w.meta_spend||0)+(w.google_spend||0);_cIg+=w.ig_new_followers||0;_cNl+=w.new_leads||0;
-    _cDl+=w.digital_leads_week||0;_cDp+=w.digital_presales_week||0;_cDCanc+=w.digital_cancellations_week||0;_cGl+=w.grassroots_leads||0;_cGp+=w.grassroots_presales||0;_cEv+=w.comm_events||0;
+    _cDl+=w.digital_leads_week||0;_cDp+=w.digital_presales_week||0;_cDCanc+=w.digital_cancellations_week||0;_cGl+=w.grassroots_leads||0;_cGp+=w.grassroots_presales||0;_cEv+=w.comm_events||0;}
     return{
       w:wn, date:w.date_range||'', isCur:wn===cw,
       ds:w.date_start||null, de:w.date_end||null,
