@@ -186,6 +186,9 @@ def main():
             _dest.setdefault(_e.get("studio_key", ""), []).append((_sd, _ed, _amt))
         _oc_total = sum(len(v) for v in _oc_gr_by_name.values()) + sum(len(v) for v in _oc_other_by_name.values())
         print(f"  {_oc_total} entries across {len(_oc_gr_by_name)} grassroots + {len(_oc_other_by_name)} other studios")
+        # NOTE: monthly entries (Leadteam Discount, External agency) are handled
+        # entirely in the frontend via _cprLtFee / _cprExtAgency reading OTHER_COSTS.
+        # Do NOT process them here to avoid double-counting in other_spend.
     except FileNotFoundError:
         print("  nso_other_costs.json not found — skipping")
 
