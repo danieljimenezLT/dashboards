@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-16",
+      "pr_number": 378,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/378",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix community events data pipeline — events were always showing as 0",
+      "summary": "The script reading community events from the Weekly Events sheet had the wrong column layout, causing comm_events to be 0 for all studios. Now reads the sheet correctly and will populate real event counts on next data refresh."
+    },
+    {
+      "date": "2026-09-16",
       "pr_number": 377,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/377",
       "author": "Sebastian Arango",
