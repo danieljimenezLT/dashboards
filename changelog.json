@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-09-16",
+      "pr_number": 377,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/377",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix community events cumulative not including pre-launch weeks",
+      "summary": "Pre-launch community events were disappearing from the scorecard cumulative row; now correctly offset into WEEK 0+ totals."
+    },
+    {
       "date": "2026-09-15",
       "pr_number": 371,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/371",
