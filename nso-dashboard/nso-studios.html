@@ -2692,14 +2692,13 @@ function renderScorecard2(){
     return tot>0.01?Math.round(tot*100)/100:null;
   }
 
-  // Build week list — override grassroots spend from sheet when available
+  // Build week list — grassroots spend comes exclusively from the JSON (nso_other_costs source)
   let _cMs=0,_cGs=0,_cGrs=0,_cOth=0,_cLtf=0,_cTs=0,_cDs=0,_cIg=0,_cNl=0,_cDl=0,_cDp=0,_cDCanc=0,_cGl=0,_cGp=0,_cEv=0;
   const weeks=sc.weeks.map(w=>{
     const wn=parseInt(String(w.week).match(/-?\d+/)?.[0])||0;
     const nl=w.new_leads??null, np=w.presales_week??null;
     const crRaw=w.conversion_rate;
-    const grsSheet=_sheetGrs(w.date_start,w.date_end);
-    const grsVal=grsSheet!==null?grsSheet:(w.grassroots_spend??null);
+    const grsVal=w.grassroots_spend??null;
     if(wn>=0){_cMs+=w.meta_spend||0;_cGs+=w.google_spend||0;_cGrs+=grsVal||0;_cOth+=w.other_spend||0;
     _cLtf+=w.leadteam_fee||0;_cTs+=w.total_marketing_spend||0;_cDs+=(w.meta_spend||0)+(w.google_spend||0);_cIg+=w.ig_new_followers||0;_cNl+=w.new_leads||0;
     _cDl+=w.digital_leads_week||0;_cDp+=w.digital_presales_week||0;_cDCanc+=w.digital_cancellations_week||0;_cGl+=w.grassroots_leads||0;_cGp+=w.grassroots_presales||0;_cEv+=w.comm_events||0;}
@@ -2750,8 +2749,11 @@ function renderScorecard2(){
     _cumCancPre=_earlyRows.reduce((s,r)=>s+(r.cancellations||0),0);
     _cumGpPre=_earlyRows.filter(r=>r.source==='Grassroots').reduce((s,r)=>s+(r.first_sales||0),0);
   }
+  // Pre-launch week grassroots from JSON negative-week entries (nso_other_costs source)
+  const _preWkGrsMap={};
+  sc.weeks.forEach(w=>{const _wn2=parseInt(String(w.week).match(/-?\d+/)?.[0])||0;if(_wn2<0)_preWkGrsMap[_wn2]=w.grassroots_spend||null;});
   const preWeekCols=_pwList.map(pw=>{
-    const grsW=_sheetGrs(pw.date_start,pw.date_end);
+    const grsW=_preWkGrsMap[pw.week_num]||null;
     const _pwSales=pw.date_start?_scSalesRows.filter(r=>r.date>=pw.date_start&&r.date<=(pw.date_end||pw.date_start)):[];
     const _pwNp=_pwSales.reduce((s,r)=>s+(r.first_sales||0),0)||null;
     const _pwCanc=_pwSales.reduce((s,r)=>s+(r.cancellations||0),0)||null;
@@ -2798,7 +2800,7 @@ function renderScorecard2(){
       if(_w0){
         _w0.ds=_pw0s||(_pw1s?_off(_pw1s,-7):null);
         _w0.de=_pw1s?_off(_pw1s,-1):(_pw0s?_off(_pw0s,6):null);
-        if(_w0.ds){const _reGrs=_sheetGrs(_w0.ds,_w0.de);if(_reGrs!==null)_w0.grs=_reGrs;}
+        // grassroots for W0 stays as the JSON value; no GRS_SPEND override
       }
       // Cascade the W1 date shift to W2+ so week dates stay sequential (skip FL-019)
       if(sc.code!=='FL-019'&&_pw1s&&_oldW1ds&&_oldW1ds!==_pw1s){
@@ -2815,8 +2817,7 @@ function renderScorecard2(){
       if(_w0){
         _w0.de=_off(_w1.ds,-1);
         _w0.ds=_off(_w0.de,-6);
-        const _reGrs=_sheetGrs(_w0.ds,_w0.de);
-        if(_reGrs!==null)_w0.grs=_reGrs;
+        // grassroots for W0 stays as the JSON value; no GRS_SPEND override
       }
     }
     // Cascade cumGrs correction: W0 is the first scorecard week so cumGrs = its grs.
