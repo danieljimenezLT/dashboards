@@ -2842,10 +2842,11 @@ function renderScorecard2(){
   {const _w0wk=weeks.find(w=>w.w===0);
   const _scHasPreLeads=_w0wk&&_w0wk.tl!=null&&_w0wk.tl>=_preWkTl;
   if(!_isPreLaunch2&&_preWkTl>0&&!_scHasPreLeads)weeks.forEach(wk=>{if(wk.tl!=null)wk.tl+=_preWkTl;});
-  // Offset cumGrs and cumOth by pre-launch totals so the cumulative view includes all spend
+  // Offset cumGrs, cumOth, cumEv by pre-launch totals so the cumulative view includes all spend/events
   if(!_isPreLaunch2&&_cumGrsPre>0)weeks.filter(w=>w.w>=0).forEach(w=>{w.cumGrs=(w.cumGrs||0)+_cumGrsPre;});
   {let _cumOthPre=0;sc.weeks.forEach(w=>{const _wn3=parseInt(String(w.week).match(/-?\d+/)?.[0])||0;if(_wn3<0)_cumOthPre+=(w.other_spend||0);});
-  if(!_isPreLaunch2&&_cumOthPre>0)weeks.filter(w=>w.w>=0).forEach(w=>{w.cumOth=(w.cumOth||0)+_cumOthPre;});}
+  if(!_isPreLaunch2&&_cumOthPre>0)weeks.filter(w=>w.w>=0).forEach(w=>{w.cumOth=(w.cumOth||0)+_cumOthPre;}); }
+  if(!_isPreLaunch2&&_cumEvPre>0)weeks.filter(w=>w.w>=0).forEach(w=>{w.cumEv=(w.cumEv||0)+_cumEvPre;});
   // W0 catch-all: strip pre-week accumulation from weekly nl/np so the weekly view shows only W0
   if(!_isPreLaunch2&&_scHasPreLeads&&_w0wk){
     if(_w0wk.nl!=null)_w0wk.nl=Math.max(0,_w0wk.nl-_preWkTl);
