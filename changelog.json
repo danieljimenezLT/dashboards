@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-15",
+      "pr_number": 371,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/371",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO scorecard now reads grassroots/other spend from Marketing Spend Records form sheet",
+      "summary": "Spend data (grassroots, other) is now sourced from the SWEAT440 Marketing Spend Records Google Form sheet instead of Weekly Events, matching entries to scorecard weeks by date range. Also removes the unused Sales by Membership Tier table from the NSO dashboard."
+    },
+    {
+      "date": "2026-09-15",
       "pr_number": 368,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/368",
       "author": "Santiago Estrada",
