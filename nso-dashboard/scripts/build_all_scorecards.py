@@ -938,6 +938,15 @@ def main():
     except FileNotFoundError:
         print("  nso_other_costs.json not found — skipping")
 
+    # Load pre-launch week date ranges for spend allocation to negative weeks.
+    try:
+        with open(ROOT / "nso_pre_weeks_data.json", encoding="utf-8") as _f:
+            _pw_studios = json.load(_f).get("studios", {})
+        print(f"  Loaded nso_pre_weeks_data.json ({len(_pw_studios)} studios with pre-launch data)")
+    except FileNotFoundError:
+        _pw_studios = {}
+        print("  nso_pre_weeks_data.json not found — pre-launch spend will go to Week 0")
+
     # -- Build scorecard per studio
     output_studios = []
 
@@ -984,6 +993,16 @@ def main():
         else:
             bounds = make_sun_sat_bounds(cfg["week1_start"], num_weeks)
 
+        # Prepend pre-launch (negative) week bounds so spend entries before Week 1
+        # are allocated to the correct calendar week rather than discarded.
+        _pw_list = _pw_studios.get(code, {}).get("pre_weeks", [])
+        if _pw_list:
+            _pre_bounds = [
+                (pw["week_num"], date.fromisoformat(pw["date_start"]), date.fromisoformat(pw["date_end"]))
+                for pw in sorted(_pw_list, key=lambda x: x["week_num"])
+            ]
+            bounds = _pre_bounds + bounds
+
         ig_fc_studio    = ig_by_code.get(code, {})
         meta_spend_d    = meta_by_code.get(code, {})
         gads_spend_d    = gads_by_code.get(code, {})
@@ -991,19 +1010,25 @@ def main():
         events_d        = events_by_code.get(code, defaultdict(int))
         other_spend_d   = other_spend_by_code.get(code, defaultdict(float))
 
-        # Merge date-range spend from nso_other_costs.json into gr/other spend dicts
+        # Merge date-range spend from nso_other_costs.json into gr/other spend dicts.
+        # Week 0 (ws=None) gets a synthetic start = day after the last negative week
+        # ends (or date.min if no negative weeks), so spend already allocated to a
+        # negative week is not double-counted into Week 0.
         other_spend_d = defaultdict(float, other_spend_d)
+        _pre_ends = [_we for _wn, _ws, _we in bounds if _wn < 0]
+        _w0_start_eff = (max(_pre_ends) + timedelta(days=1)) if _pre_ends else date.min
         for _oc_entries, _dest in (
             (_oc_gr_by_name.get(full, []),    gr_spend_d),
             (_oc_other_by_name.get(full, []), other_spend_d),
         ):
+            if not _oc_entries:
+                continue
             for _wn, _ws, _we in bounds:
-                if _ws is None or not _oc_entries:
-                    continue
+                _ws_eff = _ws if _ws is not None else _w0_start_eff
                 for _sd, _ed, _amt in _oc_entries:
-                    if _sd <= _we and _ed >= _ws:
+                    if _sd <= _we and _ed >= _ws_eff:
                         _span    = max(1, (_ed - _sd).days + 1)
-                        _overlap = (min(_ed, _we) - max(_sd, _ws)).days + 1
+                        _overlap = (min(_ed, _we) - max(_sd, _ws_eff)).days + 1
                         _dest[_wn] += round(_amt * _overlap / _span, 2)
 
         cw_num = current_week_num(bounds)
@@ -1051,6 +1076,8 @@ def main():
 
             # Weekly fields: show 0 (or None) only for future weeks
             is_active = ws_date is not None and ws_date <= TODAY
+            # is_past: week has ended (used to decide whether to show pre-launch/Week-0 spend)
+            is_past = we_date is not None and we_date <= TODAY
 
             def _weekly_int(v, fallback=None):
                 if v > 0:
@@ -1095,6 +1122,9 @@ def main():
                 total_spend = round(
                     (meta_sp or 0) + (gads_sp or 0) + (gr_sp or 0) + (other_sp or 0) + (lt_fee or 0), 2
                 ) or None
+            elif is_past and wn <= 0 and (gr_sp or other_sp):
+                # Pre-launch / Week-0: only grassroots + other spend (no digital)
+                total_spend = round((gr_sp or 0) + (other_sp or 0), 2) or None
             else:
                 total_spend = None
 
@@ -1126,8 +1156,8 @@ def main():
                 "ig_new_followers":   w["ig"],
                 "meta_spend":         meta_sp if (is_active and wn >= 1) else None,
                 "google_spend":       gads_sp if (is_active and wn >= 1) else None,
-                "grassroots_spend":   gr_sp if (is_active and wn >= 1) else None,
-                "other_spend":        other_sp if (is_active and wn >= 1) else None,
+                "grassroots_spend":   gr_sp if ((is_active and wn >= 1) or (is_past and wn <= 0)) else None,
+                "other_spend":        other_sp if ((is_active and wn >= 1) or (is_past and wn <= 0)) else None,
                 "leadteam_fee":       leadteam_fee,
                 "total_marketing_spend": total_spend,
             }
