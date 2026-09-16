@@ -935,31 +935,11 @@ def main():
             _dest.setdefault(_e.get("studio_key", ""), []).append((_sd, _ed, _amt))
         _oc_total = sum(len(v) for v in _oc_gr_by_name.values()) + sum(len(v) for v in _oc_other_by_name.values())
         print(f"  {_oc_total} entries across {len(_oc_gr_by_name)} grassroots + {len(_oc_other_by_name)} other studios")
-        # Monthly recurring entries: "Leadteam Discount" reduces leadteam_fee;
-        # everything else adds to other_spend. Prorated at monthly/30.44 per day.
-        _oc_lt_disc_by_name    = {}  # {full_name: [(start, end, monthly_amt)]}
-        _oc_monthly_other_by_name = {}
-        for _e in _oc.get("monthly", []):
-            try:
-                _sd = date.fromisoformat(_e["start"])
-                _ed = date.fromisoformat(_e["end"])
-            except (KeyError, ValueError):
-                continue
-            _monthly = float(_e.get("monthly") or 0)
-            if _monthly <= 0:
-                continue
-            _cat = _e.get("category", "").lower()
-            _key = _e.get("studio_key", "")
-            if "leadteam discount" in _cat:
-                _oc_lt_disc_by_name.setdefault(_key, []).append((_sd, _ed, _monthly))
-            else:
-                _oc_monthly_other_by_name.setdefault(_key, []).append((_sd, _ed, _monthly))
-        _mo_total = sum(len(v) for v in _oc_lt_disc_by_name.values()) + sum(len(v) for v in _oc_monthly_other_by_name.values())
-        print(f"  {_mo_total} monthly entries ({len(_oc_lt_disc_by_name)} lt-discount + {len(_oc_monthly_other_by_name)} other studios)")
+        # NOTE: monthly entries (Leadteam Discount, External agency) are handled
+        # entirely in the frontend via _cprLtFee / _cprExtAgency reading OTHER_COSTS.
+        # Do NOT process them here to avoid double-counting in other_spend.
     except FileNotFoundError:
         print("  nso_other_costs.json not found — skipping")
-        _oc_lt_disc_by_name       = {}
-        _oc_monthly_other_by_name = {}
 
     # Load pre-launch week date ranges for spend allocation to negative weeks.
     try:
@@ -1054,16 +1034,6 @@ def main():
                         _overlap = (min(_ed, _we) - max(_sd, _ws_eff)).days + 1
                         _dest[_wn] += round(_amt * _overlap / _span, 2)
 
-        # Monthly other spend (external agency, etc.) — prorated at monthly/30.44 per day
-        _mo_other = _oc_monthly_other_by_name.get(full, [])
-        if _mo_other:
-            for _wn, _ws, _we in bounds:
-                _ws_eff = _ws if _ws is not None else _w0_start_eff
-                for _sd, _ed, _monthly in _mo_other:
-                    if _sd <= _we and _ed >= _ws_eff:
-                        _overlap = (min(_ed, _we) - max(_sd, _ws_eff)).days + 1
-                        other_spend_d[_wn] += round(_monthly * _overlap / 30.44, 2)
-
         cw_num = current_week_num(bounds)
         print(f"  current_week: {cw_num}  (today={TODAY})")
 
@@ -1143,14 +1113,6 @@ def main():
                     lt_fee = calc_leadteam_fee(ws_date, we_date)
             else:
                 lt_fee = None
-
-            # Apply monthly Leadteam Discount — reduces lt_fee (floor 0), prorated daily
-            if lt_fee is not None and ws_date and we_date:
-                _lt_disc_entries = _oc_lt_disc_by_name.get(full, [])
-                for _sd, _ed, _monthly in _lt_disc_entries:
-                    if _sd <= we_date and _ed >= ws_date:
-                        _overlap = (min(_ed, we_date) - max(_sd, ws_date)).days + 1
-                        lt_fee = max(0.0, round(lt_fee - _monthly * _overlap / 30.44, 2))
             leadteam_fee = lt_fee
 
             # Total marketing spend
