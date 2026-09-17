@@ -293,6 +293,7 @@ def process(
     limit: int = 0,
     max_new_images: int = 0,
     skip_images: bool = False,
+    reprocess_dedicated: bool = False,
 ) -> tuple[int, int]:
     """Process ads dict, upload missing media to Drive.  Returns (thumbs, videos)."""
     thumbs_uploaded = 0
@@ -324,6 +325,17 @@ def process(
 
         cached = cache.setdefault(ck, {})
         cached["last_seen"] = today.isoformat()
+
+        # Dedicated-account ad: if reprocess_dedicated is set and we have a
+        # previously-uploaded (likely small) image, delete the old Drive file so
+        # the next block re-uploads the full-res version.
+        is_dedicated = bool(entry.get("meta_account_id") or entry.get("studio_code"))
+        if reprocess_dedicated and is_dedicated and cached.get("drive_image_id") and not is_video:
+            log.info(f"  reprocess dedicated — deleting old Drive file for {key_raw[:60]}")
+            drive.delete(cached["drive_image_id"])
+            del cached["drive_image_id"]
+            if "drive_image_url" in entry:
+                del entry["drive_image_url"]
 
         # Restore URLs from cache into the entry (so JSON has them even when we skip upload)
         if cached.get("drive_image_id"):
@@ -364,8 +376,13 @@ def process(
                     # downloaded server-side. Use hash API (with the studio's own account)
                     # to get a proper CDN URL instead.
                     if not img_url or "facebook.com/ads/image/" in img_url:
-                        acct = _STUDIO_CODE_TO_ACCOUNT.get(
-                            entry.get("studio_code", ""), META_AD_ACCOUNT_ID
+                        # Prefer the account ID stored directly in the entry (set for
+                        # dedicated-account studios), then fall back to studio_code lookup,
+                        # then the shared corporate account.
+                        acct = (
+                            entry.get("meta_account_id")
+                            or _STUDIO_CODE_TO_ACCOUNT.get(entry.get("studio_code", ""))
+                            or META_AD_ACCOUNT_ID
                         )
                         full = _fullres_via_hash(ih, token, acct)
                         if full:
@@ -432,7 +449,7 @@ def prune_old(drive: DriveClient, cache: dict, cutoff_iso: str) -> int:
 
 # ── per-dashboard runners ─────────────────────────────────────────────────────
 
-def run_os(drive: DriveClient, folder_id: str, token: str, today: date, max_new_videos: int, limit: int = 0, max_new_images: int = 0, skip_images: bool = False):
+def run_os(drive: DriveClient, folder_id: str, token: str, today: date, max_new_videos: int, limit: int = 0, max_new_images: int = 0, skip_images: bool = False, reprocess_dedicated: bool = False):
     if not OS_JSON.exists():
         log.warning(f"Not found: {OS_JSON}")
         return
@@ -445,7 +462,7 @@ def run_os(drive: DriveClient, folder_id: str, token: str, today: date, max_new_
         ads_recent = ads
     log.info(f"OS: {len(ads)} ads total, {len(ads_recent)} within 90-day window")
 
-    nt, nv = process(drive, ads_recent, folder_id, cache, token, today, max_new_videos, limit, max_new_images, skip_images)
+    nt, nv = process(drive, ads_recent, folder_id, cache, token, today, max_new_videos, limit, max_new_images, skip_images, reprocess_dedicated)
     for k, v in ads_recent.items():
         if k in ads:
             ads[k].update({fk: fv for fk, fv in v.items() if fk.startswith("drive_")})
@@ -457,7 +474,7 @@ def run_os(drive: DriveClient, folder_id: str, token: str, today: date, max_new_
     log.info(f"OS done: {nt} thumbs, {nv} videos stored, {pruned} Drive files pruned")
 
 
-def run_nso(drive: DriveClient, folder_id: str, token: str, today: date, max_new_videos: int, limit: int = 0, max_new_images: int = 0, skip_images: bool = False):
+def run_nso(drive: DriveClient, folder_id: str, token: str, today: date, max_new_videos: int, limit: int = 0, max_new_images: int = 0, skip_images: bool = False, reprocess_dedicated: bool = False):
     if not NSO_JSON.exists():
         log.warning(f"Not found: {NSO_JSON}")
         return
@@ -466,7 +483,7 @@ def run_nso(drive: DriveClient, folder_id: str, token: str, today: date, max_new
     ads   = data.get("ad_meta", {})
     log.info(f"NSO: {len(ads)} ads")
 
-    nt, nv = process(drive, ads, folder_id, cache, token, today, max_new_videos, limit, max_new_images, skip_images)
+    nt, nv = process(drive, ads, folder_id, cache, token, today, max_new_videos, limit, max_new_images, skip_images, reprocess_dedicated)
 
     data["ad_meta"] = ads
     NSO_JSON.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -488,6 +505,10 @@ def main():
                         help="Cap total uploads (thumbs + videos) for testing. 0 = unlimited.")
     parser.add_argument("--skip-images", action="store_true",
                         help="Skip all image processing (useful when only syncing videos).")
+    parser.add_argument("--reprocess-dedicated", action="store_true",
+                        help="Delete and re-upload images for dedicated-account studios "
+                             "(use once after fixing the account-ID lookup to replace "
+                             "previously-downloaded small thumbnails with full-res images).")
     args = parser.parse_args()
 
     token = (
@@ -510,13 +531,15 @@ def main():
     drive = DriveClient(sa_file)
     root  = DRIVE_ROOT_FOLDER_ID
 
+    reprocess_dedicated = args.reprocess_dedicated
+
     if args.dashboard in ("os", "both"):
         folder = drive.get_or_create_folder("os", root)
-        run_os(drive, folder, token, today, args.max_new_videos, args.limit, args.max_new_images, args.skip_images)
+        run_os(drive, folder, token, today, args.max_new_videos, args.limit, args.max_new_images, args.skip_images, reprocess_dedicated)
 
     if args.dashboard in ("nso", "both"):
         folder = drive.get_or_create_folder("nso", root)
-        run_nso(drive, folder, token, today, args.max_new_videos, args.limit, args.max_new_images, args.skip_images)
+        run_nso(drive, folder, token, today, args.max_new_videos, args.limit, args.max_new_images, args.skip_images, reprocess_dedicated)
 
 
 if __name__ == "__main__":

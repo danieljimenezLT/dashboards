@@ -271,8 +271,12 @@ def fetch_meta_ads(start_date, end_date, existing_ad_meta=None):
                     "preview_link":     ad.get("preview_shareable_link", ""),
                     "object_type":      "",
                     "effective_status": ad.get("effective_status", ""),
+                    "studio_code":      code,
+                    "meta_account_id":  account_id,
                 })
                 creatives[ad_name]["effective_status"] = ad.get("effective_status", "")
+                creatives[ad_name]["studio_code"]      = code
+                creatives[ad_name]["meta_account_id"]  = account_id
                 if ad.get("preview_shareable_link"):
                     creatives[ad_name]["preview_link"] = ad["preview_shareable_link"]
                 cid = (ad.get("creative") or {}).get("id")
