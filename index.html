@@ -2548,7 +2548,7 @@ async function buildMetaTab() {
             : (isAdminUser() ? (g.preview_link || g.library_url || '#') : '#');
           const canLink = !!_pageId || isAdminUser();
           const driveUrl = isVid ? (g.drive_vid || VIDEO_DRIVE_LINKS[g.name] || '') : '';
-          const driveImg = !isVid ? (g.drive_img || '') : '';
+          const driveImg = g.drive_img || '';
           const ta = `class="ad-thumb-btn" data-thumb="${(g.thumbnail||'').replace(/"/g,'&quot;')}" data-full="${(g.full_img||g.thumbnail||'').replace(/"/g,'&quot;')}" data-vid="${isVid?1:0}" data-vurl="${driveUrl}" data-dimg="${driveImg.replace(/"/g,'&quot;')}" data-prev="${(g.preview_link||'').replace(/"/g,'&quot;')}" data-name="${g.name.replace(/"/g,'&quot;')}"`;
           const fbFallback = `<div style="width:44px;height:44px;background:#0084b5;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">${fallbackIcon}</div>`;
           const thumbImgSrc = (driveImg || (g.thumbnail||'').replace(/_p\d+x\d+/g,'')).replace(/"/g,'&quot;');
