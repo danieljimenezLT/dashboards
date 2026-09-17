@@ -318,15 +318,15 @@ def process(
         ad_name       = entry.get("name", key_raw)
         creative_name = _creative_name(ad_name)
         # SHARE-type video ad: cross-posted video post with no video_id in the creative.
-        # Detected by object_type==SHARE + post_url present + no image_hash (video shares
-        # have no image_hash; photo shares do).
+        # Detected by object_type==SHARE + no image_hash (video shares have no image_hash;
+        # photo shares do). post_url is NOT required — Meta's API often omits
+        # effective_object_story_id for cross-posted video ads, so post_url may be empty.
         # Limited to dedicated-account studios so we don't change behavior for the
         # 490+ corporate SHARE ads that already have cached thumbnails and work fine.
         _is_ded_entry = bool(entry.get("meta_account_id") or entry.get("studio_code"))
         is_share_video = (
             _is_ded_entry
             and entry.get("object_type") == "SHARE"
-            and bool(entry.get("post_url"))
             and not entry.get("image_hash")
         )
         is_video = (

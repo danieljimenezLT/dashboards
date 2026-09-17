@@ -3945,6 +3945,9 @@ function renderMeta(){
     else if(meta&&meta.preview_link&&!g.preview)g.preview=meta.preview_link;
     if(meta&&meta.effective_status)g.status=meta.effective_status;
     if(meta&&meta.object_type)g.media_type=meta.object_type;
+    // Dedicated-account SHARE ads without image_hash are cross-posted videos, not images.
+    // Re-classify so the table shows "Video" and opens the preview link on click.
+    if(meta&&meta.studio_code&&meta.object_type==='SHARE'&&!meta.image_hash)g.media_type='VIDEO';
     if(meta&&meta.drive_image_url&&!g.drive_img)g.drive_img=meta.drive_image_url;
     if(meta&&meta.drive_video_url&&!g.drive_vid)g.drive_vid=meta.drive_video_url;
   });

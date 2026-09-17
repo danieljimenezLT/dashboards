@@ -32,7 +32,7 @@ DEFAULT_INSIGHT_FIELDS = [
 # returns code 100 and kills the whole batch.
 CREATIVE_FIELDS = [
     "id", "name", "object_type", "thumbnail_url", "image_url",
-    "image_hash", "video_id",
+    "image_hash", "video_id", "effective_object_story_id",
     "object_story_spec{video_data{image_url},link_data{picture,image_hash},photo_data{image_hash}}",
     "asset_feed_spec{images{url,hash},videos{thumbnail_url}}",
 ]
