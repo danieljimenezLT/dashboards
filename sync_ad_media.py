@@ -317,10 +317,23 @@ def process(
         video_id      = entry.get("video_id", "")
         ad_name       = entry.get("name", key_raw)
         creative_name = _creative_name(ad_name)
+        # SHARE-type video ad: cross-posted video post with no video_id in the creative.
+        # Detected by object_type==SHARE + post_url present + no image_hash (video shares
+        # have no image_hash; photo shares do).
+        # Limited to dedicated-account studios so we don't change behavior for the
+        # 490+ corporate SHARE ads that already have cached thumbnails and work fine.
+        _is_ded_entry = bool(entry.get("meta_account_id") or entry.get("studio_code"))
+        is_share_video = (
+            _is_ded_entry
+            and entry.get("object_type") == "SHARE"
+            and bool(entry.get("post_url"))
+            and not entry.get("image_hash")
+        )
         is_video = (
             entry.get("media_type") == "Video"
             or entry.get("object_type") == "VIDEO"
             or bool(video_id)
+            or is_share_video
         )
 
         cached = cache.setdefault(ck, {})
@@ -328,9 +341,11 @@ def process(
 
         # Dedicated-account ad: if reprocess_dedicated is set and we have a
         # previously-uploaded (likely small) image, delete the old Drive file so
-        # the next block re-uploads the full-res version.
-        is_dedicated = bool(entry.get("meta_account_id") or entry.get("studio_code"))
-        if reprocess_dedicated and is_dedicated and cached.get("drive_image_id") and not is_video:
+        # the next block re-uploads the full-res version.  Drop the not is_video
+        # guard so SHARE-type video ads (which were previously uploaded as images)
+        # also get their stale Drive files removed.
+        is_dedicated = _is_ded_entry
+        if reprocess_dedicated and is_dedicated and cached.get("drive_image_id"):
             log.info(f"  reprocess dedicated — deleting old Drive file for {key_raw[:60]}")
             old_fid = cached["drive_image_id"]
             drive.delete(old_fid)
@@ -341,6 +356,14 @@ def process(
             del cached["drive_image_id"]
             if "drive_image_url" in entry:
                 del entry["drive_image_url"]
+
+        # SHARE-type video: store the Facebook post URL as the embed (no Drive upload).
+        if is_share_video and not cached.get("video_embed_url"):
+            post_url = entry.get("post_url", "")
+            if post_url:
+                cached["video_embed_url"] = post_url
+                entry["drive_video_url"]  = post_url
+                log.info(f"  video  share→post_url {key_raw[:55]}")
 
         # Restore URLs from cache into the entry (so JSON has them even when we skip upload)
         if cached.get("drive_image_id"):
