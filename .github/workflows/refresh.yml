@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "30 6 * * *"   # 2:30 AM Eastern (EDT=UTC-4) — runs 30min after Snowflake refresh
   workflow_dispatch:        # Manual trigger from GitHub UI
+    inputs:
+      reprocess_dedicated:
+        description: 'Re-upload OS images for dedicated Meta accounts (replaces small Drive files with full-res). Run once after fixing dedicated-account image download.'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -47,7 +53,12 @@ jobs:
         env:
           META_ACCESS_TOKEN:               ${{ secrets.META_TOKEN }}
           GOOGLE_SERVICE_ACCOUNT_KEY_PATH: nso-dashboard/credentials/service_account.json
-        run: python sync_ad_media.py --dashboard os --max-new-images 300 --max-new-videos 200
+        run: |
+          REPROCESS_FLAG=""
+          if [ "${{ github.event.inputs.reprocess_dedicated }}" = "true" ]; then
+            REPROCESS_FLAG="--reprocess-dedicated"
+          fi
+          python sync_ad_media.py --dashboard os --max-new-images 300 --max-new-videos 200 $REPROCESS_FLAG
         continue-on-error: true
 
       - name: Fetch Google Ads data
