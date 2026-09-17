@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-17",
+      "pr_number": 381,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/381",
+      "author": "Sebastian Arango",
+      "categories": [
+        "General"
+      ],
+      "title": "Fix dedicated-account video ads showing as images in ad preview",
+      "summary": "SHARE-type video ads (vid_Corp) for studios with their own Meta account were uploading small thumbnails to Drive instead of linking the Facebook video post. Now correctly detected and stored as videos."
+    },
+    {
+      "date": "2026-09-17",
       "pr_number": 380,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/380",
       "author": "Sebastian Arango",
