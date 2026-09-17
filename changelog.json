@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-17",
+      "pr_number": 384,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/384",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix SHARE video ads showing as \"Image\" for dedicated Meta accounts",
+      "summary": "vid_Corp cross-posted video ads (Rose Creek and others) now correctly show as \"Video\" in the NSO dashboard and open the ad preview on click."
+    },
+    {
+      "date": "2026-09-17",
       "pr_number": 383,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/383",
       "author": "Sebastian Arango",
