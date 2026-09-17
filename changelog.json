@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-09-17",
+      "pr_number": 379,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/379",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix full-res ad image uploads for dedicated Meta accounts + add Rose Creek",
+      "summary": "Studios on their own Meta ad account (e.g. Herriman) were uploading small thumbnails to Drive instead of full-res images due to a wrong account ID being used for the image hash API. Fixed. Also added Rose Creek (OKC) as a dedicated Meta account so it appears in the NSO dashboard."
+    },
+    {
       "date": "2026-09-16",
       "pr_number": 378,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/378",
