@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-17",
+      "pr_number": 383,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/383",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix Target C/O Date showing wrong date in NSO dashboard",
+      "summary": "nso_scorecard_data2.json was missing co_date for all studios; the dashboard fell back to the scorecard week boundary instead of the actual date from the NSO Config sheet."
+    },
+    {
+      "date": "2026-09-17",
       "pr_number": 382,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/382",
       "author": "Sebastian Arango",
