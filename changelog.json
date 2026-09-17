@@ -2,6 +2,18 @@
   "entries": [
     {
       "date": "2026-09-17",
+      "pr_number": 385,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/385",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Fix OS dedicated-account ad images showing at low resolution",
+      "summary": "Image ads from dedicated studio accounts (e.g. Dallas Prestonwood) were stored in Drive at 64×64px from an earlier sync. Added a one-time reprocess option to the Refresh workflow that re-downloads them at full resolution via the Meta adimages hash API."
+    },
+    {
+      "date": "2026-09-17",
       "pr_number": 384,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/384",
       "author": "Sebastian Arango",
