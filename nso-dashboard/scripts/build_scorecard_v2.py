@@ -480,6 +480,7 @@ def main():
             "targets":              cfg["targets"],
             "co_week":              co_wk,
             "go_week":              go_wk,
+            "co_date":              cfg["co_date"].isoformat() if cfg.get("co_date") else None,
             "opening_date":         cfg["opening_date"].isoformat() if cfg["opening_date"] else None,
             "goal_announce_target": cfg.get("goal_announce_target"),
             "milestones":           cfg.get("milestones", []),
