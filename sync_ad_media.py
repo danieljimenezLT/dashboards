@@ -332,7 +332,12 @@ def process(
         is_dedicated = bool(entry.get("meta_account_id") or entry.get("studio_code"))
         if reprocess_dedicated and is_dedicated and cached.get("drive_image_id") and not is_video:
             log.info(f"  reprocess dedicated — deleting old Drive file for {key_raw[:60]}")
-            drive.delete(cached["drive_image_id"])
+            old_fid = cached["drive_image_id"]
+            drive.delete(old_fid)
+            # Remove stale hash → fid mapping so the dedup path can't reuse the deleted file
+            ih_stale = cached.get("image_hash", "")
+            if ih_stale and hash_to_fid.get(ih_stale) == old_fid:
+                del hash_to_fid[ih_stale]
             del cached["drive_image_id"]
             if "drive_image_url" in entry:
                 del entry["drive_image_url"]
