@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-17",
+      "pr_number": 382,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/382",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix full-res image uploads for dedicated-account studios (root cause)",
+      "summary": "The creative thumbnail URLs for dedicated-account ads are small SHARE-type frame captures. The code was downloading these small thumbnails instead of calling the adimages hash API to get the original full-res image. Now always uses the hash API for dedicated-account ads."
+    },
+    {
+      "date": "2026-09-17",
       "pr_number": 381,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/381",
       "author": "Sebastian Arango",
