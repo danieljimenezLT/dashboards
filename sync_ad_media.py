@@ -320,8 +320,12 @@ def process(
         # SHARE-type video ad: cross-posted video post with no video_id in the creative.
         # Detected by object_type==SHARE + post_url present + no image_hash (video shares
         # have no image_hash; photo shares do).
+        # Limited to dedicated-account studios so we don't change behavior for the
+        # 490+ corporate SHARE ads that already have cached thumbnails and work fine.
+        _is_ded_entry = bool(entry.get("meta_account_id") or entry.get("studio_code"))
         is_share_video = (
-            entry.get("object_type") == "SHARE"
+            _is_ded_entry
+            and entry.get("object_type") == "SHARE"
             and bool(entry.get("post_url"))
             and not entry.get("image_hash")
         )
@@ -340,7 +344,7 @@ def process(
         # the next block re-uploads the full-res version.  Drop the not is_video
         # guard so SHARE-type video ads (which were previously uploaded as images)
         # also get their stale Drive files removed.
-        is_dedicated = bool(entry.get("meta_account_id") or entry.get("studio_code"))
+        is_dedicated = _is_ded_entry
         if reprocess_dedicated and is_dedicated and cached.get("drive_image_id"):
             log.info(f"  reprocess dedicated — deleting old Drive file for {key_raw[:60]}")
             old_fid = cached["drive_image_id"]
