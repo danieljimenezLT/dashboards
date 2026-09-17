@@ -400,13 +400,13 @@ def process(
             else:
                 img_url = _best_image_url(entry)
                 if ih and token:
-                    # facebook.com/ads/image/ requires a browser FB session and can't be
-                    # downloaded server-side. Use hash API (with the studio's own account)
-                    # to get a proper CDN URL instead.
-                    if not img_url or "facebook.com/ads/image/" in img_url:
-                        # Prefer the account ID stored directly in the entry (set for
-                        # dedicated-account studios), then fall back to studio_code lookup,
-                        # then the shared corporate account.
+                    # For dedicated-account studios: ALWAYS use the adimages hash API to
+                    # get the full-res CDN URL.  Their creative thumbnail_url is a SHARE-type
+                    # thumbnail (scontent t45.1600-4/...) which is a small frame capture,
+                    # not the original ad image.  The hash API returns the full-res source.
+                    # For corporate ads: only fall back when thumbnail_url is empty or is a
+                    # facebook.com/ads/image/ URL (requires a browser session to download).
+                    if is_dedicated or not img_url or "facebook.com/ads/image/" in img_url:
                         acct = (
                             entry.get("meta_account_id")
                             or _STUDIO_CODE_TO_ACCOUNT.get(entry.get("studio_code", ""))
