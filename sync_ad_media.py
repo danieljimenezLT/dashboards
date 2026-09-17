@@ -323,7 +323,16 @@ def process(
         # effective_object_story_id for cross-posted video ads, so post_url may be empty.
         # Limited to dedicated-account studios so we don't change behavior for the
         # 490+ corporate SHARE ads that already have cached thumbnails and work fine.
-        _is_ded_entry = bool(entry.get("meta_account_id") or entry.get("studio_code"))
+        # An entry is truly from a dedicated account only when meta_account_id is
+        # set (NSO entries) OR when its studio_code maps to a known dedicated
+        # account in studios.json (OS entries). Plain studio_code alone is not
+        # enough for OS: the corporate account tags all its ads with studio_code
+        # via campaign-name matching, so using studio_code alone would flag
+        # corporate ads as dedicated and run the wrong hash-API account lookup.
+        _is_ded_entry = bool(
+            entry.get("meta_account_id")
+            or _STUDIO_CODE_TO_ACCOUNT.get(entry.get("studio_code", ""))
+        )
         is_share_video = (
             _is_ded_entry
             and entry.get("object_type") == "SHARE"
