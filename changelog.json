@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-17",
+      "pr_number": 386,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/386",
+      "author": "Sebastian Arango",
+      "categories": [
+        "General"
+      ],
+      "title": "Fix OS dedicated-account ad images showing at low resolution",
+      "summary": "Image ads from dedicated studio accounts (Dallas Prestonwood, Herriman, Austin, etc.) were stored in Drive at 64×64px. Added a one-time reprocess option to the Refresh workflow and fixed a bug where all studio-tagged ads were incorrectly treated as dedicated accounts."
+    },
+    {
+      "date": "2026-09-17",
       "pr_number": 385,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/385",
       "author": "Sebastian Arango",
