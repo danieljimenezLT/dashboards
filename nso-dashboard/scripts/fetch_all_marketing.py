@@ -279,6 +279,15 @@ def fetch_meta_ads(start_date, end_date, existing_ad_meta=None):
                 creatives[ad_name]["meta_account_id"]  = account_id
                 if ad.get("preview_shareable_link"):
                     creatives[ad_name]["preview_link"] = ad["preview_shareable_link"]
+                # Store post_url from ad-level effective_object_story_id — the creative
+                # batch API (4b) often omits this field for cross-account fetches, so we
+                # capture it here while we have native access to this account's ad data.
+                eso = ad.get("effective_object_story_id", "")
+                if eso and "_" in eso:
+                    page_id, post_id = eso.split("_", 1)
+                    creatives[ad_name]["post_url"] = (
+                        f"https://www.facebook.com/{page_id}/posts/{post_id}/"
+                    )
                 cid = (ad.get("creative") or {}).get("id")
                 if cid:
                     ded_cids_per_name[ad_name] = cid
