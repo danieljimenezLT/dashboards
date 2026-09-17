@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-17",
+      "pr_number": 380,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/380",
+      "author": "Sebastian Arango",
+      "categories": [
+        "General"
+      ],
+      "title": "Fix image dedup bypass during dedicated-account reprocess",
+      "summary": "When --reprocess-dedicated deleted old small Drive files, the in-memory hash→fileID map still pointed to the deleted files, causing all image ads to silently reuse them. Fix evicts the stale hash entry so a fresh full-res upload is forced."
+    },
+    {
+      "date": "2026-09-17",
       "pr_number": 379,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/379",
       "author": "Sebastian Arango",
