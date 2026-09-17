@@ -9,6 +9,11 @@ on:
         description: 'Override Meta/Google start date (YYYY-MM-DD). Leave blank for default 8-day lookback.'
         required: false
         default: ''
+      reprocess_dedicated:
+        description: 'Re-upload images for dedicated Meta accounts (deletes small Drive files and replaces with full-res). Run once after PR #379 merges.'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -111,7 +116,12 @@ jobs:
         env:
           META_ACCESS_TOKEN:               ${{ secrets.META_TOKEN }}
           GOOGLE_SERVICE_ACCOUNT_KEY_PATH: nso-dashboard/credentials/service_account.json
-        run: python sync_ad_media.py --dashboard nso --max-new-images 300 --max-new-videos 200
+        run: |
+          REPROCESS_FLAG=""
+          if [ "${{ github.event.inputs.reprocess_dedicated }}" = "true" ]; then
+            REPROCESS_FLAG="--reprocess-dedicated"
+          fi
+          python sync_ad_media.py --dashboard nso --max-new-images 300 --max-new-videos 200 $REPROCESS_FLAG
         continue-on-error: true
 
       # ── SCORECARD ──────────────────────────────────────────────────────────
