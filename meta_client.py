@@ -175,7 +175,7 @@ class MetaClient:
 
     def list_ads_with_status(self, ad_account_id: str) -> list[dict]:
         """List all ads with effective_status + creative ID + preview link. Has retry on rate limit."""
-        fields = "id,name,effective_status,creative{id},preview_shareable_link"
+        fields = "id,name,effective_status,creative{id},effective_object_story_id,preview_shareable_link"
         return self._paginate(f"{ad_account_id}/ads", {"fields": fields, "limit": 500})
 
     def list_ad_sets(self, campaign_id: str) -> list[dict]:
