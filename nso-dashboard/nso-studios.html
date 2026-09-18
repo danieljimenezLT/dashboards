@@ -1195,7 +1195,10 @@ function drawCum2Chart(studio){
   const _w1Off2=pwData&&pwData.week_1_start;
   const _isPreL2=!_w1Off2||_w1Off2>todayStr;
   const totalW=studio.go_week||studio.weeks.length-1;
-  let cw=studio.current_week||0;
+  // current_week stores the week NUMBER (e.g. 15 for WEEK 15), not the array index.
+  // Convert to array index so the chart cuts off at the right point.
+  const _cwNum=studio.current_week||0;
+  let cw=(()=>{const idx=studio.weeks.findIndex(wk=>(parseInt((wk.week||'0').replace('WEEK ',''))||0)===_cwNum);return idx>=0?idx:_cwNum;})();
   const _isOpenedChart2=!!(studio.opening_date&&studio.opening_date<=todayStr);
   if(_isOpenedChart2){let _opW2=0;studio.weeks.forEach((wk,i)=>{if(wk.date_start&&wk.date_start<studio.opening_date)_opW2=i;});cw=Math.min(cw,_opW2);}
   const _ann=studio.goal_announce_target||null;
@@ -1254,27 +1257,32 @@ function drawCum2Chart(studio){
   }else{
     const w=studio.weeks.filter((_,i)=>i<=(_isOpenedChart2?cw:Math.max(cw+2,totalW)));
     const scLabels=w.map(x=>x.week.replace('WEEK ','W'));
+    const _scFirstWkNum=w.length>0?parseInt((w[0].week||'0').replace('WEEK ',''))||0:0;
+    const _filtPreW=preWeeks.filter(pw=>pw.week_num<_scFirstWkNum);
+    const _filtPreLeadsD=_filtPreW.map(pw=>pw.total_leads||0);
     const scLeadsD=w.map((x,i)=>i<=cw?x.total_leads||0:null);
     const _cumTierMap={};(studio.tier_rmr_by_week||[]).forEach(r=>{_cumTierMap[r.week]=r;});
-    let scPresD=w.map((x,i)=>{if(i>cw)return null;const tr=_cumTierMap[i];return tr?(tr.t0||0)+(tr.t1||0)+(tr.t2||0)+(tr.t3||0):Math.max(0,(x.presales_count||0)-(x.cancellations_count||0));});
+    let scPresD=w.map((x,i)=>{if(i>cw)return null;const _wn=parseInt((x.week||'0').replace('WEEK ',''))||0;const tr=_isOpenedChart2?_cumTierMap[_wn]:null;return tr?(tr.t0||0)+(tr.t1||0)+(tr.t2||0)+(tr.t3||0):Math.max(0,(x.presales_count||0)-(x.cancellations_count||0));});
     if(_isOpenedChart2){const _sn2b=studio.data_name||studio.name;const _st2b=s=>(s||'').replace(/^SWEAT440\s+/,'');const _opD2b=studio.opening_date||null;const _nrb=NSO_SALES_ROWS.filter(r=>_st2b(r.studio)===_sn2b&&(!_opD2b||r.date<_opD2b));let _cpb=0;scPresD=w.map((wk,i)=>{if(i>cw)return null;const ds=wk.date_start,de=wk.date_end||ds;if(!ds)return _cpb>0?_cpb:null;_cpb=Math.max(0,_cpb+_nrb.filter(r=>r.date>=ds&&r.date<=de).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));return _cpb>0?_cpb:null;});}
-    const leadsPace=w.map((_,i)=>Math.min(tLeads,Math.round(wkLeadPace*i)));
-    const presPace=w.map((_,i)=>Math.min(tPres,Math.round(wkPresPace*i)));
-    const _wkNumLabels=preWeeks.map(pw=>`W${pw.week_num}`);
+    const _paceStart=w.findIndex(x=>(parseInt((x.week||'0').replace('WEEK ',''))||0)===0);
+    const _ps=_paceStart>=0?_paceStart:0;
+    const leadsPace=w.map((_,i)=>i<_ps?null:Math.min(tLeads,Math.round(wkLeadPace*(i-_ps))));
+    const presPace=w.map((_,i)=>i<_ps?null:Math.min(tPres,Math.round(wkPresPace*(i-_ps))));
+    const _wkNumLabels=_filtPreW.map(pw=>`W${pw.week_num}`);
     allLabels=[..._wkNumLabels,...scLabels];
-    const _preTotal=preLeadsD.length?(preLeadsD[preLeadsD.length-1]||0):0;
+    const _preTotal=_filtPreLeadsD.length?(_filtPreLeadsD[_filtPreLeadsD.length-1]||0):0;
     const scLeadsAdj=_preTotal>0?[]:null;
     if(scLeadsAdj){let _adj=_preTotal,_rv=0;for(let i=0;i<scLeadsD.length;i++){const v=scLeadsD[i];if(v===null){scLeadsAdj.push(null);continue;}if(i===0)_adj=v>=_preTotal?v:_preTotal+v;else _adj+=Math.max(0,v-_rv);scLeadsAdj.push(_adj);_rv=v;}}
-    allLeadsD=[...preLeadsD,...(scLeadsAdj||scLeadsD)];
+    allLeadsD=[..._filtPreLeadsD,...(scLeadsAdj||scLeadsD)];
     // Map pre-week presales from NSO_SALES_ROWS (cumulative) then continue with scorecard
     const _sn2=studio.data_name||studio.name;const _st2=s=>(s||'').replace(/^SWEAT440\s+/,'');
     const _psr=NSO_SALES_ROWS.filter(r=>_st2(r.studio)===_sn2);
     let _cPP=0;
-    if(preWeeks.length>0&&preWeeks[0].date_start){_cPP=Math.max(0,_psr.filter(r=>r.date<preWeeks[0].date_start).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));}
-    const _prePresD=preWeeks.map(pw=>{if(!pw.date_start)return null;const de=pw.date_end||pw.date_start;_cPP+=Math.max(0,_psr.filter(r=>r.date>=pw.date_start&&r.date<=de).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));return _cPP>0?_cPP:null;});
+    if(_filtPreW.length>0&&_filtPreW[0].date_start){_cPP=Math.max(0,_psr.filter(r=>r.date<_filtPreW[0].date_start).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));}
+    const _prePresD=_filtPreW.map(pw=>{if(!pw.date_start)return null;const de=pw.date_end||pw.date_start;_cPP+=Math.max(0,_psr.filter(r=>r.date>=pw.date_start&&r.date<=de).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));return _cPP>0?_cPP:null;});
     allPresD=[..._prePresD,...scPresD];
-    allLeadsPace=[...preWeeks.map(()=>null),...leadsPace];
-    allPresPace=[...preWeeks.map(()=>null),...presPace];
+    allLeadsPace=[..._filtPreW.map(()=>null),...leadsPace];
+    allPresPace=[..._filtPreW.map(()=>null),...presPace];
   }
   const _showPace2=!_isPreL2;
   const _hasPresDataC=allPresD&&allPresD.some(v=>v!=null&&v>0);
@@ -1301,7 +1309,8 @@ function drawWeekly2Chart(studio){
   const _w1Off2w=pwData&&pwData.week_1_start;
   const _isPreL2w=!_w1Off2w||_w1Off2w>todayStr;
   const totalW=studio.go_week||studio.weeks.length-1;
-  const cw=studio.current_week||0;
+  const _cwNumW=studio.current_week||0;
+  const cw=(()=>{const idx=studio.weeks.findIndex(wk=>(parseInt((wk.week||'0').replace('WEEK ',''))||0)===_cwNumW);return idx>=0?idx:_cwNumW;})();
   const _ann=studio.goal_announce_target||null;
   const paceW=studio.co_week||totalW;
   const goalW=Math.min(paceW,16);
@@ -1356,27 +1365,33 @@ function drawWeekly2Chart(studio){
   }else{
     const w=studio.weeks.filter((_,i)=>i<=Math.max(cw+2,totalW));
     const scLabels=w.map(x=>x.week.replace('WEEK ','W'));
+    const _scFirstWkNumW=w.length>0?parseInt((w[0].week||'0').replace('WEEK ',''))||0:0;
+    const _filtPreWW=preWeeks.filter(pw=>pw.week_num<_scFirstWkNumW);
+    const _filtPreLeadsDeltaW=_filtPreWW.map(pw=>pw.new_leads||0);
     const _wkTierMap={};(studio.tier_rmr_by_week||[]).forEach(r=>{_wkTierMap[r.week]=r;});
-    const scPresD=w.map((x,i)=>{if(i>cw)return null;const tr=_wkTierMap[i];return tr?(tr.t0||0)+(tr.t1||0)+(tr.t2||0)+(tr.t3||0):(x.presales_count||0)-(x.cancellations_count||0);});
+    const _isOpenedW=!!(studio.opening_date&&studio.opening_date<=todayStr);
+    const scPresD=w.map((x,i)=>{if(i>cw)return null;const _wn=parseInt((x.week||'0').replace('WEEK ',''))||0;const tr=_isOpenedW?_wkTierMap[_wn]:null;return tr?(tr.t0||0)+(tr.t1||0)+(tr.t2||0)+(tr.t3||0):(x.presales_count||0)-(x.cancellations_count||0);});
     const scLeadsD=w.map((x,i)=>i<=cw?x.total_leads||0:null);
     // Compute pre-week presales before scPresDelta so W0 delta can exclude pre-week accumulation
     const _sn2w=studio.data_name||studio.name;const _st2w=s=>(s||'').replace(/^SWEAT440\s+/,'');
     const _psrW=NSO_SALES_ROWS.filter(r=>_st2w(r.studio)===_sn2w);
-    const _prePDw=preWeeks.map(pw=>{if(!pw.date_start)return null;const de=pw.date_end||pw.date_start;const v=Math.max(0,_psrW.filter(r=>r.date>=pw.date_start&&r.date<=de).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));return v>0?v:null;});
+    const _prePDw=_filtPreWW.map(pw=>{if(!pw.date_start)return null;const de=pw.date_end||pw.date_start;const v=Math.max(0,_psrW.filter(r=>r.date>=pw.date_start&&r.date<=de).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));return v>0?v:null;});
     const _preTotalPresW=_prePDw.reduce((s,v)=>s+(v||0),0);
     const scPresDelta=scPresD.map((v,i)=>v===null?null:(i===0?(v>_preTotalPresW?Math.max(0,v-_preTotalPresW):0):v-(scPresD[i-1]||0)));
-    const _preTotalW=preWeeks.length?(preWeeks[preWeeks.length-1].total_leads||0):0;
+    const _preTotalW=_filtPreWW.length?(_filtPreWW[_filtPreWW.length-1].total_leads||0):0;
     const scLeadsDelta=scLeadsD.map((v,i)=>{
       if(v===null)return null;
       if(i===0)return v>=_preTotalW?Math.max(0,v-_preTotalW):v||0;
       return Math.max(0,v-(scLeadsD[i-1]||0));
     });
-    const _wkNumLabelsW=preWeeks.map(pw=>`W${pw.week_num}`);
+    const _wkNumLabelsW=_filtPreWW.map(pw=>`W${pw.week_num}`);
     allLabels=[..._wkNumLabelsW,...scLabels];
-    allLeadsDelta=[...preLeadsDelta,...scLeadsDelta];
+    allLeadsDelta=[..._filtPreLeadsDeltaW,...scLeadsDelta];
     allPresDelta=[..._prePDw,...scPresDelta];
-    allLeadsPace=[...preWeeks.map(()=>null),...w.map(()=>wkLeadPace)];
-    allPresPace=[...preWeeks.map(()=>null),...w.map(()=>wkPresPace)];
+    const _paceStartW=w.findIndex(x=>(parseInt((x.week||'0').replace('WEEK ',''))||0)===0);
+    const _psW=_paceStartW>=0?_paceStartW:0;
+    allLeadsPace=[..._filtPreWW.map(()=>null),...w.map((_,i)=>i<_psW?null:wkLeadPace)];
+    allPresPace=[..._filtPreWW.map(()=>null),...w.map((_,i)=>i<_psW?null:wkPresPace)];
   }
   const _showPace2w=!_isPreL2w;
   const _hasPresData=allPresDelta&&allPresDelta.some(v=>v!=null&&v>0);

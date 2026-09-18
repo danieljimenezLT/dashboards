@@ -747,7 +747,7 @@ def sum_week_data(wn, ws_date, we_date, data_name, full_name,
                   leads_by_date, sales_by_date, ig_fc,
                   meta_spend_by_date, gads_spend_by_date,
                   gr_spend_by_week=None, events_by_week=None,
-                  other_spend_by_week=None):
+                  other_spend_by_week=None, w0_floor=None):
     """Sum all per-week metrics for a single week bound.
     Meta/Google spend are date-keyed (from APIs); grassroots/events/other are week-number-keyed
     (directly from 'Weekly Events & Spend' sheet where 'Week N' = studio Week N)."""
@@ -791,7 +791,10 @@ def sum_week_data(wn, ws_date, we_date, data_name, full_name,
         gads_spend  += gads_spend_by_date.get(d_str, 0.0)
 
     if ws_date is None:
-        # Week 0: all date-keyed data up to and including we_date
+        # Week 0: all date-keyed data from w0_floor (day after the last negative
+        # pre-week ends, if any) up to and including we_date. Without the floor,
+        # this would re-sum everything from the beginning of time — double-counting
+        # every negative pre-week's leads/presales/cancellations into Week 0.
         all_dates = set()
         for lookup in (leads_by_date.get(data_name, {}),
                        sales_by_date.get(full_name, {})):
@@ -800,8 +803,9 @@ def sum_week_data(wn, ws_date, we_date, data_name, full_name,
         all_dates.update(meta_spend_by_date.keys())
         all_dates.update(gads_spend_by_date.keys())
         we_str = we_date.isoformat()
+        w0_str = w0_floor.isoformat() if w0_floor else None
         for d_str in sorted(all_dates):
-            if d_str <= we_str:
+            if d_str <= we_str and (w0_str is None or d_str >= w0_str):
                 _add_day(d_str)
     else:
         day = ws_date
@@ -1079,6 +1083,7 @@ def main():
                 gr_spend_by_week=gr_spend_d,
                 events_by_week=events_d,
                 other_spend_by_week=other_spend_d,
+                w0_floor=_w0_start_eff,
             )
 
             cum_leads    += w["leads"]

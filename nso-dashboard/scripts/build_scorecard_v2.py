@@ -352,6 +352,7 @@ def main():
                 gr_spend_by_week=gr_spend_d,
                 events_by_week=events_d,
                 other_spend_by_week=other_spend_d,
+                w0_floor=_w0_start_eff,
             )
             cum_leads    += w["leads"]
             cum_presales += w["presales"]
