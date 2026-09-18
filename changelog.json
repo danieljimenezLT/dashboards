@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-09-18",
+      "pr_number": 387,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/387",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix Herriman scorecard chart showing wrong weeks, duplicate labels, and inflated presales",
+      "summary": "Herriman's scorecard starts 12 weeks before its official Week 0, a case the chart and the data pipeline hadn't handled — this caused duplicate x-axis labels, the chart cutting off early, membership numbers showing in the wrong week, and presales counts inflated by ~100 due to a double-counting bug in the scorecard builder. All fixed."
+    },
+    {
       "date": "2026-09-17",
       "pr_number": 386,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/386",
