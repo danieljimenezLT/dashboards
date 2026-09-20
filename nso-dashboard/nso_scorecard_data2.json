@@ -749,7 +749,7 @@
           "presales_count": 322.0,
           "cancellations_week": 2,
           "cancellations_count": 33.0,
-          "grassroots_leads": 2,
+          "grassroots_leads": 3,
           "grassroots_presales": 1,
           "digital_presales_week": 4,
           "digital_cancellations_week": 0,
@@ -3622,12 +3622,6 @@
         "estimated_roms_target": "5x",
         "tier0_price": 99
       },
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-02-02",
       "tier_daily_sales": [
         {
           "date": "2025-10-30",
@@ -4145,7 +4139,13 @@
           "date": "2026-08-28",
           "count": 2
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-02-02"
     },
     {
       "name": "Herriman",
@@ -10747,7 +10747,7 @@
           "date_end": "2026-07-11",
           "new_leads": 39,
           "total_leads": 328.0,
-          "digital_leads_week": 19,
+          "digital_leads_week": 20,
           "presales_week": 10,
           "presales_count": 60.0,
           "cancellations_week": 1,
@@ -20185,7 +20185,7 @@
           "presales_count": 171.0,
           "cancellations_week": 1,
           "cancellations_count": 2.0,
-          "grassroots_leads": 69,
+          "grassroots_leads": 70,
           "grassroots_presales": 22,
           "digital_presales_week": 0,
           "digital_cancellations_week": 0,
