@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-21",
+      "pr_number": 391,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/391",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Timeline charts now show the latest number",
+      "summary": "Every trend chart on the internal scorecard now shows a \"LAST\" label with each line's most recent number, so you don't have to hover to see it."
+    },
+    {
+      "date": "2026-09-21",
       "pr_number": 390,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/390",
       "author": "Sebastian Arango",
