@@ -450,9 +450,15 @@ function buildStudio(cfg) {
       _spend:       ts2,
       _meta_spend:  ms,
       _google_spend:gs,
-      _conv:        (w.conversion_rate!=null)?        Number(w.conversion_rate)        : null,
-      _cpl:         (w.blended_cpl!=null)?            Number(w.blended_cpl)            : null,
-      _cpa:         (w.blended_cpa!=null)?            Number(w.blended_cpa)            : null,
+      // Computed from post_opening_source_data.json (allWk), not the
+      // scorecard's own conversion_rate field — keeps this page fully
+      // independent of the shared scorecard pipeline's data quality.
+      _conv:        allWk.leads ? (allWk.sales||0)/allWk.leads*100 : null,
+      // Same independence rationale as _conv above — weekly spend (ts2, from
+      // the scorecard, always populated) over leads/sales from
+      // post_opening_source_data.json, not the scorecard's blended_cpl/cpa.
+      _cpl:         (ts2 && allWk.leads) ? ts2/allWk.leads : null,
+      _cpa:         (ts2 && allWk.sales) ? ts2/allWk.sales : null,
       _digital:     dl,
       isOpening:    i === openIdx,
       isPostOpening:i  > openIdx,
