@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SWEAT440 — Opened Studios</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../shared/style.css"/>
+<style>
+/* ── Page ── */
+.page-header{padding:20px 0 16px;border-bottom:0.5px solid #dde8ef;margin-bottom:18px}
+.page-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#00A3E0}
+.page-sub{font-size:12px;color:#5a7a8a;margin-top:3px}
+
+/* ── Studio pills ── */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.pill{display:flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;background:#fff;border:1.5px solid #dde8ef;cursor:pointer;transition:all .15s;user-select:none;font-family:'Open Sans',sans-serif}
+.pill.off{opacity:.32}
+.pill-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.pill-avg .pill-dot{background:none;border-top:2px dashed #8aaabb;width:14px;border-radius:0}
+
+/* ── Tabs ── */
+.tab-bar{display:flex;gap:2px;border-bottom:2px solid #dde8ef;margin-bottom:16px}
+.tab-btn{font-family:'Oswald',sans-serif;font-style:italic;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.5px;padding:9px 18px;border:none;background:transparent;color:#5a7a8a;cursor:pointer;border-radius:6px 6px 0 0;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab-btn:hover{color:#00A3E0}
+.tab-btn.active{color:#00A3E0;border-bottom-color:#00A3E0;background:#fff}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ── Metric selector ── */
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:16px}
+.ctrl-label{font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#5a7a8a}
+.metric-group{display:flex;gap:4px;flex-wrap:wrap}
+.metric-btn{padding:5px 13px;border-radius:6px;border:1.5px solid #dde8ef;background:#fff;color:#5a7a8a;font-family:'Open Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.metric-btn.active{background:#00A3E0;border-color:#00A3E0;color:#fff}
+
+/* ── KPI strip (4 tiles) ── */
+.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.kpi-tile{background:#fff;border:0.5px solid #dde8ef;border-radius:10px;padding:12px 14px}
+.kpi-tile-studio{font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.kpi-tile-val{font-size:22px;font-weight:700;color:#1a1a2e;line-height:1;font-variant-numeric:tabular-nums}
+.kpi-tile-val.best{color:#0a8a4a}
+.kpi-tile-sub{font-size:10px;color:#8aaabb;margin-top:3px}
+.kpi-tile-delta{font-size:10px;font-weight:600;margin-top:5px}
+.kpi-tile-delta.pos{color:#0a8a4a}.kpi-tile-delta.neg{color:#d32f2f}.kpi-tile-delta.neu{color:#5a7a8a}
+
+/* ── Opening legend ── */
+.open-legend{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:14px;font-size:11px;color:#5a7a8a;font-family:'Open Sans',sans-serif}
+.open-legend-item{display:flex;align-items:center;gap:6px}
+.open-dash{width:20px;height:0;border-top:2px dashed;flex-shrink:0}
+
+/* ── Mini KPI row ── */
+.kpi-mini-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.kpi-mini{background:#fff;border:0.5px solid #dde8ef;border-radius:8px;padding:10px 12px}
+.kpi-mini-label{font-family:'Oswald',sans-serif;font-style:italic;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:#5a7a8a;margin-bottom:3px}
+.kpi-mini-val{font-family:'Open Sans',sans-serif;font-size:18px;font-weight:700;color:#1a1a2e;font-variant-numeric:tabular-nums}
+.kpi-mini-sub{font-size:10px;color:#8aaabb;margin-top:2px}
+
+@media(max-width:768px){
+  .kpi-strip{grid-template-columns:repeat(2,1fr)}
+  .kpi-mini-row{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo"><a href="../index.html"><img src="../logo.png" alt="SWEAT440"/></a></div>
+  <div class="nav-tabs">
+    <button class="nav-tab" onclick="location.href='nso-studios.html'">NSO Dashboard</button>
+    <button class="nav-tab active">Opened Studios</button>
+  </div>
+</nav>
+
+<div class="main">
+
+<div class="page-header">
+  <div class="page-title">Opened Studios — Week-by-Week Comparison</div>
+  <div class="page-sub" id="page-sub">Studios aligned from Week 0 (presales start) through today</div>
+</div>
+
+<!-- Studio pills -->
+<div class="pills" id="pills"></div>
+
+<!-- Tab bar -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="setTab('overview',this)">Overview</button>
+  <button class="tab-btn" onclick="setTab('meta',this)">Meta Ads</button>
+  <button class="tab-btn" onclick="setTab('google',this)">Google Ads</button>
+  <button class="tab-btn" onclick="setTab('grassroots',this)">Grassroots</button>
+  <button class="tab-btn" onclick="setTab('blended',this)">Blended CPR</button>
+</div>
+
+<!-- ── TAB: OVERVIEW ──────────────────────────────────────── -->
+<div id="tab-overview" class="tab-content active">
+  <div class="controls">
+    <span class="ctrl-label">Metric:</span>
+    <div class="metric-group">
+      <button class="metric-btn active" onclick="setMetric('overview','leads_cumul',this)">Leads (cumul.)</button>
+      <button class="metric-btn" onclick="setMetric('overview','presales',this)">Presales (cumul.)</button>
+      <button class="metric-btn" onclick="setMetric('overview','conv',this)">Conv. Rate</button>
+    </div>
+  </div>
+  <div class="open-legend" id="open-legend-ov"></div>
+  <div class="chart-card">
+    <div class="chart-card-title" id="ov-chart-title">Cumulative Presales — All Studios from Week 0</div>
+    <canvas id="chart-ov" height="90"></canvas>
+  </div>
+  <p class="kpi-group-title" style="margin-bottom:10px">Overview — Avg per Week</p>
+  <div class="kpi-strip" id="ov-avg-kpi-strip"></div>
+  <div class="chart-card">
+    <div class="chart-card-title">Studio Summary</div>
+    <div style="overflow-x:auto">
+    <table class="data-table" id="ov-table">
+      <thead><tr>
+        <th>Studio</th>
+        <th class="num">Opened</th>
+        <th class="num">Weeks in NSO</th>
+        <th class="num">Total Leads</th>
+        <th class="num">Total Presales</th>
+        <th class="num">Peak Leads/Wk</th>
+        <th class="num">Peak Presales/Wk</th>
+        <th class="num">Total Spend</th>
+        <th class="num">Final CPL</th>
+        <th class="num">Final CPS</th>
+        <th class="num">Final Conv. Rate</th>
+      </tr></thead>
+      <tbody id="ov-tbody"></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── TAB: META ADS ──────────────────────────────────────── -->
+<div id="tab-meta" class="tab-content">
+  <div class="controls">
+    <span class="ctrl-label">Metric:</span>
+    <div class="metric-group">
+      <button class="metric-btn active" onclick="setMetric('meta','meta_leads_cumul',this)">Leads (cumul.)</button>
+      <button class="metric-btn" onclick="setMetric('meta','meta_sales_cumul',this)">Sales (cumul.)</button>
+    </div>
+  </div>
+  <div class="open-legend" id="open-legend-meta"></div>
+  <div class="chart-card">
+    <div class="chart-card-title" id="meta-chart-title">Meta Spend per Week — All Studios from Week 0</div>
+    <canvas id="chart-meta" height="90"></canvas>
+  </div>
+  <p class="kpi-group-title" style="margin-bottom:10px">Meta — Avg per Week</p>
+  <div class="kpi-strip" id="meta-avg-kpi-strip"></div>
+  <div class="chart-card">
+    <div class="chart-card-title">Meta Ads Detail</div>
+    <div style="overflow-x:auto">
+    <table class="data-table" id="meta-table">
+      <thead><tr>
+        <th>Studio</th>
+        <th class="num">Total Meta Spend</th>
+        <th class="num">% of Total Mktg</th>
+        <th class="num">Total Meta Leads</th>
+        <th class="num">Total Meta Sales</th>
+        <th class="num">Meta CPL</th>
+        <th class="num">Meta CPS</th>
+      </tr></thead>
+      <tbody id="meta-tbody"></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── TAB: GOOGLE ADS ────────────────────────────────────── -->
+<div id="tab-google" class="tab-content">
+  <div class="controls">
+    <span class="ctrl-label">Metric:</span>
+    <div class="metric-group">
+      <button class="metric-btn active" onclick="setMetric('google','google_leads_cumul',this)">Leads (cumul.)</button>
+      <button class="metric-btn" onclick="setMetric('google','google_sales_cumul',this)">Sales (cumul.)</button>
+    </div>
+  </div>
+  <div class="open-legend" id="open-legend-google"></div>
+  <div class="chart-card">
+    <div class="chart-card-title" id="google-chart-title">Google Spend per Week — All Studios from Week 0</div>
+    <canvas id="chart-google" height="90"></canvas>
+  </div>
+  <p class="kpi-group-title" style="margin-bottom:10px">Google — Avg per Week</p>
+  <div class="kpi-strip" id="google-avg-kpi-strip"></div>
+  <div class="chart-card">
+    <div class="chart-card-title">Google Ads Detail</div>
+    <div style="overflow-x:auto">
+    <table class="data-table" id="google-table">
+      <thead><tr>
+        <th>Studio</th>
+        <th class="num">Total Google Spend</th>
+        <th class="num">% of Total Mktg</th>
+        <th class="num">Total Google Leads</th>
+        <th class="num">Total Google Sales</th>
+        <th class="num">Google CPL</th>
+        <th class="num">Google CPS</th>
+      </tr></thead>
+      <tbody id="google-tbody"></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── TAB: GRASSROOTS ───────────────────────────────────── -->
+<div id="tab-grassroots" class="tab-content">
+  <div class="controls">
+    <span class="ctrl-label">Metric:</span>
+    <div class="metric-group">
+      <button class="metric-btn active" onclick="setMetric('grassroots','gr_leads_cumul',this)">Leads (cumul.)</button>
+      <button class="metric-btn" onclick="setMetric('grassroots','gr_presales_cumul',this)">Presales (cumul.)</button>
+      <button class="metric-btn" onclick="setMetric('grassroots','gr_events_cumul',this)">Comm. Events (cumul.)</button>
+    </div>
+  </div>
+  <div class="open-legend" id="open-legend-grassroots"></div>
+  <div class="chart-card">
+    <div class="chart-card-title" id="grassroots-chart-title">Cumulative Grassroots Leads — All Studios from Week 0</div>
+    <canvas id="chart-grassroots" height="90"></canvas>
+  </div>
+  <p class="kpi-group-title" style="margin-bottom:10px">Grassroots — Avg per Week</p>
+  <div class="kpi-strip" id="grassroots-avg-kpi-strip"></div>
+  <div class="chart-card">
+    <div class="chart-card-title">Grassroots Detail</div>
+    <div style="overflow-x:auto">
+    <table class="data-table" id="grassroots-table">
+      <thead><tr>
+        <th>Studio</th>
+        <th class="num">Total Grassroots Spend</th>
+        <th class="num">Total Grassroots Leads</th>
+        <th class="num">Total Grassroots Presales</th>
+        <th class="num">Total Comm. Events</th>
+        <th class="num">Grassroots CPL</th>
+        <th class="num">Grassroots CPS</th>
+      </tr></thead>
+      <tbody id="grassroots-tbody"></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── TAB: BLENDED CPR ───────────────────────────────────── -->
+<div id="tab-blended" class="tab-content">
+  <div class="controls">
+    <span class="ctrl-label">Metric:</span>
+    <div class="metric-group">
+      <button class="metric-btn active" onclick="setMetric('blended','blended_cpl',this)">Blended CPL</button>
+      <button class="metric-btn" onclick="setMetric('blended','blended_cpa',this)">Blended CPA</button>
+      <button class="metric-btn" onclick="setMetric('blended','total_spend',this)">Total Spend</button>
+    </div>
+  </div>
+  <div class="open-legend" id="open-legend-blended"></div>
+  <div class="chart-card">
+    <div class="chart-card-title" id="blended-chart-title">Blended CPL — All Studios from Week 0</div>
+    <canvas id="chart-blended" height="90"></canvas>
+  </div>
+  <p class="kpi-group-title" style="margin-bottom:10px">Blended CPR — Avg per Week</p>
+  <div class="kpi-strip" id="blended-avg-kpi-strip"></div>
+  <div class="chart-card">
+    <div class="chart-card-title">CPR by Studio</div>
+    <div style="overflow-x:auto">
+    <table class="data-table" id="blended-table">
+      <thead><tr>
+        <th>Studio</th>
+        <th class="num">Total Spend</th>
+        <th class="num">Spend / Week</th>
+        <th class="num">Final CPL</th>
+        <th class="num">Final CPA</th>
+      </tr></thead>
+      <tbody id="blended-tbody"></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="../shared/utils.js"></script>
+<script>
+// ── Studio config ──────────────────────────────────────────────────────────────
+const STUDIO_CFG = [
+  { sc_name:'Naples - Mercato', label:'Naples – Mercato', color:'#00A3E0', fill:'rgba(0,163,224,.1)' },
+  { sc_name:'Reston',           label:'Reston',           color:'#8a9a00', fill:'rgba(138,154,0,.1)'  },
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let SC     = null;
+let RAW    = null;            // data.json — per-source daily leads/sales (Meta Ads breakout)
+let studioData = [];         // processed studio objects
+let active = STUDIO_CFG.map(() => true);
+let showAvg = true;
+let currentTab = 'overview';
+let metrics = { overview:'leads_cumul', meta:'meta_leads_cumul', google:'google_leads_cumul', grassroots:'gr_leads_cumul', blended:'blended_cpl' };
+const charts = {};
+
+// ── Load ──────────────────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const res = await fetch('nso_scorecard_data2.json?_=' + Date.now());
+    SC = await res.json();
+  } catch(e) { SC = { studios: [] }; }
+  try {
+    // Full-history (no current-year cutoff) leads/sales by source — data.json
+    // only covers the current calendar year forward, which truncates studios
+    // like Reston whose presale campaign started the year before.
+    const res2 = await fetch('post_opening_source_data.json?_=' + Date.now());
+    RAW = await res2.json();
+  } catch(e) { RAW = { daily_detail: [] }; }
+
+  studioData = STUDIO_CFG.map(cfg => buildStudio(cfg));
+  buildPills();
+  renderAll();
+
+  const ts = SC.generated_at || '';
+  if (ts) {
+    const d = new Date(ts);
+    document.getElementById('page-sub').textContent =
+      'Studios aligned from Week 0 (presales start) · Data as of ' +
+      d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  }
+}
+
+// ── Meta-only leads/sales (from data.json's per-source daily_detail) ───────────
+function addDaysISO(iso, n) {
+  const d = new Date(iso+'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate()+n);
+  return d.toISOString().slice(0,10);
+}
+function sumSourceInRange(sc_name, source, fromStr, toStr) {
+  if (!fromStr || !toStr) return { leads:0, sales:0 };
+  const rows = (RAW.daily_detail||[]).filter(r =>
+    r.studio===sc_name && r.source===source && r.date>=fromStr && r.date<=toStr
+  );
+  return {
+    leads: rows.reduce((a,r)=>a+(r.signups||0),0),
+    sales: rows.reduce((a,r)=>a+(r.first_sales||0),0),
+  };
+}
+function avg(arr) {
+  const v = arr.filter(x=>x!=null);
+  return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null;
+}
+
+function sumAllSourcesInRange(sc_name, fromStr, toStr) {
+  if (!fromStr || !toStr) return { leads:0, sales:0 };
+  const rows = (RAW.daily_detail||[]).filter(r =>
+    r.studio===sc_name && r.date>=fromStr && r.date<=toStr
+  );
+  return {
+    leads: rows.reduce((a,r)=>a+(r.signups||0),0),
+    sales: rows.reduce((a,r)=>a+(r.first_sales||0),0),
+  };
+}
+
+// ── Build studio data ─────────────────────────────────────────────────────────
+function buildStudio(cfg) {
+  const sc = (SC.studios||[]).find(s => s.name === cfg.sc_name);
+  if (!sc) return { ...cfg, weeks:[], openIdx:-1 };
+
+  const rawWeeks = sc.weeks || [];
+  // Align week 0 across studios: some studios (e.g. Naples) have negative
+  // pre-open weeks before "Week 0" while others don't. Using the raw array
+  // index as "week N since Week 0" would misalign studios by however many
+  // pre-weeks each one has, which defeats the point of this side-by-side
+  // comparison. Slice off anything before Week 0 so relIdx=0 always means
+  // Week 0 for every studio.
+  const w0Idx = rawWeeks.findIndex(w => (parseInt((w.week||'0').replace('WEEK ',''))||0) === 0);
+  const weeks = rawWeeks.slice(w0Idx >= 0 ? w0Idx : 0).map((w,i) => ({ ...w, relIdx:i }));
+
+  // Week 0 has no date_start (see build_scorecard_v2.py) — use the day after
+  // the previous (pre-open) week ends as its effective start, so Meta
+  // leads/sales for Week 0 aren't double-counted with earlier weeks.
+  const _w0PrevEnd = (w0Idx > 0) ? rawWeeks[w0Idx-1].date_end : null;
+
+  // Find opening week (contains opening_date)
+  const openDate = sc.opening_date ? new Date(sc.opening_date+'T12:00:00') : null;
+  let openIdx = -1;
+  if (openDate) {
+    for (let i=0;i<weeks.length;i++) {
+      const w = weeks[i];
+      if (!w.date_end) continue;
+      const end   = new Date(w.date_end+'T23:59:59');
+      const start = w.date_start ? new Date(w.date_start+'T00:00:00') : new Date(0);
+      if (openDate >= start && openDate <= end) { openIdx=i; break; }
+    }
+  }
+
+  // Compute derived fields per week
+  let lastPresales = 0, lastMetaLeads = 0, lastMetaSales = 0, lastGoogleLeads = 0, lastGoogleSales = 0;
+  let lastAllLeads = 0, lastAllSales = 0, lastGrLeads = 0, lastGrSales = 0, lastEvents = 0;
+  const processed = weeks.map((w,i) => {
+    // Cumulative presales — use presales_count if available, else carry forward
+    const pc = (w.presales_count != null) ? Number(w.presales_count) : null;
+    if (pc != null) lastPresales = pc;
+    const presales_cumul = lastPresales;
+
+    // Meta/Google/Grassroots + all-sources leads/sales for this week (from
+    // post_opening_source_data.json's full-history per-source rows)
+    const wkFrom = w.date_start || (i===0 && _w0PrevEnd ? addDaysISO(_w0PrevEnd,1) : null);
+    const metaWk   = sumSourceInRange(cfg.sc_name, 'Meta Ads',   wkFrom, w.date_end);
+    const googleWk = sumSourceInRange(cfg.sc_name, 'Google Ads', wkFrom, w.date_end);
+    const grWk     = sumSourceInRange(cfg.sc_name, 'Grassroots', wkFrom, w.date_end);
+    const allWk    = sumAllSourcesInRange(cfg.sc_name, wkFrom, w.date_end);
+    lastAllLeads += allWk.leads;
+    lastAllSales += allWk.sales;
+    lastMetaLeads += metaWk.leads;
+    lastMetaSales += metaWk.sales;
+    lastGrLeads += grWk.leads;
+    lastGrSales += grWk.sales;
+    lastEvents += w.comm_events || 0;
+    lastGoogleLeads += googleWk.leads;
+    lastGoogleSales += googleWk.sales;
+
+    // Meta CPL estimate = meta_spend / digital_leads_week
+    const dl = (w.digital_leads_week != null && Number(w.digital_leads_week) > 0) ? Number(w.digital_leads_week) : null;
+    const ms = (w.meta_spend != null) ? Number(w.meta_spend) : null;
+    const meta_cpl = (ms != null && dl != null && dl > 0) ? ms/dl : null;
+
+    // Google share
+    const gs = (w.google_spend != null) ? Number(w.google_spend) : null;
+    const ts2 = (w.total_marketing_spend != null) ? Number(w.total_marketing_spend) : null;
+    const google_share = (gs != null && ts2 != null && ts2 > 0) ? (gs/ts2)*100 : null;
+
+    return {
+      ...w,
+      presales_cumul,
+      meta_cpl,
+      google_share,
+      _leads:       (w.new_leads!=null)?              Number(w.new_leads)              : null,
+      _leadsCumul:  (w.total_leads!=null)?            Number(w.total_leads)            : null,
+      _presalesWk:  (w.presales_week!=null)?          Number(w.presales_week) - (w.cancellations_week!=null?Number(w.cancellations_week):0) : null,
+      _metaLeadsWk:    metaWk.leads,
+      _metaSalesWk:    metaWk.sales,
+      _metaLeadsCumul: lastMetaLeads,
+      _metaSalesCumul: lastMetaSales,
+      _googleLeadsWk:    googleWk.leads,
+      _googleSalesWk:    googleWk.sales,
+      _googleLeadsCumul: lastGoogleLeads,
+      _googleSalesCumul: lastGoogleSales,
+      _allLeadsWk:    allWk.leads,
+      _allSalesWk:    allWk.sales,
+      _allLeadsCumul: lastAllLeads,
+      _allSalesCumul: lastAllSales,
+      _grLeadsWk:    grWk.leads,
+      _grSalesWk:    grWk.sales,
+      _grLeadsCumul: lastGrLeads,
+      _grSalesCumul: lastGrSales,
+      _eventsWk:    w.comm_events || 0,
+      _eventsCumul: lastEvents,
+      _grSpend:     (w.grassroots_spend!=null)? Number(w.grassroots_spend) : null,
+      _spend:       ts2,
+      _meta_spend:  ms,
+      _google_spend:gs,
+      // Computed from post_opening_source_data.json (allWk), not the
+      // scorecard's own conversion_rate field — keeps this page fully
+      // independent of the shared scorecard pipeline's data quality.
+      _conv:        allWk.leads ? (allWk.sales||0)/allWk.leads*100 : null,
+      // Same independence rationale as _conv above — weekly spend (ts2, from
+      // the scorecard, always populated) over leads/sales from
+      // post_opening_source_data.json, not the scorecard's blended_cpl/cpa.
+      _cpl:         (ts2 && allWk.leads) ? ts2/allWk.leads : null,
+      _cpa:         (ts2 && allWk.sales) ? ts2/allWk.sales : null,
+      _digital:     dl,
+      isOpening:    i === openIdx,
+      isPostOpening:i  > openIdx,
+    };
+  });
+
+  // This page compares pre-opening NSO performance only — cut off at the
+  // opening week so post-opening weeks (already a different phase, run
+  // under the Open Studio dashboard) don't drag the chart/table further.
+  const finalWeeks = openIdx >= 0 ? processed.slice(0, openIdx+1) : processed;
+
+  return { ...cfg, sc, weeks:finalWeeks, openIdx, openDate:sc.opening_date };
+}
+
+// ── Pills ─────────────────────────────────────────────────────────────────────
+function buildPills() {
+  const c = document.getElementById('pills');
+  c.innerHTML = '';
+  STUDIO_CFG.forEach((s,i) => {
+    const p = document.createElement('div');
+    p.className = 'pill' + (active[i]?'':' off');
+    p.innerHTML = `<div class="pill-dot" style="background:${s.color}"></div>${s.label}`;
+    p.onclick = () => { active[i]=!active[i]; p.classList.toggle('off',!active[i]); renderAll(); };
+    c.appendChild(p);
+  });
+  const avg = document.createElement('div');
+  avg.className = 'pill pill-avg' + (showAvg?'':' off');
+  avg.innerHTML = `<div class="pill-dot"></div>Average`;
+  avg.onclick = () => { showAvg=!showAvg; avg.classList.toggle('off',!showAvg); renderAll(); };
+  c.appendChild(avg);
+}
+
+// ── Render all ────────────────────────────────────────────────────────────────
+function renderAll() {
+  buildOpeningLegends();
+  if (currentTab==='overview') buildOverview();
+  else if (currentTab==='meta') buildMeta();
+  else if (currentTab==='google') buildGoogle();
+  else if (currentTab==='grassroots') buildGrassroots();
+  else if (currentTab==='blended') buildBlended();
+}
+
+// ── Opening legends ───────────────────────────────────────────────────────────
+function buildOpeningLegends() {
+  ['ov','meta','google','grassroots','blended'].forEach(t => {
+    const el = document.getElementById('open-legend-'+t);
+    if (!el) return;
+    el.innerHTML = studioData.filter((_,i)=>active[i]).map(s =>
+      `<div class="open-legend-item">
+        <div class="open-dash" style="border-color:${s.color}"></div>
+        ${s.label}: opens <strong>${s.openDate ? new Date(s.openDate+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—'}</strong>
+        (W${s.openIdx})
+      </div>`
+    ).join('');
+  });
+}
+
+// ── Generic chart builder ─────────────────────────────────────────────────────
+const MAX_WEEKS = () => Math.max(...studioData.map(s=>s.weeks.length), 1);
+
+function getVal(w, metric) {
+  if (!w) return null;
+  switch(metric) {
+    case 'presales':      return w.presales_cumul;
+    case 'leads':         return w._leads;
+    case 'leads_cumul':   return w._leadsCumul;
+    case 'spend':         return w._spend;
+    case 'conv':          return w._conv;
+    case 'meta_spend':    return w._meta_spend;
+    case 'meta_cpl':      return w.meta_cpl;
+    case 'digital_leads': return w._digital;
+    case 'meta_leads_cumul': return w._metaLeadsCumul;
+    case 'meta_sales_cumul': return w._metaSalesCumul;
+    case 'google_leads_cumul': return w._googleLeadsCumul;
+    case 'google_sales_cumul': return w._googleSalesCumul;
+    case 'gr_leads_cumul':    return w._grLeadsCumul;
+    case 'gr_presales_cumul': return w._grSalesCumul;
+    case 'gr_events_cumul':   return w._eventsCumul;
+    case 'google_spend':  return w._google_spend;
+    case 'google_share':  return w.google_share;
+    case 'blended_cpl':   return w._cpl;
+    case 'blended_cpa':   return w._cpa;
+    case 'total_spend':   return w._spend;
+  }
+  return null;
+}
+
+const METRIC_META = {
+  presales:      { title:'Cumulative Presales — All Studios from Week 0',   fmt:v=>`${Math.round(v)}`,           yFmt:v=>`${Math.round(v)}`,      lowerBetter:false },
+  leads:         { title:'New Leads per Week — All Studios from Week 0',    fmt:v=>`${Math.round(v)}`,           yFmt:v=>`${Math.round(v)}`,      lowerBetter:false },
+  leads_cumul:   { title:'Cumulative Leads — All Studios from Week 0',      fmt:v=>`${Math.round(v)}`,           yFmt:v=>`${Math.round(v)}`,      lowerBetter:false },
+  spend:         { title:'Marketing Spend per Week ($)',                     fmt:v=>`$${Math.round(v).toLocaleString()}`, yFmt:v=>`$${Math.round(v)}`,lowerBetter:false },
+  conv:          { title:'Conversion Rate (%) — All Studios from Week 0',   fmt:v=>`${v.toFixed(1)}%`,           yFmt:v=>`${v.toFixed(0)}%`,     lowerBetter:false },
+  meta_spend:    { title:'Meta Spend per Week ($)',                          fmt:v=>`$${Math.round(v).toLocaleString()}`, yFmt:v=>`$${Math.round(v)}`,lowerBetter:false },
+  meta_cpl:      { title:'Meta CPL (est.) per Week ($)',                    fmt:v=>`$${v.toFixed(0)}`,           yFmt:v=>`$${v.toFixed(0)}`,     lowerBetter:true  },
+  digital_leads: { title:'Digital Leads per Week',                          fmt:v=>`${Math.round(v)}`,           yFmt:v=>`${Math.round(v)}`,     lowerBetter:false },
+  meta_leads_cumul: { title:'Cumulative Meta Leads — All Studios from Week 0', fmt:v=>`${Math.round(v)}`,        yFmt:v=>`${Math.round(v)}`,     lowerBetter:false },
+  meta_sales_cumul: { title:'Cumulative Meta Sales — All Studios from Week 0', fmt:v=>`${Math.round(v)}`,        yFmt:v=>`${Math.round(v)}`,     lowerBetter:false },
+  google_spend:  { title:'Google Spend per Week ($)',                        fmt:v=>`$${Math.round(v).toLocaleString()}`, yFmt:v=>`$${Math.round(v)}`,lowerBetter:false },
+  google_share:  { title:'Google % of Total Marketing Spend',               fmt:v=>`${v.toFixed(1)}%`,           yFmt:v=>`${v.toFixed(0)}%`,     lowerBetter:false },
+  google_leads_cumul: { title:'Cumulative Google Leads — All Studios from Week 0', fmt:v=>`${Math.round(v)}`,    yFmt:v=>`${Math.round(v)}`,     lowerBetter:false },
+  google_sales_cumul: { title:'Cumulative Google Sales — All Studios from Week 0', fmt:v=>`${Math.round(v)}`,    yFmt:v=>`${Math.round(v)}`,     lowerBetter:false },
+  gr_leads_cumul:    { title:'Cumulative Grassroots Leads — All Studios from Week 0',    fmt:v=>`${Math.round(v)}`, yFmt:v=>`${Math.round(v)}`, lowerBetter:false },
+  gr_presales_cumul: { title:'Cumulative Grassroots Presales — All Studios from Week 0', fmt:v=>`${Math.round(v)}`, yFmt:v=>`${Math.round(v)}`, lowerBetter:false },
+  gr_events_cumul:   { title:'Cumulative Community Events — All Studios from Week 0',    fmt:v=>`${Math.round(v)}`, yFmt:v=>`${Math.round(v)}`, lowerBetter:false },
+  blended_cpl:   { title:'Blended CPL ($) — All Studios from Week 0',       fmt:v=>`$${v.toFixed(2)}`,           yFmt:v=>`$${v.toFixed(0)}`,     lowerBetter:true  },
+  blended_cpa:   { title:'Blended CPA ($) — All Studios from Week 0',       fmt:v=>`$${v.toFixed(0)}`,           yFmt:v=>`$${v.toFixed(0)}`,     lowerBetter:true  },
+  total_spend:   { title:'Total Marketing Spend per Week ($)',               fmt:v=>`$${Math.round(v).toLocaleString()}`, yFmt:v=>`$${Math.round(v)}`,lowerBetter:false },
+};
+
+// Plugin: vertical opening markers
+const openingPlugin = {
+  id:'openingLines',
+  afterDraw(chart) {
+    const ctx = chart.ctx;
+    studioData.forEach((s,i) => {
+      if (!active[i] || s.openIdx < 0) return;
+      const meta = chart.getDatasetMeta(i);
+      if (!meta || !meta.data[s.openIdx]) return;
+      const x = meta.data[s.openIdx].x;
+      ctx.save();
+      ctx.strokeStyle = s.color + 'aa';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([5,4]);
+      ctx.beginPath();
+      ctx.moveTo(x, chart.chartArea.top);
+      ctx.lineTo(x, chart.chartArea.bottom);
+      ctx.stroke();
+      // Label
+      ctx.fillStyle = s.color + 'dd';
+      ctx.font = '600 10px Open Sans';
+      ctx.fillText('↑ opens', x+3, chart.chartArea.top+14);
+      ctx.restore();
+    });
+  }
+};
+
+function buildLineChart(canvasId, metric) {
+  if (charts[canvasId]) charts[canvasId].destroy();
+  const m   = METRIC_META[metric];
+  const max = MAX_WEEKS();
+  const labels = Array.from({length:max},(_,i)=>`W${i}`);
+
+  const datasets = studioData.map((s,i) => ({
+    label:   s.label,
+    data:    labels.map((_,j) => getVal(s.weeks[j], metric)),
+    borderColor: s.color,
+    backgroundColor: s.fill,
+    borderWidth: 2,
+    pointRadius: 2,
+    pointHoverRadius: 5,
+    tension: 0.35,
+    fill: false,
+    hidden: !active[i],
+    spanGaps: false,
+  }));
+
+  // Average dataset
+  const avgData = labels.map((_,j) => {
+    const vals = studioData.filter((_,i)=>active[i]).map(s=>getVal(s.weeks[j],metric)).filter(v=>v!=null);
+    return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+  });
+  datasets.push({
+    label:'Average', data:avgData,
+    borderColor:'#8aaabb', backgroundColor:'transparent',
+    borderWidth:1.5, borderDash:[6,4], pointRadius:0, tension:0.35, fill:false,
+    hidden:!showAvg, spanGaps:false,
+  });
+
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  charts[canvasId] = new Chart(ctx, {
+    type:'line', data:{labels, datasets},
+    plugins:[openingPlugin],
+    options:{
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          label:c => c.raw!=null ? `${c.dataset.label}: ${m.fmt(c.raw)}` : null,
+          title:([c])=>`Week ${c.dataIndex}`,
+        }},
+      },
+      scales:{
+        x:{grid:{color:'#eef3f7'},ticks:{font:{family:'Open Sans',size:10},color:'#5a7a8a',maxTicksLimit:20}},
+        y:{grid:{color:'#eef3f7'},ticks:{font:{family:'Open Sans',size:10},color:'#5a7a8a',callback:v=>m.yFmt(v)},beginAtZero:true},
+      },
+    },
+  });
+}
+
+// ── KPI strip builder ─────────────────────────────────────────────────────────
+function buildKpiStrip(stripId, metric, atOpening=true) {
+  const el   = document.getElementById(stripId);
+  const m    = METRIC_META[metric];
+  const actStudios = studioData.filter((_,i)=>active[i]);
+  if (!actStudios.length) { el.innerHTML='<div style="color:#8aaabb;font-size:12px">Select at least one studio</div>'; return; }
+
+  const vals = actStudios.map(s => {
+    const w = atOpening && s.openIdx>=0 ? s.weeks[s.openIdx] : s.weeks[s.weeks.length-1];
+    return w ? getVal(w, metric) : null;
+  });
+  const valid = vals.filter(v=>v!=null);
+  const avg   = valid.length ? valid.reduce((a,b)=>a+b,0)/valid.length : 0;
+  const best  = valid.length ? (m.lowerBetter ? Math.min(...valid) : Math.max(...valid)) : null;
+
+  el.innerHTML = actStudios.map((s,i) => {
+    const v    = vals[i];
+    const diff = v!=null ? v - avg : null;
+    const isBest = v!=null && v===best;
+    const posGood = m.lowerBetter ? (diff!=null && diff<0) : (diff!=null && diff>0);
+    return `<div class="kpi-tile">
+      <div class="kpi-tile-studio" style="color:${s.color}">${s.label}</div>
+      <div class="kpi-tile-val${isBest?' best':''}">${v!=null?m.fmt(v):'—'}</div>
+      <div class="kpi-tile-sub">${atOpening?'at opening week':'at final week'}${isBest?' 🏆':''}</div>
+      ${diff!=null?`<div class="kpi-tile-delta ${posGood?'pos':'neg'}">${diff>=0?'+':''}${m.fmt(diff)} vs avg</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ── Overview ──────────────────────────────────────────────────────────────────
+function buildOverviewAvgStrip() {
+  const el = document.getElementById('ov-avg-kpi-strip');
+  const actStudios = studioData.filter((_,i)=>active[i]);
+  if (!actStudios.length) { el.innerHTML='<div style="color:#8aaabb;font-size:12px">Select at least one studio</div>'; return; }
+  // Weekly conv. rate (that week's presales / that week's leads), then
+  // averaged across weeks — same "average of weekly values" pattern as avg
+  // leads/presales per week, rather than the pooled total-sales/total-leads
+  // rate (that's what "Final Conv. Rate" in the table below already shows).
+  const wkConv = w => w._allLeadsWk ? (w._allSalesWk||0)/w._allLeadsWk*100 : null;
+  el.innerHTML = actStudios.map(s => {
+    const n = s.weeks.length || 1;
+    const totalLeads = s.weeks.reduce((a,w)=>a+(w._allLeadsWk||0),0);
+    const totalSales = s.weeks.reduce((a,w)=>a+(w._allSalesWk||0),0);
+    const avgLeads = totalLeads / n;
+    const avgPresales = totalSales / n;
+    const convRate = avg(s.weeks.map(wkConv));
+    return `<div class="kpi-tile">
+      <div class="kpi-tile-studio" style="color:${s.color}">${s.label}</div>
+      <div class="kpi-tile-val">${avgLeads.toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg leads / week</div>
+      <div class="kpi-tile-val" style="margin-top:8px">${avgPresales.toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg presales / week</div>
+      <div class="kpi-tile-val" style="margin-top:8px">${convRate!=null?convRate.toFixed(1)+'%':'—'}</div>
+      <div class="kpi-tile-sub">avg conv. rate / week</div>
+    </div>`;
+  }).join('') + (() => {
+    // Combined across all active studios (weighted: total leads/sales over
+    // total studio-weeks, not an average of the per-studio averages) — except
+    // conv. rate, which pools every week's own rate into one array and
+    // averages that, matching the per-studio calculation above.
+    const totalWeeks = actStudios.reduce((a,s)=>a+(s.weeks.length||0),0) || 1;
+    const totalLeadsAll = actStudios.reduce((a,s)=>a+s.weeks.reduce((b,w)=>b+(w._allLeadsWk||0),0),0);
+    const totalSalesAll = actStudios.reduce((a,s)=>a+s.weeks.reduce((b,w)=>b+(w._allSalesWk||0),0),0);
+    const convRateAll = avg(actStudios.flatMap(s=>s.weeks.map(wkConv)));
+    return `<div class="kpi-tile" style="background:#f4f9fd;border-color:#c0d4df">
+      <div class="kpi-tile-studio" style="color:#5a7a8a">ALL STUDIOS</div>
+      <div class="kpi-tile-val">${(totalLeadsAll/totalWeeks).toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg leads / week</div>
+      <div class="kpi-tile-val" style="margin-top:8px">${(totalSalesAll/totalWeeks).toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg presales / week</div>
+      <div class="kpi-tile-val" style="margin-top:8px">${convRateAll!=null?convRateAll.toFixed(1)+'%':'—'}</div>
+      <div class="kpi-tile-sub">avg conv. rate / week</div>
+    </div>`;
+  })();
+}
+
+function buildOverview() {
+  const metric = metrics.overview;
+  const m      = METRIC_META[metric];
+  document.getElementById('ov-chart-title').textContent = m.title;
+  buildLineChart('chart-ov', metric);
+  buildOverviewAvgStrip();
+
+  // Summary table
+  const tbody = document.getElementById('ov-tbody');
+  const actStudios = studioData.filter((_,i)=>active[i]);
+  const allPresales = actStudios.map(s => s.openIdx>=0&&s.weeks[s.openIdx] ? s.weeks[s.openIdx].presales_cumul : null).filter(v=>v!=null);
+  const maxPresales = allPresales.length ? Math.max(...allPresales) : null;
+  const allPeak     = actStudios.map(s => Math.max(...s.weeks.map(w=>w._leads||0)));
+  const allPeakPresales = actStudios.map(s => Math.max(...s.weeks.map(w=>w._presalesWk||0)));
+  const allSpend    = actStudios.map(s => s.weeks.reduce((a,w)=>a+(w._spend||0),0));
+  // Blended CPL/CPS: total spend / cumulative totals through the opening week
+  // (not a single week's blended_cpl/blended_cpa, which is noisy week to week).
+  const allTotalLeads    = actStudios.map(s => { const last=[...s.weeks].reverse().find(w=>w._leadsCumul!=null); return last?last._leadsCumul:null; });
+  const allTotalPresales = actStudios.map(s => { const last=[...s.weeks].reverse().find(w=>w.presales_cumul!=null); return last?last.presales_cumul:null; });
+  const allCpl      = actStudios.map((s,i) => (allTotalLeads[i]    ? allSpend[i]/allTotalLeads[i]    : null));
+  const allCps      = actStudios.map((s,i) => (allTotalPresales[i] ? allSpend[i]/allTotalPresales[i] : null));
+  const allConvRate = actStudios.map((s,i) => (allTotalLeads[i] && allTotalPresales[i]!=null ? allTotalPresales[i]/allTotalLeads[i]*100 : null));
+
+  tbody.innerHTML = actStudios.map((s,i) => {
+    const atOpen = s.openIdx>=0 ? s.weeks[s.openIdx] : null;
+    const presalesAtOpen = atOpen ? atOpen.presales_cumul : null;
+    const isBestPresales = presalesAtOpen!=null && presalesAtOpen===maxPresales;
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div style="width:24px;height:3px;border-radius:2px;background:${s.color}"></div>${s.label}
+      </div></td>
+      <td class="num">${s.openDate?new Date(s.openDate+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—'}</td>
+      <td class="num">${s.openIdx>=0?s.openIdx:'—'}</td>
+      <td class="num">${allTotalLeads[i]!=null?Math.round(allTotalLeads[i]):'—'}</td>
+      <td class="num" ${isBestPresales?'style="color:#0a8a4a;font-weight:700"':''}>${presalesAtOpen!=null?Math.round(presalesAtOpen):'—'}</td>
+      <td class="num">${allPeak[i]>0?allPeak[i]:'—'}</td>
+      <td class="num">${allPeakPresales[i]>0?allPeakPresales[i]:'—'}</td>
+      <td class="num">$${Math.round(allSpend[i]).toLocaleString()}</td>
+      <td class="num">${allCpl[i]!=null?'$'+allCpl[i].toFixed(2):'—'}</td>
+      <td class="num">${allCps[i]!=null?'$'+allCps[i].toFixed(2):'—'}</td>
+      <td class="num">${allConvRate[i]!=null?allConvRate[i].toFixed(1)+'%':'—'}</td>
+    </tr>`;
+  }).join('') + (actStudios.length>1 ? `<tr style="font-weight:700;border-top:2px solid #dde8ef">
+      <td>AVERAGE</td>
+      <td class="num">—</td>
+      <td class="num">${avg(actStudios.map(s=>s.openIdx))!=null?Math.round(avg(actStudios.map(s=>s.openIdx))):'—'}</td>
+      <td class="num">${avg(allTotalLeads)!=null?Math.round(avg(allTotalLeads)):'—'}</td>
+      <td class="num">${avg(actStudios.map(s=>s.openIdx>=0&&s.weeks[s.openIdx]?s.weeks[s.openIdx].presales_cumul:null))!=null?Math.round(avg(actStudios.map(s=>s.openIdx>=0&&s.weeks[s.openIdx]?s.weeks[s.openIdx].presales_cumul:null))):'—'}</td>
+      <td class="num">${avg(allPeak)!=null?Math.round(avg(allPeak)):'—'}</td>
+      <td class="num">${avg(allPeakPresales)!=null?Math.round(avg(allPeakPresales)):'—'}</td>
+      <td class="num">$${Math.round(avg(allSpend)||0).toLocaleString()}</td>
+      <td class="num">${avg(allCpl)!=null?'$'+avg(allCpl).toFixed(2):'—'}</td>
+      <td class="num">${avg(allCps)!=null?'$'+avg(allCps).toFixed(2):'—'}</td>
+      <td class="num">${avg(allConvRate)!=null?avg(allConvRate).toFixed(1)+'%':'—'}</td>
+    </tr>` : '');
+}
+
+// ── Meta Ads ──────────────────────────────────────────────────────────────────
+function buildMetaAvgStrip() {
+  const el = document.getElementById('meta-avg-kpi-strip');
+  const actStudios = studioData.filter((_,i)=>active[i]);
+  if (!actStudios.length) { el.innerHTML='<div style="color:#8aaabb;font-size:12px">Select at least one studio</div>'; return; }
+  el.innerHTML = actStudios.map(s => {
+    const n = s.weeks.length || 1;
+    const avgLeads = s.weeks.reduce((a,w)=>a+(w._metaLeadsWk||0),0) / n;
+    const avgSales = s.weeks.reduce((a,w)=>a+(w._metaSalesWk||0),0) / n;
+    return `<div class="kpi-tile">
+      <div class="kpi-tile-studio" style="color:${s.color}">${s.label}</div>
+      <div class="kpi-tile-val">${avgLeads.toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg Meta leads / week</div>
+      <div class="kpi-tile-val" style="margin-top:8px">${avgSales.toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg Meta sales / week</div>
+    </div>`;
+  }).join('') + (() => {
+    const totalWeeks = actStudios.reduce((a,s)=>a+(s.weeks.length||0),0) || 1;
+    const totalLeadsAll = actStudios.reduce((a,s)=>a+s.weeks.reduce((b,w)=>b+(w._metaLeadsWk||0),0),0);
+    const totalSalesAll = actStudios.reduce((a,s)=>a+s.weeks.reduce((b,w)=>b+(w._metaSalesWk||0),0),0);
+    return `<div class="kpi-tile" style="background:#f4f9fd;border-color:#c0d4df">
+      <div class="kpi-tile-studio" style="color:#5a7a8a">ALL STUDIOS</div>
+      <div class="kpi-tile-val">${(totalLeadsAll/totalWeeks).toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg Meta leads / week</div>
+      <div class="kpi-tile-val" style="margin-top:8px">${(totalSalesAll/totalWeeks).toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg Meta sales / week</div>
+    </div>`;
+  })();
+}
+
+function buildMeta() {
+  const metric = metrics.meta;
+  document.getElementById('meta-chart-title').textContent = METRIC_META[metric].title;
+  buildLineChart('chart-meta', metric);
+  buildMetaAvgStrip();
+
+  const actStudios = studioData.filter((_,i)=>active[i]);
+  const allTotalMeta  = actStudios.map(s => s.weeks.reduce((a,w)=>a+(w._meta_spend||0),0));
+  const allTotalSpend = actStudios.map(s => s.weeks.reduce((a,w)=>a+(w._spend||0),0));
+  const allTotalMetaLeads = actStudios.map(s => { const last=[...s.weeks].reverse().find(w=>w._metaLeadsCumul!=null); return last?last._metaLeadsCumul:0; });
+  const allTotalMetaSales = actStudios.map(s => { const last=[...s.weeks].reverse().find(w=>w._metaSalesCumul!=null); return last?last._metaSalesCumul:0; });
+  const allMetaCpl = actStudios.map((s,i) => allTotalMetaLeads[i] ? allTotalMeta[i]/allTotalMetaLeads[i] : null);
+  const allMetaCps = actStudios.map((s,i) => allTotalMetaSales[i] ? allTotalMeta[i]/allTotalMetaSales[i] : null);
+  const allMetaShare = actStudios.map((s,i) => allTotalSpend[i]>0 ? allTotalMeta[i]/allTotalSpend[i]*100 : null);
+
+  const maxMeta = Math.max(...allTotalMeta);
+  document.getElementById('meta-tbody').innerHTML = actStudios.map((s,i)=>
+    `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:3px;border-radius:2px;background:${s.color}"></div>${s.label}</div></td>
+      <td class="num" ${allTotalMeta[i]===maxMeta?'style="color:#0a8a4a;font-weight:700"':''}>${'$'+Math.round(allTotalMeta[i]).toLocaleString()}</td>
+      <td class="num">${allMetaShare[i]!=null?allMetaShare[i].toFixed(1)+'%':'—'}</td>
+      <td class="num">${allTotalMetaLeads[i]||'—'}</td>
+      <td class="num">${allTotalMetaSales[i]||'—'}</td>
+      <td class="num">${allMetaCpl[i]!=null?'$'+allMetaCpl[i].toFixed(2):'—'}</td>
+      <td class="num">${allMetaCps[i]!=null?'$'+allMetaCps[i].toFixed(2):'—'}</td>
+    </tr>`
+  ).join('') + (actStudios.length>1 ? `<tr style="font-weight:700;border-top:2px solid #dde8ef">
+      <td>AVERAGE</td>
+      <td class="num">$${Math.round(avg(allTotalMeta)||0).toLocaleString()}</td>
+      <td class="num">${avg(allMetaShare)!=null?avg(allMetaShare).toFixed(1)+'%':'—'}</td>
+      <td class="num">${avg(allTotalMetaLeads)!=null?Math.round(avg(allTotalMetaLeads)):'—'}</td>
+      <td class="num">${avg(allTotalMetaSales)!=null?Math.round(avg(allTotalMetaSales)):'—'}</td>
+      <td class="num">${avg(allMetaCpl)!=null?'$'+avg(allMetaCpl).toFixed(2):'—'}</td>
+      <td class="num">${avg(allMetaCps)!=null?'$'+avg(allMetaCps).toFixed(2):'—'}</td>
+    </tr>` : '');
+}
+
+// ── Google Ads ────────────────────────────────────────────────────────────────
+function buildGoogleAvgStrip() {
+  const el = document.getElementById('google-avg-kpi-strip');
+  const actStudios = studioData.filter((_,i)=>active[i]);
+  if (!actStudios.length) { el.innerHTML='<div style="color:#8aaabb;font-size:12px">Select at least one studio</div>'; return; }
+  el.innerHTML = actStudios.map(s => {
+    const n = s.weeks.length || 1;
+    const avgLeads = s.weeks.reduce((a,w)=>a+(w._googleLeadsWk||0),0) / n;
+    const avgSales = s.weeks.reduce((a,w)=>a+(w._googleSalesWk||0),0) / n;
+    return `<div class="kpi-tile">
+      <div class="kpi-tile-studio" style="color:${s.color}">${s.label}</div>
+      <div class="kpi-tile-val">${avgLeads.toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg Google leads / week</div>
+      <div class="kpi-tile-val" style="margin-top:8px">${avgSales.toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg Google sales / week</div>
+    </div>`;
+  }).join('') + (() => {
+    const totalWeeks = actStudios.reduce((a,s)=>a+(s.weeks.length||0),0) || 1;
+    const totalLeadsAll = actStudios.reduce((a,s)=>a+s.weeks.reduce((b,w)=>b+(w._googleLeadsWk||0),0),0);
+    const totalSalesAll = actStudios.reduce((a,s)=>a+s.weeks.reduce((b,w)=>b+(w._googleSalesWk||0),0),0);
+    return `<div class="kpi-tile" style="background:#f4f9fd;border-color:#c0d4df">
+      <div class="kpi-tile-studio" style="color:#5a7a8a">ALL STUDIOS</div>
+      <div class="kpi-tile-val">${(totalLeadsAll/totalWeeks).toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg Google leads / week</div>
+      <div class="kpi-tile-val" style="margin-top:8px">${(totalSalesAll/totalWeeks).toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg Google sales / week</div>
+    </div>`;
+  })();
+}
+
+function buildGoogle() {
+  const metric = metrics.google;
+  document.getElementById('google-chart-title').textContent = METRIC_META[metric].title;
+  buildLineChart('chart-google', metric);
+  buildGoogleAvgStrip();
+
+  const actStudios = studioData.filter((_,i)=>active[i]);
+  const allTotalGoogle = actStudios.map(s => s.weeks.reduce((a,w)=>a+(w._google_spend||0),0));
+  const allTotalSpend  = actStudios.map(s => s.weeks.reduce((a,w)=>a+(w._spend||0),0));
+  const allTotalGoogleLeads = actStudios.map(s => { const last=[...s.weeks].reverse().find(w=>w._googleLeadsCumul!=null); return last?last._googleLeadsCumul:0; });
+  const allTotalGoogleSales = actStudios.map(s => { const last=[...s.weeks].reverse().find(w=>w._googleSalesCumul!=null); return last?last._googleSalesCumul:0; });
+  const allGoogleCpl = actStudios.map((s,i) => allTotalGoogleLeads[i] ? allTotalGoogle[i]/allTotalGoogleLeads[i] : null);
+  const allGoogleCps = actStudios.map((s,i) => allTotalGoogleSales[i] ? allTotalGoogle[i]/allTotalGoogleSales[i] : null);
+  const allGoogleShare = actStudios.map((s,i) => allTotalSpend[i]>0 ? allTotalGoogle[i]/allTotalSpend[i]*100 : null);
+
+  const maxGoogle = Math.max(...allTotalGoogle);
+  document.getElementById('google-tbody').innerHTML = actStudios.map((s,i)=>
+    `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:3px;border-radius:2px;background:${s.color}"></div>${s.label}</div></td>
+      <td class="num" ${allTotalGoogle[i]===maxGoogle?'style="color:#0a8a4a;font-weight:700"':''}>${'$'+Math.round(allTotalGoogle[i]).toLocaleString()}</td>
+      <td class="num">${allGoogleShare[i]!=null?allGoogleShare[i].toFixed(1)+'%':'—'}</td>
+      <td class="num">${allTotalGoogleLeads[i]||'—'}</td>
+      <td class="num">${allTotalGoogleSales[i]||'—'}</td>
+      <td class="num">${allGoogleCpl[i]!=null?'$'+allGoogleCpl[i].toFixed(2):'—'}</td>
+      <td class="num">${allGoogleCps[i]!=null?'$'+allGoogleCps[i].toFixed(2):'—'}</td>
+    </tr>`
+  ).join('') + (actStudios.length>1 ? `<tr style="font-weight:700;border-top:2px solid #dde8ef">
+      <td>AVERAGE</td>
+      <td class="num">$${Math.round(avg(allTotalGoogle)||0).toLocaleString()}</td>
+      <td class="num">${avg(allGoogleShare)!=null?avg(allGoogleShare).toFixed(1)+'%':'—'}</td>
+      <td class="num">${avg(allTotalGoogleLeads)!=null?Math.round(avg(allTotalGoogleLeads)):'—'}</td>
+      <td class="num">${avg(allTotalGoogleSales)!=null?Math.round(avg(allTotalGoogleSales)):'—'}</td>
+      <td class="num">${avg(allGoogleCpl)!=null?'$'+avg(allGoogleCpl).toFixed(2):'—'}</td>
+      <td class="num">${avg(allGoogleCps)!=null?'$'+avg(allGoogleCps).toFixed(2):'—'}</td>
+    </tr>` : '');
+}
+
+// ── Grassroots ───────────────────────────────────────────────────────────────
+function buildGrassrootsAvgStrip() {
+  const el = document.getElementById('grassroots-avg-kpi-strip');
+  const actStudios = studioData.filter((_,i)=>active[i]);
+  if (!actStudios.length) { el.innerHTML='<div style="color:#8aaabb;font-size:12px">Select at least one studio</div>'; return; }
+  el.innerHTML = actStudios.map(s => {
+    const n = s.weeks.length || 1;
+    const avgLeads = s.weeks.reduce((a,w)=>a+(w._grLeadsWk||0),0) / n;
+    const avgSales = s.weeks.reduce((a,w)=>a+(w._grSalesWk||0),0) / n;
+    const avgEvents = s.weeks.reduce((a,w)=>a+(w._eventsWk||0),0) / n;
+    return `<div class="kpi-tile">
+      <div class="kpi-tile-studio" style="color:${s.color}">${s.label}</div>
+      <div class="kpi-tile-val">${avgLeads.toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg grassroots leads / week</div>
+      <div class="kpi-tile-val" style="margin-top:8px">${avgSales.toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg grassroots presales / week</div>
+      <div class="kpi-tile-val" style="margin-top:8px">${avgEvents.toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg comm. events / week</div>
+    </div>`;
+  }).join('') + (() => {
+    const totalWeeks = actStudios.reduce((a,s)=>a+(s.weeks.length||0),0) || 1;
+    const totalLeadsAll = actStudios.reduce((a,s)=>a+s.weeks.reduce((b,w)=>b+(w._grLeadsWk||0),0),0);
+    const totalSalesAll = actStudios.reduce((a,s)=>a+s.weeks.reduce((b,w)=>b+(w._grSalesWk||0),0),0);
+    const totalEventsAll = actStudios.reduce((a,s)=>a+s.weeks.reduce((b,w)=>b+(w._eventsWk||0),0),0);
+    return `<div class="kpi-tile" style="background:#f4f9fd;border-color:#c0d4df">
+      <div class="kpi-tile-studio" style="color:#5a7a8a">ALL STUDIOS</div>
+      <div class="kpi-tile-val">${(totalLeadsAll/totalWeeks).toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg grassroots leads / week</div>
+      <div class="kpi-tile-val" style="margin-top:8px">${(totalSalesAll/totalWeeks).toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg grassroots presales / week</div>
+      <div class="kpi-tile-val" style="margin-top:8px">${(totalEventsAll/totalWeeks).toFixed(1)}</div>
+      <div class="kpi-tile-sub">avg comm. events / week</div>
+    </div>`;
+  })();
+}
+
+function buildGrassroots() {
+  const metric = metrics.grassroots;
+  document.getElementById('grassroots-chart-title').textContent = METRIC_META[metric].title;
+  buildLineChart('chart-grassroots', metric);
+  buildGrassrootsAvgStrip();
+
+  const actStudios = studioData.filter((_,i)=>active[i]);
+  const allTotalGr = actStudios.map(s => s.weeks.reduce((a,w)=>a+(w._grSpend||0),0));
+  const allTotalGrLeads = actStudios.map(s => { const last=[...s.weeks].reverse().find(w=>w._grLeadsCumul!=null); return last?last._grLeadsCumul:0; });
+  const allTotalGrSales = actStudios.map(s => { const last=[...s.weeks].reverse().find(w=>w._grSalesCumul!=null); return last?last._grSalesCumul:0; });
+  const allTotalEvents  = actStudios.map(s => { const last=[...s.weeks].reverse().find(w=>w._eventsCumul!=null); return last?last._eventsCumul:0; });
+  const allGrCpl = actStudios.map((s,i) => allTotalGrLeads[i] ? allTotalGr[i]/allTotalGrLeads[i] : null);
+  const allGrCps = actStudios.map((s,i) => allTotalGrSales[i] ? allTotalGr[i]/allTotalGrSales[i] : null);
+
+  const maxGr = Math.max(...allTotalGr);
+  document.getElementById('grassroots-tbody').innerHTML = actStudios.map((s,i)=>
+    `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:3px;border-radius:2px;background:${s.color}"></div>${s.label}</div></td>
+      <td class="num" ${allTotalGr[i]===maxGr?'style="color:#0a8a4a;font-weight:700"':''}>${'$'+Math.round(allTotalGr[i]).toLocaleString()}</td>
+      <td class="num">${allTotalGrLeads[i]||'—'}</td>
+      <td class="num">${allTotalGrSales[i]||'—'}</td>
+      <td class="num">${allTotalEvents[i]||'—'}</td>
+      <td class="num">${allGrCpl[i]!=null?'$'+allGrCpl[i].toFixed(2):'—'}</td>
+      <td class="num">${allGrCps[i]!=null?'$'+allGrCps[i].toFixed(2):'—'}</td>
+    </tr>`
+  ).join('') + (actStudios.length>1 ? `<tr style="font-weight:700;border-top:2px solid #dde8ef">
+      <td>AVERAGE</td>
+      <td class="num">$${Math.round(avg(allTotalGr)||0).toLocaleString()}</td>
+      <td class="num">${avg(allTotalGrLeads)!=null?Math.round(avg(allTotalGrLeads)):'—'}</td>
+      <td class="num">${avg(allTotalGrSales)!=null?Math.round(avg(allTotalGrSales)):'—'}</td>
+      <td class="num">${avg(allTotalEvents)!=null?Math.round(avg(allTotalEvents)):'—'}</td>
+      <td class="num">${avg(allGrCpl)!=null?'$'+avg(allGrCpl).toFixed(2):'—'}</td>
+      <td class="num">${avg(allGrCps)!=null?'$'+avg(allGrCps).toFixed(2):'—'}</td>
+    </tr>` : '');
+}
+
+// ── Blended CPR ───────────────────────────────────────────────────────────────
+function buildBlendedAvgStrip() {
+  const el = document.getElementById('blended-avg-kpi-strip');
+  const actStudios = studioData.filter((_,i)=>active[i]);
+  if (!actStudios.length) { el.innerHTML='<div style="color:#8aaabb;font-size:12px">Select at least one studio</div>'; return; }
+  // Weekly CPL/CPA (that week's spend / that week's leads or sales), then
+  // averaged across weeks — same "average of weekly values" pattern used for
+  // avg leads/presales/sales per week elsewhere, just applied to a ratio.
+  const wkCpl = w => (w._spend && w._allLeadsWk) ? w._spend/w._allLeadsWk : null;
+  const wkCpa = w => (w._spend && w._allSalesWk) ? w._spend/w._allSalesWk : null;
+  const perStudio = actStudios.map(s => {
+    const n = s.weeks.length || 1;
+    const spend = s.weeks.reduce((a,w)=>a+(w._spend||0),0);
+    return { s, spendPerWk: spend/n, cpl: avg(s.weeks.map(wkCpl)), cpa: avg(s.weeks.map(wkCpa)) };
+  });
+  el.innerHTML = perStudio.map(({s,spendPerWk,cpl,cpa}) => `<div class="kpi-tile">
+      <div class="kpi-tile-studio" style="color:${s.color}">${s.label}</div>
+      <div class="kpi-tile-val">$${Math.round(spendPerWk).toLocaleString()}</div>
+      <div class="kpi-tile-sub">avg spend / week</div>
+      <div class="kpi-tile-val" style="margin-top:8px">${cpl!=null?'$'+cpl.toFixed(2):'—'}</div>
+      <div class="kpi-tile-sub">avg blended CPL / week</div>
+      <div class="kpi-tile-val" style="margin-top:8px">${cpa!=null?'$'+cpa.toFixed(2):'—'}</div>
+      <div class="kpi-tile-sub">avg blended CPA / week</div>
+    </div>`).join('') + (() => {
+    const totalWeeks = actStudios.reduce((a,s)=>a+(s.weeks.length||0),0) || 1;
+    const totalSpendAll = actStudios.reduce((a,s)=>a+s.weeks.reduce((b,w)=>b+(w._spend||0),0),0);
+    const allWkCpl = actStudios.flatMap(s=>s.weeks.map(wkCpl));
+    const allWkCpa = actStudios.flatMap(s=>s.weeks.map(wkCpa));
+    const cplAll = avg(allWkCpl);
+    const cpaAll = avg(allWkCpa);
+    return `<div class="kpi-tile" style="background:#f4f9fd;border-color:#c0d4df">
+      <div class="kpi-tile-studio" style="color:#5a7a8a">ALL STUDIOS</div>
+      <div class="kpi-tile-val">$${Math.round(totalSpendAll/totalWeeks).toLocaleString()}</div>
+      <div class="kpi-tile-sub">avg spend / week</div>
+      <div class="kpi-tile-val" style="margin-top:8px">${cplAll!=null?'$'+cplAll.toFixed(2):'—'}</div>
+      <div class="kpi-tile-sub">avg blended CPL / week</div>
+      <div class="kpi-tile-val" style="margin-top:8px">${cpaAll!=null?'$'+cpaAll.toFixed(2):'—'}</div>
+      <div class="kpi-tile-sub">avg blended CPA / week</div>
+    </div>`;
+  })();
+}
+
+function buildBlended() {
+  const metric = metrics.blended;
+  document.getElementById('blended-chart-title').textContent = METRIC_META[metric].title;
+  buildLineChart('chart-blended', metric);
+  buildBlendedAvgStrip();
+
+  const actStudios = studioData.filter((_,i)=>active[i]);
+
+  // Table — Final CPL/CPA use total spend / cumulative totals through the
+  // opening week (not a single week's blended_cpl/blended_cpa, which swings
+  // wildly week to week — e.g. Reston's WEEK 43 alone was $12.29 vs $171 four
+  // weeks earlier, just from that one week's leads).
+  const allSpend      = actStudios.map(s=>s.weeks.reduce((a,w)=>a+(w._spend||0),0));
+  const allSpendPerWk = actStudios.map((s,i)=>s.weeks.length ? allSpend[i]/s.weeks.length : null);
+  // Leads/sales come from post_opening_source_data.json (full history, all
+  // sources combined) rather than the scorecard's total_leads/presales_count,
+  // which can still be short a few early weeks for studios like Reston.
+  const allTotalLeads    = actStudios.map(s => { const last=[...s.weeks].reverse().find(w=>w._allLeadsCumul!=null); return last?last._allLeadsCumul:null; });
+  const allTotalPresales = actStudios.map(s => { const last=[...s.weeks].reverse().find(w=>w._allSalesCumul!=null); return last?last._allSalesCumul:null; });
+  const allFinalCpl = actStudios.map((s,i) => (allTotalLeads[i]    ? allSpend[i]/allTotalLeads[i]    : null));
+  const allFinalCpa = actStudios.map((s,i) => (allTotalPresales[i] ? allSpend[i]/allTotalPresales[i] : null));
+
+  const minFinalCpl = Math.min(...allFinalCpl.filter(v=>v!=null));
+  document.getElementById('blended-tbody').innerHTML = actStudios.map((s,i)=>{
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:3px;border-radius:2px;background:${s.color}"></div>${s.label}</div></td>
+      <td class="num">$${Math.round(allSpend[i]).toLocaleString()}</td>
+      <td class="num">${allSpendPerWk[i]!=null?'$'+Math.round(allSpendPerWk[i]).toLocaleString():'—'}</td>
+      <td class="num" ${allFinalCpl[i]===minFinalCpl?'style="color:#0a8a4a;font-weight:700"':''}>${allFinalCpl[i]!=null?'$'+allFinalCpl[i].toFixed(2):'—'}</td>
+      <td class="num">${allFinalCpa[i]!=null?'$'+allFinalCpa[i].toFixed(2):'—'}</td>
+    </tr>`;
+  }).join('') + (actStudios.length>1 ? `<tr style="font-weight:700;border-top:2px solid #dde8ef">
+      <td>AVERAGE</td>
+      <td class="num">$${Math.round(avg(allSpend)||0).toLocaleString()}</td>
+      <td class="num">${avg(allSpendPerWk)!=null?'$'+Math.round(avg(allSpendPerWk)).toLocaleString():'—'}</td>
+      <td class="num">${avg(allFinalCpl)!=null?'$'+avg(allFinalCpl).toFixed(2):'—'}</td>
+      <td class="num">${avg(allFinalCpa)!=null?'$'+avg(allFinalCpa).toFixed(2):'—'}</td>
+    </tr>` : '');
+}
+
+// ── Tab + metric switching ────────────────────────────────────────────────────
+function setTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  renderAll();
+}
+function setMetric(tab, metric, btn) {
+  metrics[tab] = metric;
+  btn.closest('.metric-group').querySelectorAll('.metric-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
