@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-21",
+      "pr_number": 389,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/389",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix NSO summary cards being held back by the chart's data-freshness wait",
+      "summary": "A recent fix made the Leads & Presales chart wait for a complete week's data before showing it — but the same \"current week\" calculation was also used by the Presale Timeline marker, Last 7 Full Days, and Total to Date cards, which held those back too even though they're meant to show live data as it arrives. Scoped the wait to just the chart."
+    },
+    {
+      "date": "2026-09-21",
       "pr_number": 388,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/388",
       "author": "Sebastian Arango",
