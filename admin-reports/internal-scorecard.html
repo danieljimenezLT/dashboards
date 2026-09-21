@@ -24,6 +24,17 @@
 .cpl-studio-col{border-right:1.5px solid #dde8ef}
 .data-table thead .cpl-frozen-col{background:#f4f9fd;z-index:3}
 .data-table tbody tr:hover .cpl-frozen-col{background:#f7fbff}
+.chart-with-last{display:flex;align-items:stretch;gap:12px;width:100%}
+.chart-last-panel{display:flex;flex-direction:column;justify-content:center;gap:8px;min-width:68px;padding:0 0 0 12px;border-left:1px dashed #dde8ef}
+.chart-last-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#8aa5b3;margin-bottom:2px}
+.chart-last-row{display:flex;align-items:center;gap:6px;white-space:nowrap;transition:opacity .15s}
+.chart-last-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.chart-last-val{font-family:'Open Sans',sans-serif;font-size:13px;font-weight:700;color:#1a1a2e}
+@media(max-width:768px){
+  .chart-with-last{flex-direction:column;gap:6px}
+  .chart-last-panel{flex-direction:row;flex-wrap:wrap;border-left:none;border-top:1px dashed #dde8ef;padding:8px 0 0;gap:14px;min-width:0}
+  .chart-last-title{width:100%;margin-bottom:0}
+}
 </style>
 </head>
 <body>
@@ -108,7 +119,10 @@
           <button class="gran-btn" id="osGranMonthly" onclick="setOsGran('monthly')">Monthly</button>
         </div>
       </div>
-      <div style="position:relative;width:100%;height:260px"><canvas id="osTrendChart"></canvas></div>
+      <div class="chart-with-last">
+        <div style="position:relative;flex:1;min-width:0;height:260px"><canvas id="osTrendChart"></canvas></div>
+        <div class="chart-last-panel" id="osTrendLast"></div>
+      </div>
     </div>
 
     <div class="section-title">Blended CPR</div>
@@ -125,7 +139,10 @@
           <button class="gran-btn" id="osCprGranMonthly" onclick="setOsCprGran('monthly')">Monthly</button>
         </div>
       </div>
-      <div style="position:relative;width:100%;height:260px"><canvas id="osCprChart"></canvas></div>
+      <div class="chart-with-last">
+        <div style="position:relative;flex:1;min-width:0;height:260px"><canvas id="osCprChart"></canvas></div>
+        <div class="chart-last-panel" id="osCprLast"></div>
+      </div>
     </div>
     <div class="chart-card" style="margin:0 24px 20px">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
@@ -207,12 +224,18 @@
           <button class="gran-btn" id="nsoGranMonthly" onclick="setNsoGran('monthly')">Monthly</button>
         </div>
       </div>
-      <div style="position:relative;width:100%;height:260px"><canvas id="nsoTrendChart"></canvas></div>
+      <div class="chart-with-last">
+        <div style="position:relative;flex:1;min-width:0;height:260px"><canvas id="nsoTrendChart"></canvas></div>
+        <div class="chart-last-panel" id="nsoTrendLast"></div>
+      </div>
     </div>
     <div id="nsoCvrKpis" class="kpi-grid three" style="margin:0 24px 20px"></div>
     <div class="chart-card" style="margin:0 24px 20px">
       <div class="chart-card-title">Lead → Net Sale conversion rate over time</div>
-      <div style="position:relative;width:100%;height:260px"><canvas id="nsoCvrChart"></canvas></div>
+      <div class="chart-with-last">
+        <div style="position:relative;flex:1;min-width:0;height:260px"><canvas id="nsoCvrChart"></canvas></div>
+        <div class="chart-last-panel" id="nsoCvrLast"></div>
+      </div>
     </div>
 
     <div class="section-title">Blended CPR</div>
@@ -230,7 +253,10 @@
           <button class="gran-btn" id="nsoCprGranMonthly" onclick="setNsoCprGran('monthly')">Monthly</button>
         </div>
       </div>
-      <div style="position:relative;width:100%;height:260px"><canvas id="nsoCprChart"></canvas></div>
+      <div class="chart-with-last">
+        <div style="position:relative;flex:1;min-width:0;height:260px"><canvas id="nsoCprChart"></canvas></div>
+        <div class="chart-last-panel" id="nsoCprLast"></div>
+      </div>
     </div>
     <div class="chart-card" style="margin:0 24px 20px">
       <div class="chart-card-title">Studio Summary</div>
@@ -418,6 +444,20 @@ function applyFilters(){
   else applyNsoFilters();
 }
 
+// Renders the "LAST" column beside a timeline chart: one row per dataset,
+// showing its most recent non-null value in the dataset's own color, so a
+// reader gets the latest number without having to hover the chart.
+function renderChartLast(panelId, chart, fmt){
+  const panel=document.getElementById(panelId); if(!panel||!chart) return;
+  fmt = fmt || (v=>v==null?'—':v.toLocaleString());
+  const rows=chart.data.datasets.map(ds=>{
+    let v=null;
+    for(let i=ds.data.length-1;i>=0;i--){ if(ds.data[i]!=null){ v=ds.data[i]; break; } }
+    return `<div class="chart-last-row"${ds.hidden?' style="opacity:.35"':''}><span class="chart-last-dot" style="background:${ds.borderColor}"></span><span class="chart-last-val">${fmt(v)}</span></div>`;
+  }).join('');
+  panel.innerHTML = '<div class="chart-last-title">Last</div>' + rows;
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    OS TAB
    ══════════════════════════════════════════════════════════════════════════ */
@@ -584,6 +624,7 @@ function toggleOsTrendDs(btn, i){
   if(btn.classList.contains('on')){ btn.style.background=cols[i]; btn.style.borderColor=cols[i]; btn.style.color='#000'; btn.querySelector('.dot').style.background='#000'; }
   else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
   osTrendChart.update();
+  renderChartLast('osTrendLast', osTrendChart);
 }
 function toggleOsCprDs(btn, i){
   if(!osCprChart) return;
@@ -593,6 +634,7 @@ function toggleOsCprDs(btn, i){
   if(btn.classList.contains('on')){ btn.style.background=cols[i]; btn.style.borderColor=cols[i]; btn.style.color='#000'; }
   else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
   osCprChart.update();
+  renderChartLast('osCprLast', osCprChart, v=>v==null?'—':'$'+v.toLocaleString());
 }
 
 function osCheckCPRWarning(){
@@ -637,7 +679,9 @@ function buildOsTrend(curr, from, to){
     osTrendChart.data.labels=labels;
     osTrendChart.data.datasets[0].data=leadsD; osTrendChart.data.datasets[1].data=ftD; osTrendChart.data.datasets[2].data=memD;
     osTrendChart.data.datasets.forEach((ds,i)=>ds.hidden=hidden[i]);
-    osTrendChart.update(); return;
+    osTrendChart.update();
+    renderChartLast('osTrendLast', osTrendChart);
+    return;
   }
   const isMobile=window.innerWidth<=768;
   osTrendChart=new Chart(document.getElementById('osTrendChart'),{ type:'line', data:{ labels, datasets:[
@@ -646,6 +690,7 @@ function buildOsTrend(curr, from, to){
     {label:'New Members', data:memD, borderColor:'#DDFF00', borderWidth:2.5, pointRadius:3, pointHoverRadius:6, tension:.4, fill:false},
   ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false}},
     scales:{ x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',autoSkip:true,maxTicksLimit:isMobile?5:12,maxRotation:0}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'}} } } });
+  renderChartLast('osTrendLast', osTrendChart);
 }
 
 function buildOsCPR(){
@@ -680,6 +725,7 @@ function buildOsCPR(){
     {label:'Blended CPA', data:cpa, borderColor:'#DDFF00', borderWidth:2.5, pointRadius:4, tension:.4, fill:false, spanGaps:true, hidden:OS_CPR_DS_HIDDEN[2]},
   ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false,callbacks:{label:c=>c.dataset.label+': $'+(c.parsed.y!=null?c.parsed.y.toLocaleString():'-')}}},
     scales:{ x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',maxRotation:0}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',callback:v=>'$'+v} } } } });
+  renderChartLast('osCprLast', osCprChart, v=>v==null?'—':'$'+v.toLocaleString());
 
   buildOsCplTable(from,to,selStudios);
 }
@@ -894,6 +940,7 @@ function toggleNsoTrendDs(btn, i){
   if(btn.classList.contains('on')){ btn.style.background=cols[i]; btn.style.borderColor=cols[i]; btn.style.color=i===2?'#fff':'#000'; }
   else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
   nsoTrendChart.update();
+  renderChartLast('nsoTrendLast', nsoTrendChart);
 }
 function toggleNsoCprDs(btn, i){
   if(!nsoCprChart) return;
@@ -903,6 +950,7 @@ function toggleNsoCprDs(btn, i){
   if(btn.classList.contains('on')){ btn.style.background=cols[i]; btn.style.borderColor=cols[i]; btn.style.color='#000'; }
   else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
   nsoCprChart.update();
+  renderChartLast('nsoCprLast', nsoCprChart, v=>v==null?'—':'$'+Number(v).toFixed(2));
 }
 
 function applyNsoFilters(){
@@ -970,6 +1018,7 @@ function buildNsoTrend(from,to,curr,salesRows){
     ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false}},
       scales:{ x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',autoSkip:true,maxTicksLimit:isMob?5:12,maxRotation:0}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'}} } } });
   }
+  renderChartLast('nsoTrendLast', nsoTrendChart);
   const cvrPts=leadsSeries.map((m,i)=>{
     const leads=m.signups||0;
     const ns=Math.max(0,(salesSeries[i].first_sales||0)-(salesSeries[i].cancellations||0));
@@ -983,6 +1032,7 @@ function buildNsoTrend(from,to,curr,salesRows){
       plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false,callbacks:{label:c=>'Lead → Net Sale: '+(c.parsed.y!=null?c.parsed.y.toFixed(1)+'%':'—')}}},
       scales:{ x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',autoSkip:true,maxTicksLimit:isMob?5:12,maxRotation:0}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',callback:v=>v+'%'},min:0} } } });
   }
+  renderChartLast('nsoCvrLast', nsoCvrChart, v=>v==null?'—':v.toFixed(1)+'%');
 }
 
 function buildNsoCPR(){
@@ -995,6 +1045,7 @@ function buildNsoCPR(){
   if(!activeStudios.length){
     el.innerHTML=''; if(spendBd) spendBd.innerHTML='';
     document.getElementById('nsoCprStudioTable').querySelector('tbody').innerHTML='';
+    const lastEl=document.getElementById('nsoCprLast'); if(lastEl) lastEl.innerHTML='';
     buildNsoCplTable([],selSrc);
     return;
   }
@@ -1057,6 +1108,7 @@ function buildNsoCPR(){
     ]}, options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
       plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>c.dataset.label+': $'+Number(c.raw||0).toFixed(2)}}},
       scales:{ x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',maxRotation:0,maxTicksLimit:14}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',callback:v=>'$'+v.toLocaleString()},min:0} } } });
+    renderChartLast('nsoCprLast', nsoCprChart, v=>v==null?'—':'$'+Number(v).toFixed(2));
   }
 
   buildNsoCprStudioTable(activeStudios,fromStr,toStr,selSrc);
