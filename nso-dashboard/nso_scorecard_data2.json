@@ -3622,12 +3622,6 @@
         "estimated_roms_target": "5x",
         "tier0_price": 99
       },
-      "sku_map": {
-        "price_99": "Pre Sale Membership",
-        "price_129": "Pre Sales Membership",
-        "price_149": "Pre-Sales Membership"
-      },
-      "co_date": "2026-02-02",
       "tier_daily_sales": [
         {
           "date": "2025-10-30",
@@ -4145,7 +4139,13 @@
           "date": "2026-08-28",
           "count": 2
         }
-      ]
+      ],
+      "sku_map": {
+        "price_99": "Pre Sale Membership",
+        "price_129": "Pre Sales Membership",
+        "price_149": "Pre-Sales Membership"
+      },
+      "co_date": "2026-02-02"
     },
     {
       "name": "Herriman",
@@ -9494,7 +9494,7 @@
           "date_end": "2026-08-29",
           "new_leads": 50,
           "total_leads": 679.0,
-          "digital_leads_week": 12,
+          "digital_leads_week": 11,
           "presales_week": 18,
           "presales_count": 173.0,
           "cancellations_week": 5,
@@ -9586,7 +9586,7 @@
           "presales_count": 222.0,
           "cancellations_week": 1,
           "cancellations_count": 19.0,
-          "grassroots_leads": 57,
+          "grassroots_leads": 56,
           "grassroots_presales": 13,
           "digital_presales_week": 1,
           "digital_cancellations_week": 0,
@@ -10701,7 +10701,7 @@
           "date_end": "2026-06-27",
           "new_leads": 54,
           "total_leads": 252.0,
-          "digital_leads_week": 41,
+          "digital_leads_week": 40,
           "presales_week": 9,
           "presales_count": 43.0,
           "cancellations_week": 5,
@@ -19965,7 +19965,7 @@
           "digital_presales_week": 0,
           "digital_cancellations_week": 0,
           "conversion_rate": 0.0,
-          "comm_events": null,
+          "comm_events": 0,
           "ig_new_followers": 320,
           "meta_spend": null,
           "google_spend": null,
@@ -19994,7 +19994,7 @@
           "digital_presales_week": 0,
           "digital_cancellations_week": 0,
           "conversion_rate": 36.3,
-          "comm_events": null,
+          "comm_events": 1,
           "ig_new_followers": 135,
           "meta_spend": null,
           "google_spend": null,
@@ -20023,7 +20023,7 @@
           "digital_presales_week": 0,
           "digital_cancellations_week": 0,
           "conversion_rate": 47.7,
-          "comm_events": null,
+          "comm_events": 3,
           "ig_new_followers": 152,
           "meta_spend": null,
           "google_spend": null,
@@ -20052,7 +20052,7 @@
           "digital_presales_week": 0,
           "digital_cancellations_week": 0,
           "conversion_rate": 40.8,
-          "comm_events": null,
+          "comm_events": 6,
           "ig_new_followers": 71,
           "meta_spend": null,
           "google_spend": null,
