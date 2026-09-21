@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-21",
+      "pr_number": 393,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/393",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Fixed a bug where the scorecard's LAST number could be wrong",
+      "summary": "When a chart's most recent period had no data (like zero net sales), the \"LAST\" number shown next to the chart was quietly pulling an older period's value instead of showing there was nothing for that period. It now always matches what you see when you hover the chart's last point."
+    },
+    {
+      "date": "2026-09-21",
       "pr_number": 391,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/391",
       "author": "Santiago Estrada",
