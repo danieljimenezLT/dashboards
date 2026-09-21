@@ -332,7 +332,9 @@ function sumSourceInRange(sc_name, source, fromStr, toStr) {
   );
   return {
     leads: rows.reduce((a,r)=>a+(r.signups||0),0),
-    sales: rows.reduce((a,r)=>a+(r.first_sales||0),0),
+    // Net presales (presales - cancellations), matching how the rest of the
+    // NSO dashboard defines "presales" — not gross first_sales.
+    sales: Math.max(0, rows.reduce((a,r)=>a+(r.presales||0)-(r.cancellations||0),0)),
   };
 }
 function avg(arr) {
@@ -347,7 +349,9 @@ function sumAllSourcesInRange(sc_name, fromStr, toStr) {
   );
   return {
     leads: rows.reduce((a,r)=>a+(r.signups||0),0),
-    sales: rows.reduce((a,r)=>a+(r.first_sales||0),0),
+    // Net presales (presales - cancellations), matching how the rest of the
+    // NSO dashboard defines "presales" — not gross first_sales.
+    sales: Math.max(0, rows.reduce((a,r)=>a+(r.presales||0)-(r.cancellations||0),0)),
   };
 }
 
@@ -385,13 +389,9 @@ function buildStudio(cfg) {
   }
 
   // Compute derived fields per week
-  let lastPresales = 0, lastMetaLeads = 0, lastMetaSales = 0, lastGoogleLeads = 0, lastGoogleSales = 0;
+  let lastMetaLeads = 0, lastMetaSales = 0, lastGoogleLeads = 0, lastGoogleSales = 0;
   let lastAllLeads = 0, lastAllSales = 0, lastGrLeads = 0, lastGrSales = 0, lastEvents = 0;
   const processed = weeks.map((w,i) => {
-    // Cumulative presales — use presales_count if available, else carry forward
-    const pc = (w.presales_count != null) ? Number(w.presales_count) : null;
-    if (pc != null) lastPresales = pc;
-    const presales_cumul = lastPresales;
 
     // Meta/Google/Grassroots + all-sources leads/sales for this week (from
     // post_opening_source_data.json's full-history per-source rows)
@@ -422,12 +422,11 @@ function buildStudio(cfg) {
 
     return {
       ...w,
-      presales_cumul,
       meta_cpl,
       google_share,
       _leads:       (w.new_leads!=null)?              Number(w.new_leads)              : null,
       _leadsCumul:  (w.total_leads!=null)?            Number(w.total_leads)            : null,
-      _presalesWk:  (w.presales_week!=null)?          Number(w.presales_week) - (w.cancellations_week!=null?Number(w.cancellations_week):0) : null,
+      _presalesWk:  allWk.sales,
       _metaLeadsWk:    metaWk.leads,
       _metaSalesWk:    metaWk.sales,
       _metaLeadsCumul: lastMetaLeads,
@@ -522,7 +521,7 @@ const MAX_WEEKS = () => Math.max(...studioData.map(s=>s.weeks.length), 1);
 function getVal(w, metric) {
   if (!w) return null;
   switch(metric) {
-    case 'presales':      return w.presales_cumul;
+    case 'presales':      return w._allSalesCumul;
     case 'leads':         return w._leads;
     case 'leads_cumul':   return w._leadsCumul;
     case 'spend':         return w._spend;
@@ -736,7 +735,7 @@ function buildOverview() {
   // Summary table
   const tbody = document.getElementById('ov-tbody');
   const actStudios = studioData.filter((_,i)=>active[i]);
-  const allPresales = actStudios.map(s => s.openIdx>=0&&s.weeks[s.openIdx] ? s.weeks[s.openIdx].presales_cumul : null).filter(v=>v!=null);
+  const allPresales = actStudios.map(s => s.openIdx>=0&&s.weeks[s.openIdx] ? s.weeks[s.openIdx]._allSalesCumul : null).filter(v=>v!=null);
   const maxPresales = allPresales.length ? Math.max(...allPresales) : null;
   const allPeak     = actStudios.map(s => Math.max(...s.weeks.map(w=>w._leads||0)));
   const allPeakPresales = actStudios.map(s => Math.max(...s.weeks.map(w=>w._presalesWk||0)));
@@ -744,14 +743,14 @@ function buildOverview() {
   // Blended CPL/CPS: total spend / cumulative totals through the opening week
   // (not a single week's blended_cpl/blended_cpa, which is noisy week to week).
   const allTotalLeads    = actStudios.map(s => { const last=[...s.weeks].reverse().find(w=>w._leadsCumul!=null); return last?last._leadsCumul:null; });
-  const allTotalPresales = actStudios.map(s => { const last=[...s.weeks].reverse().find(w=>w.presales_cumul!=null); return last?last.presales_cumul:null; });
+  const allTotalPresales = actStudios.map(s => { const last=[...s.weeks].reverse().find(w=>w._allSalesCumul!=null); return last?last._allSalesCumul:null; });
   const allCpl      = actStudios.map((s,i) => (allTotalLeads[i]    ? allSpend[i]/allTotalLeads[i]    : null));
   const allCps      = actStudios.map((s,i) => (allTotalPresales[i] ? allSpend[i]/allTotalPresales[i] : null));
   const allConvRate = actStudios.map((s,i) => (allTotalLeads[i] && allTotalPresales[i]!=null ? allTotalPresales[i]/allTotalLeads[i]*100 : null));
 
   tbody.innerHTML = actStudios.map((s,i) => {
     const atOpen = s.openIdx>=0 ? s.weeks[s.openIdx] : null;
-    const presalesAtOpen = atOpen ? atOpen.presales_cumul : null;
+    const presalesAtOpen = atOpen ? atOpen._allSalesCumul : null;
     const isBestPresales = presalesAtOpen!=null && presalesAtOpen===maxPresales;
     return `<tr>
       <td><div style="display:flex;align-items:center;gap:8px">
@@ -773,7 +772,7 @@ function buildOverview() {
       <td class="num">—</td>
       <td class="num">${avg(actStudios.map(s=>s.openIdx))!=null?Math.round(avg(actStudios.map(s=>s.openIdx))):'—'}</td>
       <td class="num">${avg(allTotalLeads)!=null?Math.round(avg(allTotalLeads)):'—'}</td>
-      <td class="num">${avg(actStudios.map(s=>s.openIdx>=0&&s.weeks[s.openIdx]?s.weeks[s.openIdx].presales_cumul:null))!=null?Math.round(avg(actStudios.map(s=>s.openIdx>=0&&s.weeks[s.openIdx]?s.weeks[s.openIdx].presales_cumul:null))):'—'}</td>
+      <td class="num">${avg(actStudios.map(s=>s.openIdx>=0&&s.weeks[s.openIdx]?s.weeks[s.openIdx]._allSalesCumul:null))!=null?Math.round(avg(actStudios.map(s=>s.openIdx>=0&&s.weeks[s.openIdx]?s.weeks[s.openIdx]._allSalesCumul:null))):'—'}</td>
       <td class="num">${avg(allPeak)!=null?Math.round(avg(allPeak)):'—'}</td>
       <td class="num">${avg(allPeakPresales)!=null?Math.round(avg(allPeakPresales)):'—'}</td>
       <td class="num">$${Math.round(avg(allSpend)||0).toLocaleString()}</td>
