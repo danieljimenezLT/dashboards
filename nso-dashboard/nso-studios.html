@@ -962,18 +962,21 @@ function renderSummary2(){
   const d7end=_liso(_d7endDate);
   const d7ago=_liso(new Date(_d7endDate.getTime()-6*864e5));
   _sumD7End=d7end;
-  // Cap "current week" to the data's actual freshness (NSO_SALES.date_range.end),
-  // not raw today — Snowflake can lag a day or two behind the calendar.
-  // Note: parse week numbers via 'WEEK '-stripping, not a digit-only regex —
-  // stripping all non-digits from "WEEK -7" would drop the minus sign too.
-  const _dataEndCapCw=(NSO_SALES&&NSO_SALES.date_range&&NSO_SALES.date_range.end)||todayStr;
+  // Current week: plain calendar (today), not capped by data freshness — this
+  // summary card (Last 7 Full Days / Total to Date) is meant to keep filling
+  // in with whatever data has synced so far, same as the scorecard table.
+  // Only the Leads & Presales chart (drawCum2Chart/drawWeekly2Chart) waits
+  // for a complete week. Note: parse week numbers via 'WEEK '-stripping, not
+  // a digit-only regex — stripping all non-digits from "WEEK -7" would drop
+  // the minus sign too.
   const _wkNum=wk=>parseInt((wk.week||'0').replace('WEEK ',''))||0;
   let cw=0;
-  for(const wk of w){if(wk.date_start&&wk.date_start<=_dataEndCapCw)cw=_wkNum(wk);}
+  for(const wk of w){if(wk.date_start&&wk.date_start<=todayStr)cw=_wkNum(wk);}
   const cur=w.find(x=>_wkNum(x)===cw)||w[cw]||{};
   const _sumTierLookup={};(studio.tier_rmr_by_week||[]).forEach(r=>{_sumTierLookup[r.week]=r;});
   const _sumCurTier=_sumTierLookup[cw];
   const displayCw=cw;
+  const _calCw=cw;
   const pct=Math.min(100,Math.round(displayCw/totalWeeks*100));
   const openDate=studio.opening_date||(w[totalWeeks]?w[totalWeeks].date_start||w[totalWeeks].date_end:null)||(w[w.length-1]?w[w.length-1].date_end:null);
   let daysToOpen=null;
@@ -1036,14 +1039,14 @@ function renderSummary2(){
   const _hasPre=preWeeks.length>0;
   const _totalSpan=preWeeks.length+(totalWeeks||1);
   const _preW0Pct=_hasPre?preWeeks.length/_totalSpan*100:0;
-  const _curFullPct=_isOpened2?100:Math.min(97,Math.max(3,(preWeeks.length+displayCw)/_totalSpan*100));
+  const _curFullPct=_isOpened2?100:Math.min(97,Math.max(3,(preWeeks.length+_calCw)/_totalSpan*100));
   const _scFillPct=Math.max(0,_curFullPct-_preW0Pct);
   const _showPreLabel=_hasPre&&_preW0Pct>=12;
   h+=`<div style="display:flex;align-items:flex-end;gap:16px"><div style="flex:1;min-width:0">`;
   // Above-bar label row: Current week + W-N (when pre-launch segment is too narrow for below)
   h+=`<div style="position:relative;height:32px;margin-bottom:4px">`;
   h+=_isOpened2?''
-    :`<div style="position:absolute;left:${_curFullPct}%;transform:translateX(-50%);text-align:center;white-space:nowrap;bottom:0"><div style="font-size:9px;color:#00C9A7;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${displayCw} — Current</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(todayStr)}</div></div>`;
+    :`<div style="position:absolute;left:${_curFullPct}%;transform:translateX(-50%);text-align:center;white-space:nowrap;bottom:0"><div style="font-size:9px;color:#00C9A7;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${_calCw} — Current</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(todayStr)}</div></div>`;
   if(_hasPre&&!_showPreLabel){const _pw0=preWeeks[0];h+=`<div style="position:absolute;left:0;text-align:left;white-space:nowrap;bottom:0"><div style="font-size:9px;color:#9abdc8;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${_pw0.week_num}</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(_pw0.date_start)}</div></div>`;}
   h+=`</div>`;
   // The bar itself: grey pre-launch fill + blue/teal scorecard fill + markers
@@ -1528,13 +1531,16 @@ function renderSummary(){
   const d7end=_liso(_d7endDate);
   const d7ago=_liso(new Date(_d7endDate.getTime()-6*864e5));
   _sumD7End=d7end;
-  // Cap to data freshness, and parse week numbers via 'WEEK '-stripping (not
-  // a digit-only regex, which would drop the minus sign from negative weeks).
-  const _dataEndCapCw2=(NSO_SALES&&NSO_SALES.date_range&&NSO_SALES.date_range.end)||todayStr;
+  // Current week: plain calendar (today), not capped by data freshness — this
+  // summary card (Last 7 Full Days / Total to Date) is meant to keep filling
+  // in with whatever data has synced so far, same as the scorecard table.
+  // Only the Leads & Presales chart (drawCum2Chart/drawWeekly2Chart) waits
+  // for a complete week. Parse week numbers via 'WEEK '-stripping, not a
+  // digit-only regex, which would drop the minus sign from negative weeks.
   const _wkNum2=wk=>parseInt((wk.week||'0').replace('WEEK ',''))||0;
   let cw=0;
   for(const wk of w){
-    if(wk.date_start&&wk.date_start<=_dataEndCapCw2)cw=_wkNum2(wk);
+    if(wk.date_start&&wk.date_start<=todayStr)cw=_wkNum2(wk);
   }
 
   const cur=w.find(x=>_wkNum2(x)===cw)||w[cw]||{};
@@ -1542,7 +1548,8 @@ function renderSummary(){
   const _sumTierLookup={};(studio.tier_rmr_by_week||[]).forEach(r=>{_sumTierLookup[r.week]=r;});
   const _sumCurTier=_sumTierLookup[cw];
   const displayCw=cw;
-  const pct=Math.min(100,Math.round(displayCw/totalWeeks*100));
+  const _calCw=cw;
+  const pct=Math.min(100,Math.round(_calCw/totalWeeks*100));
 
   // Opening date: use studio.opening_date from JSON, fall back to GO week data
   const openDate=studio.opening_date||
@@ -1646,7 +1653,7 @@ function renderSummary(){
   // ── Row above bar: Current week label only ──────────────────────────────
   h+=`<div style="position:relative;height:32px;margin-bottom:4px">`;
   h+=_isOpened?''
-    :`<div style="position:absolute;left:${curPct}%;transform:translateX(-50%);text-align:center;white-space:nowrap;bottom:0"><div style="font-size:9px;color:#00C9A7;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${displayCw} — Current</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(todayStr)}</div></div>`;
+    :`<div style="position:absolute;left:${curPct}%;transform:translateX(-50%);text-align:center;white-space:nowrap;bottom:0"><div style="font-size:9px;color:#00C9A7;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${_calCw} — Current</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(todayStr)}</div></div>`;
   h+=`</div>`;
   // ── Timeline bar ────────────────────────────────────────────────────────
   h+=`<div class="timeline-bar"><div class="timeline-fill" style="width:${_isOpened?100:pct}%"><div class="timeline-current"></div></div>`;
