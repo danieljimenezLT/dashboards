@@ -445,14 +445,14 @@ function applyFilters(){
 }
 
 // Renders the "LAST" column beside a timeline chart: one row per dataset,
-// showing its most recent non-null value in the dataset's own color, so a
-// reader gets the latest number without having to hover the chart.
+// showing its most recent bucket's value (even if null, e.g. a div/0 period)
+// in the dataset's own color, so it always matches what hovering that last
+// point on the chart would show.
 function renderChartLast(panelId, chart, fmt){
   const panel=document.getElementById(panelId); if(!panel||!chart) return;
   fmt = fmt || (v=>v==null?'—':v.toLocaleString());
   const rows=chart.data.datasets.map(ds=>{
-    let v=null;
-    for(let i=ds.data.length-1;i>=0;i--){ if(ds.data[i]!=null){ v=ds.data[i]; break; } }
+    const v=ds.data.length?ds.data[ds.data.length-1]:null;
     return `<div class="chart-last-row"${ds.hidden?' style="opacity:.35"':''}><span class="chart-last-dot" style="background:${ds.borderColor}"></span><span class="chart-last-val">${fmt(v)}</span></div>`;
   }).join('');
   panel.innerHTML = '<div class="chart-last-title">Last</div>' + rows;
