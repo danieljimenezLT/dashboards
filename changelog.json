@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-09-21",
+      "pr_number": 388,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/388",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fix NSO scorecard chart showing incomplete current-week data",
+      "summary": "The Leads & Presales chart could render a week's data before it was actually fully synced from Snowflake, showing misleadingly flat or low current-week numbers. It now waits until a week's data is complete (matching the same freshness cutoff shown in the \"Data until\" label) before showing it. Also fixed a bug where studios still in their pre-opening weeks showed the wrong \"current week\" number."
+    },
+    {
       "date": "2026-09-18",
       "pr_number": 387,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/387",
