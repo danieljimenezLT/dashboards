@@ -962,9 +962,15 @@ function renderSummary2(){
   const d7end=_liso(_d7endDate);
   const d7ago=_liso(new Date(_d7endDate.getTime()-6*864e5));
   _sumD7End=d7end;
+  // Cap "current week" to the data's actual freshness (NSO_SALES.date_range.end),
+  // not raw today — Snowflake can lag a day or two behind the calendar.
+  // Note: parse week numbers via 'WEEK '-stripping, not a digit-only regex —
+  // stripping all non-digits from "WEEK -7" would drop the minus sign too.
+  const _dataEndCapCw=(NSO_SALES&&NSO_SALES.date_range&&NSO_SALES.date_range.end)||todayStr;
+  const _wkNum=wk=>parseInt((wk.week||'0').replace('WEEK ',''))||0;
   let cw=0;
-  for(const wk of w){if(wk.date_start&&wk.date_start<=todayStr)cw=parseInt(String(wk.week).replace(/[^0-9]/g,''))||0;}
-  const cur=w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===cw)||w[cw]||{};
+  for(const wk of w){if(wk.date_start&&wk.date_start<=_dataEndCapCw)cw=_wkNum(wk);}
+  const cur=w.find(x=>_wkNum(x)===cw)||w[cw]||{};
   const _sumTierLookup={};(studio.tier_rmr_by_week||[]).forEach(r=>{_sumTierLookup[r.week]=r;});
   const _sumCurTier=_sumTierLookup[cw];
   const displayCw=cw;
@@ -1191,7 +1197,11 @@ function drawCum2Chart(studio){
   const todayStr=new Date().toISOString().slice(0,10);
   const pwData=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[studio.code];
   const allPw=(pwData&&pwData.pre_weeks)||[];
-  const preWeeks=allPw.filter(pw=>!pw.date_start||pw.date_start<=todayStr);
+  // Only show a pre-week once it's fully complete (date_end within the data's
+  // actual freshness window) — date_start<=todayStr alone let a still-in-
+  // progress week (with partial totals) render as if it were finished.
+  const _dataEndCapPw2=(NSO_SALES&&NSO_SALES.date_range&&NSO_SALES.date_range.end)||todayStr;
+  const preWeeks=allPw.filter(pw=>!pw.date_start||(pw.date_end?pw.date_end<=_dataEndCapPw2:pw.date_start<=_dataEndCapPw2));
   const _w1Off2=pwData&&pwData.week_1_start;
   const _isPreL2=!_w1Off2||_w1Off2>todayStr;
   const totalW=studio.go_week||studio.weeks.length-1;
@@ -1199,6 +1209,12 @@ function drawCum2Chart(studio){
   // Convert to array index so the chart cuts off at the right point.
   const _cwNum=studio.current_week||0;
   let cw=(()=>{const idx=studio.weeks.findIndex(wk=>(parseInt((wk.week||'0').replace('WEEK ',''))||0)===_cwNum);return idx>=0?idx:_cwNum;})();
+  // current_week is calendar-based (server build date), but Snowflake data
+  // can lag a day or two behind — don't show a week whose data_end is past
+  // what we actually have data for (NSO_SALES.date_range.end, the same
+  // freshness cutoff already used everywhere else in this dashboard).
+  const _dataEndCap2=(NSO_SALES&&NSO_SALES.date_range&&NSO_SALES.date_range.end)||null;
+  if(_dataEndCap2){while(cw>0&&studio.weeks[cw]&&studio.weeks[cw].date_end&&studio.weeks[cw].date_end>_dataEndCap2)cw--;}
   const _isOpenedChart2=!!(studio.opening_date&&studio.opening_date<=todayStr);
   if(_isOpenedChart2){let _opW2=0;studio.weeks.forEach((wk,i)=>{if(wk.date_start&&wk.date_start<studio.opening_date)_opW2=i;});cw=Math.min(cw,_opW2);}
   const _ann=studio.goal_announce_target||null;
@@ -1305,12 +1321,15 @@ function drawWeekly2Chart(studio){
   const todayStr=new Date().toISOString().slice(0,10);
   const pwData=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[studio.code];
   const allPwW=(pwData&&pwData.pre_weeks)||[];
-  const preWeeks=allPwW.filter(pw=>!pw.date_start||pw.date_start<=todayStr);
+  const _dataEndCapPwW=(NSO_SALES&&NSO_SALES.date_range&&NSO_SALES.date_range.end)||todayStr;
+  const preWeeks=allPwW.filter(pw=>!pw.date_start||(pw.date_end?pw.date_end<=_dataEndCapPwW:pw.date_start<=_dataEndCapPwW));
   const _w1Off2w=pwData&&pwData.week_1_start;
   const _isPreL2w=!_w1Off2w||_w1Off2w>todayStr;
   const totalW=studio.go_week||studio.weeks.length-1;
   const _cwNumW=studio.current_week||0;
-  const cw=(()=>{const idx=studio.weeks.findIndex(wk=>(parseInt((wk.week||'0').replace('WEEK ',''))||0)===_cwNumW);return idx>=0?idx:_cwNumW;})();
+  let cw=(()=>{const idx=studio.weeks.findIndex(wk=>(parseInt((wk.week||'0').replace('WEEK ',''))||0)===_cwNumW);return idx>=0?idx:_cwNumW;})();
+  const _dataEndCapW=(NSO_SALES&&NSO_SALES.date_range&&NSO_SALES.date_range.end)||null;
+  if(_dataEndCapW){while(cw>0&&studio.weeks[cw]&&studio.weeks[cw].date_end&&studio.weeks[cw].date_end>_dataEndCapW)cw--;}
   const _ann=studio.goal_announce_target||null;
   const paceW=studio.co_week||totalW;
   const goalW=Math.min(paceW,16);
@@ -1509,13 +1528,17 @@ function renderSummary(){
   const d7end=_liso(_d7endDate);
   const d7ago=_liso(new Date(_d7endDate.getTime()-6*864e5));
   _sumD7End=d7end;
+  // Cap to data freshness, and parse week numbers via 'WEEK '-stripping (not
+  // a digit-only regex, which would drop the minus sign from negative weeks).
+  const _dataEndCapCw2=(NSO_SALES&&NSO_SALES.date_range&&NSO_SALES.date_range.end)||todayStr;
+  const _wkNum2=wk=>parseInt((wk.week||'0').replace('WEEK ',''))||0;
   let cw=0;
   for(const wk of w){
-    if(wk.date_start&&wk.date_start<=todayStr)cw=parseInt(String(wk.week).replace(/[^0-9]/g,''))||0;
+    if(wk.date_start&&wk.date_start<=_dataEndCapCw2)cw=_wkNum2(wk);
   }
 
-  const cur=w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===cw)||w[cw]||{};
-  const prev=w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===cw-1)||{};
+  const cur=w.find(x=>_wkNum2(x)===cw)||w[cw]||{};
+  const prev=w.find(x=>_wkNum2(x)===cw-1)||{};
   const _sumTierLookup={};(studio.tier_rmr_by_week||[]).forEach(r=>{_sumTierLookup[r.week]=r;});
   const _sumCurTier=_sumTierLookup[cw];
   const displayCw=cw;
