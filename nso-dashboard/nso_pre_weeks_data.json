@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-21T12:09:38.165188",
+  "generated_at": "2026-09-21T14:37:21.494762",
   "source_sheet": "https://docs.google.com/spreadsheets/d/1KhXfeofzltGyllmrfIm9UN2xqLUgBtjAxPhT-E0SQmk",
   "studios": {
     "FL-019": {
@@ -720,12 +720,63 @@
     "NY-005": {
       "name": "Long Beach",
       "full_name": "SWEAT440 Long Beach",
-      "week_0_start": null,
-      "week_1_start": null,
-      "lt_fee_start": "2026-10-01",
+      "week_0_start": "2026-09-20",
+      "week_1_start": "2026-09-27",
+      "lt_fee_start": "2026-11-01",
       "presales_training_complete": "2026-08-21",
-      "offset_leads": 0,
-      "pre_weeks": []
+      "offset_leads": 15,
+      "pre_weeks": [
+        {
+          "week_num": -5,
+          "week": "WEEK -5",
+          "date_start": "2026-08-16",
+          "date_end": "2026-08-22",
+          "new_leads": 46,
+          "grassroots_leads": 4,
+          "comm_events": null,
+          "total_leads": 61
+        },
+        {
+          "week_num": -4,
+          "week": "WEEK -4",
+          "date_start": "2026-08-23",
+          "date_end": "2026-08-29",
+          "new_leads": 135,
+          "grassroots_leads": 93,
+          "comm_events": 1,
+          "total_leads": 196
+        },
+        {
+          "week_num": -3,
+          "week": "WEEK -3",
+          "date_start": "2026-08-30",
+          "date_end": "2026-09-05",
+          "new_leads": 172,
+          "grassroots_leads": 118,
+          "comm_events": 3,
+          "total_leads": 368
+        },
+        {
+          "week_num": -2,
+          "week": "WEEK -2",
+          "date_start": "2026-09-06",
+          "date_end": "2026-09-12",
+          "new_leads": 98,
+          "grassroots_leads": 70,
+          "comm_events": 6,
+          "total_leads": 466
+        },
+        {
+          "week_num": -1,
+          "week": "WEEK -1",
+          "date_start": "2026-09-13",
+          "date_end": "2026-09-19",
+          "new_leads": 118,
+          "grassroots_leads": 93,
+          "comm_events": null,
+          "total_leads": 584
+        }
+      ]
     },
     "OK-001": {
       "name": "Rose Creek",
