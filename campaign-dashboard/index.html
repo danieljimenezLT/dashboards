@@ -133,28 +133,6 @@
       </div>
     </div>
   </div>
-  <!-- 2 Weeks for $40 summary (shown only in TW_MODE) -->
-  <div id="tw-summary-content" style="display:none">
-    <div class="kpi-grid" id="twKpiGrid"></div>
-    <div class="chart-card">
-      <div class="chart-card-title">Daily Transactions</div>
-      <div style="position:relative;height:220px"><canvas id="twTsChart"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-card-title">By Studio</div>
-      <div style="overflow-x:auto">
-        <table class="data-table">
-          <thead><tr>
-            <th>Studio</th>
-            <th class="num">Transactions</th>
-            <th class="num">Unique Clients</th>
-            <th class="num">Revenue</th>
-          </tr></thead>
-          <tbody id="twStudioBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- ── TAB 2: SOURCES ─────────────────────────────────────────────── -->
@@ -429,63 +407,6 @@
       <div style="position:relative;height:220px"><canvas id="b1g3SpendChart"></canvas></div>
     </div>
   </div>
-
-  <!-- 2 Weeks for $40 ads (shown only in TW_MODE) -->
-  <div id="tw-ads-content" style="display:none">
-    <p class="filter-note" id="twAdsNote"></p>
-    <div class="kpi-grid" id="twAdsKpiGrid"></div>
-    <div class="chart-card">
-      <div class="chart-card-title">Meta Campaigns</div>
-      <div style="overflow-x:auto">
-        <table class="data-table">
-          <thead><tr>
-            <th>Campaign</th>
-            <th class="num">Spend</th>
-            <th class="num">Impressions</th>
-            <th class="num">Clicks</th>
-            <th class="num">CTR%</th>
-          </tr></thead>
-          <tbody id="twCampaignsBody"></tbody>
-        </table>
-      </div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-card-title">Spend by Studio</div>
-      <div style="overflow-x:auto">
-        <table class="data-table">
-          <thead><tr>
-            <th>Studio</th>
-            <th class="num">Spend</th>
-            <th class="num">Impressions</th>
-            <th class="num">Clicks</th>
-            <th class="num">CTR%</th>
-            <th class="num">Purchases</th>
-            <th class="num">CPP</th>
-          </tr></thead>
-          <tbody id="twStudioAdsBody"></tbody>
-        </table>
-      </div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-card-title">Meta Leads by Studio</div>
-      <div style="overflow-x:auto">
-        <table class="data-table">
-          <thead><tr>
-            <th>Studio</th>
-            <th class="num">Leads</th>
-            <th class="num">CPL</th>
-            <th class="num">Purchases</th>
-            <th class="num">Conv Rate</th>
-          </tr></thead>
-          <tbody id="twLeadsStudioBody"></tbody>
-        </table>
-      </div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-card-title">Daily Spend</div>
-      <div style="position:relative;height:220px"><canvas id="twSpendChart"></canvas></div>
-    </div>
-  </div>
 </div>
 
 </div><!-- /.main -->
@@ -497,9 +418,7 @@
 let CAMP = null;
 let ALL_CAMPAIGNS = [];
 let PAID_ADS_DATA = null;     // daniel-paid-ads-data.json
-let TW_DATA = null;           // 2weeks_data.json
 let B1G3_DATA = null;         // buy1get3_data.json
-let TW_MODE = false;          // true when "2 Weeks for $40" is active
 
 // ── Email Metrics Data — keyed by campaign id ────────────────────────────────
 // Per email: [sent, open_rate, opens, clicks, ctor, opt_out, unsub_rate]
@@ -542,8 +461,6 @@ function getEmailData() {
 function selectCampaign(idx, btn) {
   document.querySelectorAll('.camp-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  TW_MODE = false;
-  applyTabVisibility();
   applyCampaign(ALL_CAMPAIGNS[idx]);
 }
 let ALL_STUDIOS = [];
@@ -594,7 +511,6 @@ function getFilteredData() {
 
 // applyFilters() is called by utils.js's buildMultiSelect when checkboxes change
 function applyFilters() {
-  if (TW_MODE) { renderTwSummary(); renderTwAds(); initSortIndicators(); return; }
   if (CAMP && CAMP.id === 'buy-1-get-3' && B1G3_DATA) { renderB1g3Ads(); }
   try {
     renderKPIs();
@@ -1663,10 +1579,9 @@ function applyCampaign(camp) {
 async function loadData() {
   try {
     const ts = Date.now();
-    const [campRes, paidAdsRes, twRes, b1g3Res] = await Promise.all([
+    const [campRes, paidAdsRes, b1g3Res] = await Promise.all([
       fetch('campaign_data.json?_=' + ts),
       fetch('../paid-ads-dashboards/daniel-paid-ads-data.json?_=' + ts).catch(() => null),
-      fetch('2weeks_data.json?_=' + ts).catch(() => null),
       fetch('buy1get3_data.json?_=' + ts).catch(() => null),
     ]);
 
@@ -1674,9 +1589,6 @@ async function loadData() {
 
     if (paidAdsRes) {
       PAID_ADS_DATA = await paidAdsRes.json().catch(() => null);
-    }
-    if (twRes) {
-      TW_DATA = await twRes.json().catch(() => null);
     }
     if (b1g3Res) {
       B1G3_DATA = await b1g3Res.json().catch(() => null);
@@ -1687,9 +1599,6 @@ async function loadData() {
     sel.innerHTML = ALL_CAMPAIGNS.map((c, i) =>
       `<button class="camp-btn${i===0?' active':''}" onclick="selectCampaign(${i},this)">${c.name}</button>`
     ).join('');
-    if (TW_DATA) {
-      sel.innerHTML += `<button class="camp-btn" onclick="selectTwoWeeks(this)">2 Weeks for $40</button>`;
-    }
     if (ALL_CAMPAIGNS.length) applyCampaign(ALL_CAMPAIGNS[0]);
   } catch(e) {
     console.error('Failed to load campaign data:', e);
@@ -1746,197 +1655,6 @@ document.addEventListener('click', function(e) {
   rows.forEach(r => tbody.appendChild(r));
 });
 
-// ── 2 Weeks for $40 ───────────────────────────────────────────────────────
-function applyTabVisibility() {
-  const hiddenInTw = ['postpromo', 'sources', 'segments', 'email'];
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    const m = (btn.getAttribute('onclick') || '').match(/showTab\('(\w+)'/);
-    if (!m) return;
-    btn.style.display = TW_MODE && hiddenInTw.includes(m[1]) ? 'none' : '';
-  });
-  document.getElementById('std-summary-content').style.display = TW_MODE ? 'none' : '';
-  document.getElementById('tw-summary-content').style.display  = TW_MODE ? '' : 'none';
-  document.getElementById('std-ads-content').style.display     = TW_MODE ? 'none' : '';
-  document.getElementById('b1g3-ads-content').style.display    = 'none';
-  document.getElementById('tw-ads-content').style.display      = TW_MODE ? '' : 'none';
-}
-
-function selectTwoWeeks(btn) {
-  document.querySelectorAll('.camp-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  TW_MODE = true;
-  applyTabVisibility();
-  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-summary').classList.add('active');
-  const summBtn = document.querySelector('.tab-btn[onclick*="\'summary\'"]');
-  if (summBtn) summBtn.classList.add('active');
-  applyTwoWeeks();
-}
-
-function applyTwoWeeks() {
-  if (!TW_DATA) return;
-  const dr = TW_DATA.date_range;
-  document.getElementById('campSub').textContent =
-    `Campaign period: ${fmtDateStr(dr.start)} – ${fmtDateStr(dr.end)}  ·  2 Weeks for $40`;
-  ALL_STUDIOS = TW_DATA.snowflake.studios.map(s => s.studio).sort();
-  buildMultiSelect('studioMenu', 'studioLabel', ALL_STUDIOS, []);
-  renderTwSummary();
-  renderTwAds();
-  initSortIndicators();
-}
-
-function renderTwSummary() {
-  const sf  = TW_DATA.snowflake;
-  const sel = getSelected('studioMenu');
-  const allSel  = !sel || sel.length === 0 || sel.length === ALL_STUDIOS.length;
-  const studios = allSel ? sf.studios : sf.studios.filter(s => sel.includes(s.studio));
-
-  const totTxns    = studios.reduce((s,r) => s + r.transactions, 0);
-  const totClients = studios.reduce((s,r) => s + r.unique_clients, 0);
-  const totRev     = studios.reduce((s,r) => s + r.revenue, 0);
-
-  const grid = document.getElementById('twKpiGrid');
-  grid.className = 'kpi-grid three';
-  grid.innerHTML = [
-    {label:'Transactions',   val:fmtN(totTxns),    sub:'Total 2-Weeks purchases'},
-    {label:'Unique Clients', val:fmtN(totClients),  sub:'Distinct participants'},
-    {label:'Revenue',        val:fmtM(totRev),      sub:'Gross promo revenue'},
-  ].map(c=>`<div class="kpi-card">
-    <div class="kpi-card-label">${c.label}</div>
-    <div class="kpi-card-val">${c.val}</div>
-    <div style="font-size:11px;color:#5a7a8a;margin-top:4px">${c.sub}</div>
-  </div>`).join('');
-
-  const daily  = sf.daily;
-  const labels = daily.map(r=>new Date(r.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}));
-  makeChart('twTsChart',{
-    type:'bar',
-    data:{labels,datasets:[{label:'Transactions',data:daily.map(r=>r.transactions),backgroundColor:'#00A3E0',borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:'#5a7a8a',font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},
-              y:{ticks:{color:'#5a7a8a',font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}}}}
-  });
-
-  const maxTxn = Math.max(...studios.map(s=>s.transactions),1);
-  document.getElementById('twStudioBody').innerHTML = studios.map(s=>`<tr>
-    <td>${s.studio}</td>
-    <td class="num">${fmtN(s.transactions)}${miniBar(s.transactions/maxTxn*100,'#00A3E0')}</td>
-    <td class="num">${fmtN(s.unique_clients)}</td>
-    <td class="num">${fmtM(s.revenue)}</td>
-  </tr>`).join('');
-}
-
-function renderTwAds() {
-  const meta = TW_DATA.meta;
-  const sf   = TW_DATA.snowflake;
-  const dr   = TW_DATA.date_range;
-
-  const sel     = getSelected('studioMenu');
-  const allSel  = !sel || sel.length === 0 || sel.length === ALL_STUDIOS.length;
-  const studios = allSel ? sf.studios : sf.studios.filter(s => sel.includes(s.studio));
-
-  const filtMeta    = studios.reduce((s,r) => s + (r.meta_transactions||0), 0);
-  const metaLeadsData = TW_DATA.meta_leads || {total:0, studios:[]};
-  const leadsStudios  = allSel
-    ? metaLeadsData.studios
-    : metaLeadsData.studios.filter(s => sel.includes(s.studio));
-  const filtLeads = leadsStudios.reduce((s,r) => s + r.leads, 0);
-
-  document.getElementById('twAdsNote').textContent =
-    `Meta Ads · ${fmtDateStr(dr.start)} – ${fmtDateStr(dr.end)}`;
-
-  const totSpend  = meta.total_spend || 0;
-  const totImpr   = meta.campaigns.reduce((s,c)=>s+(c.impressions||0),0);
-  const totClicks = meta.campaigns.reduce((s,c)=>s+(c.clicks||0),0);
-  const cpl = filtLeads>0 ? totSpend/filtLeads : 0;
-  const cpt = filtMeta>0  ? totSpend/filtMeta  : 0;
-  const ctr = totImpr>0   ? totClicks/totImpr*100 : 0;
-
-  document.getElementById('twAdsKpiGrid').innerHTML = [
-    {label:'Total Spend',       val:fmtM(totSpend)},
-    {label:'Meta Leads',        val:fmtN(filtLeads)},
-    {label:'CPL',               val:cpl>0?fmtM(cpl):'—'},
-    {label:'Impressions',       val:fmtN(totImpr)},
-    {label:'Clicks',            val:fmtN(totClicks)},
-    {label:'CTR',               val:totImpr>0?ctr.toFixed(2)+'%':'—'},
-    {label:'Meta Attributed',   val:fmtN(filtMeta)},
-    {label:'Cost Per Purchase', val:cpt>0?fmtM(cpt):'—'},
-  ].map(c=>`<div class="kpi-card">
-    <div class="kpi-card-label">${c.label}</div>
-    <div class="kpi-card-val">${c.val}</div>
-  </div>`).join('');
-
-  // Campaign table — total spend only (no studio breakdown from Meta API)
-  const camps    = meta.campaigns;
-  const maxSpend = Math.max(...camps.map(c=>c.spend),1);
-  document.getElementById('twCampaignsBody').innerHTML = camps.map(c=>{
-    const sCTR = c.impressions>0?(c.clicks/c.impressions*100).toFixed(2)+'%':'—';
-    return `<tr>
-      <td>${c.campaign_name}</td>
-      <td class="num">${fmtM(c.spend)}${miniBar(c.spend/maxSpend*100,'#00A3E0')}</td>
-      <td class="num">${fmtN(c.impressions)}</td>
-      <td class="num">${fmtN(c.clicks)}</td>
-      <td class="num">${sCTR}</td>
-    </tr>`;
-  }).join('');
-
-  // Spend by studio — from meta.studios (adset-level), joined with Snowflake for purchases
-  const sfMap = {};
-  for (const s of sf.studios) sfMap[s.studio] = s;
-
-  const metaStudios = (meta.studios || []).filter(m => allSel || sel.includes(m.studio));
-  const maxSpendSt  = Math.max(...metaStudios.map(s=>s.spend),1);
-  document.getElementById('twStudioAdsBody').innerHTML = metaStudios.map(m=>{
-    const sfRow  = sfMap[m.studio];
-    const purch  = sfRow ? sfRow.meta_transactions : 0;
-    const cpp    = purch>0 ? fmtM(m.spend/purch) : '—';
-    const sCTR   = m.impressions>0 ? (m.clicks/m.impressions*100).toFixed(2)+'%' : '—';
-    return `<tr>
-      <td>${m.studio}</td>
-      <td class="num">${fmtM(m.spend)}${miniBar(m.spend/maxSpendSt*100,'#00A3E0')}</td>
-      <td class="num">${fmtN(m.impressions)}</td>
-      <td class="num">${fmtN(m.clicks)}</td>
-      <td class="num">${sCTR}</td>
-      <td class="num" style="color:${purch>0?'#0a8a4a':''}">${purch>0?fmtN(purch):'—'}</td>
-      <td class="num">${cpp}</td>
-    </tr>`;
-  }).join('');
-
-  // Leads by studio table — join leads + spend + purchases
-  const metaSpendMap = {};
-  for (const m of (meta.studios||[])) metaSpendMap[m.studio] = m;
-  const maxLeads = Math.max(...leadsStudios.map(s=>s.leads),1);
-  document.getElementById('twLeadsStudioBody').innerHTML = leadsStudios
-    .slice().sort((a,b)=>b.leads-a.leads)
-    .map(s=>{
-      const spendRow  = metaSpendMap[s.studio];
-      const sfRow     = sfMap[s.studio];
-      const stSpend   = spendRow ? spendRow.spend : 0;
-      const sCPL      = s.leads>0 && stSpend>0 ? fmtM(stSpend/s.leads) : '—';
-      const purch     = sfRow ? sfRow.meta_transactions : 0;
-      const conv      = s.leads>0 ? (purch/s.leads*100) : 0;
-      return `<tr>
-        <td>${s.studio}</td>
-        <td class="num">${fmtN(s.leads)}${miniBar(s.leads/maxLeads*100,'#00A3E0')}</td>
-        <td class="num">${sCPL}</td>
-        <td class="num" style="color:${purch>0?'#0a8a4a':''}">${purch>0?fmtN(purch):'—'}</td>
-        <td class="num" style="color:${conv>20?'#0a8a4a':'#5a7a8a'}">${conv>0?conv.toFixed(1)+'%':'—'}</td>
-      </tr>`;
-    }).join('');
-
-  const daily  = meta.daily;
-  const labels = daily.map(r=>new Date(r.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}));
-  makeChart('twSpendChart',{
-    type:'bar',
-    data:{labels,datasets:[{label:'Spend',data:daily.map(r=>r.spend),backgroundColor:'#0084B5',borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'$'+ctx.raw.toFixed(2)}}},
-      scales:{x:{ticks:{color:'#5a7a8a',font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},
-              y:{ticks:{color:'#5a7a8a',font:{size:10},callback:v=>'$'+v.toLocaleString('en-US')},grid:{color:'rgba(0,0,0,.04)'}}}}
-  });
-}
 
 loadData();
 </script>
