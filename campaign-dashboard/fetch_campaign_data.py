@@ -54,6 +54,33 @@ CAMPAIGNS = [
         "date_to":       "2026-07-31",
         "post_promo_to": "2026-08-15",
     },
+    {
+        "id":            "buy-3-get-5",
+        "name":          "Buy 3 Get 5 Free",
+        "product":       "Buy 3 get 5 free",   # exact PRODUCT_DESCRIPTION in Snowflake
+        "date_from":     "2026-08-31",
+        "date_to":       "2026-09-07",
+        "post_promo_to": "2026-10-07",
+    },
+    {
+        "id":            "two-weeks-for-40",
+        "name":          "2 Weeks for $40",
+        "product":       "2 Weeks for $40",
+        "date_from":     "2026-08-25",
+        "date_to":       "2026-09-07",
+        "post_promo_to": "2026-09-19",
+        # Same ~25-studio allowlist fetch_2weeks_data.py used — this promo
+        # ran at open studios only, not NSO/presale locations (e.g. Naples -
+        # Mercato sold the same-named product during its own presale, but
+        # that's unrelated activity, not this campaign).
+        "studio_filter": [
+            "Boca Raton", "Brickell", "Chelsea", "Coconut Grove", "Coral Gables",
+            "Coral Springs", "Deerfield", "Doral", "Eastchester", "FiDi", "Highland",
+            "Las Olas", "Madison", "Miami Beach", "Miami Lakes", "Midtown", "Miramar",
+            "NoDa", "Park Slope", "Pembroke", "Pinecrest", "Prestonwood", "Reston",
+            "South Miami", "Upper East", "West Palm",
+        ],
+    },
 ]
 
 # ── Source attribution (mirrors MARKETING_REPORTS.PUBLIC.LEADS view) ────────
@@ -168,6 +195,23 @@ def build_campaign(cur, camp):
     p   = camp.get("filter_value", camp["product"])          # value to match
     filt     = f"{fc} = %s"                                  # positive filter
     neg_filt = f"({fc} != %s OR {fc} IS NULL)" if fc != "PRODUCT_DESCRIPTION" else f"{fc} != %s"
+
+    # Optional studio allowlist — restricts which studios' purchases count as
+    # this campaign (e.g. "2 Weeks for $40" only ran at ~25 open studios, not
+    # NSO/presale locations that happened to sell the same-named product).
+    # Applied only to filt/neg_filt (which define "who bought the campaign
+    # product, at which studio"), not to the unrelated prior-history JOINs
+    # used for client segmentation (those look at a client's full history
+    # regardless of studio).
+    studio_names = camp.get("studio_filter")
+    if studio_names:
+        # %% (not %) — this is embedded directly into the SQL string, not
+        # passed as a bind param, so literal % wildcards must be escaped for
+        # the connector's pyformat parameter substitution.
+        studio_clause    = "(" + " OR ".join(f"STUDIO_NAME ILIKE '%%{s}%%'"    for s in studio_names) + ")"
+        studio_clause_sd = "(" + " OR ".join(f"sd.STUDIO_NAME ILIKE '%%{s}%%'" for s in studio_names) + ")"
+        filt     = f"{filt} AND {studio_clause}"
+        neg_filt = f"{neg_filt} AND {studio_clause_sd}"
 
     # ── 1. Basic KPIs ───────────────────────────────────────────────────────
     r = q1(cur, f"""
