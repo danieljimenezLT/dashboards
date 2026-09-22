@@ -304,7 +304,10 @@ def main():
 
         # Prepend pre-launch (negative) week bounds so spend entries before Week 1
         # are allocated to the correct calendar week rather than discarded.
-        _pw_list = _pw_studios.get(code, {}).get("pre_weeks", [])
+        # Naples (FL-019) already has its negative weeks baked into
+        # make_naples_bounds() above — merging _pw_list here too would
+        # duplicate that same negative week in `bounds`.
+        _pw_list = [] if is_naples else _pw_studios.get(code, {}).get("pre_weeks", [])
         if _pw_list:
             _pre_bounds = [
                 (pw["week_num"], date.fromisoformat(pw["date_start"]), date.fromisoformat(pw["date_end"]))
@@ -341,6 +344,17 @@ def main():
                         _dest[_wn] += round(_amt * _overlap / _span, 2)
 
         cw_num    = _bac.current_week_num(bounds)
+        # Week 0 has no real start date in `bounds` (ws=None, see make_sun_sat_bounds),
+        # so current_week_num() can never land on it and jumps straight from -1 to 1.
+        # Once the studio is actually past Week 0's effective start (_w0_start_eff,
+        # the same boundary used for spend allocation above) and before Week 1 starts,
+        # surface Week 0 as current instead of leaving current_week stuck at -1.
+        # Only overrides the "current week" pointer -- does not touch `bounds` itself,
+        # so per-week is_active/null-vs-zero defaults elsewhere are unaffected.
+        if cw_num < 0 and _w0_start_eff <= TODAY:
+            _w1_start_bound = next((ws for wn, ws, we in bounds if wn == 1), None)
+            if not _w1_start_bound or _w1_start_bound > TODAY:
+                cw_num = 0
         cum_leads = cum_presales = cum_canc = 0
         weeks_out = []
 
