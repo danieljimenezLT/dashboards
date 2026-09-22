@@ -954,8 +954,8 @@ function renderSummary2(){
   const paceWeeks=studio.co_week||totalWeeks;
   const goalWeeks=Math.min(paceWeeks,16);
   const todayStr=new Date().toISOString().slice(0,10);
-  const _w1OffSumm=pwData&&pwData.week_1_start;
-  const _isPreLaunchSumm=!_w1OffSumm||_w1OffSumm>todayStr;
+  const _w0OffSumm=pwData&&pwData.week_0_start;
+  const _isPreLaunchSumm=!_w0OffSumm||_w0OffSumm>todayStr;
   const _isOpened2=!!(studio.opening_date&&studio.opening_date<=todayStr);
   function _liso(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
   const _d7endDate=(()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate()-2);})();
@@ -972,6 +972,13 @@ function renderSummary2(){
   const _wkNum=wk=>parseInt((wk.week||'0').replace('WEEK ',''))||0;
   let cw=0;
   for(const wk of w){if(wk.date_start&&wk.date_start<=todayStr)cw=_wkNum(wk);}
+  // Week 0 has no date_start (see make_sun_sat_bounds in build_all_scorecards.py),
+  // so the loop above can never land on it and stays stuck at the last negative
+  // week. If we're past week_0_start and before week_1_start, surface Week 0.
+  if(cw<0&&_w0OffSumm&&_w0OffSumm<=todayStr){
+    const _w1OffSumm=pwData&&pwData.week_1_start;
+    if(!_w1OffSumm||_w1OffSumm>todayStr)cw=0;
+  }
   const cur=w.find(x=>_wkNum(x)===cw)||w[cw]||{};
   const _sumTierLookup={};(studio.tier_rmr_by_week||[]).forEach(r=>{_sumTierLookup[r.week]=r;});
   const _sumCurTier=_sumTierLookup[cw];
@@ -1205,8 +1212,8 @@ function drawCum2Chart(studio){
   // progress week (with partial totals) render as if it were finished.
   const _dataEndCapPw2=(NSO_SALES&&NSO_SALES.date_range&&NSO_SALES.date_range.end)||todayStr;
   const preWeeks=allPw.filter(pw=>!pw.date_start||(pw.date_end?pw.date_end<=_dataEndCapPw2:pw.date_start<=_dataEndCapPw2));
-  const _w1Off2=pwData&&pwData.week_1_start;
-  const _isPreL2=!_w1Off2||_w1Off2>todayStr;
+  const _w0Off2=pwData&&pwData.week_0_start;
+  const _isPreL2=!_w0Off2||_w0Off2>todayStr;
   const totalW=studio.go_week||studio.weeks.length-1;
   // current_week stores the week NUMBER (e.g. 15 for WEEK 15), not the array index.
   // Convert to array index so the chart cuts off at the right point.
@@ -1326,8 +1333,8 @@ function drawWeekly2Chart(studio){
   const allPwW=(pwData&&pwData.pre_weeks)||[];
   const _dataEndCapPwW=(NSO_SALES&&NSO_SALES.date_range&&NSO_SALES.date_range.end)||todayStr;
   const preWeeks=allPwW.filter(pw=>!pw.date_start||(pw.date_end?pw.date_end<=_dataEndCapPwW:pw.date_start<=_dataEndCapPwW));
-  const _w1Off2w=pwData&&pwData.week_1_start;
-  const _isPreL2w=!_w1Off2w||_w1Off2w>todayStr;
+  const _w0Off2w=pwData&&pwData.week_0_start;
+  const _isPreL2w=!_w0Off2w||_w0Off2w>todayStr;
   const totalW=studio.go_week||studio.weeks.length-1;
   const _cwNumW=studio.current_week||0;
   let cw=(()=>{const idx=studio.weeks.findIndex(wk=>(parseInt((wk.week||'0').replace('WEEK ',''))||0)===_cwNumW);return idx>=0?idx:_cwNumW;})();
@@ -1459,8 +1466,8 @@ function drawSumSourceChart2(studio,metric){
 function _isSummPreLaunch(studio){
   if(!studio)return false;
   const pd=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[studio.code];
-  const w1=pd&&pd.week_1_start;
-  return !w1||w1>new Date().toISOString().slice(0,10);
+  const w0=pd&&pd.week_0_start;
+  return !w0||w0>new Date().toISOString().slice(0,10);
 }
 
 function drawPreLaunchLeadsChart(studio){
@@ -1541,6 +1548,14 @@ function renderSummary(){
   let cw=0;
   for(const wk of w){
     if(wk.date_start&&wk.date_start<=todayStr)cw=_wkNum2(wk);
+  }
+  // Week 0 has no date_start (see make_sun_sat_bounds in build_all_scorecards.py),
+  // so the loop above can never land on it and stays stuck at the last negative
+  // week. If we're past week_0_start and before week_1_start, surface Week 0.
+  if(cw<0){
+    const pwData=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[studio.code];
+    const _w0Off=pwData&&pwData.week_0_start,_w1Off=pwData&&pwData.week_1_start;
+    if(_w0Off&&_w0Off<=todayStr&&(!_w1Off||_w1Off>todayStr))cw=0;
   }
 
   const cur=w.find(x=>_wkNum2(x)===cw)||w[cw]||{};
@@ -2774,13 +2789,14 @@ function renderScorecard2(){
   const _pwData=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[sc.code];
   const _pwList=(_pwData&&_pwData.pre_weeks)||[];
 
-  // Pre-launch: week_1_start explicitly set and in the future (e.g. Fort Myers).
-  // Unconfigured: no week_1_start set at all (e.g. South End, Rose Creek).
+  // Pre-launch: week_0_start explicitly set and in the future (e.g. Fort Myers).
+  // Unconfigured: no week_0_start set at all (e.g. South End, Rose Creek).
   // Both hide RMR Breakdown; only true pre-launch clears the weeks array (avoid double-counting).
   const _todaySc2=new Date().toISOString().slice(0,10);
+  const _w0Official=_pwData&&_pwData.week_0_start;
   const _w1Official=_pwData&&_pwData.week_1_start;
-  const _isPreLaunch2=Boolean(_w1Official)&&_w1Official>_todaySc2;
-  const _hideRmr=_isPreLaunch2||!_w1Official;
+  const _isPreLaunch2=Boolean(_w0Official)&&_w0Official>_todaySc2;
+  const _hideRmr=_isPreLaunch2||!_w0Official;
   if(_isPreLaunch2)weeks.splice(0);
 
   const _scStrip=s=>(s||'').replace(/^SWEAT440\s+/,'');
@@ -2991,7 +3007,7 @@ function renderScorecard2(){
   function _fmtD(iso){if(!iso)return'?';const[y,m,d]=iso.split('-');return`${+m}/${+d}`+(y!=='2026'?`<br><span style="font-size:8px;color:#c07000">${y}</span>`:'')}
   // For unconfigured studios: build sequential Sun-Sat labels anchored to the
   // first date that has any Snowflake lead/sale data (same source as the chart).
-  const _unconfigLabels=(!_w1Official&&pastWeeks.length)?( ()=>{
+  const _unconfigLabels=(!_w0Official&&pastWeeks.length)?( ()=>{
     const _sn2=(sc.data_name||sc.full_name||sc.name||'').replace(/^SWEAT440\s+/,'');
     const _dailyDatesRaw=(RAW?.daily_detail||[]).filter(r=>(r.studio||'').replace(/^SWEAT440\s+/,'')===_sn2&&r.date<=_todaySc2).map(r=>r.date);
     // 30-day gap filter: skip isolated early dates (same as fetch_pre_weeks.py)
@@ -3302,7 +3318,7 @@ function renderScorecard2(){
   // ── Main KPI scorecard table (with pre-week columns) ───────────────────
   h+=`<div class="chart-card" style="padding:20px 24px">`;
   h+=`<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">`;
-  h+=`<div><div style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;color:#8aaabb;font-weight:500;text-transform:uppercase">${sc.full_name.replace('SWEAT440 ','')}${(_isPreLaunch2||!_w1Official)?'':` — W${cw} current`}`;
+  h+=`<div><div style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;color:#8aaabb;font-weight:500;text-transform:uppercase">${sc.full_name.replace('SWEAT440 ','')}${(_isPreLaunch2||!_w0Official)?'':` — W${cw} current`}`;
   if(preWeekCols.length)h+=` <span style="font-size:10px;font-weight:400;color:#99DAF3">(+${preWeekCols.length} pre-launch wks)</span>`;
   h+=`</div>${_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:2px">${_dataThruLabel}</div>`:''}</div>`;
   h+=`<div class="gran-group"><button class="gran-btn${_scView2==='weekly'?' active':''}" id="scWeeklyBtn2" onclick="setScView2('weekly')">Weekly</button><button class="gran-btn${_scView2==='cum'?' active':''}" id="scCumBtn2" onclick="setScView2('cum')">Cumulative</button></div>`;
