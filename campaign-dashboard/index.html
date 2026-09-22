@@ -1424,34 +1424,39 @@ function renderAdsReport() {
   const studioRows = (pac.studios || []).filter(s => allSelected || sel.includes(s.name));
 
   // KPI totals (sum from filtered studios or use pre-computed totals)
-  let totSpend, totImpr, totClicks, totLeads, totReach;
+  let totSpend, totImpr, totClicks, totLeads, totReach, totPurchases;
   if (allSelected) {
     const t = pac.totals || {};
-    totSpend  = t.spend       || 0;
-    totImpr   = t.impressions || 0;
-    totClicks = t.clicks      || 0;
-    totLeads  = t.leads       || 0;
-    totReach  = t.reach       || 0;
+    totSpend     = t.spend       || 0;
+    totImpr      = t.impressions || 0;
+    totClicks    = t.clicks      || 0;
+    totLeads     = t.leads       || 0;
+    totReach     = t.reach       || 0;
+    totPurchases = t.purchases   || 0;
   } else {
-    totSpend  = studioRows.reduce((s, r) => s + (r.spend       || 0), 0);
-    totImpr   = studioRows.reduce((s, r) => s + (r.impressions || 0), 0);
-    totClicks = studioRows.reduce((s, r) => s + (r.clicks      || 0), 0);
-    totLeads  = studioRows.reduce((s, r) => s + (r.leads       || 0), 0);
-    totReach  = studioRows.reduce((s, r) => s + (r.reach       || 0), 0);
+    totSpend     = studioRows.reduce((s, r) => s + (r.spend       || 0), 0);
+    totImpr      = studioRows.reduce((s, r) => s + (r.impressions || 0), 0);
+    totClicks    = studioRows.reduce((s, r) => s + (r.clicks      || 0), 0);
+    totLeads     = studioRows.reduce((s, r) => s + (r.leads       || 0), 0);
+    totReach     = studioRows.reduce((s, r) => s + (r.reach       || 0), 0);
+    totPurchases = studioRows.reduce((s, r) => s + (r.purchases   || 0), 0);
   }
-  const cpl = totLeads > 0 ? totSpend / totLeads : 0;
-  const ctr = totImpr  > 0 ? totClicks / totImpr * 100 : 0;
+  const cpl = totLeads     > 0 ? totSpend / totLeads     : 0;
+  const cpp = totPurchases > 0 ? totSpend / totPurchases : 0;
+  const ctr = totImpr      > 0 ? totClicks / totImpr * 100 : 0;
 
   document.getElementById('adsNote').textContent =
     `Meta Ads · ${fmtDateStr(pac.date_start)} – ${fmtDateStr(pac.date_end)}`;
 
   document.getElementById('adsKpiGrid').innerHTML = [
-    {label:'Total Spend',   val: fmtM(totSpend)},
-    {label:'Meta Leads',    val: fmtN(totLeads)},
-    {label:'Cost Per Lead', val: totLeads > 0 ? fmtM(cpl) : '—'},
-    {label:'Impressions',   val: fmtN(totImpr)},
-    {label:'Clicks',        val: fmtN(totClicks)},
-    {label:'CTR',           val: totImpr > 0 ? ctr.toFixed(2) + '%' : '—'},
+    {label:'Total Spend',        val: fmtM(totSpend)},
+    {label:'Meta Leads',         val: fmtN(totLeads)},
+    {label:'Cost Per Lead',      val: totLeads > 0 ? fmtM(cpl) : '—'},
+    {label:'Meta Purchases',     val: fmtN(totPurchases)},
+    {label:'Cost Per Purchase',  val: totPurchases > 0 ? fmtM(cpp) : '—'},
+    {label:'Impressions',        val: fmtN(totImpr)},
+    {label:'Clicks',             val: fmtN(totClicks)},
+    {label:'CTR',                val: totImpr > 0 ? ctr.toFixed(2) + '%' : '—'},
   ].map(c =>
     `<div class="kpi-card">
        <div class="kpi-card-label">${c.label}</div>
@@ -1463,8 +1468,7 @@ function renderAdsReport() {
   const sorted = studioRows.slice().sort((a, b) => b.spend - a.spend);
   const maxSpend = Math.max(...sorted.map(r => r.spend), 1);
 
-  const totTrials    = studioRows.reduce((s, r) => s + (r.trials    || 0), 0);
-  const totPurchases = studioRows.reduce((s, r) => s + (r.purchases || 0), 0);
+  const totTrials = studioRows.reduce((s, r) => s + (r.trials || 0), 0);
 
   document.getElementById('adsStudioBody').innerHTML = sorted.map(r => {
     const sCPL = r.leads     > 0 ? fmtM(r.spend / r.leads)     : '—';
