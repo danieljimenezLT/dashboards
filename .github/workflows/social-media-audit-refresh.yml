@@ -1,0 +1,80 @@
+name: Social Media Audit — Monthly Refresh
+
+# Runs once a month, not on the daily schedule. Most Instagram metrics
+# (posts, reach, stories, engagement, followers) come from
+# nso-dashboard/social_insights.json, which refresh.yml already fetches
+# daily — this workflow doesn't re-fetch those. It does make its own
+# Graph API calls for DM/comment reply times (fetch_replies_data.py),
+# since those need to walk each post's comments and each conversation's
+# messages — data the daily job doesn't pull. Also pulls the Brand
+# Offenses sheet, then rebuilds social-media-audit/data/latest.json for
+# the month that just completed.
+
+on:
+  schedule:
+    - cron: "0 12 1 * *"   # 1st of every month, 7am Eastern (EST=UTC-5) / 8am EDT
+  workflow_dispatch:
+    inputs:
+      month:
+        description: 'Target month as YYYY-MM (default: the most recently completed month)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ADMIN_PUSH_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r nso-dashboard/requirements.txt
+
+      - name: Write Google service account credentials
+        run: |
+          mkdir -p nso-dashboard/credentials
+          printf '%s' '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > nso-dashboard/credentials/service_account.json
+
+      - name: Fetch Brand Offenses sheet
+        run: python social-media-audit/scripts/fetch_brand_offenses.py
+
+      - name: Fetch DM/comment reply times
+        env:
+          META_ACCESS_TOKEN: ${{ secrets.META_TOKEN }}
+        run: |
+          if [ -n "${{ github.event.inputs.month }}" ]; then
+            python social-media-audit/scripts/fetch_replies_data.py --month "${{ github.event.inputs.month }}"
+          else
+            python social-media-audit/scripts/fetch_replies_data.py
+          fi
+        continue-on-error: true
+
+      - name: Build social-media-audit/data/latest.json
+        run: |
+          if [ -n "${{ github.event.inputs.month }}" ]; then
+            python social-media-audit/scripts/build_audit_data.py --month "${{ github.event.inputs.month }}"
+          else
+            python social-media-audit/scripts/build_audit_data.py
+          fi
+
+      - name: Commit updated data files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add social-media-audit/data/latest.json
+          git add social-media-audit/data/brand_offenses.json
+          git add social-media-audit/data/replies.json
+          git diff --cached --quiet || git commit -m "chore(social-media-audit): monthly refresh $(date -u '+%Y-%m-%d')"
+          git pull --rebase origin main
+          git push
