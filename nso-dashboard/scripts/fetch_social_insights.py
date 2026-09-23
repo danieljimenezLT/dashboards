@@ -147,13 +147,18 @@ def _month_key(date_str):
         return ""
 
 
-def build_monthly_aggregates(daily_rows, posts, before_date_str):
+def build_monthly_aggregates(daily_rows, posts, before_date_str, current_followers=None):
     """
     Aggregate daily rows into monthly summaries for complete calendar months
     that fall entirely before before_date_str (the rolling window start).
     Only months where the last day < before_date_str are included, ensuring
     partial boundary months are never archived prematurely.
     Returns {month_key: aggregate_dict}.
+
+    `current_followers` (optional) is the absolute follower total as of "now".
+    It's used to reconstruct each month's absolute follower count, because
+    Meta's `follower_count` daily insight is a net-new-followers DELTA for
+    that day, not an absolute total — see the reconstruction below.
     """
     import statistics
     from calendar import monthrange
@@ -176,7 +181,7 @@ def build_monthly_aggregates(daily_rows, posts, before_date_str):
                            "total_interactions": 0, "days_with_data": 0, "post_count": 0,
                            "stories_count": 0,
                            "median_likes": None, "median_reach_per_post": None,
-                           "median_engagement_rate": None,
+                           "median_engagement_rate": None, "followers": None,
                            "_likes": [], "_reach_per_post": [], "_engagement_rates": []}
         m = monthly[mk]
         m["reach"] += row.get("reach") or 0
@@ -189,12 +194,6 @@ def build_monthly_aggregates(daily_rows, posts, before_date_str):
         # ~24h gap between daily fetch runs.
         m["stories_count"] += row.get("stories") or 0
         reach_by_date[row["date"]] = row.get("reach") or 0
-        # Track last known follower_count in the month
-        fc = row.get("follower_count")
-        if fc is not None:
-            if m.get("followers") is None or row["date"] > m.get("_last_fc_date", ""):
-                m["followers"] = fc
-                m["_last_fc_date"] = row["date"]
 
     # Count posts per date to estimate per-post reach
     posts_per_date = {}
@@ -245,7 +244,22 @@ def build_monthly_aggregates(daily_rows, posts, before_date_str):
         del m["_likes"]
         del m["_reach_per_post"]
         del m["_engagement_rates"]
-        m.pop("_last_fc_date", None)
+
+    # Reconstruct each month's absolute follower count. Meta's `follower_count`
+    # daily insight is a net-new-followers DELTA for that day, not an absolute
+    # total, so the absolute count as of a given date = current_followers minus
+    # the sum of every delta that occurred after that date. Mirrors the
+    # client-side reconstruction already used in nso-studios.html.
+    if current_followers is not None:
+        fc_rows = sorted(
+            (r for r in daily_rows if r.get("follower_count") is not None),
+            key=lambda r: r["date"],
+        )
+        for mk, m in monthly.items():
+            d = datetime.strptime(mk, "%Y-%m-%d")
+            last_day_str = datetime(d.year, d.month, monthrange(d.year, d.month)[1]).strftime("%Y-%m-%d")
+            deltas_after = sum(r["follower_count"] for r in fc_rows if r["date"] > last_day_str)
+            m["followers"] = current_followers - deltas_after
 
     return monthly
 
@@ -552,7 +566,8 @@ def main():
             if fresh_days_with_reach >= days_in_month * 0.9:
                 del old_monthly[mk]
 
-        new_monthly = build_monthly_aggregates(all_daily, all_posts, rolling_window_cutoff)
+        new_monthly = build_monthly_aggregates(all_daily, all_posts, rolling_window_cutoff,
+                                                new_data.get("current_followers"))
         for mk, agg in new_monthly.items():
             if mk not in old_monthly:
                 old_monthly[mk] = agg

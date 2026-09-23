@@ -7,11 +7,18 @@ Export these tables from Looker Studio before running:
   - new_posts.csv       : Date (Year) | Date (Month) | Page ID | New Posts
   - median_like_count.csv : Date (Year) | Date (Month) | Page ID | Like Count   (optional)
   - median_reach.csv    : Date (Year) | Date (Month) | Page ID | Reach Period  (optional)
+  - followers.csv       : Date (Year) | Date (Month) | Page ID | Followers     (optional)
+  - stories.csv         : Date (Year) | Date (Month) | Page ID | Stories       (optional)
+                           If your Looker export uses a different column header
+                           for the stories metric, rename it to "Stories" before
+                           running, or edit the read_csv_data(args.stories, ...)
+                           call below to match.
 
 Usage:
     python scripts/backfill_ig_monthly.py reach.csv new_posts.csv
     python scripts/backfill_ig_monthly.py reach.csv new_posts.csv \\
-        --median-likes median_like_count.csv --median-reach median_reach.csv
+        --median-likes median_like_count.csv --median-reach median_reach.csv \\
+        --followers followers.csv --stories stories.csv
     python scripts/backfill_ig_monthly.py reach.csv new_posts.csv --dry-run
 """
 
@@ -79,6 +86,8 @@ def main():
                         help="median_reach.csv: Date (Year) | Date (Month) | Page ID | Reach Period")
     parser.add_argument("--followers", metavar="CSV",
                         help="followers.csv: Date (Year) | Date (Month) | Page ID | Followers")
+    parser.add_argument("--stories", metavar="CSV",
+                        help="stories.csv: Date (Year) | Date (Month) | Page ID | Stories")
     parser.add_argument("--output", default=str(NSO_DIR / "social_insights.json"))
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
@@ -96,24 +105,28 @@ def main():
     likes_data  = read_csv_data(args.median_likes, "Like Count") if args.median_likes else {}
     mreach_data = read_csv_data(args.median_reach, "Reach Period") if args.median_reach else {}
     foll_data   = read_csv_data(args.followers, "Followers") if args.followers else {}
+    stories_data = read_csv_data(args.stories, "Stories") if args.stories else {}
     print(f"Reach:         {len(reach_data)} rows")
     print(f"Posts:         {len(posts_data)} rows")
-    if likes_data:  print(f"Median likes:  {len(likes_data)} rows")
-    if mreach_data: print(f"Median reach:  {len(mreach_data)} rows")
-    if foll_data:   print(f"Followers:     {len(foll_data)} rows")
+    if likes_data:   print(f"Median likes:  {len(likes_data)} rows")
+    if mreach_data:  print(f"Median reach:  {len(mreach_data)} rows")
+    if foll_data:    print(f"Followers:     {len(foll_data)} rows")
+    if stories_data: print(f"Stories:       {len(stories_data)} rows")
 
     # Build per-page monthly entries
-    all_keys = set(reach_data) | set(posts_data) | set(likes_data) | set(mreach_data) | set(foll_data)
+    all_keys = (set(reach_data) | set(posts_data) | set(likes_data) | set(mreach_data)
+                | set(foll_data) | set(stories_data))
     by_page: dict[str, dict] = {}
     unmapped: set = set()
 
     for (page_id, year, month) in all_keys:
-        reach  = reach_data.get((page_id, year, month), 0)
-        posts  = posts_data.get((page_id, year, month), 0)
-        mlikes = likes_data.get((page_id, year, month), None)
-        mreach = mreach_data.get((page_id, year, month), None)
-        foll   = foll_data.get((page_id, year, month), None)
-        if reach == 0 and posts == 0 and mlikes is None and mreach is None and foll is None:
+        reach   = reach_data.get((page_id, year, month), 0)
+        posts   = posts_data.get((page_id, year, month), 0)
+        mlikes  = likes_data.get((page_id, year, month), None)
+        mreach  = mreach_data.get((page_id, year, month), None)
+        foll    = foll_data.get((page_id, year, month), None)
+        stories = stories_data.get((page_id, year, month), None)
+        if reach == 0 and posts == 0 and mlikes is None and mreach is None and foll is None and stories is None:
             continue
         if page_id not in page_map:
             unmapped.add(page_id)
@@ -131,6 +144,7 @@ def main():
             "median_likes": mlikes,
             "median_reach_per_post": mreach,
             "followers": foll,
+            "stories_count": stories,
         }
 
     if unmapped:
@@ -172,6 +186,13 @@ def main():
                 # Always overwrite followers — previous backfills used SUM aggregation (wrong).
                 if entry.get("followers") is not None:
                     existing_monthly[month_key]["followers"] = entry["followers"]
+                    changed = True
+                # Always overwrite stories_count — the live daily job can only capture Stories
+                # from the day its tracking started onward (they expire in 24h, no history API),
+                # so any live-computed value for a month before that is 0 or a partial undercount.
+                # The Looker Studio export is the only source of truth for that gap.
+                if entry.get("stories_count") is not None:
+                    existing_monthly[month_key]["stories_count"] = entry["stories_count"]
                     changed = True
                 if changed:
                     updated += 1
