@@ -223,8 +223,19 @@ def main():
 
         existing_studio = existing_by_code.get(s.get("code") or s["social_slug"], {})
         existing_months = existing_studio.get("months", {})
-        prior_month_keys = sorted(k for k in existing_months if k < target_month)
-        prior_followers = existing_months[prior_month_keys[-1]]["followersCount"] if prior_month_keys else None
+
+        # Prior month's followers: prefer reconstructing straight from IG
+        # data (works even on the very first run, since social_insights.json
+        # already has real history) — only fall back to what this script
+        # last wrote if IG data doesn't reach back that far (e.g. a studio
+        # newly connected to Instagram tracking).
+        target_year, target_mon = int(target_month[:4]), int(target_month[5:7])
+        prior_month_key_str = previous_month_key(date(target_year, target_mon, 1))
+        prior_agg = get_month_aggregate(ig_entry, prior_month_key_str)
+        prior_followers = prior_agg.get("followers")
+        if prior_followers is None:
+            prior_month_keys = sorted(k for k in existing_months if k < target_month)
+            prior_followers = existing_months[prior_month_keys[-1]]["followersCount"] if prior_month_keys else None
 
         if prior_followers:
             follower_growth_pct = round((followers_count - prior_followers) / prior_followers, 4)
