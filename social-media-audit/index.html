@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SWEAT440 — Social Media Audit</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet"/>
+<link rel="icon" href="../favicon.jpg"/>
+<link rel="stylesheet" href="../shared/style.css"/>
+<style>
+  .sm-banner{display:flex;align-items:center;gap:14px;padding:16px 20px;border-radius:12px;margin-bottom:20px;font-family:'Oswald',sans-serif}
+  .sm-banner-badge{font-style:italic;font-weight:700;font-size:18px;text-transform:uppercase;letter-spacing:.5px}
+  .sm-banner-sub{font-family:'Open Sans',sans-serif;font-style:normal;font-size:12px;color:#5a7a8a}
+  .sm-type-pill{display:inline-block;padding:3px 10px;border-radius:10px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-family:'Oswald',sans-serif;font-style:italic}
+  .sm-legend{font-family:'Open Sans',sans-serif;font-size:11px;color:#5a7a8a;line-height:1.7;white-space:nowrap}
+  .sm-score-section-row td{background:#eef5fa;font-family:'Oswald',sans-serif;font-style:italic;font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-size:13px}
+  .sm-total-row td{font-weight:700;font-size:13px}
+  .sm-table-flex{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+  .sm-table-flex .data-table-wrap{flex:1;min-width:340px}
+  .sm-staging-tag{background:rgba(221,255,0,.25);color:#7a8a00;border:1px solid rgba(221,255,0,.6)}
+  .sm-score-cell{display:inline-block;min-width:44px;padding:3px 10px;border-radius:6px;font-weight:700}
+  .sm-rec-list{margin:0;padding-left:20px;font-size:13px;color:#1a1a2e;line-height:1.8}
+  .sm-empty-note{font-size:12px;color:#8aaabb;font-style:italic;padding:20px 0;text-align:center}
+  .sm-offbrand-thumb{width:44px;height:44px;border-radius:6px;background:#f0f6fa;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .sm-mock-flag{display:inline-block;margin-left:6px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#b85c00;background:#fef3e2;border-radius:4px;padding:1px 5px;vertical-align:middle}
+  @media(max-width:768px){.sm-table-flex{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="../home.html"><img src="../logo.png" alt="SWEAT440"/></a>
+  <div class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" onclick="switchSmTab('rubric',this)">Rubric</button>
+    <button class="nav-tab" onclick="switchSmTab('summary',this)">Summary</button>
+  </div>
+  <div class="nav-user"><span class="nav-badge sm-staging-tag">Staging</span></div>
+  <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Toggle navigation">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="controls-bar">
+  <button class="controls-toggle" id="ctrlToggle" onclick="document.getElementById('ctrlInner').classList.toggle('open')">Filters ▾</button>
+  <div class="controls-inner" id="ctrlInner">
+    <span class="ctrl-label" id="studioCtrlLabel">Studio</span>
+    <select id="fStudio" onchange="onStudioChange()"></select>
+    <div class="ctrl-sep"></div>
+    <span class="ctrl-label">Month</span>
+    <select id="fMonth" onchange="onMonthChange()"></select>
+  </div>
+</div>
+<div class="data-freshness-note" id="dataFreshness"></div>
+
+<div class="main">
+
+  <!-- ══════════════════════ RUBRIC TAB ══════════════════════ -->
+  <div class="tab-content active" id="tab-rubric">
+
+    <div class="sm-banner" id="rubricBanner">
+      <div class="sm-banner-badge" id="rubricClassification">—</div>
+      <div>
+        <div class="sm-banner-sub" id="rubricStudioLine">—</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card-title-row">
+        <div class="chart-card-title">Local Content Score</div>
+        <div class="sm-legend">9+ Green &nbsp;·&nbsp; 7.5–8.99 Yellow &nbsp;·&nbsp; 0–7.49 Red</div>
+      </div>
+      <div style="overflow-x:auto"><table class="data-table" id="localContentTable"></table></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card-title-row">
+        <div class="chart-card-title">Community Management</div>
+        <div class="sm-legend">8.5+ Green &nbsp;·&nbsp; 7.5–8.49 Yellow &nbsp;·&nbsp; 0–7.49 Red</div>
+      </div>
+      <div style="overflow-x:auto"><table class="data-table" id="communityTable"></table></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card-title">Recommendations</div>
+      <div id="recommendationsBox"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card-title-row">
+        <div class="chart-card-title">Off-Brand Posts</div>
+        <div class="sm-legend">Sourced monthly from the Brand Offenses Tracker</div>
+      </div>
+      <div style="overflow-x:auto"><table class="data-table" id="offBrandTable"></table></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════ SUMMARY TAB ══════════════════════ -->
+  <div class="tab-content" id="tab-summary">
+
+    <div class="kpi-grid" id="summaryKpis"></div>
+
+    <div class="chart-card">
+      <div class="chart-card-title">All Studios — <span id="summaryMonthLabel"></span></div>
+      <div style="overflow-x:auto"><table class="data-table" id="summaryTable">
+        <thead><tr>
+          <th data-sort="studio">Studio</th>
+          <th data-sort="type">Type</th>
+          <th class="num" data-sort="localContent">Local Content</th>
+          <th class="num" data-sort="communityMgmt">Community Mgmt</th>
+          <th data-sort="classification">Classification</th>
+          <th></th>
+        </tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="kpi-info-overlay" id="smInfoOverlay" onclick="closeSmInfo()"></div>
+<div class="kpi-info-box" id="smInfoBox">
+  <button class="kpi-info-box-close" onclick="closeSmInfo()" aria-label="Close">&#215;</button>
+  <div class="kpi-info-box-title" id="smInfoTitle"></div>
+  <div class="kpi-info-box-desc" id="smInfoDesc"></div>
+  <div id="smInfoPassWrap">
+    <div class="kpi-info-box-date-label">How to Pass</div>
+    <div class="kpi-info-box-date" id="smInfoPass" style="margin-bottom:14px;white-space:pre-line"></div>
+  </div>
+  <div id="smInfoMistakesWrap">
+    <div class="kpi-info-box-date-label">Common Mistakes to Avoid</div>
+    <div class="kpi-info-box-date" id="smInfoMistakes" style="white-space:pre-line"></div>
+  </div>
+</div>
+
+<script src="../users.js"></script>
+<script src="../shared/auth.js"></script>
+<script src="../shared/utils.js"></script>
+<script>
+const WEIGHTS = {
+  imgVideo:17, caption:5, audio:5, engagement:4, reach:4,
+  storiesCount:15, storiesOnBrand:15,
+};
+
+// Which rubric fields are real (from the Instagram connection / Brand
+// Offenses Tracker) vs still mocked, keyed the same as each month's data
+// object. Drives the "MOCK" flag shown next to a value in the rubric
+// table. Empty now — every field has a real source — but left in place
+// in case a source ever needs to fall back to a placeholder again.
+// netNewFollowers is real too, even though it can read null on a
+// studio's first month in the data (no prior month to diff against yet).
+const MOCK_FIELDS = new Set([]);
+
+// Sourced from the "Items table" tab of the current audit workbook. Items
+// without an entry yet (engagement, reach, growth, new followers) are new
+// metrics introduced by this rubric update and have no source text.
+const ITEM_INFO = {
+  totalPosts: { title:'Total # of Local Posts',
+    desc:'Studios must post consistently to stay visible and grow their community. Local posts should showcase your coaches, members, classes, events, or any other activities happening at the studio.',
+    pass:'✔ 8+ posts = full credit\n✔ 12+ posts = extra credit',
+    mistakes:'✖ Posting fewer than the monthly minimum' },
+  imgVideo: { title:'% On-Brand Image and Video',
+    desc:'Every post is a reflection of our brand, and consistency is key. Whether it’s a feed post, reel, story, or collab, all content must follow SWEAT440 brand standards to ensure a polished, professional presence across all studios.',
+    pass:'✔ Use approved Canva templates for all designed posts\n✔ Stick to SWEAT440 tone, color palette, and logos',
+    mistakes:'✖ Off-brand posts that are flagged (e.g., incorrect templates, wrong tone, inappropriate imagery, AI-generated posts instead of Canva templates)\n✖ Altered templates (moved logos, changed fonts/colors/layouts)\n✖ Coaches joking about not liking their job or venting in videos\n✖ Use of sensitive or triggering language (e.g. "kidnap," "suicide," etc.)' },
+  caption: { title:'% On-Brand Caption',
+    desc:'Every caption should reflect the SWEAT440 voice — clear, confident, inclusive, and on-brand.',
+    pass:'✔ Use brand-appropriate language, include some hashtags',
+    mistakes:'✖ Using quotation marks around SWEAT440\n✖ Leaving captions blank or vague\n✖ Using off-brand tone (e.g., overly aggressive, unprofessional, sarcastic)\n✖ Using banned words (e.g., "trainer" instead of "Coach" or "SWEAT Squad")' },
+  audio: { title:'% On-Brand Audio',
+    desc:'Audio should elevate the content, whether it’s music or voiceover. SWEAT440 content should always sound as professional and energized as it looks.',
+    pass:'✔ Use upbeat, brand-aligned tracks or trending audio that enhances your video. Spoken audio should be clear and easy to understand. Reels should feel intentional and motivating.',
+    mistakes:'✖ Music that contains explicit lyrics or inappropriate language\n✖ Audio that’s too distorted, or hard to understand\n✖ Voiceovers that confuse the message or lack energy\n✖ Using audio that distracts from or doesn’t match the content vibe' },
+  engagement: { title:'Median Engagement Rate',
+    desc:'New metric introduced with this rubric update, replacing Collabs. Computed as (likes + comments) ÷ estimated reach for each post, from the studio\'s Instagram connection; the median across the month\'s posts is used. Shares aren\'t included yet.',
+    pass:'', mistakes:'' },
+  reach: { title:'Monthly Reach',
+    desc:'New metric introduced with this rubric update, replacing Tagged Accounts. Total reach for the month, pulled directly from the studio\'s Instagram connection.',
+    pass:'', mistakes:'' },
+  storiesCount: { title:'Number of Stories',
+    desc:'Studios should repost or publish Instagram Stories at least 5 days per week. Stories help your studio stay top-of-mind, show real-time moments, and build stronger engagement with your local audience. Counted from daily snapshots of active Stories via the Instagram connection (Stories expire after 24h, so this is an approximation of the month\'s total).',
+    pass:'✔ Post stories consistently 5 or more days per week, either through original content or by reposting content.',
+    mistakes:'✖ Not reposting class moments, community moments, or coach/member content.\n✖ Posting a few stories' },
+  storiesBrand: { title:'% On-Brand Stories',
+    desc:'Stories must reflect the SWEAT440 brand visually and in tone. This includes appropriate language, angles, tone, and use of templates when needed.',
+    pass:'✔ Stories should be clean, polished, and aligned with brand values\n✔ Highlight real-time moments in the studio, using flattering angles, and avoiding content that could appear insensitive or unprofessional.',
+    mistakes:'✖ Posting low-angle or from-behind videos\n✖ Posting bathroom selfies\n✖ Stories that include liquor, inappropriate humor, or negative messaging\n✖ Selfies of members who are not adherent to our dress code\n✖ Selfies of members in overly suggestive or inappropriate poses' },
+  dms: { title:'Replies to DMs',
+    desc:'Studios must respond to all direct messages (DMs) within 4 business hours. DMs are treated like a digital front desk — quick replies help build trust and improve the overall member experience.',
+    pass:'✔ All DMs are responded to within 4 business hours during the week.\n✔ Replies are friendly, informative, and follow SWEAT440 brand tone.\n✔ Any message not requiring a response (like a story reaction or emoji) is acknowledged if appropriate.',
+    mistakes:'✖ Leaving DMs unread for several days\n✖ Failing to respond to story mentions or customer questions\n✖ Inconsistent or unprofessional tone in responses\n✖ Ignoring message requests from new followers or potential leads' },
+  comments: { title:'Replies to Comments',
+    desc:'Studios must reply to post comments within one business day to stay engaged with the community and maintain strong visibility on Social Media.',
+    pass:'✔ Reply to all post comments within 24 business hours\n✔ Responses can be short and simple (an emoji, "Thanks!", etc.)\n✔ Like the comment in addition to replying\n✔ Maintain a positive, encouraging, and on-brand tone in replies',
+    mistakes:'✖ Letting comments go unanswered for days' },
+  growth: { title:'Follower Growth',
+    desc:'New metric introduced with this rubric update, replacing Follows Synergistic Businesses. Month-over-month follower growth rate, computed from the studio\'s Instagram connection.',
+    pass:'', mistakes:'' },
+  newFollowers: { title:'Net New Followers (NSO only)',
+    desc:'New metric introduced with this rubric update, replacing Follows Community Individuals. Measures net new followers gained during the month. Applies to NSO studios only.',
+    pass:'', mistakes:'' },
+  postsReels: { title:'Posts & Reels',
+    desc:'Weighted combination of total post volume (35%) and on-brand content quality (35%).', pass:'', mistakes:'' },
+  onBrandCalc: { title:'On-Brand Content (Calculated)',
+    desc:'Weighted average of the on-brand Image/Video, Caption, Audio, Engagement Rate, and Reach sub-scores.', pass:'', mistakes:'' },
+  stories: { title:'Stories',
+    desc:'Weighted combination of story volume (15%) and on-brand story quality (15%).', pass:'', mistakes:'' },
+  localContentTotal: { title:'Local Content Score',
+    desc:'Overall Local Content score — a weighted blend of Posts & Reels (70%) and Stories (30%), capped at 11.', pass:'', mistakes:'' },
+  communityTotal: { title:'Community Management',
+    desc:'Overall Community Management score — a weighted blend of DM/comment responsiveness and follower growth.', pass:'', mistakes:'' },
+};
+
+function _ib(key){
+  const info = ITEM_INFO[key]; if(!info) return '';
+  return `<button class="kpi-info-btn kpi-info-inline" onclick="showSmInfo('${key}');event.stopPropagation()" aria-label="More info">i</button>`;
+}
+function showSmInfo(key){
+  const info = ITEM_INFO[key]; if(!info) return;
+  document.getElementById('smInfoTitle').textContent = info.title;
+  document.getElementById('smInfoDesc').textContent = info.desc || '—';
+  const passWrap = document.getElementById('smInfoPassWrap');
+  const mistWrap = document.getElementById('smInfoMistakesWrap');
+  if(info.pass){ passWrap.style.display=''; document.getElementById('smInfoPass').textContent = info.pass; } else passWrap.style.display='none';
+  if(info.mistakes){ mistWrap.style.display=''; document.getElementById('smInfoMistakes').textContent = info.mistakes; } else mistWrap.style.display='none';
+  document.getElementById('smInfoOverlay').classList.add('active');
+  document.getElementById('smInfoBox').classList.add('active');
+}
+function closeSmInfo(){
+  document.getElementById('smInfoOverlay').classList.remove('active');
+  document.getElementById('smInfoBox').classList.remove('active');
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeSmInfo(); });
+
+// Fallback data — used until data/latest.json loads (or if it fails to load
+// / has no studios yet). Kept in the same shape as the fetched file so the
+// rest of the page never needs to know which source it's looking at.
+const MOCK_STUDIOS = [
+  { code:'PIN', name:'Pinecrest - Palmetto Bay', type:'open',
+    months:{
+      '2026-06':{ posts:14, imgVideoPct:1.00, captionPct:1.00, audioPct:0.95, engagementPct:0.034, monthlyReach:12400,
+        storiesCount:160, storiesOnBrandPct:0.98,
+        repliesDMs:'Yes', repliesComments:true, followerGrowthPct:0.021, followersCount:4180,
+        offBrandPosts:[] },
+      '2026-07':{ posts:18, imgVideoPct:1.00, captionPct:1.00, audioPct:1.00, engagementPct:0.036, monthlyReach:14200,
+        storiesCount:177, storiesOnBrandPct:1.00,
+        repliesDMs:'Yes', repliesComments:true, followerGrowthPct:0.019, followersCount:4325,
+        offBrandPosts:[] },
+    } },
+  { code:'RES', name:'Reston', type:'nso',
+    months:{
+      '2026-06':{ posts:15, imgVideoPct:0.92, captionPct:0.95, audioPct:0.90, engagementPct:0.028, monthlyReach:5200,
+        storiesCount:22, storiesOnBrandPct:0.91,
+        repliesDMs:'Yes', repliesComments:true, followerGrowthPct:0.11, netNewFollowers:135, followersCount:1360,
+        offBrandPosts:[] },
+      '2026-07':{ posts:21, imgVideoPct:0.96, captionPct:1.00, audioPct:0.94, engagementPct:0.031, monthlyReach:7100,
+        storiesCount:26, storiesOnBrandPct:0.96,
+        repliesDMs:'Yes', repliesComments:true, followerGrowthPct:0.13, netNewFollowers:158, followersCount:1518,
+        offBrandPosts:[] },
+    } },
+  { code:'NAP', name:'Naples - Mercato', type:'nso',
+    months:{
+      '2026-06':{ posts:9, imgVideoPct:0.72, captionPct:0.80, audioPct:0.70, engagementPct:0.019, monthlyReach:2100,
+        storiesCount:11, storiesOnBrandPct:0.75,
+        repliesDMs:'Sometimes', repliesComments:false, followerGrowthPct:0.06, netNewFollowers:64, followersCount:980,
+        offBrandPosts:[
+          {date:'2026-06-04', type:'Feed Post', impact:'-0.4 On-brand Image', feedback:'Off-brand filter used, does not match approved LUT.', action:'Reshoot requested'},
+          {date:'2026-06-17', type:'Caption', impact:'-0.3 On-brand Caption', feedback:'Pricing mentioned in caption — against brand guidelines.', action:'Post edited'},
+        ] },
+      '2026-07':{ posts:11, imgVideoPct:0.78, captionPct:0.85, audioPct:0.80, engagementPct:0.021, monthlyReach:2800,
+        storiesCount:14, storiesOnBrandPct:0.82,
+        repliesDMs:'Sometimes', repliesComments:false, followerGrowthPct:0.07, netNewFollowers:78, followersCount:1058,
+        offBrandPosts:[
+          {date:'2026-07-09', type:'Story', impact:'-0.2 On-brand Story', feedback:'Third-party logo visible in background, not blurred.', action:'Coaching sent'},
+        ] },
+    } },
+  { code:'DAL', name:'Dallas - Uptown', type:'open', exemptGrowth:true,
+    months:{
+      '2026-06':{ posts:10, imgVideoPct:0.94, captionPct:0.96, audioPct:0.90, engagementPct:0.026, monthlyReach:15200,
+        storiesCount:19, storiesOnBrandPct:0.93,
+        repliesDMs:'Yes', repliesComments:true, followerGrowthPct:0.001, followersCount:19000,
+        offBrandPosts:[] },
+      '2026-07':{ posts:12, imgVideoPct:0.97, captionPct:0.98, audioPct:0.93, engagementPct:0.029, monthlyReach:17800,
+        storiesCount:21, storiesOnBrandPct:0.95,
+        repliesDMs:'Yes', repliesComments:true, followerGrowthPct:0.0,  followersCount:19050,
+        offBrandPosts:[] },
+    } },
+  { code:'HER', name:'Herriman', type:'nso',
+    months:{
+      '2026-06':{ posts:19, imgVideoPct:1.00, captionPct:1.00, audioPct:0.96, engagementPct:0.041, monthlyReach:9800,
+        storiesCount:24, storiesOnBrandPct:1.00,
+        repliesDMs:'Yes', repliesComments:true, followerGrowthPct:0.15, netNewFollowers:190, followersCount:1460,
+        offBrandPosts:[] },
+      '2026-07':{ posts:22, imgVideoPct:1.00, captionPct:1.00, audioPct:0.98, engagementPct:0.044, monthlyReach:12500,
+        storiesCount:29, storiesOnBrandPct:1.00,
+        repliesDMs:'Yes', repliesComments:true, followerGrowthPct:0.17, netNewFollowers:221, followersCount:1681,
+        offBrandPosts:[] },
+    } },
+  { code:'FMY', name:'Fort Myers', type:'open',
+    months:{
+      '2026-06':{ posts:8, imgVideoPct:0.88, captionPct:0.90, audioPct:0.85, engagementPct:0.025, monthlyReach:7400,
+        storiesCount:15, storiesOnBrandPct:0.88,
+        repliesDMs:'Sometimes', repliesComments:true, followerGrowthPct:0.012, followersCount:2650,
+        offBrandPosts:[
+          {date:'2026-06-22', type:'Reel', impact:'-0.5 On-brand Audio', feedback:'Non-approved trending audio used instead of brand playlist.', action:'Flagged for review'},
+        ] },
+      '2026-07':{ posts:9, imgVideoPct:0.90, captionPct:0.92, audioPct:0.88, engagementPct:0.027, monthlyReach:8100,
+        storiesCount:17, storiesOnBrandPct:0.90,
+        repliesDMs:'Yes', repliesComments:true, followerGrowthPct:0.014, followersCount:2687,
+        offBrandPosts:[] },
+    } },
+  { code:'BRI', name:'Brickell', type:'open',
+    months:{
+      '2026-06':{ posts:16, imgVideoPct:1.00, captionPct:1.00, audioPct:1.00, engagementPct:0.038, monthlyReach:21500,
+        storiesCount:30, storiesOnBrandPct:1.00,
+        repliesDMs:'Yes', repliesComments:true, followerGrowthPct:0.022, followersCount:5210,
+        offBrandPosts:[] },
+      '2026-07':{ posts:17, imgVideoPct:1.00, captionPct:1.00, audioPct:1.00, engagementPct:0.040, monthlyReach:24100,
+        storiesCount:33, storiesOnBrandPct:1.00,
+        repliesDMs:'Yes', repliesComments:true, followerGrowthPct:0.024, followersCount:5335,
+        offBrandPosts:[] },
+    } },
+  { code:'CHE', name:'Chelsea', type:'open',
+    months:{
+      '2026-06':{ posts:9, imgVideoPct:0.90, captionPct:0.93, audioPct:0.88, engagementPct:0.022, monthlyReach:6300,
+        storiesCount:12, storiesOnBrandPct:0.89,
+        repliesDMs:'No', repliesComments:false, followerGrowthPct:0.009, followersCount:2210,
+        offBrandPosts:[
+          {date:'2026-06-11', type:'DM Reply', impact:'-4.0 Replies to DMs', feedback:'No DM replies recorded for the full month.', action:'Studio manager notified'},
+        ] },
+      '2026-07':{ posts:10, imgVideoPct:0.91, captionPct:0.94, audioPct:0.89, engagementPct:0.023, monthlyReach:6800,
+        storiesCount:13, storiesOnBrandPct:0.90,
+        repliesDMs:'Sometimes', repliesComments:false, followerGrowthPct:0.010, followersCount:2232,
+        offBrandPosts:[
+          {date:'2026-07-05', type:'Comments', impact:'-1.5 Replies to Comments', feedback:'Multiple comments left unanswered for 2+ weeks.', action:'Coaching sent'},
+        ] },
+    } },
+];
+
+let STUDIOS = MOCK_STUDIOS;
+let MONTH_KEYS = ['2026-06','2026-07'];
+let USING_MOCK = true;
+
+const round1 = v => Math.round(v*10)/10;
+const fmtMonth = iso => new Date(iso+'-01T00:00:00Z').toLocaleString('en-US',{month:'short',year:'numeric',timeZone:'UTC'});
+const fmtPct = v => (v*100).toFixed(1)+'%';
+const fmtPctSigned = v => (v>=0?'+':'')+(v*100).toFixed(1)+'%';
+const _mockFlag = key => MOCK_FIELDS.has(key) ? '<span class="sm-mock-flag">Mock</span>' : '';
+
+function scoreBand(score, greenMin, yellowMin){
+  if(score>=greenMin) return {bg:'#e6f9f3',color:'#0a8a4a'};
+  if(score>=yellowMin) return {bg:'#fef3e2',color:'#b85c00'};
+  return {bg:'#fdecea',color:'#d32f2f'};
+}
+function scoreCell(score, greenMin, yellowMin){
+  const c = scoreBand(score, greenMin, yellowMin);
+  return `<span class="sm-score-cell" style="background:${c.bg};color:${c.color}">${score.toFixed(1)}</span>`;
+}
+
+function computeScores(studio, monthKey){
+  const m = studio.months[monthKey];
+  const isNso = studio.type==='nso';
+  const exempt = !!studio.exemptGrowth;
+
+  const sImgVideo = m.imgVideoPct>=0.9 ? 10 : round1(m.imgVideoPct/2*10);
+  const sCaption  = m.captionPct>=0.9  ? 10 : round1(m.captionPct/2*10);
+  const sAudio    = m.audioPct>=0.9    ? 10 : round1(m.audioPct/2*10);
+  const sEngagement = m.engagementPct>=0.03 ? 10 : (m.engagementPct>=0.024 ? 5 : round1(m.engagementPct/0.024*5));
+
+  const reachGoal = isNso ? 6000 : 10000;
+  let sReachBase;
+  if(isNso) sReachBase = m.monthlyReach>=6000 ? 10 : (m.monthlyReach>=3000 ? 5 : round1(m.monthlyReach/3000*5));
+  else      sReachBase = m.monthlyReach>=10000 ? 10 : round1(m.monthlyReach/10000*10);
+  const reachBonus = m.monthlyReach>20000 ? 0.5 : 0;
+  const sReach = round1(sReachBase + reachBonus);
+
+  const onBrandCalc = round1((sImgVideo*WEIGHTS.imgVideo + sCaption*WEIGHTS.caption + sAudio*WEIGHTS.audio +
+    sEngagement*WEIGHTS.engagement + sReach*WEIGHTS.reach) / 35);
+
+  const postsGoal = isNso ? 16 : 8;
+  let sPosts;
+  if(isNso) sPosts = m.posts>=20 ? 11 : (m.posts>=16 ? 10 : round1(m.posts/16*10));
+  else sPosts = (m.posts>=12 && onBrandCalc>=9) ? 13 : (m.posts>=12 ? 12 : (m.posts>=8 ? 10 : round1(m.posts/8*10)));
+
+  const postsReels = round1((sPosts*35 + onBrandCalc*35)/70);
+
+  const sStoriesCount = m.storiesCount>=20 ? 10 : round1(m.storiesCount/20*8);
+  const sStoriesBrand = m.storiesOnBrandPct>=0.9 ? 10 : round1(m.storiesOnBrandPct/4*10);
+  const stories = round1((sStoriesCount*WEIGHTS.storiesCount + sStoriesBrand*WEIGHTS.storiesOnBrand)/30);
+
+  const localContent = Math.min(11, round1(0.7*postsReels + 0.3*stories));
+
+  const sDMs = m.repliesDMs==='Yes' ? 10 : (m.repliesDMs==='Sometimes' ? 5 : 0);
+  const sComments = m.repliesComments ? 10 : 0;
+
+  let sGrowth, growthGoalLabel;
+  if(exempt){ sGrowth=10; growthGoalLabel='Exempt (legacy account)'; }
+  else if(isNso){
+    const pass = m.followerGrowthPct>0.10 && (m.netNewFollowers||0)>=120;
+    sGrowth = pass ? 10 : 0;
+    growthGoalLabel = '>10% growth AND 120+ net new';
+  } else {
+    const req = m.followersCount>3000 ? 0.005 : 0.015;
+    sGrowth = m.followerGrowthPct>=req ? 10 : 0;
+    growthGoalLabel = m.followersCount>3000 ? '≥0.5% (3,000+ followers)' : '≥1.5%';
+  }
+
+  let sNewFollowers = null;
+  if(isNso) sNewFollowers = exempt ? 10 : ((m.netNewFollowers||0)>=120 ? 10 : 0);
+
+  const wCm = isNso
+    ? {dms:40, comments:15, growth:22.5, newFollowers:22.5}
+    : {dms:40, comments:15, growth:45,   newFollowers:0};
+
+  const communityMgmt = round1((sDMs*wCm.dms + sComments*wCm.comments + sGrowth*wCm.growth + (sNewFollowers||0)*wCm.newFollowers)/100);
+
+  const classification = localContent>=9 ? 'Consistently On Brand' : (localContent>=7 ? 'Needs Improvement' : 'Off Brand');
+
+  const recs = [];
+  if(sPosts<10) recs.push(`Post more local content — currently ${m.posts} posts vs. a goal of ${postsGoal}${isNso?' (20+ earns a bonus point)':''}.`);
+  if(sImgVideo<10) recs.push('Review recent image & video posts against the brand asset library before publishing.');
+  if(sCaption<10) recs.push('Run captions through the approved caption checklist before posting.');
+  if(sAudio<10) recs.push('Use only brand-approved audio tracks on Reels and Stories.');
+  if(sEngagement<10) recs.push(`Median engagement rate is ${fmtPct(m.engagementPct)}, below the ${isNso?'':''}3.0% goal — consider more interactive content (polls, questions, carousels).`);
+  if(sReachBase<10) recs.push(`Monthly reach is ${m.monthlyReach.toLocaleString()}, below the ${reachGoal.toLocaleString()} goal — boost top posts or lean into Reels distribution.`);
+  if(sStoriesCount<10) recs.push(`Post more Stories — currently averaging ${m.storiesCount}/mo vs. a goal of 20.`);
+  if(sStoriesBrand<10) recs.push('Keep Stories on-brand — avoid off-brand filters, music, or third-party logos.');
+  if(sDMs<10) recs.push(m.repliesDMs==='Sometimes' ? 'Reply to all DMs, not just some — aim for 100% response rate.' : 'No DM replies recorded — this needs immediate attention.');
+  if(!m.repliesComments) recs.push('Reply to comments on posts within 48 hours.');
+  if(sGrowth<10 && !exempt) recs.push(`Follower growth is ${fmtPctSigned(m.followerGrowthPct)}, below the goal (${growthGoalLabel}) — increase posting cadence and cross-promote in Stories.`);
+  if(isNso && sNewFollowers===0) recs.push(`Net new followers (${m.netNewFollowers||0}) fell short of the 120+ goal for NSO studios.`);
+
+  return { m, isNso, exempt, sImgVideo, sCaption, sAudio, sEngagement, sReach, reachGoal, reachBonus, onBrandCalc,
+    postsGoal, sPosts, postsReels, sStoriesCount, sStoriesBrand, stories, localContent,
+    sDMs, sComments, sGrowth, growthGoalLabel, sNewFollowers, communityMgmt, classification, recs };
+}
+
+let _curStudioCode = STUDIOS[0].code;
+let _curMonth = MONTH_KEYS[MONTH_KEYS.length-1];
+let _curTab = 'rubric';
+
+function toggleNav(){ document.getElementById('navTabs').classList.toggle('open'); }
+
+function switchSmTab(id, btn){
+  _curTab = id;
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('navTabs').classList.remove('open');
+  document.getElementById('tab-rubric').classList.toggle('active', id==='rubric');
+  document.getElementById('tab-summary').classList.toggle('active', id==='summary');
+  document.getElementById('studioCtrlLabel').style.display = id==='rubric' ? '' : 'none';
+  document.getElementById('fStudio').style.display = id==='rubric' ? '' : 'none';
+  if(id==='rubric') renderRubric(); else renderSummary();
+}
+
+function onStudioChange(){ _curStudioCode = document.getElementById('fStudio').value; renderRubric(); }
+function onMonthChange(){ _curMonth = document.getElementById('fMonth').value; if(_curTab==='rubric') renderRubric(); else renderSummary(); }
+
+function populateControls(){
+  const sSel = document.getElementById('fStudio');
+  sSel.innerHTML = STUDIOS.map(s=>`<option value="${s.code}">${s.name} (${s.type==='nso'?'NSO':'Open Studio'})</option>`).join('');
+  if(!STUDIOS.find(s=>s.code===_curStudioCode)) _curStudioCode = STUDIOS[0].code;
+  sSel.value = _curStudioCode;
+
+  const mSel = document.getElementById('fMonth');
+  mSel.innerHTML = MONTH_KEYS.map(k=>`<option value="${k}">${fmtMonth(k)}</option>`).join('');
+  if(!MONTH_KEYS.includes(_curMonth)) _curMonth = MONTH_KEYS[MONTH_KEYS.length-1];
+  mSel.value = _curMonth;
+}
+
+function renderRubric(){
+  const studio = STUDIOS.find(s=>s.code===_curStudioCode);
+  const r = computeScores(studio, _curMonth);
+  const m = r.m;
+
+  const bandLocal = scoreBand(r.localContent, 9, 7.5);
+  document.getElementById('rubricBanner').style.background = bandLocal.bg;
+  document.getElementById('rubricClassification').textContent = r.classification;
+  document.getElementById('rubricClassification').style.color = bandLocal.color;
+  document.getElementById('rubricStudioLine').innerHTML =
+    `${studio.name} &nbsp;·&nbsp; <span class="sm-type-pill" style="background:${studio.type==='nso'?'rgba(0,163,224,.15)':'rgba(0,201,167,.15)'};color:${studio.type==='nso'?'#0077aa':'#0a8a4a'}">${studio.type==='nso'?'NSO':'Open Studio'}</span> &nbsp;·&nbsp; ${fmtMonth(_curMonth)}${studio.exemptGrowth?' &nbsp;·&nbsp; <span style="color:#b85c00">Follower growth exempt (legacy account)</span>':''}`;
+
+  const rows = [
+    ['Local content score', '100%', '', '', r.localContent, 'total', 11, 'localContentTotal'],
+    ['1. Posts &amp; Reels', '70%', '', '', r.postsReels, 'sub', null, 'postsReels'],
+    ['&nbsp;&nbsp;1.1. Total # of local posts on IG feed'+_mockFlag('posts'), '35%', m.posts, `${r.postsGoal}${r.isNso?' (20+ = bonus point)':''}`, r.sPosts, 'item', null, 'totalPosts'],
+    ['&nbsp;&nbsp;1.2. On-brand content (Calculated)', '35%', '', '', r.onBrandCalc, 'sub', null, 'onBrandCalc'],
+    ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.1. % On-brand Image and Video'+_mockFlag('imgVideoPct'), '17%', fmtPct(m.imgVideoPct), '90%', r.sImgVideo, 'item', null, 'imgVideo'],
+    ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.2. % On-brand Caption'+_mockFlag('captionPct'), '5%', fmtPct(m.captionPct), '90%', r.sCaption, 'item', null, 'caption'],
+    ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.3. % On-brand Audio'+_mockFlag('audioPct'), '5%', fmtPct(m.audioPct), '90%', r.sAudio, 'item', null, 'audio'],
+    ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.4. Median Engagement Rate', '4%', fmtPct(m.engagementPct), '3.0% (2.4%+ = half credit)', r.sEngagement, 'item', null, 'engagement'],
+    ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.5. Monthly Reach', '4%', m.monthlyReach.toLocaleString(), `${r.reachGoal.toLocaleString()} (20,000+ = +0.5 bonus)`, r.sReach, 'item', null, 'reach'],
+    ['2. Stories', '30%', '', '', r.stories, 'sub', null, 'stories'],
+    ['&nbsp;&nbsp;2.1. Number of stories', '15%', m.storiesCount, '20', r.sStoriesCount, 'item', null, 'storiesCount'],
+    ['&nbsp;&nbsp;2.2. % On-brand stories'+_mockFlag('storiesOnBrandPct'), '15%', fmtPct(m.storiesOnBrandPct), '90%', r.sStoriesBrand, 'item', null, 'storiesBrand'],
+  ];
+  document.getElementById('localContentTable').innerHTML = buildRubricTable(rows);
+
+  const wCm = r.isNso
+    ? [['1. Replies to DMs'+_mockFlag('repliesDMs'),'40%',m.repliesDMs,'Yes',r.sDMs,'dms'],
+       ['2. Replies to comments'+_mockFlag('repliesComments'),'15%',m.repliesComments?'Yes':'No','Yes',r.sComments,'comments'],
+       ['3. Follower Growth','22.5%',fmtPctSigned(m.followerGrowthPct),r.growthGoalLabel,r.sGrowth,'growth'],
+       ['4. Net New Followers (NSO only)'+_mockFlag('netNewFollowers'),'22.5%',r.exempt?'—':(m.netNewFollowers||0),'120+',r.sNewFollowers,'newFollowers']]
+    : [['1. Replies to DMs'+_mockFlag('repliesDMs'),'40%',m.repliesDMs,'Yes',r.sDMs,'dms'],
+       ['2. Replies to comments'+_mockFlag('repliesComments'),'15%',m.repliesComments?'Yes':'No','Yes',r.sComments,'comments'],
+       ['3. Follower Growth','45%',fmtPctSigned(m.followerGrowthPct),r.growthGoalLabel,r.sGrowth,'growth']];
+  const cmRows = [['Community Management','100%','','',r.communityMgmt,'total',10,'communityTotal'], ...wCm.map(row=>[row[0],row[1],row[2],row[3],row[4],'item',null,row[5]])];
+  document.getElementById('communityTable').innerHTML = buildRubricTable(cmRows);
+
+  document.getElementById('recommendationsBox').innerHTML = r.recs.length
+    ? `<ul class="sm-rec-list">${r.recs.map(t=>`<li>${t}</li>`).join('')}</ul>`
+    : `<div class="sm-empty-note">No recommendations — every metric is hitting goal this month. 🎉</div>`;
+
+  const offBrand = m.offBrandPosts||[];
+  document.getElementById('offBrandTable').innerHTML = offBrand.length ? `
+    <thead><tr><th></th><th>Date Posted</th><th>Type</th><th>Scoring Impact</th><th>Feedback from LeadTeam</th><th>Action Taken</th></tr></thead>
+    <tbody>${offBrand.map(o=>`<tr>
+      <td><div class="sm-offbrand-thumb">📷</div></td>
+      <td>${new Date(o.date+'T00:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})}</td>
+      <td>${o.type}</td>
+      <td style="color:#d32f2f;font-weight:600">${o.impact}</td>
+      <td>${o.feedback}</td>
+      <td>${o.action}</td>
+    </tr>`).join('')}</tbody>` : `<tbody><tr><td class="sm-empty-note" style="border:none">No off-brand posts recorded this month.</td></tr></tbody>`;
+}
+
+function buildRubricTable(rows){
+  let h = '<thead><tr><th>Item</th><th class="num">Weight</th><th class="num">Value</th><th class="num">Goal</th><th class="num">Score (0-10)</th></tr></thead><tbody>';
+  rows.forEach(([label,weight,value,goal,score,kind,cap,infoKey])=>{
+    const cls = kind==='total' ? 'sm-total-row' : '';
+    const scoreHtml = score==null ? '—' : (kind==='total'
+      ? scoreCell(score, cap===10?8.5:9, cap===10?7.5:7.5)
+      : scoreCell(score, 9, 5));
+    h += `<tr class="${cls}"><td style="font-weight:${kind==='item'?400:700}">${label}${_ib(infoKey)}</td><td class="num" style="color:#5a7a8a;font-weight:400">${weight}</td><td class="num" style="color:#1a1a2e">${value}</td><td class="num" style="color:#5a7a8a;font-size:11px">${goal}</td><td class="num">${scoreHtml}</td></tr>`;
+  });
+  return h+'</tbody>';
+}
+
+function renderSummary(){
+  document.getElementById('summaryMonthLabel').textContent = fmtMonth(_curMonth);
+  const results = STUDIOS.map(s=>({studio:s, r:computeScores(s,_curMonth)}));
+
+  const avgLocal = results.reduce((a,x)=>a+x.r.localContent,0)/results.length;
+  const avgCm = results.reduce((a,x)=>a+x.r.communityMgmt,0)/results.length;
+  const onBrandCount = results.filter(x=>x.r.classification==='Consistently On Brand').length;
+  const offBrandCount = results.filter(x=>x.r.classification==='Off Brand').length;
+
+  document.getElementById('summaryKpis').innerHTML = `
+    <div class="kpi-card"><div class="kpi-card-label">Avg Local Content Score</div><div class="kpi-card-val">${avgLocal.toFixed(1)}</div></div>
+    <div class="kpi-card"><div class="kpi-card-label">Avg Community Mgmt Score</div><div class="kpi-card-val">${avgCm.toFixed(1)}</div></div>
+    <div class="kpi-card"><div class="kpi-card-label">Consistently On Brand</div><div class="kpi-card-val">${onBrandCount} / ${results.length}</div></div>
+    <div class="kpi-card"><div class="kpi-card-label">Off Brand</div><div class="kpi-card-val">${offBrandCount} / ${results.length}</div></div>
+  `;
+
+  const data = results.map(({studio,r})=>({
+    code: studio.code,
+    studio: studio.name,
+    type: studio.type==='nso' ? 'NSO' : 'Open Studio',
+    isNso: studio.type==='nso',
+    localContent: r.localContent,
+    communityMgmt: r.communityMgmt,
+    classification: r.classification,
+  })).sort((a,b)=>b.localContent-a.localContent);
+
+  sortableTable('summaryTable', data, row => {
+    const clsBand = scoreBand(row.localContent,9,7.5);
+    return `<tr>
+      <td style="font-weight:600">${row.studio}</td>
+      <td><span class="sm-type-pill" style="background:${row.isNso?'rgba(0,163,224,.15)':'rgba(0,201,167,.15)'};color:${row.isNso?'#0077aa':'#0a8a4a'}">${row.type}</span></td>
+      <td class="num">${scoreCell(row.localContent,9,7.5)}</td>
+      <td class="num">${scoreCell(row.communityMgmt,8.5,7.5)}</td>
+      <td><span style="color:${clsBand.color};font-weight:600;font-size:12px">${row.classification}</span></td>
+      <td><button class="download-btn" style="padding:4px 12px;font-size:10px" onclick="viewStudioRubric('${row.code}')">View Rubric →</button></td>
+    </tr>`;
+  });
+}
+
+function viewStudioRubric(code){
+  _curStudioCode = code;
+  document.getElementById('fStudio').value = code;
+  document.querySelectorAll('.nav-tab')[0].click();
+}
+
+async function loadData(){
+  const _authUser = checkAuth();
+  if (!_authUser) return;
+  if (_authUser.role !== 'admin') { location.replace('../home.html'); return; }
+  renderAuthNav(_authUser);
+
+  try {
+    const res = await fetch('data/latest.json?_=' + Date.now());
+    const data = await res.json();
+    if (data && Array.isArray(data.studios) && data.studios.length) {
+      STUDIOS = data.studios;
+      USING_MOCK = false;
+      const monthSet = new Set();
+      STUDIOS.forEach(s => Object.keys(s.months || {}).forEach(k => monthSet.add(k)));
+      MONTH_KEYS = [...monthSet].sort();
+      const freshness = document.getElementById('dataFreshness');
+      if (data.generated_at) {
+        freshness.textContent = 'Data as of ' + new Date(data.generated_at).toLocaleString('en-US', {month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit'});
+      }
+    }
+  } catch (e) {
+    console.warn('data/latest.json unavailable, using mock data:', e);
+  }
+
+  _curStudioCode = STUDIOS[0].code;
+  _curMonth = MONTH_KEYS[MONTH_KEYS.length-1];
+  populateControls();
+  renderRubric();
+}
+
+loadData();
+</script>
+</body>
+</html>

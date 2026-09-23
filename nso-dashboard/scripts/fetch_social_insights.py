@@ -174,13 +174,20 @@ def build_monthly_aggregates(daily_rows, posts, before_date_str):
         if mk not in monthly:
             monthly[mk] = {"month": mk, "reach": 0, "accounts_engaged": 0,
                            "total_interactions": 0, "days_with_data": 0, "post_count": 0,
+                           "stories_count": 0,
                            "median_likes": None, "median_reach_per_post": None,
-                           "_likes": [], "_reach_per_post": []}
+                           "median_engagement_rate": None,
+                           "_likes": [], "_reach_per_post": [], "_engagement_rates": []}
         m = monthly[mk]
         m["reach"] += row.get("reach") or 0
         m["accounts_engaged"] += row.get("accounts_engaged") or 0
         m["total_interactions"] += row.get("total_interactions") or 0
         m["days_with_data"] += 1
+        # `stories` is a same-day snapshot of currently-active Stories (see
+        # fetch_instagram_insights below) — summing daily snapshots approximates
+        # monthly Stories volume since each Story is live for ~24h, close to the
+        # ~24h gap between daily fetch runs.
+        m["stories_count"] += row.get("stories") or 0
         reach_by_date[row["date"]] = row.get("reach") or 0
         # Track last known follower_count in the month
         fc = row.get("follower_count")
@@ -215,7 +222,17 @@ def build_monthly_aggregates(daily_rows, posts, before_date_str):
         n = posts_per_date.get(post["date"], 1)
         reach = reach_by_date.get(post["date"], 0)
         if n > 0 and reach > 0:
-            m["_reach_per_post"].append(reach // n)
+            post_reach_estimate = reach // n
+            m["_reach_per_post"].append(post_reach_estimate)
+            # Engagement rate = (likes + comments) / reach, using the same
+            # per-post reach estimate as median_reach_per_post above. Shares
+            # aren't included — Meta's shares metric needs one extra API call
+            # per post, which isn't worth the added load on this daily job for
+            # every studio's every post; likes+comments is the available proxy.
+            if post_reach_estimate > 0:
+                comments = post.get("comments") or 0
+                engagement = (likes or 0) + comments
+                m["_engagement_rates"].append(engagement / post_reach_estimate)
 
     # Compute medians and remove temp fields
     for m in monthly.values():
@@ -223,8 +240,11 @@ def build_monthly_aggregates(daily_rows, posts, before_date_str):
             m["median_likes"] = int(statistics.median(m["_likes"]))
         if m["_reach_per_post"]:
             m["median_reach_per_post"] = int(statistics.median(m["_reach_per_post"]))
+        if m["_engagement_rates"]:
+            m["median_engagement_rate"] = round(statistics.median(m["_engagement_rates"]), 4)
         del m["_likes"]
         del m["_reach_per_post"]
+        del m["_engagement_rates"]
         m.pop("_last_fc_date", None)
 
     return monthly
@@ -325,6 +345,30 @@ def fetch_instagram_insights(ig_id, studio_name, start_date, end_date, user_toke
     except Exception as e:
         print(f"    WARNING IG follower_count: {e}")
 
+    # ── Currently-active Stories (snapshot, ~24h lifetime) ──
+    # There is no historical Stories endpoint — Stories expire after 24h — so
+    # this daily job records a same-day count of whatever is active right now.
+    # build_monthly_aggregates sums these daily snapshots into stories_count,
+    # which approximates monthly volume since the fetch cadence (~daily) is
+    # close to a Story's ~24h lifetime.
+    try:
+        r = requests.get(f"{BASE}/{ig_id}/stories", params={
+            "fields": "id,timestamp",
+            "access_token": user_token,
+        })
+        data = r.json()
+        if "error" in data:
+            print(f"    WARNING IG stories: {data['error'].get('message','')[:80]}")
+        else:
+            today_str = datetime.now().strftime("%Y-%m-%d")
+            story_count = len(data.get("data", []))
+            if today_str not in daily_map:
+                daily_map[today_str] = {"date": today_str}
+            daily_map[today_str]["stories"] = story_count
+            print(f"    stories (active now): {story_count}")
+    except Exception as e:
+        print(f"    WARNING IG stories: {e}")
+
     print(f"    {len(daily_map)} daily rows total")
 
     # Media posts (no date restriction)
@@ -347,6 +391,7 @@ def fetch_instagram_insights(ig_id, studio_name, start_date, end_date, user_toke
                 likes = media.get("like_count") or 0
                 comments = media.get("comments_count") or 0
                 posts.append({
+                    "id": media.get("id") or "",
                     "date": ts,
                     "caption": (media.get("caption") or "")[:150],
                     "likes": likes,

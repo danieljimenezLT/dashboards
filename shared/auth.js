@@ -33,7 +33,7 @@ function logout() {
 }
 
 function _redirectToLogin() {
-  const isNested = location.pathname.includes('/nso-dashboard/') || location.pathname.includes('/admin-reports/') || location.pathname.includes('/brand-safety-audit/');
+  const isNested = location.pathname.includes('/nso-dashboard/') || location.pathname.includes('/admin-reports/') || location.pathname.includes('/brand-safety-audit/') || location.pathname.includes('/social-media-audit/');
   location.replace(isNested ? '../login.html' : 'login.html');
 }
 
