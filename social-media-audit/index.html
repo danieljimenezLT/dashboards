@@ -13,15 +13,18 @@
   .sm-banner-sub{font-family:'Open Sans',sans-serif;font-style:normal;font-size:12px;color:#5a7a8a}
   .sm-type-pill{display:inline-block;padding:3px 10px;border-radius:10px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-family:'Oswald',sans-serif;font-style:italic}
   .sm-legend{font-family:'Open Sans',sans-serif;font-size:11px;color:#5a7a8a;line-height:1.7;white-space:nowrap}
-  .sm-score-section-row td{background:#eef5fa;font-family:'Oswald',sans-serif;font-style:italic;font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-size:13px}
-  .sm-total-row td{font-weight:700;font-size:13px}
+  .sm-total-badge{display:inline-block;margin-left:12px;padding:4px 14px;border-radius:8px;font-family:'Open Sans',sans-serif;font-style:normal;font-size:17px;font-weight:700;letter-spacing:0;vertical-align:middle}
+  .sm-rubric-sub td{background:#eef5fa}
+  .sm-rubric-sub td:first-child{font-family:'Oswald',sans-serif;font-style:italic;font-weight:700;letter-spacing:.3px;color:#0a4a66}
+  .sm-rubric-item td:first-child{color:#3a5a6a}
   .sm-table-flex{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
   .sm-table-flex .data-table-wrap{flex:1;min-width:340px}
   .sm-staging-tag{background:rgba(221,255,0,.25);color:#7a8a00;border:1px solid rgba(221,255,0,.6)}
   .sm-score-cell{display:inline-block;min-width:44px;padding:3px 10px;border-radius:6px;font-weight:700}
   .sm-rec-list{margin:0;padding-left:20px;font-size:13px;color:#1a1a2e;line-height:1.8}
   .sm-empty-note{font-size:12px;color:#8aaabb;font-style:italic;padding:20px 0;text-align:center}
-  .sm-offbrand-thumb{width:44px;height:44px;border-radius:6px;background:#f0f6fa;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .sm-offbrand-link{color:#00A3E0;font-weight:600;text-decoration:none}
+  .sm-offbrand-link:hover{text-decoration:underline}
   .sm-mock-flag{display:inline-block;margin-left:6px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#b85c00;background:#fef3e2;border-radius:4px;padding:1px 5px;vertical-align:middle}
   @media(max-width:768px){.sm-table-flex{flex-direction:column}}
 </style>
@@ -66,7 +69,7 @@
 
     <div class="chart-card">
       <div class="chart-card-title-row">
-        <div class="chart-card-title">Local Content Score</div>
+        <div class="chart-card-title">Local Content Score <span class="sm-total-badge" id="localContentScoreBadge">—</span></div>
         <div class="sm-legend">9+ Green &nbsp;·&nbsp; 7.5–8.99 Yellow &nbsp;·&nbsp; 0–7.49 Red</div>
       </div>
       <div style="overflow-x:auto"><table class="data-table" id="localContentTable"></table></div>
@@ -74,7 +77,7 @@
 
     <div class="chart-card">
       <div class="chart-card-title-row">
-        <div class="chart-card-title">Community Management</div>
+        <div class="chart-card-title">Community Management <span class="sm-total-badge" id="communityScoreBadge">—</span></div>
         <div class="sm-legend">8.5+ Green &nbsp;·&nbsp; 7.5–8.49 Yellow &nbsp;·&nbsp; 0–7.49 Red</div>
       </div>
       <div style="overflow-x:auto"><table class="data-table" id="communityTable"></table></div>
@@ -481,8 +484,13 @@ function renderRubric(){
   document.getElementById('rubricStudioLine').innerHTML =
     `${studio.name} &nbsp;·&nbsp; <span class="sm-type-pill" style="background:${studio.type==='nso'?'rgba(0,163,224,.15)':'rgba(0,201,167,.15)'};color:${studio.type==='nso'?'#0077aa':'#0a8a4a'}">${studio.type==='nso'?'NSO':'Open Studio'}</span> &nbsp;·&nbsp; ${fmtMonth(_curMonth)}${studio.exemptGrowth?' &nbsp;·&nbsp; <span style="color:#b85c00">Follower growth exempt (legacy account)</span>':''}`;
 
+  const localBadge = document.getElementById('localContentScoreBadge');
+  const lb = scoreBand(r.localContent, 9, 7.5);
+  localBadge.textContent = r.localContent.toFixed(1);
+  localBadge.style.background = lb.bg;
+  localBadge.style.color = lb.color;
+
   const rows = [
-    ['Local content score', '100%', '', '', r.localContent, 'total', 11, 'localContentTotal'],
     ['1. Posts &amp; Reels', '70%', '', '', r.postsReels, 'sub', null, 'postsReels'],
     ['&nbsp;&nbsp;1.1. Total # of local posts on IG feed'+_mockFlag('posts'), '35%', m.posts, `${r.postsGoal}${r.isNso?' (20+ = bonus point)':''}`, r.sPosts, 'item', null, 'totalPosts'],
     ['&nbsp;&nbsp;1.2. On-brand content (Calculated)', '35%', '', '', r.onBrandCalc, 'sub', null, 'onBrandCalc'],
@@ -505,7 +513,14 @@ function renderRubric(){
     : [['1. Replies to DMs'+_mockFlag('repliesDMs'),'40%',m.repliesDMs,'Yes',r.sDMs,'dms'],
        ['2. Replies to comments'+_mockFlag('repliesComments'),'15%',m.repliesComments?'Yes':'No','Yes',r.sComments,'comments'],
        ['3. Follower Growth','45%',fmtPctSigned(m.followerGrowthPct),r.growthGoalLabel,r.sGrowth,'growth']];
-  const cmRows = [['Community Management','100%','','',r.communityMgmt,'total',10,'communityTotal'], ...wCm.map(row=>[row[0],row[1],row[2],row[3],row[4],'item',null,row[5]])];
+
+  const cmBadge = document.getElementById('communityScoreBadge');
+  const cb = scoreBand(r.communityMgmt, 8.5, 7.5);
+  cmBadge.textContent = r.communityMgmt.toFixed(1);
+  cmBadge.style.background = cb.bg;
+  cmBadge.style.color = cb.color;
+
+  const cmRows = wCm.map(row=>[row[0],row[1],row[2],row[3],row[4],'item',null,row[5]]);
   document.getElementById('communityTable').innerHTML = buildRubricTable(cmRows);
 
   document.getElementById('recommendationsBox').innerHTML = r.recs.length
@@ -514,24 +529,22 @@ function renderRubric(){
 
   const offBrand = m.offBrandPosts||[];
   document.getElementById('offBrandTable').innerHTML = offBrand.length ? `
-    <thead><tr><th></th><th>Date Posted</th><th>Type</th><th>Scoring Impact</th><th>Feedback from LeadTeam</th><th>Action Taken</th></tr></thead>
+    <thead><tr><th>Date Posted</th><th>Type</th><th>Scoring Impact</th><th>Feedback from LeadTeam</th><th>Action Taken</th><th>Proof</th></tr></thead>
     <tbody>${offBrand.map(o=>`<tr>
-      <td><div class="sm-offbrand-thumb">📷</div></td>
       <td>${new Date(o.date+'T00:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})}</td>
       <td>${o.type}</td>
       <td style="color:#d32f2f;font-weight:600">${o.impact}</td>
       <td>${o.feedback}</td>
       <td>${o.action}</td>
+      <td>${o.link ? `<a href="${o.link}" target="_blank" rel="noopener noreferrer" class="sm-offbrand-link">View</a>` : '—'}</td>
     </tr>`).join('')}</tbody>` : `<tbody><tr><td class="sm-empty-note" style="border:none">No off-brand posts recorded this month.</td></tr></tbody>`;
 }
 
 function buildRubricTable(rows){
   let h = '<thead><tr><th>Item</th><th class="num">Weight</th><th class="num">Value</th><th class="num">Goal</th><th class="num">Score (0-10)</th></tr></thead><tbody>';
   rows.forEach(([label,weight,value,goal,score,kind,cap,infoKey])=>{
-    const cls = kind==='total' ? 'sm-total-row' : '';
-    const scoreHtml = score==null ? '—' : (kind==='total'
-      ? scoreCell(score, cap===10?8.5:9, cap===10?7.5:7.5)
-      : scoreCell(score, 9, 5));
+    const cls = kind==='sub' ? 'sm-rubric-sub' : 'sm-rubric-item';
+    const scoreHtml = score==null ? '—' : scoreCell(score, 9, 5);
     h += `<tr class="${cls}"><td style="font-weight:${kind==='item'?400:700}">${label}${_ib(infoKey)}</td><td class="num" style="color:#5a7a8a;font-weight:400">${weight}</td><td class="num" style="color:#1a1a2e">${value}</td><td class="num" style="color:#5a7a8a;font-size:11px">${goal}</td><td class="num">${scoreHtml}</td></tr>`;
   });
   return h+'</tbody>';
