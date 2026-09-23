@@ -127,10 +127,9 @@
         <div style="position:relative;flex:1;min-width:0;height:260px"><canvas id="osTrendChart"></canvas></div>
         <div class="chart-last-panel" id="osTrendLast"></div>
       </div>
-    </div>
 
-    <div class="section-title">Blended CPR</div>
-    <div class="chart-card" style="margin:16px 24px 20px">
+      <div style="border-top:1px dashed #dde8ef;margin:24px 0 16px"></div>
+
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
         <div class="toggle-group" id="osCprToggles" style="margin-bottom:0">
           <button class="tog-btn on" data-ds="0" onclick="toggleOsCprDs(this,0)" style="border-color:#00A3E0;background:#00A3E0;color:#000"><span class="dot" style="background:#000"></span>Blended CPL</button>
@@ -465,7 +464,7 @@ function renderChartLast(panelId, chart, fmt){
 
 // Text color per known series color, matching the toggle-button convention
 // used across this dashboard (dark text on the light brand colors, white on red).
-const CHART_STAT_TEXT_COLOR={'#00A3E0':'#000','#00FFC2':'#000','#ff6b6b':'#fff'};
+const CHART_STAT_TEXT_COLOR={'#00A3E0':'#000','#00FFC2':'#000','#ff6b6b':'#fff','#DDFF00':'#000'};
 
 // Renders a multi-row stats panel beside a timeline chart — one row per stat
 // (e.g. Total / Average / Last), each dataset's value shown as a pill colored
@@ -518,6 +517,7 @@ const OS_COST_COLORS={google:'#34A853',meta:'#1877F2',leadteam:'#FF6B35',externa
 const OS_CPR_COSTS_ACTIVE={google:true,meta:true,leadteam:true,external_agency:true};
 let osGran='weekly', osCprGran='weekly';
 let osTrendChart=null, osCprChart=null;
+let _osCprTotals={cpl:null,cpft:null,cpa:null};
 let OS_CPR_DS_HIDDEN=[false,false,false];
 
 function _osResolveOverrideStudio(rawName, known){
@@ -672,7 +672,7 @@ function toggleOsTrendDs(btn, i){
   if(btn.classList.contains('on')){ btn.style.background=cols[i]; btn.style.borderColor=cols[i]; btn.style.color='#000'; btn.querySelector('.dot').style.background='#000'; }
   else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
   osTrendChart.update();
-  renderChartLast('osTrendLast', osTrendChart);
+  renderChartStats('osTrendLast', osTrendChart, _trendStatsRows(osTrendChart));
 }
 function toggleOsCprDs(btn, i){
   if(!osCprChart) return;
@@ -682,7 +682,7 @@ function toggleOsCprDs(btn, i){
   if(btn.classList.contains('on')){ btn.style.background=cols[i]; btn.style.borderColor=cols[i]; btn.style.color='#000'; }
   else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
   osCprChart.update();
-  renderChartLast('osCprLast', osCprChart, v=>v==null?'—':'$'+v.toLocaleString());
+  renderChartStats('osCprLast', osCprChart, _ratioStatsRows(osCprChart, [_osCprTotals.cpl,_osCprTotals.cpft,_osCprTotals.cpa]));
 }
 
 function osCheckCPRWarning(){
@@ -728,7 +728,7 @@ function buildOsTrend(curr, from, to){
     osTrendChart.data.datasets[0].data=leadsD; osTrendChart.data.datasets[1].data=ftD; osTrendChart.data.datasets[2].data=memD;
     osTrendChart.data.datasets.forEach((ds,i)=>ds.hidden=hidden[i]);
     osTrendChart.update();
-    renderChartLast('osTrendLast', osTrendChart);
+    renderChartStats('osTrendLast', osTrendChart, _trendStatsRows(osTrendChart));
     return;
   }
   const isMobile=window.innerWidth<=768;
@@ -738,7 +738,7 @@ function buildOsTrend(curr, from, to){
     {label:'New Members', data:memD, borderColor:'#DDFF00', borderWidth:2.5, pointRadius:3, pointHoverRadius:6, tension:.4, fill:false},
   ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false}},
     scales:{ x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',autoSkip:true,maxTicksLimit:isMobile?5:12,maxRotation:0}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'}} } } });
-  renderChartLast('osTrendLast', osTrendChart);
+  renderChartStats('osTrendLast', osTrendChart, _trendStatsRows(osTrendChart));
 }
 
 function buildOsCPR(){
@@ -771,9 +771,19 @@ function buildOsCPR(){
     {label:'Blended CPL', data:cpl, borderColor:'#00A3E0', borderWidth:2.5, pointRadius:4, tension:.4, fill:false, spanGaps:true, hidden:OS_CPR_DS_HIDDEN[0]},
     {label:'Blended CPFT', data:cpft, borderColor:'#00FFC2', borderWidth:2.5, pointRadius:4, tension:.4, fill:false, spanGaps:true, hidden:OS_CPR_DS_HIDDEN[1]},
     {label:'Blended CPA', data:cpa, borderColor:'#DDFF00', borderWidth:2.5, pointRadius:4, tension:.4, fill:false, spanGaps:true, hidden:OS_CPR_DS_HIDDEN[2]},
-  ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false,callbacks:{label:c=>c.dataset.label+': $'+(c.parsed.y!=null?c.parsed.y.toLocaleString():'-')}}},
+  ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false,callbacks:{label:c=>c.dataset.label+': $'+(c.parsed.y!=null?Math.round(c.parsed.y).toLocaleString():'-')}}},
     scales:{ x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',maxRotation:0}}, y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',callback:v=>'$'+v} } } } });
-  renderChartLast('osCprLast', osCprChart, v=>v==null?'—':'$'+v.toLocaleString());
+
+  const totalSpendAll=cplData.reduce((a,d)=>a+d.s,0);
+  const totalLeadsAll=cplData.reduce((a,d)=>a+d.leads,0);
+  const totalFtAll=cplData.reduce((a,d)=>a+d.ft,0);
+  const totalMemAll=cplData.reduce((a,d)=>a+d.mem,0);
+  _osCprTotals={
+    cpl: totalLeadsAll>0?totalSpendAll/totalLeadsAll:null,
+    cpft: totalFtAll>0?totalSpendAll/totalFtAll:null,
+    cpa: totalMemAll>0?totalSpendAll/totalMemAll:null,
+  };
+  renderChartStats('osCprLast', osCprChart, _ratioStatsRows(osCprChart, [_osCprTotals.cpl,_osCprTotals.cpft,_osCprTotals.cpa]));
 
   buildOsCplTable(from,to,selStudios);
 }
