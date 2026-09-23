@@ -141,6 +141,7 @@ def get_month_aggregate(ig_entry: dict, month_key: str) -> dict:
     before = month_after(month_key)
     recomputed = build_monthly_aggregates(
         ig_entry.get("daily", []), ig_entry.get("posts", []), before,
+        ig_entry.get("current_followers"),
     )
     return recomputed.get(f"{month_key}-01", {})
 
