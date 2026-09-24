@@ -18,7 +18,7 @@ import requests
 
 ORG_ID = "651eb8e1f9dfd3e786474267"  # LeadTeam
 
-# Every Instagram channel connected to the LeadTeam Buffer org (44, pulled
+# Every Instagram channel connected to the LeadTeam Buffer org (43, pulled
 # live via Buffer's list_channels — NOT the 9-studio pilot list this used to
 # be). Facebook/LinkedIn/YouTube/TikTok/Start Page channels in the same org
 # are excluded; this audit is Instagram-content-only. Re-pull list_channels
@@ -68,7 +68,6 @@ CHANNELS = {
     "686c2b33111211c55767c82a": "sweat440wallnj",
     "6834d4ce9c617476ae72466a": "sweat440westpalmbeach",
     "664be217b9b04b20032686ba": "sweat440highland",
-    "6645fdd2b9b04b200387f3fc": "sweat440zilker",
 }
 
 # handle -> display name shown in the dashboard
@@ -116,7 +115,6 @@ DISPLAY_NAMES = {
     "sweat440wallnj": "Wall Township",
     "sweat440westpalmbeach": "West Palm Beach",
     "sweat440highland": "Austin - Highland",
-    "sweat440zilker": "Zilker",
 }
 
 BUFFER_API_URL = "https://api.buffer.com"
@@ -172,6 +170,67 @@ query GetSentPosts(
 """
 
 
+CHANNELS_QUERY = """
+query GetChannels($organizationId: OrganizationId!) {
+  channels(input: { organizationId: $organizationId }) {
+    id
+    service
+    isDisconnected
+  }
+}
+"""
+
+PAGE_SIZE = 100
+MAX_PAGES = 200  # no Worker subrequest limit here; just a runaway guard
+
+
+def _query(buffer_token, query, variables):
+    """POST one GraphQL query. Buffer intermittently returns UNEXPECTED_ERROR
+    ("connection ... timed out") on large pages — one retry clears it. Rate
+    limit is 100 requests / 15 min per token, shared with the Worker's
+    dashboard Download (same token)."""
+    for attempt in range(2):
+        response = requests.post(
+            BUFFER_API_URL,
+            json={"query": query, "variables": variables},
+            headers={
+                "Authorization": f"Bearer {buffer_token}",
+                "Content-Type": "application/json",
+            },
+            timeout=60,
+        )
+        if response.status_code == 429:
+            mins = -(-int(response.headers.get("Retry-After") or 900) // 60)
+            raise RuntimeError(f"Buffer rate limit reached (100 requests per 15 min) — try again in ~{mins} min.")
+        response.raise_for_status()
+        payload = response.json()
+        if "errors" not in payload:
+            return payload["data"]
+        transient = all(
+            (e.get("extensions") or {}).get("code") == "UNEXPECTED_ERROR" for e in payload["errors"]
+        )
+        if not transient or attempt == 1:
+            raise RuntimeError(f"Buffer API errors: {payload['errors']}")
+
+
+def resolve_channels(buffer_token):
+    """Split CHANNELS into (available channel ids, unavailable handles).
+
+    Buffer rejects the WHOLE posts query with FORBIDDEN ("Actor can not
+    access the specified channels") if even one requested channel id no
+    longer exists in the org — which is what broke exports when Zilker's
+    Instagram was removed. Same logic as resolveBrandAuditChannels in
+    refresh-proxy/worker.js.
+    """
+    data = _query(buffer_token, CHANNELS_QUERY, {"organizationId": ORG_ID})
+    live = {
+        c["id"] for c in data["channels"] if c["service"] == "instagram" and not c.get("isDisconnected")
+    }
+    available = [cid for cid in CHANNELS if cid in live]
+    unavailable = [handle for cid, handle in CHANNELS.items() if cid not in live]
+    return available, unavailable
+
+
 def pull_posts(buffer_token, start_date=None, end_date=None, days=7):
     """Pull sent posts from Buffer's GraphQL API for a date range.
 
@@ -188,6 +247,9 @@ def pull_posts(buffer_token, start_date=None, end_date=None, days=7):
     testing against this org's real data: `startDate` alone (with no
     `endDate`) silently returns zero posts, even with a start date years in
     the past. Not documented; just how Buffer's filter behaves.
+
+    Channels no longer in Buffer are skipped (see resolve_channels) and
+    reported on stdout.
     """
     today = datetime.date.today()
     start_date = start_date or (today - datetime.timedelta(days=days)).isoformat()
@@ -195,41 +257,32 @@ def pull_posts(buffer_token, start_date=None, end_date=None, days=7):
     start_datetime = f"{start_date}T00:00:00Z"
     end_datetime = f"{end_date}T23:59:59Z"
 
+    channel_ids, unavailable = resolve_channels(buffer_token)
+    if unavailable:
+        print(f"Not in Buffer anymore (skipped): {', '.join(unavailable)}")
+
     posts = []
     after = None
-    while True:
-        response = requests.post(
-            BUFFER_API_URL,
-            json={
-                "query": POSTS_QUERY,
-                "variables": {
-                    "organizationId": ORG_ID,
-                    "channelIds": list(CHANNELS.keys()),
-                    "startDate": start_datetime,
-                    "endDate": end_datetime,
-                    "first": 50,
-                    "after": after,
-                },
+    for _ in range(MAX_PAGES):
+        page = _query(
+            buffer_token,
+            POSTS_QUERY,
+            {
+                "organizationId": ORG_ID,
+                "channelIds": channel_ids,
+                "startDate": start_datetime,
+                "endDate": end_datetime,
+                "first": PAGE_SIZE,
+                "after": after,
             },
-            headers={
-                "Authorization": f"Bearer {buffer_token}",
-                "Content-Type": "application/json",
-            },
-            timeout=30,
-        )
-        response.raise_for_status()
-        payload = response.json()
-        if "errors" in payload:
-            raise RuntimeError(f"Buffer API errors: {payload['errors']}")
-
-        page = payload["data"]["posts"]
+        )["posts"]
         posts.extend(edge["node"] for edge in page["edges"])
 
         if not page["pageInfo"]["hasNextPage"]:
-            break
+            return posts, start_date, end_date
         after = page["pageInfo"]["endCursor"]
 
-    return posts, start_date, end_date
+    raise RuntimeError(f"More than {MAX_PAGES * PAGE_SIZE} posts in range — pick a shorter date range.")
 
 
 def post_type_and_asset(post):

@@ -585,6 +585,40 @@ async function callProxy(payload){
   return data;
 }
 
+// Buffer returns ~1,000 posts/week across the org (mostly Stories, dropped
+// by the Worker), so a long range is fetched as 7-day chunks — one Worker
+// call each, keeping every call well inside its page/subrequest limits —
+// then merged into one export covering the full range.
+function weekChunks(fromVal,toVal){
+  const chunks=[];
+  const end=new Date(toVal+"T00:00:00Z");
+  for(let d=new Date(fromVal+"T00:00:00Z");d<=end;){
+    const chunkEnd=new Date(d);chunkEnd.setUTCDate(chunkEnd.getUTCDate()+6);
+    const e=chunkEnd<end?chunkEnd:end;
+    chunks.push([d.toISOString().slice(0,10),e.toISOString().slice(0,10)]);
+    d=new Date(e);d.setUTCDate(d.getUTCDate()+1);
+  }
+  return chunks;
+}
+
+// "cycle"/"period"/"generated" come from the last chunk, which (like a single
+// call) keys off the range's end; accounts keep the Worker's order.
+function mergeExports(parts,fromVal,toVal){
+  const last=parts[parts.length-1];
+  const accounts=last.accounts.map(a=>({name:a.name,handle:a.handle,posts:[]}));
+  const byHandle=Object.fromEntries(accounts.map(a=>[a.handle,a]));
+  for(const p of parts)for(const a of p.accounts)if(byHandle[a.handle])byHandle[a.handle].posts.push(...a.posts);
+  const skipped=parts.reduce((n,p)=>n+(p.skipped||0),0);
+  const unavailable=last.unavailableChannels||[];
+  return {
+    cycle:last.cycle,period:last.period,generated:last.generated,
+    coverage:{from:fromVal,to:toVal},
+    note:skipped+" Reel(s)/Story post(s) excluded — video and 24h-ephemeral content aren't in scope yet."
+      +(unavailable.length?" Not in Buffer anymore (skipped): "+unavailable.join(", ")+".":""),
+    skipped,unavailableChannels:unavailable,accounts
+  };
+}
+
 // Pulls Static/Carousel posts for the selected date range live from Buffer
 // (via the Worker — the Buffer token never reaches this page) and downloads
 // them as a file ready to upload to a Claude.ai chat/Project for analysis.
@@ -598,7 +632,14 @@ async function downloadPosts(){
 
   btn.disabled=true;btn.textContent="Downloading…";msg.textContent="";
   try{
-    const data=await callProxy({action:"export_brand_audit_posts",startDate:fromVal,endDate:toVal});
+    const chunks=weekChunks(fromVal,toVal);
+    const parts=[];
+    for(let i=0;i<chunks.length;i++){
+      if(chunks.length>1)btn.textContent="Downloading… week "+(i+1)+"/"+chunks.length;
+      const [s,e]=chunks[i];
+      parts.push((await callProxy({action:"export_brand_audit_posts",startDate:s,endDate:e})).export);
+    }
+    const data={export:mergeExports(parts,fromVal,toVal)};
     const blob=new Blob([JSON.stringify(data.export,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
