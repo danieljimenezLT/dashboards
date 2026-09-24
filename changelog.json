@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-24",
+      "pr_number": 407,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/407",
+      "author": "Sebastian Arango",
+      "categories": [
+        "Brand Audit"
+      ],
+      "title": "Brand Audit post download works again and no longer misses posts",
+      "summary": "Downloading posts no longer fails when a studio's Instagram is removed from Buffer, and longer date ranges now include every post instead of only the most recent ones."
+    },
+    {
+      "date": "2026-09-24",
       "pr_number": 404,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/404",
       "author": "Santiago Estrada",
