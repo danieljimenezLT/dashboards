@@ -477,9 +477,13 @@ function computeScores(studio, monthKey){
     sGrowth = pass ? 10 : 0;
     growthGoalLabel = '>10% growth AND 120+ net new';
   } else {
-    const req = m.followersCount>3000 ? 0.005 : 0.015;
-    sGrowth = m.followerGrowthPct>=req ? 10 : 0;
-    growthGoalLabel = m.followersCount>3000 ? '≥0.5% (3,000+ followers)' : '≥1.5%';
+    // 1.5%+ growth = full credit, below 0.5% = no credit, linear ramp of
+    // partial credit in between (e.g. 1.0% growth = 5.0).
+    const growthPts = m.followerGrowthPct*100;
+    if(growthPts>=1.5) sGrowth = 10;
+    else if(growthPts<0.5) sGrowth = 0;
+    else sGrowth = round1((growthPts-0.5)*10);
+    growthGoalLabel = '≥1.5% (partial credit 0.5–1.5%)';
   }
 
   let sNewFollowers = null;
