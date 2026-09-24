@@ -95,21 +95,24 @@ def cell(row, col):
 
 def date_to_week_num(move_date_str, week1_start_str):
     """
-    'Week 1 Start' from the sheet is treated as Week 0 (the base).
-    Week numbers count forward from there: ceil(days / 7).
-    e.g. 22 days after Week 1 Start → ceil(22/7) = 4
+    Scorecard week number containing the date, using the same bounds as the
+    scorecard builders: Week 1 runs from Week 1 Start to the first Saturday on
+    or after it, then Sun–Sat weeks. None for dates before Week 1.
+    (The old ceil(days/7) put Sundays — and Week 1's first day — one week early.)
     """
     if not move_date_str or not week1_start_str:
         return None
     try:
-        base = datetime.strptime(week1_start_str, "%Y-%m-%d")
-        move = datetime.strptime(move_date_str,   "%Y-%m-%d")
-        days = (move - base).days
-        if days <= 0:
-            return None
-        return math.ceil(days / 7)
+        w1   = datetime.strptime(week1_start_str, "%Y-%m-%d").date()
+        move = datetime.strptime(move_date_str,   "%Y-%m-%d").date()
     except ValueError:
         return None
+    if move < w1:
+        return None
+    w1_end = w1 + timedelta(days=(5 - w1.weekday()) % 7)
+    if move <= w1_end:
+        return 1
+    return 2 + (move - w1_end - timedelta(days=1)).days // 7
 
 
 # ── Read Google Sheet ────────────────────────────────────────────────────────
@@ -281,7 +284,15 @@ for row in data_rows:
     milestones.sort(key=lambda m: m["date"])
 
     # Scheduling dates — all via header-name lookup (column positions may vary)
-    week1_start = norm_date(_hcell(row, "Week 1 Start"))
+    # Week 1 is always the week after Week 0 (the "Week 1 Start" column is no
+    # longer maintained). Naples/Reston (already opened) keep the column so
+    # their price-change / C/O / GO week numbers don't shift.
+    if code in ("FL-019", "VA-001"):
+        week1_start = norm_date(_hcell(row, "Week 1 Start"))
+    else:
+        _w0 = norm_date(_hcell(row, "Week 0 Start"))
+        week1_start = ((datetime.strptime(_w0, "%Y-%m-%d") + timedelta(days=7)).strftime("%Y-%m-%d")
+                       if _w0 else None)
     t2_move     = norm_date(_hcell(row, "Tier 2 Start Date"))
     t3_move     = norm_date(_hcell(row, "Tier 3 Start Date"))
     co_date     = norm_date(_hcell(row, "Target C/O Date"))
@@ -419,6 +430,17 @@ for studio in sc.get("studios", []):
     # Patch comm_events from NSO Manual Metrics "Weekly Events & Spend" tab
     # (calendar-week columns → scorecard week by date overlap)
     ev_patched = 0
+    # Each week gets only its own events — negative pre-weeks carry theirs, so
+    # Week 0 starts the day after the last pre-week instead of re-summing all
+    # history (which double-counted every pre-week event into Week 0). With no
+    # pre-weeks, Week 0 keeps everything before Week 1 so nothing is dropped.
+    # Naples/Reston keep the old behavior.
+    _neg_ends = []
+    for _w in studio.get("weeks", []):
+        _m = re.search(r"-?\d+", str(_w.get("week", "")))
+        if _m and int(_m.group()) < 0 and _w.get("date_end"):
+            _neg_ends.append(datetime.strptime(_w["date_end"], "%Y-%m-%d").date())
+    _w0_floor = (max(_neg_ends) + timedelta(days=1)) if (_neg_ends and code not in ("FL-019", "VA-001")) else date(2000, 1, 1)
     for wk in studio.get("weeks", []):
         ds_str = wk.get("date_start")
         de_str = wk.get("date_end")
@@ -430,10 +452,11 @@ for studio in sc.get("studios", []):
                 ds_dt = datetime.strptime(ds_str, "%Y-%m-%d").date()
                 lookup_end = de_dt
             else:
-                # Week 0 (pre-opening): no date_start, so capture everything before
-                # the opening day. Use de_dt-1 as the upper bound so calendar weeks
-                # that *start* on the opening day are attributed to WEEK 1, not WEEK 0.
-                ds_dt = date(2000, 1, 1)
+                # Week 0 (pre-opening): no date_start, so capture everything from
+                # _w0_floor up to the opening day. Use de_dt-1 as the upper bound so
+                # calendar weeks that *start* on the opening day are attributed to
+                # WEEK 1, not WEEK 0.
+                ds_dt = _w0_floor
                 lookup_end = de_dt - timedelta(days=1)
         except ValueError:
             continue

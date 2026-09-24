@@ -1269,7 +1269,9 @@ function renderSummary2(){
   const wkLeadGoal=weeksLeft>0?Math.round(leadsGap/weeksLeft):leadsGap;
   const wkPresaleGoal=weeksLeft>0?Math.round(presalesGap/weeksLeft):presalesGap;
   const wkGoalLabel='Goal';
-  const cumSpendNoLT=w.slice(0,displayCw+1).reduce((s,x)=>s+(x.meta_spend||0)+(x.google_spend||0)+(x.grassroots_spend||0)+(x.other_spend||0),0);
+  // displayCw is a week NUMBER; the weeks array starts at the first negative
+  // pre-week, so filter by week number instead of slicing by array index.
+  const cumSpendNoLT=w.filter(x=>_wkNum(x)<=displayCw).reduce((s,x)=>s+(x.meta_spend||0)+(x.google_spend||0)+(x.grassroots_spend||0)+(x.other_spend||0),0);
   const estTotalSpend=displayCw>0?Math.round(cumSpendNoLT/displayCw*paceWeeks):0;
 
   const last7Range=`${_fmtDate(d7ago)} – ${_fmtDate(d7end)}`;
@@ -1885,8 +1887,8 @@ function renderSummary(){
   const wkLeadGoal=weeksLeft>0?Math.round(leadsGap/weeksLeft):leadsGap;
   const wkPresaleGoal=weeksLeft>0?Math.round(presalesGap/weeksLeft):presalesGap;
   const wkGoalLabel='Goal';
-  const cumSpend=w.slice(0,displayCw+1).reduce((s,x)=>s+(x.total_marketing_spend||0),0);
-  const cumSpendNoLT=w.slice(0,displayCw+1).reduce((s,x)=>s+(x.meta_spend||0)+(x.google_spend||0)+(x.grassroots_spend||0)+(x.other_spend||0),0);
+  const cumSpend=w.filter(x=>_wkNum2(x)<=displayCw).reduce((s,x)=>s+(x.total_marketing_spend||0),0);
+  const cumSpendNoLT=w.filter(x=>_wkNum2(x)<=displayCw).reduce((s,x)=>s+(x.meta_spend||0)+(x.google_spend||0)+(x.grassroots_spend||0)+(x.other_spend||0),0);
   const estTotalSpend=displayCw>0?Math.round(cumSpendNoLT/displayCw*paceWeeks):0;
 
   // Pacing benchmarks (300-in-12wk and 440-in-16wk) at current week
@@ -2959,11 +2961,24 @@ function renderScorecard2(){
     _cumCancPre=_earlyRows.reduce((s,r)=>s+(r.cancellations||0),0);
     _cumGpPre=_earlyRows.filter(r=>r.source==='Grassroots').reduce((s,r)=>s+(r.first_sales||0),0);
   }
-  // Pre-launch week grassroots from JSON negative-week entries (nso_other_costs source)
-  const _preWkGrsMap={};
-  sc.weeks.forEach(w=>{const _wn2=parseInt(String(w.week).match(/-?\d+/)?.[0])||0;if(_wn2<0)_preWkGrsMap[_wn2]=w.grassroots_spend||null;});
+  // Pre-launch week spend from JSON negative-week entries (Meta/Google/other are
+  // populated there too now, not just grassroots — Naples/Reston still leave them null)
+  const _preWkJson={};
+  sc.weeks.forEach(w=>{const _wn2=parseInt(String(w.week).match(/-?\d+/)?.[0])||0;if(_wn2<0)_preWkJson[_wn2]=w;});
+  // Cumulative agency/LeadTeam fees start at the LT Fees Start Date (or the first
+  // pre-week), not at Week 0. Naples/Reston keep the old Week 0 anchor.
+  const _legacySc=sc.code==='FL-019'||sc.code==='VA-001';
+  const _spendFrom=[_pwData&&_pwData.lt_fee_start,_pwList[0]&&_pwList[0].date_start,_pwData&&_pwData.week_0_start].filter(Boolean).sort()[0]||null;
+  const _cumFrom=()=>_legacySc?weeks[0]?.ds:(_spendFrom||weeks[0]?.ds);
+  let _cumMsPreC=0,_cumGsPreC=0,_cumOthPreC=0;
+  const _agencyFees=(from,to)=>(from&&to)?(_cprLtFee([sc.full_name],from,to)||0)+(_cprExtAgency([sc.full_name],from,to)||0):0;
+  const _wTsPre=c=>(c.ms||0)+(c.gs||0)+(c.grs||0)+(c.oth||0)+_agencyFees(c.ds,c.de);
+  const _wCumTsPre=c=>(c.cumMs||0)+(c.cumGs||0)+(c.cumGrs||0)+(c.cumOth||0)+_agencyFees(_cumFrom(),c.de);
   const preWeekCols=_pwList.map(pw=>{
-    const grsW=_preWkGrsMap[pw.week_num]||null;
+    const _pj=_preWkJson[pw.week_num]||{};
+    const grsW=_pj.grassroots_spend||null;
+    const _ms=_pj.meta_spend??null,_gs=_pj.google_spend??null,_oth=_pj.other_spend??null;
+    _cumMsPreC+=_ms||0;_cumGsPreC+=_gs||0;_cumOthPreC+=_oth||0;
     const _pwSales=pw.date_start?_scSalesRows.filter(r=>r.date>=pw.date_start&&r.date<=(pw.date_end||pw.date_start)):[];
     const _pwNp=_pwSales.reduce((s,r)=>s+(r.first_sales||0),0)||null;
     const _pwCanc=_pwSales.reduce((s,r)=>s+(r.cancellations||0),0)||null;
@@ -2975,22 +2990,30 @@ function renderScorecard2(){
     _cumCancPre+=_pwCanc||0;
     _cumGpPre+=_pwGp||0;
     const _nl=pw.new_leads||null;
-    return{w:pw.week_num,isPre:true,ds:pw.date_start,de:pw.date_end,
+    const _col={w:pw.week_num,isPre:true,ds:pw.date_start,de:pw.date_end,
       nl:_nl, gl:pw.grassroots_leads||null, ev:pw.comm_events||null,
       tl:pw.total_leads||null,
       np:_pwNp, gp:_pwGp, canc:_pwCanc,
       cr:(_pwNp&&_nl>0)?_pwNp/_nl:null,
       cumCr:(_cumNpPre>0&&pw.total_leads>0)?_cumNpPre/pw.total_leads:null,
-      ts:grsW, pc:_cumNpPre||null, cancTot:_cumCancPre||null,
+      pc:_cumNpPre||null, cancTot:_cumCancPre||null,
       netPres:(_cumNpPre>0||_cumCancPre>0)?Math.max(0,_cumNpPre-_cumCancPre):null,
       grs:grsW, cumGrs:Math.round(_cumGrsPre*100)/100,
+      ms:_ms, gs:_gs, oth:_oth,
+      dsp:(_ms!=null||_gs!=null)?(_ms||0)+(_gs||0):null,
+      cumMs:_cumMsPreC, cumGs:_cumGsPreC, cumOth:_cumOthPreC, cumDsp:_cumMsPreC+_cumGsPreC,
       cumGl:_cumGlPre, cumEv:_cumEvPre,
-      cumGp:_cumGpPre, cumTs:Math.round(_cumGrsPre*100)/100,
-      cpl:grsW&&((pw.new_leads||0)+(pw.grassroots_leads||0))>0?grsW/((pw.new_leads||0)+(pw.grassroots_leads||0)):null,
-      cpa:grsW&&(_pwNp||0)>(_pwCanc||0)?grsW/Math.max(1,(_pwNp||0)-(_pwCanc||0)):null,
-      cumCpl:_cumGrsPre>0&&(pw.total_leads||0)>0?(Math.round(_cumGrsPre*100)/100)/(pw.total_leads||1):null,
-      cumCpa:_cumGrsPre>0&&(_cumNpPre-_cumCancPre)>0?(Math.round(_cumGrsPre*100)/100)/Math.max(1,_cumNpPre-_cumCancPre):null,
+      cumGp:_cumGpPre,
     };
+    // Blended CPL/CPA use the full week spend (Meta, Google, grassroots, other,
+    // LeadTeam, agencies), same as the regular week columns.
+    const _pwSp=_wTsPre(_col),_pwCumSp=_wCumTsPre(_col);
+    _col.ts=_pwSp||null; _col.cumTs=_pwCumSp||null;
+    _col.cpl=_pwSp&&((pw.new_leads||0)+(pw.grassroots_leads||0))>0?_pwSp/((pw.new_leads||0)+(pw.grassroots_leads||0)):null;
+    _col.cpa=_pwSp&&(_pwNp||0)>(_pwCanc||0)?_pwSp/Math.max(1,(_pwNp||0)-(_pwCanc||0)):null;
+    _col.cumCpl=_pwCumSp&&(pw.total_leads||0)>0?_pwCumSp/(pw.total_leads||1):null;
+    _col.cumCpa=_pwCumSp&&(_cumNpPre-_cumCancPre)>0?_pwCumSp/Math.max(1,_cumNpPre-_cumCancPre):null;
+    return _col;
   }).filter(pw=>!_isPreLaunch2||!pw.ds||pw.ds<=_todaySc2);
 
   // Align W0/W1 dates using PRE_WEEKS (NSO Config Sheet) as authoritative source.
@@ -3056,6 +3079,9 @@ function renderScorecard2(){
   if(!_isPreLaunch2&&_cumGrsPre>0)weeks.filter(w=>w.w>=0).forEach(w=>{w.cumGrs=(w.cumGrs||0)+_cumGrsPre;});
   {let _cumOthPre=0;sc.weeks.forEach(w=>{const _wn3=parseInt(String(w.week).match(/-?\d+/)?.[0])||0;if(_wn3<0)_cumOthPre+=(w.other_spend||0);});
   if(!_isPreLaunch2&&_cumOthPre>0)weeks.filter(w=>w.w>=0).forEach(w=>{w.cumOth=(w.cumOth||0)+_cumOthPre;}); }
+  // Same for Meta/Google now that negative weeks carry paid spend
+  {let _cMsPre=0,_cGsPre=0;sc.weeks.forEach(w=>{const _wn3=parseInt(String(w.week).match(/-?\d+/)?.[0])||0;if(_wn3<0){_cMsPre+=(w.meta_spend||0);_cGsPre+=(w.google_spend||0);}});
+  if(!_isPreLaunch2&&(_cMsPre>0||_cGsPre>0))weeks.filter(w=>w.w>=0).forEach(w=>{w.cumMs=(w.cumMs||0)+_cMsPre;w.cumGs=(w.cumGs||0)+_cGsPre;w.cumDsp=(w.cumDsp||0)+_cMsPre+_cGsPre;}); }
   if(!_isPreLaunch2&&_cumEvPre>0)weeks.filter(w=>w.w>=0).forEach(w=>{w.cumEv=(w.cumEv||0)+_cumEvPre;});
   // W0 catch-all: strip pre-week accumulation from weekly nl/np so the weekly view shows only W0
   if(!_isPreLaunch2&&_scHasPreLeads&&_w0wk){
@@ -3080,7 +3106,7 @@ function renderScorecard2(){
   const _isOpened2=!!(sc.opening_date&&sc.opening_date<=_todayStrSc2);
   const _ib=k=>_infoBtn(k);
   const _wTs=wk=>(wk.ms||0)+(wk.gs||0)+(wk.grs||0)+(wk.oth||0)+(_cprLtFee([sc.full_name],wk.ds,wk.de)||0)+(_cprExtAgency([sc.full_name],wk.ds,wk.de)||0);
-  const _wCumTs=wk=>(wk.cumMs||0)+(wk.cumGs||0)+(wk.cumGrs||0)+(wk.cumOth||0)+(_cprLtFee([sc.full_name],weeks[0]?.ds,wk.de)||0)+(_cprExtAgency([sc.full_name],weeks[0]?.ds,wk.de)||0);
+  const _wCumTs=wk=>(wk.cumMs||0)+(wk.cumGs||0)+(wk.cumGrs||0)+(wk.cumOth||0)+(_cprLtFee([sc.full_name],_cumFrom(),wk.de)||0)+(_cprExtAgency([sc.full_name],_cumFrom(),wk.de)||0);
   const weeklyDefs=[
     {label:_ib('sc_new_leads')+'New Leads (Accts.)',    key:'nl',  req:reqLeads,   fmt:fInt, color:true},
     {label:_ib('sc_new_presales')+'New Presales',     key:'np',  req:reqPresales,fmt:fInt, color:true},
@@ -3135,11 +3161,13 @@ function renderScorecard2(){
     {label:_ib('sc_grassroots_spend')+'Grassroots Spend', key:'cumGrs', req:null, fmt:$v, color:false, spendSub:true},
     {label:'Print / Signs',        computed:()=>null,   req:null, fmt:$v, color:false, spendSub:true},
     {label:_ib('sc_other_spend')+'Other Marketing Spend',  key:'cumOth', req:null, fmt:$v, color:false, spendSub:true},
-    {label:'▶ Marketing Agencies', computed:wk=>{const lt=_cprLtFee([sc.full_name],weeks[0]?.ds,wk.de)||0;const ext=_cprExtAgency([sc.full_name],weeks[0]?.ds,wk.de)||0;return lt+ext||null;}, fmt:$v, color:false, spendSub:true, agencyParent:true},
+    {label:'▶ Marketing Agencies', computed:wk=>{const lt=_cprLtFee([sc.full_name],_cumFrom(),wk.de)||0;const ext=_cprExtAgency([sc.full_name],_cumFrom(),wk.de)||0;return lt+ext||null;}, fmt:$v, color:false, spendSub:true, agencyParent:true},
     {label:'PR',               computed:()=>null, fmt:$v, color:false, agencySub:true},
-    {label:'External Agency',  computed:wk=>_cprExtAgency([sc.full_name],weeks[0]?.ds,wk.de)||null, fmt:$v, color:false, agencySub:true},
-    {label:_ib('sc_leadteam_fee')+'Leadteam', computed:wk=>_cprLtFee([sc.full_name],weeks[0]?.ds,wk.de)||null, fmt:$v, color:false, agencySub:true},
-    {label:_ib('sc_blended_cpl')+'▶ Blended CPL', pwKey:'cumCpl', computed:wk=>{const sp=_wCumTs(wk);return sp&&(wk.cumNl||0)>0?sp/(wk.cumNl||0):null;}, fmt:fCur, reqLabel:'$28 – $41', color:false, cplParent:true,
+    {label:'External Agency',  computed:wk=>_cprExtAgency([sc.full_name],_cumFrom(),wk.de)||null, fmt:$v, color:false, agencySub:true},
+    {label:_ib('sc_leadteam_fee')+'Leadteam', computed:wk=>_cprLtFee([sc.full_name],_cumFrom(),wk.de)||null, fmt:$v, color:false, agencySub:true},
+    // Cumulative spend now includes pre-week spend, so divide by total leads to
+    // date (tl, which includes pre-week leads) rather than SC-weeks-only cumNl.
+    {label:_ib('sc_blended_cpl')+'▶ Blended CPL', pwKey:'cumCpl', computed:wk=>{const sp=_wCumTs(wk);const ld=_legacySc?(wk.cumNl||0):(wk.tl||0);return sp&&ld>0?sp/ld:null;}, fmt:fCur, reqLabel:'$28 – $41', color:false, cplParent:true,
      colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
     {label:_ib('sc_ads_cpl')+'Ads CPL', computed:wk=>wk.cumDsp&&wk.cumDl>0?wk.cumDsp/wk.cumDl:null, fmt:fCur, reqLabel:'—', color:false, cplSub:true,
      colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
