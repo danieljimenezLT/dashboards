@@ -25,6 +25,11 @@
   .sm-empty-note{font-size:12px;color:#8aaabb;font-style:italic;padding:20px 0;text-align:center}
   .sm-offbrand-link{color:#00A3E0;font-weight:600;text-decoration:none}
   .sm-offbrand-link:hover{text-decoration:underline}
+  .sm-fetch-btn{background:#00A3E0;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;margin-right:10px;transition:background .15s}
+  .sm-fetch-btn:hover{background:#0084B5}
+  .sm-fetch-btn:disabled{opacity:.6;cursor:not-allowed}
+  .sm-fetch-month-input{width:100%;padding:9px 12px;border:1px solid #dde8ef;border-radius:8px;font-family:'Open Sans',sans-serif;font-size:13px;color:#1a1a2e;margin-bottom:18px}
+  .sm-fetch-run-btn{width:100%}
   .sm-mock-flag{display:inline-block;margin-left:6px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#b85c00;background:#fef3e2;border-radius:4px;padding:1px 5px;vertical-align:middle}
   @media(max-width:768px){.sm-table-flex{flex-direction:column}}
 </style>
@@ -37,7 +42,10 @@
     <button class="nav-tab active" onclick="switchSmTab('rubric',this)">Rubric</button>
     <button class="nav-tab" onclick="switchSmTab('summary',this)">Summary</button>
   </div>
-  <div class="nav-user"><span class="nav-badge sm-staging-tag">Staging</span></div>
+  <div class="nav-user">
+    <button class="sm-fetch-btn" id="fetchDataBtn" onclick="openFetchModal()" style="display:none">Fetch Data</button>
+    <span class="nav-badge sm-staging-tag">Staging</span>
+  </div>
   <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Toggle navigation">
     <span></span><span></span><span></span>
   </button>
@@ -118,6 +126,17 @@
       </table></div>
     </div>
 
+    <div class="chart-card">
+      <div class="chart-card-title-row">
+        <div class="chart-card-title">Summary for Ops</div>
+        <div class="sm-legend">Auto-generated from this month's tracked metrics &amp; Brand Offenses Tracker</div>
+      </div>
+      <div style="overflow-x:auto"><table class="data-table" id="opsSummaryTable">
+        <thead><tr><th>Studio</th><th>Type</th><th>Summary for Ops</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </div>
+
   </div>
 
 </div>
@@ -135,6 +154,16 @@
     <div class="kpi-info-box-date-label">Common Mistakes to Avoid</div>
     <div class="kpi-info-box-date" id="smInfoMistakes" style="white-space:pre-line"></div>
   </div>
+</div>
+
+<div class="kpi-info-overlay" id="fetchModalOverlay" onclick="closeFetchModal()"></div>
+<div class="kpi-info-box" id="fetchModalBox">
+  <button class="kpi-info-box-close" onclick="closeFetchModal()" aria-label="Close">&#215;</button>
+  <div class="kpi-info-box-title">Fetch Data</div>
+  <div class="kpi-info-box-desc">Runs the monthly refresh for the selected month — Brand Offenses, DM/comment reply times, and this dashboard's rubric data. Takes a few minutes; reload the page once it's done to see the update.</div>
+  <label class="kpi-info-box-date-label">Month</label>
+  <input type="month" id="fetchMonthInput" class="sm-fetch-month-input"/>
+  <button class="download-btn sm-fetch-run-btn" id="fetchRunBtn" onclick="runFetchData()">Run</button>
 </div>
 
 <script src="../users.js"></script>
@@ -234,7 +263,51 @@ function closeSmInfo(){
   document.getElementById('smInfoOverlay').classList.remove('active');
   document.getElementById('smInfoBox').classList.remove('active');
 }
-document.addEventListener('keydown', e => { if(e.key==='Escape') closeSmInfo(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape'){ closeSmInfo(); closeFetchModal(); } });
+
+const _PROXY_URL    = 'https://sweat440-refresh-proxy.sweat440.workers.dev';
+const _PROXY_SECRET = 'AnwxoPAsDK9vUXVY';
+
+function openFetchModal(){
+  document.getElementById('fetchMonthInput').value = _curMonth || MONTH_KEYS[MONTH_KEYS.length-1] || '';
+  document.getElementById('fetchModalOverlay').classList.add('active');
+  document.getElementById('fetchModalBox').classList.add('active');
+}
+function closeFetchModal(){
+  document.getElementById('fetchModalOverlay').classList.remove('active');
+  document.getElementById('fetchModalBox').classList.remove('active');
+}
+
+async function runFetchData(){
+  const month = document.getElementById('fetchMonthInput').value;
+  if(!month){ alert('Pick a month first.'); return; }
+  if(!confirm(`Run the monthly refresh for ${fmtMonth(month)}?\nThis will kick off a live GitHub Actions run now.`)) return;
+
+  const btn = document.getElementById('fetchRunBtn');
+  btn.disabled = true;
+  btn.textContent = 'Triggering…';
+
+  try {
+    const res = await fetch(_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-App-Secret': _PROXY_SECRET },
+      body: JSON.stringify({ action: 'trigger_social_audit_refresh', month }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.ok) {
+      btn.textContent = '✓ Triggered!';
+      setTimeout(() => { closeFetchModal(); btn.disabled = false; btn.textContent = 'Run'; }, 1500);
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Run';
+      alert('Failed to trigger refresh (' + res.status + '). ' + (data.error || ''));
+    }
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Run';
+    alert('Failed to reach refresh service: ' + e.message);
+  }
+}
 
 // Fallback data — used until data/latest.json loads (or if it fails to load
 // / has no studios yet). Kept in the same shape as the fetched file so the
@@ -439,6 +512,60 @@ function computeScores(studio, monthKey){
     sDMs, sComments, sGrowth, growthGoalLabel, sNewFollowers, communityMgmt, classification, recs };
 }
 
+// Short, ops-facing paraphrase of a Brand Offenses Tracker feedback string.
+// Keyword-matched against the templated feedback text fetch_brand_offenses.py
+// pulls from the sheet — see social-media-audit/scripts/build_audit_data.py.
+function _summarizeOffense(feedback){
+  const f = (feedback||'').toLowerCase();
+  if(f.includes('misspelled')) return 'Misspelled SWEAT440';
+  if(f.includes('alcohol')) return 'Alcohol-related content';
+  if(f.includes('cropped')) return 'Logo was cropped';
+  if(f.includes('quotation marks')) return 'Used quotation marks around SWEAT440';
+  if(f.includes('trainer')) return 'Used a banned word (e.g. "trainer")';
+  if(f.includes('ai') && f.includes('logo')) return f.includes('color') ? 'AI-generated logo with off-brand colors' : 'AI-generated/altered logo';
+  if(f.includes('color')) return 'Off-brand colors used';
+  return 'Off-brand content flagged';
+}
+
+// Short plain-English rollup of this month's rubric misses, for the Summary
+// tab's "Summary for Ops" column — reuses computeScores()'s own pass/fail
+// thresholds (r.sPosts, r.sImgVideo, etc.) rather than re-deriving goals, so
+// this can never drift from what the rubric tables actually show. Only
+// covers metrics this dashboard actually tracks today (posts, on-brand
+// type, stories, engagement, reach, DM/comment reply time, follower
+// growth) — Highlights freshness, Following count, and Collab usage aren't
+// wired up as real data sources yet, so they're intentionally left out
+// rather than guessed at.
+function buildOpsSummary(r){
+  const m = r.m;
+  const offenses = m.offBrandPosts||[];
+  const covered = new Set();
+  offenses.forEach(o=>{
+    const t = (o.type||'').toLowerCase();
+    if(t.includes('image')||t.includes('video')) covered.add('imgVideo');
+    if(t.includes('caption')) covered.add('caption');
+    if(t.includes('audio')) covered.add('audio');
+    if(t.includes('stor')) covered.add('stories');
+  });
+
+  const parts = [...new Set(offenses.map(o=>_summarizeOffense(o.feedback)))];
+
+  if(r.sPosts<10) parts.push(`Didn't hit the posts goal (${m.posts}/${r.postsGoal})`);
+  if(r.sImgVideo<10 && !covered.has('imgVideo')) parts.push('Off-brand image/video content');
+  if(r.sCaption<10 && !covered.has('caption')) parts.push('Off-brand captions');
+  if(r.sAudio<10 && !covered.has('audio')) parts.push('Off-brand audio');
+  if(r.sEngagement<10) parts.push('Engagement rate below goal');
+  if(r.sReach<10) parts.push('Monthly reach below goal');
+  if(r.sStoriesCount<10) parts.push(`Didn't hit the stories goal (${m.storiesCount}/20)`);
+  if(r.sStoriesBrand<10 && !covered.has('stories')) parts.push('Off-brand Stories content');
+  if(r.sDMs<10) parts.push('Not replying to DMs within 4 business hours');
+  if(r.sComments<10) parts.push('Not replying to comments');
+  if(r.sGrowth<10 && !r.exempt) parts.push('Missed the follower growth goal');
+  if(r.isNso && r.sNewFollowers===0 && !r.exempt) parts.push('Missed the net new followers goal (120+)');
+
+  return parts.length ? parts.join('. ')+'.' : 'Perfect';
+}
+
 let _curStudioCode = STUDIOS[0].code;
 let _curMonth = MONTH_KEYS[MONTH_KEYS.length-1];
 let _curTab = 'rubric';
@@ -587,6 +714,15 @@ function renderSummary(){
       <td><button class="download-btn" style="padding:4px 12px;font-size:10px" onclick="viewStudioRubric('${row.code}')">View Rubric →</button></td>
     </tr>`;
   });
+
+  const opsRows = results
+    .map(({studio,r})=>({studio, r, summary: buildOpsSummary(r)}))
+    .sort((a,b)=>a.studio.name.localeCompare(b.studio.name));
+  document.getElementById('opsSummaryTable').querySelector('tbody').innerHTML = opsRows.map(({studio,summary})=>`<tr>
+    <td style="font-weight:600">${studio.name}</td>
+    <td><span class="sm-type-pill" style="background:${studio.type==='nso'?'rgba(0,163,224,.15)':'rgba(0,201,167,.15)'};color:${studio.type==='nso'?'#0077aa':'#0a8a4a'}">${studio.type==='nso'?'NSO':'Open Studio'}</span></td>
+    <td style="${summary==='Perfect'?'color:#0a8a4a;font-weight:600':''}">${summary}</td>
+  </tr>`).join('');
 }
 
 function viewStudioRubric(code){
@@ -600,6 +736,7 @@ async function loadData(){
   if (!_authUser) return;
   if (_authUser.role !== 'admin') { location.replace('../home.html'); return; }
   renderAuthNav(_authUser);
+  document.getElementById('fetchDataBtn').style.display = '';
 
   try {
     const res = await fetch('data/latest.json?_=' + Date.now());
