@@ -392,6 +392,20 @@ def main():
                 other_spend_by_week=other_spend_d,
                 w0_floor=_w0_start_eff,
             )
+            # Leads / presales dated before the first pre-week (e.g. early leads
+            # before the Marketing Build Out bucket — the pre-weeks file's
+            # offset_leads) would land in no week and be missing from every
+            # cumulative total — fold them into the first week, like spend above.
+            if _bi == 0 and ws_date is not None and not _legacy_spend:
+                _early = _bac.sum_week_data(
+                    wn, None, ws_date - timedelta(days=1), dname, full,
+                    leads_by_date, sales_by_date, {}, {}, {},
+                    gr_spend_by_week={}, events_by_week={}, other_spend_by_week={},
+                    w0_floor=None,
+                )
+                for _k in ("leads", "gr_leads", "digital_leads", "presales", "cancellations",
+                           "gr_presales", "digital_presales", "digital_cancellations"):
+                    w[_k] += _early[_k]
             cum_leads    += w["leads"]
             cum_presales += w["presales"]
             cum_canc     += w["cancellations"]
