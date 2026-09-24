@@ -565,7 +565,7 @@ async function handleUpdateStudio(body, env, headers) {
 
 const BUFFER_ORG_ID = '651eb8e1f9dfd3e786474267'; // LeadTeam
 
-// Every Instagram channel connected to the LeadTeam Buffer org (44, pulled
+// Every Instagram channel connected to the LeadTeam Buffer org (43, pulled
 // live via Buffer's list_channels — NOT the 9-studio pilot list this used to
 // be). Facebook/LinkedIn/YouTube/TikTok/Start Page channels in the same org
 // are excluded; this audit is Instagram-content-only. Keep in sync with
@@ -615,7 +615,6 @@ const BRAND_AUDIT_CHANNELS = {
   '686c2b33111211c55767c82a': 'sweat440wallnj',
   '6834d4ce9c617476ae72466a': 'sweat440westpalmbeach',
   '664be217b9b04b20032686ba': 'sweat440highland',
-  '6645fdd2b9b04b200387f3fc': 'sweat440zilker',
 };
 
 const BRAND_AUDIT_DISPLAY_NAMES = {
@@ -662,7 +661,6 @@ const BRAND_AUDIT_DISPLAY_NAMES = {
   'sweat440wallnj': 'Wall Township',
   'sweat440westpalmbeach': 'West Palm Beach',
   'sweat440highland': 'Austin - Highland',
-  'sweat440zilker': 'Zilker',
 };
 
 // Repo-root-relative — brand-safety-audit/ sits alongside nso-dashboard/,
@@ -722,40 +720,93 @@ query GetSentPosts(
 }
 `;
 
-// Both args are full ISO datetimes (see resolveDateRange). Buffer's filter
-// silently returns zero posts if startDate is sent without endDate — see
-// scripts/buffer_client.py for the confirmed-against-real-data note.
-async function pullBufferPosts(env, startDate, endDate) {
-  const posts = [];
-  let after = null;
-  for (let page = 0; page < 10; page++) { // safety cap — 9 channels/7 days never needs this many pages
+const BUFFER_CHANNELS_QUERY = `
+query GetChannels($organizationId: OrganizationId!) {
+  channels(input: { organizationId: $organizationId }) {
+    id
+    service
+    isDisconnected
+  }
+}
+`;
+
+// ~1,000 posts/week across the org (mostly Stories, which are filtered out
+// later — Buffer has no post-type filter), so 100/page. MAX_PAGES keeps one
+// call inside the Worker's subrequest limit; the dashboard splits long
+// ranges into 7-day chunks so a single call never gets close to it.
+const BUFFER_PAGE_SIZE = 100;
+const BUFFER_MAX_PAGES = 40;
+
+// Buffer intermittently returns UNEXPECTED_ERROR ("connection ... timed
+// out") on large pages — one retry clears it in practice. Its rate limit is
+// 100 requests / 15 min per token (shared with scripts/buffer_client.py
+// runs using the same token), surfaced as a wait-N-minutes message.
+async function bufferQuery(env, query, variables) {
+  for (let attempt = 0; ; attempt++) {
     const res = await fetch('https://api.buffer.com', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${env.BUFFER_API_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        query: BUFFER_POSTS_QUERY,
-        variables: {
-          organizationId: BUFFER_ORG_ID,
-          channelIds: Object.keys(BRAND_AUDIT_CHANNELS),
-          startDate,
-          endDate,
-          first: 50,
-          after,
-        },
-      }),
+      body: JSON.stringify({ query, variables }),
     });
+    if (res.status === 429) {
+      const mins = Math.ceil((parseInt(res.headers.get('Retry-After'), 10) || 900) / 60);
+      throw new Error(`Buffer rate limit reached (100 requests per 15 min) — try again in ~${mins} min.`);
+    }
     const data = await res.json();
-    if (data.errors) throw new Error('Buffer API errors: ' + JSON.stringify(data.errors));
+    if (!data.errors) return data.data;
+    const transient = data.errors.every((e) => e.extensions && e.extensions.code === 'UNEXPECTED_ERROR');
+    if (!transient || attempt >= 1) throw new Error('Buffer API errors: ' + JSON.stringify(data.errors));
+  }
+}
 
-    const page_ = data.data.posts;
+// Buffer rejects the WHOLE posts query with FORBIDDEN ("Actor can not access
+// the specified channels") if even one requested channel id no longer
+// exists in the org — which is what broke Download when Zilker's Instagram
+// was removed. So intersect BRAND_AUDIT_CHANNELS with the org's live,
+// connected Instagram channels first, and report the rest instead of failing.
+async function resolveBrandAuditChannels(env) {
+  const data = await bufferQuery(env, BUFFER_CHANNELS_QUERY, { organizationId: BUFFER_ORG_ID });
+  const live = new Set(
+    data.channels.filter((c) => c.service === 'instagram' && !c.isDisconnected).map((c) => c.id)
+  );
+  const available = [];
+  const unavailable = [];
+  for (const [id, handle] of Object.entries(BRAND_AUDIT_CHANNELS)) {
+    if (live.has(id)) available.push(id);
+    else unavailable.push(handle);
+  }
+  return { available, unavailable };
+}
+
+// Both date args are full ISO datetimes (see resolveDateRange). Buffer's
+// filter silently returns zero posts if startDate is sent without endDate —
+// see scripts/buffer_client.py for the confirmed-against-real-data note.
+async function pullBufferPosts(env, channelIds, startDate, endDate) {
+  const posts = [];
+  let after = null;
+  for (let page = 0; page < BUFFER_MAX_PAGES; page++) {
+    const data = await bufferQuery(env, BUFFER_POSTS_QUERY, {
+      organizationId: BUFFER_ORG_ID,
+      channelIds,
+      startDate,
+      endDate,
+      first: BUFFER_PAGE_SIZE,
+      after,
+    });
+    const page_ = data.posts;
     posts.push(...page_.edges.map((e) => e.node));
-    if (!page_.pageInfo.hasNextPage) break;
+    if (!page_.pageInfo.hasNextPage) return posts;
     after = page_.pageInfo.endCursor;
   }
-  return posts;
+  // Results are sorted newest-first, so stopping here would silently drop
+  // the OLDEST posts of the range — fail loudly instead of exporting a
+  // partial range under a coverage that claims it's complete.
+  throw new Error(
+    `More than ${BUFFER_MAX_PAGES * BUFFER_PAGE_SIZE} posts in this range — pick a shorter date range.`
+  );
 }
 
 // Allow-list, not block-list: only metadata.type === "post" (a permanent
@@ -778,7 +829,7 @@ function postTypeAndAsset(post) {
 // Buffer. `cycle`/`period` key off the END of the range, not "today": a
 // review of an older date range should file under the month it covers, not
 // the month it happened to be run in.
-function buildBrandAuditExport(posts, startDate, endDate) {
+function buildBrandAuditExport(posts, startDate, endDate, unavailable) {
   const byChannel = {};
   for (const post of posts) {
     (byChannel[post.channelId] = byChannel[post.channelId] || []).push(post);
@@ -787,6 +838,7 @@ function buildBrandAuditExport(posts, startDate, endDate) {
   const accounts = [];
   let skipped = 0;
   for (const [channelId, handle] of Object.entries(BRAND_AUDIT_CHANNELS)) {
+    if (unavailable.includes(handle)) continue;
     const channelPosts = byChannel[channelId] || [];
     const postsForReview = [];
     for (const post of channelPosts) {
@@ -814,7 +866,10 @@ function buildBrandAuditExport(posts, startDate, endDate) {
     period: coverageEnd.toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }),
     generated: new Date().toISOString().slice(0, 10),
     coverage: { from: startDate, to: endDate },
-    note: `${skipped} Reel(s)/Story post(s) excluded — video and 24h-ephemeral content aren't in scope yet.`,
+    note: `${skipped} Reel(s)/Story post(s) excluded — video and 24h-ephemeral content aren't in scope yet.`
+      + (unavailable.length ? ` Not in Buffer anymore (skipped): ${unavailable.join(', ')}.` : ''),
+    skipped,
+    unavailableChannels: unavailable,
     accounts,
   };
 }
@@ -850,8 +905,9 @@ async function handleExportBrandAuditPosts(body, env, headers) {
   } catch (e) {
     return jsonResponse({ ok: false, error: e.message }, 400, headers);
   }
-  const posts = await pullBufferPosts(env, range.startDateTime, range.endDateTime);
-  const exportData = buildBrandAuditExport(posts, range.startDate, range.endDate);
+  const { available, unavailable } = await resolveBrandAuditChannels(env);
+  const posts = await pullBufferPosts(env, available, range.startDateTime, range.endDateTime);
+  const exportData = buildBrandAuditExport(posts, range.startDate, range.endDate, unavailable);
   return jsonResponse({ ok: true, export: exportData }, 200, headers);
 }
 
