@@ -99,7 +99,7 @@
     <div class="chart-card">
       <div class="chart-card-title-row">
         <div class="chart-card-title">Off-Brand Posts</div>
-        <div class="sm-legend">Sourced monthly from the Brand Offenses Tracker</div>
+        <div class="sm-legend">Sourced monthly from the Brand Offenses Tracker &nbsp;·&nbsp; only <span style="color:#d32f2f;font-weight:600">Penalized</span> counts against the score</div>
       </div>
       <div style="overflow-x:auto"><table class="data-table" id="offBrandTable"></table></div>
     </div>
@@ -659,12 +659,13 @@ function renderRubric(){
     : `<div class="sm-empty-note">No recommendations — every metric is hitting goal this month. 🎉</div>`;
 
   const offBrand = m.offBrandPosts||[];
+  const impactColor = o => o.impact==='Penalized' ? '#d32f2f' : (o.impact==='Escalated' ? '#b85c00' : '#5a7a8a');
   document.getElementById('offBrandTable').innerHTML = offBrand.length ? `
     <thead><tr><th>Date Posted</th><th>Type</th><th>Scoring Impact</th><th>Feedback from LeadTeam</th><th>Action Taken</th><th>Proof</th></tr></thead>
     <tbody>${offBrand.map(o=>`<tr>
       <td>${new Date(o.date+'T00:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})}</td>
       <td>${o.type}</td>
-      <td style="color:#d32f2f;font-weight:600">${o.impact}</td>
+      <td style="color:${impactColor(o)};font-weight:600">${o.impact}</td>
       <td>${o.feedback}</td>
       <td>${o.action}</td>
       <td>${o.link ? `<a href="${o.link}" target="_blank" rel="noopener noreferrer" class="sm-offbrand-link">View</a>` : '—'}</td>
