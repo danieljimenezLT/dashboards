@@ -155,11 +155,16 @@ def load_sheet_config() -> list[dict]:
         code = _col(row, "code")
         if not name or not code:
             continue
+        # Week 1 is always the week after Week 0 (the "Week 1 Start" column is no
+        # longer maintained). Naples/Reston keep the column; they're opened, so
+        # main() preserves their existing entry anyway.
+        w0 = _parse_date(_col(row, "week 0 start"))
         out.append({
             "name":                      name,
             "code":                      code,
-            "week_0_start":              _parse_date(_col(row, "week 0 start")),
-            "week_1_start":              _parse_date(_col(row, "week 1 start")),
+            "week_0_start":              w0,
+            "week_1_start":              (_parse_date(_col(row, "week 1 start")) if code in ("FL-019", "VA-001")
+                                          else ((w0 + timedelta(days=7)) if w0 else None)),
             "lt_fee_start":              _parse_date(_col(row, "lt fees start date")),
             "opening_date":              _parse_date(_col(row, "target opening date")),
             "presales_training_complete": _parse_date(_col(row, "full marketing build out complete")),

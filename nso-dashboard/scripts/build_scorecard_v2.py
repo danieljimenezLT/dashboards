@@ -62,9 +62,12 @@ def _load_pw_dates(gc):
         code = _col(row, "code")
         if not code:
             continue
+        # Week 1 is always the week after Week 0 (the "Week 1 Start" column is
+        # no longer maintained). Naples/Reston skip this override entirely below.
+        w0 = _d(_col(row, "week 0 start"))
         out[code] = {
-            "week_0_start": _d(_col(row, "week 0 start")),
-            "week_1_start": _d(_col(row, "week 1 start")),
+            "week_0_start": w0,
+            "week_1_start": (w0 + timedelta(days=7)) if w0 else None,
             "lt_fee_start": _d(_col(row, "lt fees start date")),
         }
     return out
@@ -139,6 +142,7 @@ def main():
     mkt_raw          = _load("marketing_data.json",     "marketing_data.json")
     gads_raw         = _load("nso_google_ads.json",     "nso_google_ads.json")
     spend_overrides  = _load("nso_spend_overrides.json","nso_spend_overrides.json")
+    lt_discounts     = _bac.load_lt_discounts()
 
     meta_rows = mkt_raw.get("meta_ads",   [])
     gads_rows = gads_raw.get("google_ads", [])
@@ -358,7 +362,22 @@ def main():
         cum_leads = cum_presales = cum_canc = 0
         weeks_out = []
 
-        for wn, ws_date, we_date in bounds:
+        # Naples/Reston keep the old spend rules (paid media + LeadTeam only from
+        # Week 1). Everyone else: Meta/Google whenever there's data (negative
+        # weeks and Week 0 included) and LeadTeam from the LT Fees Start Date.
+        _legacy_spend = code in _bac.LEGACY_WEEK1_CODES
+        _lt_disc      = lt_discounts.get(full, [])
+        _first_ws     = bounds[0][1] if bounds else None
+        # Meta/Google dated before the bar's first week would land in no week at
+        # all — fold it into the first week so spend totals stay complete.
+        _pre_meta = sum(v for d, v in meta_spend_d.items() if _first_ws and d < _first_ws.isoformat())
+        _pre_gads = sum(v for d, v in gads_spend_d.items() if _first_ws and d < _first_ws.isoformat())
+        # LeadTeam is charged through the end of the current Sun–Sat week (same as
+        # a regular in-progress week), never for later weeks — matters for the
+        # Week 0 catch-all when it runs weeks into the future.
+        _sat_today = TODAY + timedelta(days=(5 - TODAY.weekday()) % 7)
+
+        for _bi, (wn, ws_date, we_date) in enumerate(bounds):
             w = _bac.sum_week_data(
                 wn, ws_date, we_date, dname, full,
                 leads_by_date, sales_by_date, ig_fc_s,
@@ -395,34 +414,57 @@ def main():
             conv_rate = (round(w["presales"] / w["leads"] * 100, 1)
                          if w["leads"] > 0 and is_active else None)
 
-            ov_pre = spend_overrides.get(code, {}).get("leadteam_pre")
             lt_start = cfg.get("lt_fee_start")
-            if wn == 0 and ov_pre:
-                lt_fee = float(ov_pre)
-            elif is_active and wn >= 1:
-                if lt_start and we_date < lt_start:
-                    lt_fee = None          # week entirely before fee start
-                elif lt_start and ws_date < lt_start:
-                    lt_fee = _bac.calc_leadteam_fee(lt_start, we_date)  # prorate
+            if _legacy_spend:
+                ov_pre = spend_overrides.get(code, {}).get("leadteam_pre")
+                if wn == 0 and ov_pre:
+                    lt_fee = float(ov_pre)
+                elif is_active and wn >= 1:
+                    if lt_start and we_date < lt_start:
+                        lt_fee = None          # week entirely before fee start
+                    elif lt_start and ws_date < lt_start:
+                        lt_fee = _bac.calc_leadteam_fee(lt_start, we_date)  # prorate
+                    else:
+                        lt_fee = _bac.calc_leadteam_fee(ws_date, we_date)
                 else:
-                    lt_fee = _bac.calc_leadteam_fee(ws_date, we_date)
-            else:
-                lt_fee = None
+                    lt_fee = None
 
-            meta_sp  = _wf(w["meta_spend"])
-            gads_sp  = _wf(w["gads_spend"])
-            gr_sp    = _wf(w["gr_spend"])
-            other_sp = _wf(w["other_spend"])
+                meta_sp  = _wf(w["meta_spend"])
+                gads_sp  = _wf(w["gads_spend"])
+                gr_sp    = _wf(w["gr_spend"])
+                other_sp = _wf(w["other_spend"])
 
-            if lt_fee or (is_active and wn >= 1):
-                total_spend = round(
-                    (meta_sp or 0)+(gads_sp or 0)+(gr_sp or 0)+(other_sp or 0)+(lt_fee or 0), 2
-                ) or None
-            elif is_past and wn <= 0 and (gr_sp or other_sp):
-                # Pre-launch / Week-0: only grassroots + other spend (no digital)
-                total_spend = round((gr_sp or 0) + (other_sp or 0), 2) or None
+                if lt_fee or (is_active and wn >= 1):
+                    total_spend = round(
+                        (meta_sp or 0)+(gads_sp or 0)+(gr_sp or 0)+(other_sp or 0)+(lt_fee or 0), 2
+                    ) or None
+                elif is_past and wn <= 0 and (gr_sp or other_sp):
+                    # Pre-launch / Week-0: only grassroots + other spend (no digital)
+                    total_spend = round((gr_sp or 0) + (other_sp or 0), 2) or None
+                else:
+                    total_spend = None
+                show_paid = is_active and wn >= 1
+                show_local = show_paid or (is_past and wn <= 0)
             else:
-                total_spend = None
+                # Week 0's effective start is the day after the last pre-week
+                _ws_eff = ws_date if ws_date is not None else _w0_start_eff
+                started = _ws_eff <= TODAY
+                def _sp(v, _s=started): return round(v, 2) if v > 0 else (0.0 if _s else None)
+                meta_sp  = _sp(w["meta_spend"] + (_pre_meta if _bi == 0 else 0))
+                gads_sp  = _sp(w["gads_spend"] + (_pre_gads if _bi == 0 else 0))
+                gr_sp    = _sp(w["gr_spend"])
+                other_sp = _sp(w["other_spend"])
+                if started and lt_start:
+                    # First week also absorbs any fee between LT start and the bar's start
+                    _lt_from = min(_ws_eff, lt_start) if _bi == 0 else _ws_eff
+                    lt_fee = _bac.calc_leadteam_fee_net(_lt_from, min(we_date, _sat_today), lt_start, _lt_disc)
+                elif started and wn >= 1:
+                    lt_fee = _bac.calc_leadteam_fee_net(ws_date, min(we_date, _sat_today), None, _lt_disc)
+                else:
+                    lt_fee = None
+                total_spend = (round((meta_sp or 0)+(gads_sp or 0)+(gr_sp or 0)+(other_sp or 0)+(lt_fee or 0), 2)
+                               or None) if started else None
+                show_paid = show_local = started
 
             blended_cpl = (round(total_spend / w["leads"],    2)
                            if total_spend and w["leads"]    > 0 else None)
@@ -448,10 +490,10 @@ def main():
                 "conversion_rate":            conv_rate,
                 "comm_events":                _v1_comm_events(code, ws_date, we_date),
                 "ig_new_followers":           w["ig"],
-                "meta_spend":                 meta_sp  if (is_active and wn >= 1) else None,
-                "google_spend":               gads_sp  if (is_active and wn >= 1) else None,
-                "grassroots_spend":           gr_sp    if ((is_active and wn >= 1) or (is_past and wn <= 0)) else None,
-                "other_spend":                other_sp if ((is_active and wn >= 1) or (is_past and wn <= 0)) else None,
+                "meta_spend":                 meta_sp  if show_paid else None,
+                "google_spend":               gads_sp  if show_paid else None,
+                "grassroots_spend":           gr_sp    if show_local else None,
+                "other_spend":                other_sp if show_local else None,
                 "leadteam_fee":               lt_fee,
                 "total_marketing_spend":      total_spend,
                 "blended_cpl":                blended_cpl,

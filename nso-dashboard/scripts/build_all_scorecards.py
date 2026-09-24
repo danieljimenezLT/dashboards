@@ -44,6 +44,10 @@ NSO_CONFIG_SHEET_URL = "https://docs.google.com/spreadsheets/d/1KhXfeofzltGyllmr
 # the same convention (Sunday start via getUTCDay() in _periodKey).
 CAL_WEEK1_START = date(2025, 12, 28)  # Dec 28, 2025 = Sunday (reference only, not used in computation)
 
+# Studios whose Week 1 still comes from the sheet's "Week 1 Start" column
+# instead of Week 0 + 7 days (already opened — history must not shift).
+LEGACY_WEEK1_CODES = ("FL-019", "VA-001")
+
 # NSO Config sheet fixed column indices (0-based) — only for columns that never shift.
 # Scheduling and targets columns use header-name lookup via _ch() in load_studio_config().
 NSO_CFG_COL = {
@@ -86,6 +90,59 @@ def calc_leadteam_fee(date_start, date_end):
         total += LEADTEAM_MONTHLY / calendar.monthrange(d.year, d.month)[1]
         d += timedelta(days=1)
     return round(total, 2)
+
+
+def date_to_week_num(d, week1_start):
+    """Scorecard week number containing date d, using the same bounds as
+    make_sun_sat_bounds(): Week 1 runs from week1_start to the first Saturday on
+    or after it, then Sun–Sat weeks. None for dates before Week 1.
+    (The old ceil(days/7) put Sundays — and Week 1's own first day — one week
+    early, e.g. a Sunday C/O date landed on the week before its real week.)"""
+    if not d or not week1_start or d < week1_start:
+        return None
+    week1_end = week1_start + timedelta(days=(5 - week1_start.weekday()) % 7)
+    if d <= week1_end:
+        return 1
+    return 2 + (d - week1_end - timedelta(days=1)).days // 7
+
+
+def load_lt_discounts():
+    """{studio full name: [(start, end, monthly)]} — 'Leadteam Discount' rows
+    from nso_other_costs.json (same source the dashboard's CPR tab uses)."""
+    try:
+        with open(ROOT / "nso_other_costs.json", encoding="utf-8") as f:
+            monthly = json.load(f).get("monthly", [])
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+    out = defaultdict(list)
+    for e in monthly:
+        if e.get("category") != "Leadteam Discount":
+            continue
+        try:
+            out[e["studio_key"]].append(
+                (date.fromisoformat(e["start"]), date.fromisoformat(e["end"]), float(e["monthly"])))
+        except (KeyError, ValueError, TypeError):
+            continue
+    return out
+
+
+def calc_leadteam_fee_net(date_start, date_end, lt_start, discounts):
+    """LeadTeam fee with the same formula as the dashboard's _cprLtFee():
+    $1,200 × days / 30.4375 from max(date_start, LT Fees Start Date), minus any
+    'Leadteam Discount' prorated by the actual days in each calendar month."""
+    if date_start is None or date_end is None:
+        return None
+    eff = max(date_start, lt_start) if lt_start else date_start
+    if eff > date_end:
+        return None
+    base = LEADTEAM_MONTHLY * ((date_end - eff).days + 1) / 30.4375
+    disc = 0.0
+    for ds, de, monthly in discounts or []:
+        d, stop = max(eff, ds), min(date_end, de)
+        while d <= stop:
+            disc += monthly / calendar.monthrange(d.year, d.month)[1]
+            d += timedelta(days=1)
+    return round(max(0.0, base - disc), 2)
 
 # Studios where the data.json name differs from the display name.
 # data.json uses STUDIO_NAME from Snowflake (strip_brand applied). Sourced
@@ -217,12 +274,7 @@ def load_studio_config(gc):
             return None
 
     def _date_to_week(d, week1_start):
-        if not d or not week1_start:
-            return None
-        delta = (d - week1_start).days
-        if delta <= 0:
-            return None
-        return math.ceil(delta / 7)
+        return date_to_week_num(d, week1_start)
 
     sh = gc.open_by_url(NSO_CONFIG_SHEET_URL)
     ws = sh.worksheet("NSO Config")
@@ -249,7 +301,14 @@ def load_studio_config(gc):
         if not name or not code:
             continue
 
-        week1_start  = _parse_date(_ch(row, "week 1 start"))
+        # Week 1 is always the week after Week 0 — the sheet's "Week 1 Start"
+        # column is no longer maintained. Naples/Reston (already opened) keep
+        # the column so their historical week numbering doesn't shift.
+        week0_start  = _parse_date(_ch(row, "week 0 start"))
+        if code in LEGACY_WEEK1_CODES:
+            week1_start = _parse_date(_ch(row, "week 1 start"))
+        else:
+            week1_start = (week0_start + timedelta(days=7)) if week0_start else None
         co_date      = _parse_date(_ch(row, "target c/o date"))
         opening_date = _parse_date(_ch(row, "target opening date"))
         tier2_move   = _parse_date(_ch(row, "tier 2 start date"))
@@ -911,6 +970,7 @@ def main():
             spend_overrides = json.load(f)
     except FileNotFoundError:
         spend_overrides = {}
+    lt_discounts = load_lt_discounts()
 
     try:
         with open(ROOT / "nso_google_ads.json", encoding="utf-8") as f:
@@ -1075,7 +1135,21 @@ def main():
         cum_leads = cum_presales = cum_canc = 0
         weeks_out = []
 
-        for (wn, ws_date, we_date) in bounds:
+        # Naples/Reston keep the old spend rules (paid media + LeadTeam only from
+        # Week 1). Everyone else: Meta/Google whenever there's data (negative
+        # weeks and Week 0 included) and LeadTeam from the LT Fees Start Date.
+        _legacy_spend = code in LEGACY_WEEK1_CODES
+        _lt_disc      = lt_discounts.get(full, [])
+        _first_ws     = bounds[0][1] if bounds else None
+        # Meta/Google dated before the bar's first week would land in no week at
+        # all — fold it into the first week so spend totals stay complete.
+        _pre_meta = sum(v for d, v in meta_spend_d.items() if _first_ws and d < _first_ws.isoformat())
+        _pre_gads = sum(v for d, v in gads_spend_d.items() if _first_ws and d < _first_ws.isoformat())
+        # LeadTeam is charged through the end of the current Sun–Sat week, never
+        # for later weeks (matters for a Week 0 catch-all running into the future).
+        _sat_today = TODAY + timedelta(days=(5 - TODAY.weekday()) % 7)
+
+        for _bi, (wn, ws_date, we_date) in enumerate(bounds):
             w = sum_week_data(
                 wn, ws_date, we_date, dname, full,
                 leads_by_date, sales_by_date, ig_fc_studio,
@@ -1136,36 +1210,59 @@ def main():
             # LeadTeam fee: $1,200/month prorated daily per week.
             # Week 0 gets the pre-presales lump sum from nso_spend_overrides.json
             # (covers LeadTeam work done before the presales period started).
-            ov_pre = spend_overrides.get(code, {}).get("leadteam_pre")
             lt_start = cfg.get("lt_fee_start")
-            if wn == 0 and ov_pre:
-                lt_fee = float(ov_pre)
-            elif is_active and wn >= 1:
-                if lt_start and we_date < lt_start:
-                    lt_fee = None          # week entirely before fee start
-                elif lt_start and ws_date < lt_start:
-                    lt_fee = calc_leadteam_fee(lt_start, we_date)  # prorate
+            if _legacy_spend:
+                ov_pre = spend_overrides.get(code, {}).get("leadteam_pre")
+                if wn == 0 and ov_pre:
+                    lt_fee = float(ov_pre)
+                elif is_active and wn >= 1:
+                    if lt_start and we_date < lt_start:
+                        lt_fee = None          # week entirely before fee start
+                    elif lt_start and ws_date < lt_start:
+                        lt_fee = calc_leadteam_fee(lt_start, we_date)  # prorate
+                    else:
+                        lt_fee = calc_leadteam_fee(ws_date, we_date)
                 else:
-                    lt_fee = calc_leadteam_fee(ws_date, we_date)
+                    lt_fee = None
+
+                # Total marketing spend
+                meta_sp  = _weekly_float(w["meta_spend"])
+                gads_sp  = _weekly_float(w["gads_spend"])
+                gr_sp    = _weekly_float(w["gr_spend"])
+                other_sp = _weekly_float(w["other_spend"])
+
+                if lt_fee or (is_active and wn >= 1):
+                    total_spend = round(
+                        (meta_sp or 0) + (gads_sp or 0) + (gr_sp or 0) + (other_sp or 0) + (lt_fee or 0), 2
+                    ) or None
+                elif is_past and wn <= 0 and (gr_sp or other_sp):
+                    # Pre-launch / Week-0: only grassroots + other spend (no digital)
+                    total_spend = round((gr_sp or 0) + (other_sp or 0), 2) or None
+                else:
+                    total_spend = None
+                show_paid = is_active and wn >= 1
+                show_local = show_paid or (is_past and wn <= 0)
             else:
-                lt_fee = None
+                # Week 0's effective start is the day after the last pre-week
+                _ws_eff = ws_date if ws_date is not None else _w0_start_eff
+                started = _ws_eff <= TODAY
+                def _sp(v, _s=started): return round(v, 2) if v > 0 else (0.0 if _s else None)
+                meta_sp  = _sp(w["meta_spend"] + (_pre_meta if _bi == 0 else 0))
+                gads_sp  = _sp(w["gads_spend"] + (_pre_gads if _bi == 0 else 0))
+                gr_sp    = _sp(w["gr_spend"])
+                other_sp = _sp(w["other_spend"])
+                if started and lt_start:
+                    # First week also absorbs any fee between LT start and the bar's start
+                    _lt_from = min(_ws_eff, lt_start) if _bi == 0 else _ws_eff
+                    lt_fee = calc_leadteam_fee_net(_lt_from, min(we_date, _sat_today), lt_start, _lt_disc)
+                elif started and wn >= 1:
+                    lt_fee = calc_leadteam_fee_net(ws_date, min(we_date, _sat_today), None, _lt_disc)
+                else:
+                    lt_fee = None
+                total_spend = (round((meta_sp or 0)+(gads_sp or 0)+(gr_sp or 0)+(other_sp or 0)+(lt_fee or 0), 2)
+                               or None) if started else None
+                show_paid = show_local = started
             leadteam_fee = lt_fee
-
-            # Total marketing spend
-            meta_sp  = _weekly_float(w["meta_spend"])
-            gads_sp  = _weekly_float(w["gads_spend"])
-            gr_sp    = _weekly_float(w["gr_spend"])
-            other_sp = _weekly_float(w["other_spend"])
-
-            if lt_fee or (is_active and wn >= 1):
-                total_spend = round(
-                    (meta_sp or 0) + (gads_sp or 0) + (gr_sp or 0) + (other_sp or 0) + (lt_fee or 0), 2
-                ) or None
-            elif is_past and wn <= 0 and (gr_sp or other_sp):
-                # Pre-launch / Week-0: only grassroots + other spend (no digital)
-                total_spend = round((gr_sp or 0) + (other_sp or 0), 2) or None
-            else:
-                total_spend = None
 
             # CPL / CPA
             blended_cpl = blended_cpa = None
@@ -1193,10 +1290,10 @@ def main():
                 "conversion_rate":    conv_rate,
                 "comm_events":        _weekly_int(w["comm_events"]),
                 "ig_new_followers":   w["ig"],
-                "meta_spend":         meta_sp if (is_active and wn >= 1) else None,
-                "google_spend":       gads_sp if (is_active and wn >= 1) else None,
-                "grassroots_spend":   gr_sp if ((is_active and wn >= 1) or (is_past and wn <= 0)) else None,
-                "other_spend":        other_sp if ((is_active and wn >= 1) or (is_past and wn <= 0)) else None,
+                "meta_spend":         meta_sp if show_paid else None,
+                "google_spend":       gads_sp if show_paid else None,
+                "grassroots_spend":   gr_sp if show_local else None,
+                "other_spend":        other_sp if show_local else None,
                 "leadteam_fee":       leadteam_fee,
                 "total_marketing_spend": total_spend,
             }
