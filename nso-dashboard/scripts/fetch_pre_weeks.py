@@ -22,6 +22,9 @@ from pathlib import Path
 import gspread
 from google.oauth2.service_account import Credentials
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+import studios as studios_registry
+
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
@@ -32,7 +35,13 @@ OUTPUT_DEFAULT = Path(__file__).parent.parent / "nso_pre_weeks_data.json"
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
-# Sheet name → data.json studio name (only entries that differ)
+# Studio code → data.json studio name, from the studios registry (the same
+# source the scorecard builder uses). The sheet's short names ("Rose Creek",
+# "South End") don't always match data.json ("OKC - Rose Creek",
+# "Charlotte - South End"), which left those studios with no pre-weeks.
+REGISTRY_NAME = {s["code"]: s["name"] for s in studios_registry.load_studios()
+                 if s.get("code") and s.get("name")}
+# Fallback for studios not in the registry: sheet name → data.json name
 NAME_MAP = {
     "Dr Phillips": "Orlando - Dr Phillips",
 }
@@ -212,7 +221,7 @@ def build_pre_weeks(cfg: dict, daily_leads: dict,
 
     training_date = cfg.get("presales_training_complete")
 
-    data_name     = NAME_MAP.get(cfg["name"], cfg["name"])
+    data_name     = REGISTRY_NAME.get(cfg["code"]) or NAME_MAP.get(cfg["name"], cfg["name"])
     leads_by_date = daily_leads.get(data_name, {})
 
     pre_dates = sorted(d for d in leads_by_date if d < week0_start.isoformat())

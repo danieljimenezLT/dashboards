@@ -1119,6 +1119,9 @@ function renderSummary2(){
   if(_hasPre){h+=`<div style="position:absolute;left:0;top:0;height:100%;width:${_preW0Pct}%;background:#b8cdd8;border-radius:10px 0 0 10px;z-index:1"></div>`;}
   if(_scFillPct>0){h+=`<div class="timeline-fill" style="left:${_preW0Pct}%;width:${_scFillPct}%;border-top-left-radius:${_hasPre?0:''};border-bottom-left-radius:${_hasPre?0:''}"><div class="timeline-current"></div></div>`;}
   } else {
+    // Pre-Week-0: grey fill from the bar's start up to today (same grey as the
+    // pre-launch segment of started studios)
+    if(_todayPct!=null&&_todayPct>0)h+=`<div style="position:absolute;left:0;top:0;height:100%;width:${_todayPct}%;background:#b8cdd8;border-radius:10px 0 0 10px;z-index:1"></div>`;
     if(_w0LabelPct!=null)h+=`<div style="position:absolute;left:${_w0LabelPct}%;top:-4px;bottom:-4px;width:2px;background:#0084B5;transform:translateX(-50%);z-index:4;border-radius:1px"></div>`;
     if(_todayPct!=null)h+=`<div style="position:absolute;left:${_todayPct}%;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--c-ft);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.2);z-index:3"></div>`;
   }
