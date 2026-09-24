@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-24",
+      "pr_number": 409,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/409",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO scorecards now count spend and events in the right week",
+      "summary": "Week 1 now always follows Week 0, Meta/Google spend and the LeadTeam fee are counted from when they actually start (including pre-launch weeks), community events are no longer double-counted in Week 0, and the Summary's marketing spend total is fixed."
+    },
+    {
+      "date": "2026-09-24",
       "pr_number": 408,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/408",
       "author": "Sebastian Arango",
