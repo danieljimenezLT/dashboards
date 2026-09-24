@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-24T11:13:07.339084",
+  "generated_at": "2026-09-24T12:53:50.239530",
   "date_range": {
     "start": "2026-01-01",
     "end": "2026-09-22"
@@ -7528,7 +7528,7 @@
         },
         {
           "date": "2026-06-10",
-          "source": "Other",
+          "source": "N/A",
           "presales": 1,
           "cancellations": 0,
           "gross_revenue": 99.0,
@@ -8308,7 +8308,7 @@
         },
         {
           "date": "2026-07-29",
-          "source": "Meta Ads",
+          "source": "Website (unattributed)",
           "presales": 1,
           "cancellations": 0,
           "gross_revenue": 129.0,
@@ -9148,10 +9148,25 @@
         },
         {
           "date": "2026-09-08",
-          "source": "Website (unattributed)",
-          "presales": 6,
+          "source": "SWEAT440 App",
+          "presales": 1,
           "cancellations": 0,
-          "gross_revenue": 774.0,
+          "gross_revenue": 129.0,
+          "tiers": {
+            "unl_mo": 0,
+            "unl_yr": 0,
+            "std_mil": 0,
+            "visit": 0,
+            "other": 0
+          },
+          "membership_total": 0
+        },
+        {
+          "date": "2026-09-08",
+          "source": "Website (unattributed)",
+          "presales": 5,
+          "cancellations": 0,
+          "gross_revenue": 645.0,
           "tiers": {
             "unl_mo": 0,
             "unl_yr": 0,
@@ -19514,7 +19529,7 @@
         },
         {
           "date": "2026-05-22",
-          "source": "Website (unattributed)",
+          "source": "Public API",
           "presales": 1,
           "cancellations": 0,
           "gross_revenue": 99.0,
@@ -19679,7 +19694,7 @@
         },
         {
           "date": "2026-06-15",
-          "source": "N/A",
+          "source": "Local Listings",
           "presales": 1,
           "cancellations": 0,
           "gross_revenue": 99.0,
