@@ -1,11 +1,16 @@
 """
 fetch_sheet_milestones.py
-Reads scheduling dates AND tier pricing from the NSO Config Google Sheet,
-then patches nso_scorecard_data.json with:
-  - milestones: pre-launch date cards
-  - pricing:    tier prices + week numbers when each tier starts
+Reads tier pricing, SKU map and weekly community events from the NSO Config
+Google Sheet and patches nso_scorecard_data2.json (the only NSO scorecard) with:
+  - pricing:     tier prices + the week numbers/dates when each tier starts
+  - sku_map
+  - comm_events: per scorecard week, from the "Weekly Events" tab
 
-Run from the nso-dashboard/ folder:
+Milestones, targets and C/O / GO dates are built by build_scorecard_v2.py
+itself from the same sheet, so they're not patched here. Reston (opened) is
+kept fixed and skipped.
+
+Run from the nso-dashboard/ folder, after build_scorecard_v2.py:
     python scripts/fetch_sheet_milestones.py
 """
 import json, re, math
@@ -15,7 +20,7 @@ from googleapiclient.discovery import build
 
 NSO_CONFIG_SHEET_ID = "1KhXfeofzltGyllmrfIm9UN2xqLUgBtjAxPhT-E0SQmk"
 CREDS_FILE     = "credentials/service_account.json"
-SCORECARD_FILE = "nso_scorecard_data.json"
+SCORECARD_FILE = "nso_scorecard_data2.json"
 
 # Fixed column indices — only name/code/pricing are stable (left of scheduling section).
 # All scheduling columns use header-name lookup via hdr_map (see below).
@@ -355,7 +360,7 @@ for row in data_rows:
     }
 
 # ── Patch scorecard JSON ────────────────────────────────────────────────────
-with open(SCORECARD_FILE) as f:
+with open(SCORECARD_FILE, encoding="utf-8") as f:
     sc = json.load(f)
 
 updated = 0
@@ -363,25 +368,12 @@ for studio in sc.get("studios", []):
     code = studio.get("code", "")
     info = sheet_map.get(code)
     if not info:
-        studio.setdefault("milestones", [])
+        continue
+    # Reston opened on 2026-09-05; its scorecard entry is kept fixed
+    if code == "VA-001":
         continue
 
-    # Merge: sheet milestones win; preserve any manually-set keys not in the sheet
-    sheet_keys = {m["key"] for m in info["milestones"]}
-    preserved  = [m for m in (studio.get("milestones") or []) if m["key"] not in sheet_keys]
-    studio["milestones"] = sorted(info["milestones"] + preserved, key=lambda m: m["date"])
-    studio["sku_map"]    = info["sku_map"]
-
-    # Patch Week 1 date_start to match "Week 1 Start" from sheet
-    w1_start = info.get("week1_start")
-    if w1_start:
-        for wk in studio.get("weeks", []):
-            label = re.sub(r"[^0-9]", "", wk.get("week", ""))
-            if label == "1":
-                if wk.get("date_start") != w1_start:
-                    print(f"    fixing W1 date_start: {wk.get('date_start')} -> {w1_start}")
-                    wk["date_start"] = w1_start
-                break
+    studio["sku_map"] = info["sku_map"]
 
     pricing = {}
     for key in ("tier1_price", "tier2_price", "tier3_price",
@@ -398,34 +390,6 @@ for studio in sc.get("studios", []):
         pricing["tier0_price"] = existing_t0
 
     studio["pricing"] = pricing if pricing else None
-
-    # Update studio-level targets from sheet
-    tgt = studio.setdefault("targets", {})
-    for key, sheet_key in [
-        ("total_leads",        "total_leads_target"),
-        ("presales_count",     "presales_target"),
-        ("estimated_day1_rmr", "day1_rmr_target"),
-        ("blended_cpl",        "cpl_range"),
-        ("blended_cpa",        "cpa_range"),
-        ("conversion_rate",    "conversion_rate"),
-    ]:
-        v = info.get(sheet_key)
-        if v is not None:
-            tgt[key] = v
-
-    # Update CO / GO dates and week numbers
-    if info.get("opening_date"):
-        studio["opening_date"] = info["opening_date"]
-    if info.get("co_date"):
-        studio["co_date"] = info["co_date"]
-    if info.get("co_week") is not None:
-        studio["co_week"] = info["co_week"]
-    if info.get("go_week") is not None:
-        studio["go_week"] = info["go_week"]
-    if info.get("goal_announce_target") is not None:
-        studio["goal_announce_target"] = info["goal_announce_target"]
-
-    es_weeks_updated = 0  # spend is applied by build_all_scorecards.py via nso_other_costs.json
 
     # Patch comm_events from NSO Manual Metrics "Weekly Events & Spend" tab
     # (calendar-week columns → scorecard week by date overlap)
@@ -466,13 +430,11 @@ for studio in sc.get("studios", []):
             ev_patched += 1
 
     updated += 1
-    print(f"  {code} ({studio['name']}): "
-          f"co_week={info.get('co_week')} go_week={info.get('go_week')} | "
-          f"leads={info.get('total_leads_target')} ps={info.get('presales_target')} | "
-          f"{len(info['milestones'])} milestone(s) | "
-          f"{es_weeks_updated} event/spend weeks")
+    print(f"  {code} ({studio['name']}): pricing + sku_map | "
+          f"t2wk={pricing.get('tier2_start_week')} t3wk={pricing.get('tier3_start_week')} | "
+          f"{ev_patched} week(s) with comm_events")
 
-with open(SCORECARD_FILE, "w") as f:
-    json.dump(sc, f, indent=2)
+with open(SCORECARD_FILE, "w", encoding="utf-8") as f:
+    json.dump(sc, f, indent=2, default=str)
 
 print(f"\nDone. {SCORECARD_FILE} updated — {updated} studio(s) patched")

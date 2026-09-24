@@ -2,17 +2,20 @@
 """
 build_scorecard_v2.py
 
-Generates nso_scorecard_data2.json using week1_start dates from the
-PRE_WEEKS sheet (same source as fetch_pre_weeks.py / nso_pre_weeks_data.json)
-so that week boundaries in the Test dashboard match the pre-weeks data.
+Generates nso_scorecard_data2.json — the only NSO scorecard file — using
+week boundaries from the NSO Config sheet (same source as fetch_pre_weeks.py /
+nso_pre_weeks_data.json), so the dashboard's weeks match the pre-weeks data.
 
-All leads, presales, and spend are re-aggregated from daily rows using the
-corrected week dates.  Special cases:
+All leads, presales, and spend are re-aggregated from daily rows.  Special cases:
   - Naples  (FL-019): hardcoded NAPLES_EXPLICIT_WEEKS, unchanged
-  - Reston  (VA-001): copied as-is from nso_scorecard_data.json
-                      (preserves patch_reston_early_weeks.py data)
-  - pricing: copied from nso_scorecard_data.json (static, date-independent)
+  - Reston  (VA-001): opened, presale history is final — its existing entry
+                      in nso_scorecard_data2.json is kept as-is
+  - pricing / sku_map / comm_events: written afterwards by
+    fetch_sheet_milestones.py; until then the previous run's values are kept
   - tier_rmr_by_week: NOT copied — run fetch_tier_rmr_v2.py afterwards
+
+Pipeline order: fetch_pre_weeks.py → build_scorecard_v2.py →
+fetch_sheet_milestones.py → fetch_tier_rmr_v2.py
 
 Usage (from nso-dashboard/):
   python scripts/build_scorecard_v2.py
@@ -205,20 +208,22 @@ def main():
         _pw_studios = {}
         print("  nso_pre_weeks_data.json not found — pre-launch spend will go to Week 0")
 
-    # Load existing v1 file — for Reston copy, static pricing, and comm_events
-    prev_map = {}
-    v1_path  = ROOT / "nso_scorecard_data.json"
-    if v1_path.exists():
-        with open(v1_path, encoding="utf-8") as f:
+    # Load the previous run of this file — Reston is kept from it as-is, and
+    # pricing / sku_map / comm_events carry over until fetch_sheet_milestones.py
+    # (the next pipeline step) rewrites them, so a failed sheet step doesn't
+    # leave them empty.
+    prev_map  = {}
+    prev_path = ROOT / "nso_scorecard_data2.json"
+    if prev_path.exists():
+        with open(prev_path, encoding="utf-8") as f:
             prev_map = {s["code"]: s for s in json.load(f).get("studios", [])}
-        print(f"\nLoaded nso_scorecard_data.json ({len(prev_map)} studios)")
+        print(f"\nLoaded previous nso_scorecard_data2.json ({len(prev_map)} studios)")
 
-    # Build comm_events lookup from v1 by date range so v2 can inherit them.
-    # v1 is already patched by fetch_sheet_milestones.py; v2 uses different week
-    # boundaries so we match by date overlap instead of week number.
-    def _v1_comm_events(code, ws_date, we_date):
-        """Return comm_events from v1 for the week overlapping [ws_date, we_date].
-        Week 0 has ws_date=None; match v1 Week 0 by date_end."""
+    # comm_events from the previous run, matched by date overlap (week numbers
+    # can shift between runs when the sheet's Week 0 changes).
+    def _prev_comm_events(code, ws_date, we_date):
+        """Return comm_events from the previous run for the week overlapping
+        [ws_date, we_date]. Week 0 has ws_date=None; match Week 0 by date_end."""
         s1 = prev_map.get(code)
         if not s1:
             return None
@@ -262,13 +267,13 @@ def main():
         dname = cfg["data_name"]
         code  = cfg["code"]
 
-        # Reston: copy as-is (preserves patch_reston_early_weeks data)
+        # Reston: opened 2026-09-05, presale history is final — keep as-is
         if code == "VA-001":
             if code in prev_map:
                 output_studios.append(prev_map[code])
-                print(f"\n  VA-001 Reston: copied from nso_scorecard_data.json")
+                print(f"\n  VA-001 Reston: kept from previous nso_scorecard_data2.json (fixed)")
             else:
-                print(f"\n  VA-001 Reston: not found in v1, skipping")
+                print(f"\n  VA-001 Reston: not found in previous file, skipping")
             continue
 
         go_wk     = cfg["go_week"] or 28
@@ -488,7 +493,7 @@ def main():
                 "digital_presales_week":      _wi(w["digital_presales"]),
                 "digital_cancellations_week": _wi(w["digital_cancellations"]),
                 "conversion_rate":            conv_rate,
-                "comm_events":                _v1_comm_events(code, ws_date, we_date),
+                "comm_events":                _prev_comm_events(code, ws_date, we_date),
                 "ig_new_followers":           w["ig"],
                 "meta_spend":                 meta_sp  if show_paid else None,
                 "google_spend":               gads_sp  if show_paid else None,
@@ -545,7 +550,8 @@ def main():
             "weeks":                weeks_out,
         }
 
-        # Preserve static pricing from v1 (date-independent config data)
+        # Carry over pricing / sku_map from the previous run; fetch_sheet_milestones.py
+        # refreshes them from the NSO Config sheet right after this script
         prev_s = prev_map.get(code, {})
         if prev_s.get("pricing") is not None:
             s_entry["pricing"] = prev_s["pricing"]
@@ -563,7 +569,7 @@ def main():
         json.dump({"studios": output_studios}, f, indent=2, default=str)
     size_kb = out_path.stat().st_size // 1000
     print(f"\nOK  Written {out_path}  ({size_kb} KB)")
-    print("Next step: python scripts/fetch_tier_rmr_v2.py")
+    print("Next steps: python scripts/fetch_sheet_milestones.py, then python scripts/fetch_tier_rmr_v2.py")
 
 
 if __name__ == "__main__":

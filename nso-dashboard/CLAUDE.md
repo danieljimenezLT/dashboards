@@ -16,7 +16,7 @@ NSO (New Studio Opening) dashboard with 3 data sources:
 
 data.json — leads/first timers/members from Snowflake (MindBody data, already exists)
 nso_marketing_data.json — from Meta, Google Ads, GA4, GBP APIs
-nso_scorecard_data.json — from Google Sheets scorecards (goals, targets, opening dates)
+nso_scorecard_data2.json — the NSO scorecard (goals, targets, opening dates, weekly data); built by build_scorecard_v2.py
 
 
 Dashboard tabs: Leads, Sales, CPR Fees, Meta Ads, Google Ads, Instagram, GBP

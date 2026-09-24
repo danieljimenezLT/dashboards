@@ -91,28 +91,6 @@ jobs:
             --output nso-dashboard/nso_sales_data.json
         continue-on-error: true
 
-      - name: Rebuild Scorecards (Snowflake → nso_scorecard_data.json)
-        env:
-          SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
-          SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
-          SNOWFLAKE_PASSWORD:  ${{ secrets.SF_TOKEN }}
-          SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-          SNOWFLAKE_DATABASE:  ${{ secrets.SF_DATABASE }}
-          SNOWFLAKE_ROLE:      ${{ secrets.SF_ROLE }}
-        run: python nso-dashboard/scripts/build_all_scorecards.py
-        continue-on-error: true
-
-      - name: Calculate tier RMR (Snowflake → patches scorecard)
-        env:
-          SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
-          SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
-          SNOWFLAKE_PASSWORD:  ${{ secrets.SF_TOKEN }}
-          SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-          SNOWFLAKE_DATABASE:  ${{ secrets.SF_DATABASE }}
-          SNOWFLAKE_ROLE:      ${{ secrets.SF_ROLE }}
-        run: cd nso-dashboard && python scripts/fetch_tier_rmr.py
-        continue-on-error: true
-
       # ── NSO: GBP + Social ─────────────────────────────────────────────────
       - name: Refresh NSO GBP (yesterday + 2 days ago)
         env:
@@ -142,13 +120,35 @@ jobs:
             --output nso-dashboard/social_insights.json
         continue-on-error: true
 
-      # ── NSO: Milestones / config sheet ────────────────────────────────────
-      - name: Patch Reston early weeks from Google Sheet
-        run: cd nso-dashboard && python scripts/patch_reston_early_weeks.py
+      # ── NSO: Scorecard (runs after social insights — it reads IG followers) ──
+      - name: Build pre-launch weekly lead & events buckets
+        run: cd nso-dashboard && python scripts/fetch_pre_weeks.py
         continue-on-error: true
 
-      - name: Apply pricing, milestones, targets and dates from NSO Config sheet
+      - name: Rebuild Scorecard (Snowflake → nso_scorecard_data2.json)
+        env:
+          SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
+          SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
+          SNOWFLAKE_PASSWORD:  ${{ secrets.SF_TOKEN }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SNOWFLAKE_DATABASE:  ${{ secrets.SF_DATABASE }}
+          SNOWFLAKE_ROLE:      ${{ secrets.SF_ROLE }}
+        run: cd nso-dashboard && python scripts/build_scorecard_v2.py
+        continue-on-error: true
+
+      - name: Apply pricing, SKU map and comm events from NSO Config sheet
         run: cd nso-dashboard && python scripts/fetch_sheet_milestones.py
+        continue-on-error: true
+
+      - name: Calculate tier RMR v2
+        env:
+          SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
+          SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
+          SNOWFLAKE_PASSWORD:  ${{ secrets.SF_TOKEN }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SNOWFLAKE_DATABASE:  ${{ secrets.SF_DATABASE }}
+          SNOWFLAKE_ROLE:      ${{ secrets.SF_ROLE }}
+        run: cd nso-dashboard && python scripts/fetch_tier_rmr_v2.py
         continue-on-error: true
 
       # ── COMMIT ────────────────────────────────────────────────────────────
@@ -160,7 +160,8 @@ jobs:
           git add nso-dashboard/social_insights.json
           git add nso-dashboard/gbp_data.json
           git add nso-dashboard/nso_sales_data.json
-          git add nso-dashboard/nso_scorecard_data.json
+          git add nso-dashboard/nso_scorecard_data2.json
+          git add nso-dashboard/nso_pre_weeks_data.json
           git add nso-dashboard/thumbnails/ 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No changes to commit"
