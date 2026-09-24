@@ -85,6 +85,26 @@ async function dispatchWorkflows(body, env, headers) {
   return jsonResponse({ ok: allOk, workflows, statuses }, allOk ? 200 : 502, headers);
 }
 
+async function handleTriggerSocialAuditRefresh(body, env, headers) {
+  const month = typeof body.month === 'string' ? body.month.trim() : '';
+  if (month && !/^\d{4}-\d{2}$/.test(month)) {
+    return jsonResponse({ ok: false, error: 'month must be YYYY-MM.' }, 400, headers);
+  }
+
+  const dispatchBody = { ref: 'main' };
+  if (month) dispatchBody.inputs = { month };
+
+  const res = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/social-media-audit-refresh.yml/dispatches`, {
+    method: 'POST',
+    headers: ghHeaders(env),
+    body: JSON.stringify(dispatchBody),
+  });
+  if (res.status !== 204) {
+    return jsonResponse({ ok: false, error: `GitHub returned ${res.status}` }, 502, headers);
+  }
+  return jsonResponse({ ok: true }, 200, headers);
+}
+
 // Build a normalized studios.json entry from whatever fields the widget submitted.
 // Every field defaults to null rather than being omitted, so every entry in the
 // registry has the same shape.
@@ -1243,6 +1263,14 @@ export default {
     if (body.action === 'save_brand_audit_statuses') {
       try {
         return await handleSaveBrandAuditStatuses(body, env, headers);
+      } catch (e) {
+        return jsonResponse({ ok: false, error: `Unexpected error: ${e.message}` }, 500, headers);
+      }
+    }
+
+    if (body.action === 'trigger_social_audit_refresh') {
+      try {
+        return await handleTriggerSocialAuditRefresh(body, env, headers);
       } catch (e) {
         return jsonResponse({ ok: false, error: `Unexpected error: ${e.message}` }, 500, headers);
       }
