@@ -12,9 +12,9 @@
 .summary-studio-select{margin-bottom:20px}
 .summary-studio-select select{font-family:'Oswald',sans-serif;font-size:14px;padding:8px 16px;border-radius:8px;font-style:italic;text-transform:uppercase;letter-spacing:.5px}
 .timeline-bar{position:relative;height:28px;background:#f0f6fa;border-radius:14px;overflow:visible;margin-bottom:8px}
-.timeline-fill{height:100%;border-radius:14px;background:linear-gradient(90deg,var(--c-leads),var(--c-ft));transition:width .6s ease;position:relative;min-width:8px}
+.timeline-fill{height:100%;border-radius:14px;background:var(--c-leads);transition:width .6s ease;position:relative;min-width:8px}
 .timeline-marker{position:absolute;top:-6px;width:2px;height:40px;background:#1a1a2e;opacity:.3}
-.timeline-marker-label{position:absolute;top:46px;font-size:10px;color:#5a7a8a;font-weight:600;white-space:nowrap;transform:translateX(-50%)}
+.timeline-marker-label{position:absolute;top:46px;font-size:10px;color:#5a7a8a;font-weight:600;white-space:nowrap;transform:translateX(-50%);text-align:center}
 .timeline-marker.co{background:#f4a021;opacity:.9;width:2px}
 .timeline-marker.co .timeline-marker-label{color:#f4a021;font-weight:700}
 .timeline-marker.go .timeline-marker-label{color:#e05a5a;font-weight:700}
@@ -1009,10 +1009,212 @@ function renderSummary2(){
   if(_opn.length){h+=`<div style="display:flex;align-items:center;gap:10px;margin-top:2px"><span style="font-size:10px;font-family:Oswald,sans-serif;font-style:italic;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:#5a7a8a;white-space:nowrap">Opened</span><div style="height:1px;background:#c0d4df;flex:1"></div></div>`;h+=`<div style="display:flex;gap:8px;flex-wrap:wrap">${_opn.map(_btn).join('')}</div>`;}
   h+=`</div>`;}
 
-  // Milestones + Goal to Announce Opening (Goal hidden in pre-launch mode)
-  const milestones=(studio.milestones||[]).filter(m=>m.date);
+  // Presale Timeline + Goal to Announce Opening (paired row), with Pre-Launch
+  // Milestones shown as dot markers on the timeline bar + a legend below it.
+  // Falls back to the old standalone Milestones card when there's no bar to
+  // attach the dots to (pre-launch studios / Reston).
+  const _MS_LABEL_OVERRIDE={mbo_date:'Full Marketing Build Out',paid_presales_start_date:'Paid Presales Start',early_lead_date:'Early Lead Gen'};
+  const milestones=(studio.milestones||[]).filter(m=>m.date&&m.key!=='grassroots_start_date').map(m=>({...m,label:_MS_LABEL_OVERRIDE[m.key]||m.label}));
   const _goalAnn=studio.goal_announce_target||null;
-  if(milestones.length||_goalAnn){
+  const _hasGoalCard=_goalAnn&&!_isOpened2;
+  // Show the timeline whenever week_0_start is known at all -- even before it
+  // arrives (e.g. Rose Creek), so milestone/price-change dates have a bar to
+  // anchor to. Studios with no week_0_start configured at all (e.g. South
+  // End) have no coordinate space to place dates on, so they get no bar.
+  const _showTimeline=!!(_w0OffSumm||milestones.length)&&studio.code!=='VA-001';
+  // Ghost mode: week 0 hasn't started yet, so draw an empty/transparent track
+  // (no progress fill, no "current week" marker) with just the date-anchored
+  // milestone/price-change icons and the Week 0 / GO labels.
+  const _isGhostTimeline=_isPreLaunchSumm;
+
+  function _goalAnnounceCard(showDaysToCO){
+    const _gaActual=_isPreLaunchSumm?Math.max(0,NSO_SALES_ROWS.filter(r=>(r.studio||'').replace(/^SWEAT440\s+/,'')===(studio.data_name||studio.name)).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0)):(_sumCurTier?(_sumCurTier.t0||0)+(_sumCurTier.t1||0)+(_sumCurTier.t2||0)+(_sumCurTier.t3||0):Math.max(0,(cur.presales_count||0)-(cur.cancellations_count||0)));
+    const _gaPct=Math.min(100,Math.round(_gaActual/_goalAnn*100));const _gaMet=_gaActual>=_goalAnn;
+    const _isPastCoGoal=coDateStr&&coDateStr<=todayStr;
+    const _daysHtml=showDaysToCO?`<div style="text-align:center;margin-top:14px;padding-top:12px;border-top:1px solid #eef4f8"><div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:30px;font-weight:700;color:#e05a5a;line-height:1">${_isPastCoGoal?'C/O':(daysToCO!=null?daysToCO:'—')}</div>${_isPastCoGoal?'':'<div style="font-size:10px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:5px">Days to Target C/O</div>'}${coDateStr?`<div style="font-size:9px;font-weight:500;color:#e05a5a;margin-top:${_isPastCoGoal?'6px':'2px'}">${_fmtDate(coDateStr)}</div>`:''}</div>`:'';
+    return `<div class="chart-card" style="padding:14px 20px;flex:1;min-width:220px;margin-bottom:0"><div style="font-family:Oswald,sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;color:#5a7a8a;letter-spacing:1px;margin-bottom:12px">Goal to Announce Opening${_infoBtnInline('sum_goal_announce')}</div><div style="font-size:11px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Presales as of ${_fmtDateShort(d7end)}</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px"><span style="font-family:Oswald,sans-serif;font-style:italic;font-size:32px;font-weight:700;color:${_gaMet?'#00C9A7':'#1a1a2e'};line-height:1">${_gaActual}</span><span style="font-size:13px;color:#8aaabb">/ ${_goalAnn}</span>${_gaMet?'<span style="font-size:13px;color:#00C9A7;font-weight:700">✓</span>':''}</div><div style="height:8px;background:#f0f6fa;border-radius:4px;overflow:hidden"><div style="height:100%;width:${_gaPct}%;background:${_gaMet?'#00C9A7':'#00A3E0'};border-radius:4px;transition:width .6s ease"></div></div><div style="font-size:10px;color:#8aaabb;margin-top:4px">${_gaPct}% to goal</div>${_daysHtml}</div>`;
+  }
+
+  // Timeline legend categories: Milestones (circle, one color per milestone
+  // type) and Price Changes (solid $ badge, one color per tier) — same shape
+  // within a category, only the color varies, so the category itself reads
+  // at a glance and the color still tells items within it apart.
+  function _shapeIcon(shape,color,filled,size){
+    const s=size||10,c=s/2,fillAttr=filled?color:'#fff';
+    let inner;
+    if(shape==='square')inner=`<rect x="1.5" y="1.5" width="${s-3}" height="${s-3}" rx="1.5" fill="${fillAttr}" stroke="${color}" stroke-width="2"/>`;
+    else if(shape==='diamond')inner=`<rect x="1.5" y="1.5" width="${s-3}" height="${s-3}" rx="1.5" fill="${fillAttr}" stroke="${color}" stroke-width="2" transform="rotate(45 ${c} ${c})"/>`;
+    else if(shape==='triangle')inner=`<polygon points="${c},1.5 ${s-1.5},${s-1.5} 1.5,${s-1.5}" fill="${fillAttr}" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`;
+    else inner=`<circle cx="${c}" cy="${c}" r="${c-1.5}" fill="${fillAttr}" stroke="${color}" stroke-width="2"/>`;
+    return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" style="display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))">${inner}</svg>`;
+  }
+  // Green flag for the always-first milestone (Full Marketing Build Out)
+  function _flagIcon(isPast,size){
+    const s=size||14,color='#27ae60';
+    return `<svg width="${s}" height="${s}" viewBox="0 0 14 14" style="display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))"><line x1="2.5" y1="1" x2="2.5" y2="13" stroke="#1a1a2e" stroke-width="1.6" stroke-linecap="round"/><path d="M3,1.5 L11.5,3.8 L3,6.2 Z" fill="${isPast?color:'#fff'}" stroke="${color}" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
+  }
+  // Colors reused from the Funnel Over Time toggle (Leads / New Sales / Cancellations),
+  // plus a second, darker green so the two Paid-* milestones (which commonly
+  // appear together) don't land on the exact same color.
+  const _FUNNEL_BLUE='#00A3E0',_FUNNEL_MINT='#00FFC2',_FUNNEL_RED='#ff6b6b',_FUNNEL_MINT2='#16a085';
+  const _MS_COLOR={
+    paid_presales_start_date:_FUNNEL_MINT2, preview_week:_FUNNEL_MINT, early_lead_date:_FUNNEL_RED,
+    paid_lead_gen_date:_FUNNEL_MINT, grand_opening:_FUNNEL_MINT2,
+  };
+  const _TIER_COLOR={tier2:_FUNNEL_BLUE, tier3:_FUNNEL_RED, tier4:_FUNNEL_MINT};
+  function _msShape(m,isPast,size){
+    if(m.key==='mbo_date')return _flagIcon(isPast,size);
+    return _shapeIcon('circle',_MS_COLOR[m.key]||'#5a7a8a',isPast,size);
+  }
+  // Price-change badge: solid filled coin ($) instead of a thin-stroke shape,
+  // so it stays legible against every part of the bar (grey pre-launch fill,
+  // blue/teal gradient, and the current-week marker) rather than blending in.
+  function _tierShape(key,isPast,size){
+    const color=_TIER_COLOR[key]||'#5a7a8a',s=size||16;
+    const bg=isPast?color:'#fff',bd=isPast?'#fff':color,fg=isPast?'#fff':color;
+    return `<div style="width:${s}px;height:${s}px;border-radius:50%;background:${bg};border:2px solid ${bd};box-shadow:0 1px 4px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:${fg};font-size:${Math.round(s*.62)}px;font-weight:800;font-family:Arial,Helvetica,sans-serif;line-height:1">$</div>`;
+  }
+
+  if(_showTimeline){
+  const _isPastCoTl=coDateStr&&coDateStr<=todayStr;
+  const _daysToCoOnTimeline=(!_isOpened2&&!_hasGoalCard)?`<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;color:#5a7a8a;font-weight:500;text-transform:uppercase;letter-spacing:.5px;text-align:right"><span style="font-size:22px;font-weight:700;color:#e05a5a;font-family:'Oswald',sans-serif">${_isPastCoTl?'C/O':(daysToCO!=null?daysToCO:'—')}</span>${_isPastCoTl?'':'&nbsp;Days to Target C/O'}<div style="font-size:10px;font-weight:400;color:#e05a5a;text-transform:none;letter-spacing:0;margin-top:1px">${coDateStr?_fmtDate(coDateStr):''}</div></div>`:'';
+  h+=`<div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px"><div class="chart-card-title" style="margin-bottom:0">Presale Timeline — ${studio.name}</div>${_daysToCoOnTimeline}</div>`;
+  h+=`<div style="display:flex;gap:12px;align-items:stretch;flex-wrap:wrap;margin-bottom:12px">`;
+  h+=`<div class="chart-card" style="flex:2;min-width:380px;margin-bottom:0">`;
+  const _pricing=studio.pricing||{};
+  const _t2sw=_pricing.tier2_start_week,_t3sw=_pricing.tier3_start_week;
+  const _t2p=_pricing.tier2_price||129,_t3p=_pricing.tier3_price||149;
+  const _t2date=_pricing.tier2_start_date||null,_t3date=_pricing.tier3_start_date||null;
+  // Unified bar: pre-launch (grey) + scorecard (blue/teal) in a single coordinate space
+  const _hasPre=preWeeks.length>0;
+  const _totalSpan=preWeeks.length+(totalWeeks||1);
+  const _preW0Pct=_hasPre?preWeeks.length/_totalSpan*100:0;
+  const _curFullPct=_isOpened2?100:Math.min(97,Math.max(3,(preWeeks.length+_calCw)/_totalSpan*100));
+  const _scFillPct=Math.max(0,_curFullPct-_preW0Pct);
+  const _showPreLabel=_hasPre&&_preW0Pct>=12;
+  // Map an absolute milestone date onto the same bar coordinate space (which is
+  // week-indexed, not date-indexed) by interpolating between the bar's own
+  // start and end dates.
+  // Ghost mode has no week-indexed data to anchor to, so the whole bar is
+  // date-based and starts at the earliest known date (usually a milestone
+  // before Week 0), so pre-Week-0 milestones land left of the Week 0 line.
+  // In ghost mode only the sheet's real week_0_start counts as Week 0 (not the
+  // scorecard's auto-detected fallback), so unconfigured studios get no Week 0 line.
+  const _ghostW0=_w0OffSumm||null;
+  const _tlStart=_isGhostTimeline
+    ?[_ghostW0,_hasPre?preWeeks[0].date_start:null,todayStr,...milestones.map(m=>m.date)].filter(Boolean).sort()[0]
+    :(_hasPre?preWeeks[0].date_start:startDate);
+  const _tlEnd=openDate;
+  const _dateToPct=dstr=>{
+    if(!_tlStart||!_tlEnd||!dstr)return null;
+    const s=new Date(_tlStart+'T00:00:00Z'),e=new Date(_tlEnd+'T00:00:00Z'),d=new Date(dstr+'T00:00:00Z');
+    const total=e-s;if(total<=0)return null;
+    return Math.max(0,Math.min(100,(d-s)/total*100));
+  };
+  const _w0LabelPct=_isGhostTimeline?(_ghostW0?_dateToPct(_ghostW0):null):_preW0Pct;
+  // Ghost mode has no week number yet, so label "current" by its Sun–Sat range (e.g. "W 9/20 - 9/26")
+  const _todayPct=_isGhostTimeline?_dateToPct(todayStr):null;
+  const _curWkLbl=(()=>{const d=new Date(todayStr+'T00:00:00Z');d.setUTCDate(d.getUTCDate()-d.getUTCDay());const e=new Date(d);e.setUTCDate(e.getUTCDate()+6);return `W ${d.getUTCMonth()+1}/${d.getUTCDate()} - ${e.getUTCMonth()+1}/${e.getUTCDate()}`;})();
+  h+=`<div style="display:flex;align-items:flex-end;gap:16px"><div style="flex:1;min-width:0">`;
+  // Above-bar label row: Current week + W-N (when pre-launch segment is too narrow for below)
+  h+=`<div style="position:relative;height:32px;margin-bottom:4px">`;
+  if(_isGhostTimeline){
+    if(_todayPct!=null)h+=`<div style="position:absolute;left:${_todayPct}%;transform:translateX(-50%);text-align:center;white-space:nowrap;bottom:0"><div style="font-size:9px;color:#00C9A7;font-weight:700;text-transform:uppercase;letter-spacing:.5px">${_curWkLbl} — Current</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(todayStr)}</div></div>`;
+  } else if(!_isOpened2){
+    h+=`<div style="position:absolute;left:${_curFullPct}%;transform:translateX(-50%);text-align:center;white-space:nowrap;bottom:0"><div style="font-size:9px;color:#00C9A7;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${_calCw} — Current</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(todayStr)}</div></div>`;
+  }
+  if(_hasPre&&!_showPreLabel){const _pw0=preWeeks[0];h+=`<div style="position:absolute;left:0;text-align:left;white-space:nowrap;bottom:0"><div style="font-size:9px;color:#9abdc8;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${_pw0.week_num}</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(_pw0.date_start)}</div></div>`;}
+  h+=`</div>`;
+  // The bar itself: grey pre-launch fill + blue/teal scorecard fill + markers.
+  // Ghost mode (week 0 hasn't started yet) skips both fills entirely, leaving
+  // just the empty track (.timeline-bar's own background) with date-anchored
+  // icon markers on top.
+  h+=`<div class="timeline-bar" style="overflow:visible;position:relative">`;
+  if(!_isGhostTimeline){
+  if(_hasPre){h+=`<div style="position:absolute;left:0;top:0;height:100%;width:${_preW0Pct}%;background:#b8cdd8;border-radius:10px 0 0 10px;z-index:1"></div>`;}
+  if(_scFillPct>0){h+=`<div class="timeline-fill" style="left:${_preW0Pct}%;width:${_scFillPct}%;border-top-left-radius:${_hasPre?0:''};border-bottom-left-radius:${_hasPre?0:''}"><div class="timeline-current"></div></div>`;}
+  } else {
+    if(_w0LabelPct!=null)h+=`<div style="position:absolute;left:${_w0LabelPct}%;top:-4px;bottom:-4px;width:2px;background:#0084B5;transform:translateX(-50%);z-index:4;border-radius:1px"></div>`;
+    if(_todayPct!=null)h+=`<div style="position:absolute;left:${_todayPct}%;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--c-ft);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.2);z-index:3"></div>`;
+  }
+  if(_hasPre&&!_isGhostTimeline){h+=`<div style="position:absolute;left:${_preW0Pct}%;top:-4px;bottom:-4px;width:2px;background:#0084B5;transform:translateX(-50%);z-index:4;border-radius:1px"></div>`;}
+  // Tier-change dates (price increases) — kept off the bar as text; icon +
+  // legend entry only, so they don't clutter the bar the way Target C/O does.
+  const _tierChanges=[];
+  // Week-indexed position normally; date-based in ghost mode (see _tlStart)
+  const _posOnBar=(wkNum,date)=>_isGhostTimeline?_dateToPct(date):(preWeeks.length+wkNum)/_totalSpan*100;
+  if(_t2sw&&totalWeeks>0){const d=_t2date||w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===_t2sw)?.date_start||null;_tierChanges.push({key:'tier2',label:`$${_t2p}`,date:d,p:_posOnBar(_t2sw,d)});}
+  if(_t3sw&&totalWeeks>0){const d=_t3date||w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===_t3sw)?.date_start||null;_tierChanges.push({key:'tier3',label:`$${_t3p}`,date:d,p:_posOnBar(_t3sw,d)});}
+  // Tier-change + milestone icons share the bar's coordinate space and can land
+  // close together (e.g. build-out complete and presales start a few days
+  // apart on a months-long bar) — collect both, sort, then nudge apart any
+  // pair closer than a minimum gap so the icons don't overlap.
+  const _iconMarkers=[
+    ..._tierChanges.map(tc=>({p:tc.p,isPast:tc.date?tc.date<=todayStr:false,title:`${tc.label}${tc.date?' — '+_fmtDate(tc.date):''}`,render:isPast=>_tierShape(tc.key,isPast,16)})),
+    ...milestones.map(m=>{
+      const mfmt=new Date(m.date+'T00:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
+      return {p:_dateToPct(m.date),isPast:m.date<=localDateStr(new Date()),title:`${m.label} — ${mfmt}`,render:isPast=>_msShape(m,isPast,12)};
+    }),
+  ].filter(x=>x.p!=null).sort((a,b)=>a.p-b.p);
+  const _iconMinGap=4;
+  for(let i=1;i<_iconMarkers.length;i++){
+    if(_iconMarkers[i].p-_iconMarkers[i-1].p<_iconMinGap)_iconMarkers[i].p=_iconMarkers[i-1].p+_iconMinGap;
+  }
+  {const _mk=[];
+  if(studio.co_week){const wd=w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===studio.co_week);const cd=studio.co_date||wd?.date_start||null;const p=_posOnBar(studio.co_week,cd);const _coLabel=(cd&&cd<=todayStr)?'C/O':'Target C/O';if(p!=null)_mk.push({p,cls:'co',html:`${_coLabel}${cd?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(cd)}</div>`:''}`});}
+  _mk.sort((a,b)=>a.p-b.p);let _lp=-999;
+  _mk.forEach(m=>{const up=m.p-_lp<9;const ls=up?'top:auto;bottom:46px':'';h+=`<div class="timeline-marker ${m.cls}" style="left:${m.p}%"><div class="timeline-marker-label" style="${ls}">${m.html}</div></div>`;_lp=m.p;});
+  // Tier-change + milestone icons — no label here, matched by shape+color in the legend below
+  _iconMarkers.forEach(mk=>{
+    h+=`<div style="position:absolute;left:${mk.p}%;top:50%;transform:translate(-50%,-50%);z-index:5" title="${mk.title}">${mk.render(mk.isPast)}</div>`;
+  });}
+  h+=`</div>`;// close timeline-bar
+  // Label row below the bar — all absolute in the same coordinate space
+  h+=`<div style="position:relative;height:30px;margin-top:6px">`;
+  const _w0LblDate=_isGhostTimeline?_ghostW0:startDate;
+  const _w0LblHtml=_w0LabelPct==null?'':`<div style="position:absolute;left:${_w0LabelPct}%;transform:translateX(-50%);text-align:center"><div style="font-size:9px;color:#0084B5;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Week 0</div>${_w0LblDate?`<div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(_w0LblDate)}</div>`:''}</div>`;
+  if(_showPreLabel){
+    // Enough room: W-N at far left, Week 0 centered at its position
+    const _pw0=preWeeks[0];
+    h+=`<div style="position:absolute;left:0;text-align:left"><div style="font-size:9px;color:#9abdc8;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${_pw0.week_num}</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(_pw0.date_start)}</div></div>`;
+    h+=_w0LblHtml;
+  } else {
+    // Narrow (W-N is above bar): Week 0 centered under the colour-change line
+    h+=_w0LblHtml;
+  }
+  h+=`</div>`;// close label row
+  h+=`</div><div style="text-align:right;white-space:nowrap;flex-shrink:0"><div style="font-size:9px;color:${_isOpened2?'#00C9A7':'#8aaabb'};font-weight:600;text-transform:uppercase;letter-spacing:.5px">${_isOpened2?'OPENED':'GO'} W${totalWeeks}</div>${openDate?`<div style="font-size:9px;color:${_isOpened2?'#00C9A7':'#e05a5a'};margin-top:2px">${_fmtDate(openDate)}</div>`:''}</div></div>`;// close bar+GO-info row
+  if(milestones.length||_tierChanges.length){
+    h+=`<div style="margin-top:14px;padding-top:12px;border-top:1px solid #eef4f8;display:flex;gap:28px;flex-wrap:wrap">`;
+    if(milestones.length){
+      h+=`<div style="min-width:220px">`;
+      h+=`<div style="font-size:9px;color:#8aaabb;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Milestones</div>`;
+      h+=`<div style="display:flex;flex-wrap:wrap;gap:20px">`;
+      milestones.forEach(m=>{
+        const isPast=m.date<=localDateStr(new Date());
+        const d=new Date(m.date+'T00:00:00Z'),fmt=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
+        h+=`<div style="display:flex;align-items:flex-start;gap:7px;min-width:150px"><div style="margin-top:2px;flex-shrink:0">${_msShape(m,isPast,12)}</div><div><div style="font-size:10px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.4px">${m.label}</div><div style="font-size:12px;color:#1a1a2e;font-weight:600;font-family:Oswald,sans-serif;font-style:italic">${fmt.toUpperCase()}</div></div></div>`;
+      });
+      h+=`</div></div>`;
+    }
+    if(_tierChanges.length){
+      h+=`<div style="min-width:180px">`;
+      h+=`<div style="font-size:9px;color:#8aaabb;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Price Changes</div>`;
+      h+=`<div style="display:flex;flex-wrap:wrap;gap:20px">`;
+      _tierChanges.forEach(tc=>{
+        const isPast=tc.date?tc.date<=todayStr:false;
+        const fmt=tc.date?new Date(tc.date+'T00:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}).toUpperCase():'—';
+        h+=`<div style="display:flex;align-items:flex-start;gap:7px;min-width:150px"><div style="margin-top:1px;flex-shrink:0">${_tierShape(tc.key,isPast,14)}</div><div><div style="font-size:10px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.4px">${tc.label}</div><div style="font-size:12px;color:#1a1a2e;font-weight:600;font-family:Oswald,sans-serif;font-style:italic">${fmt}</div></div></div>`;
+      });
+      h+=`</div></div>`;
+    }
+    h+=`</div>`;
+  }
+  h+=`</div>`;// close Presale Timeline card
+  if(_hasGoalCard)h+=_goalAnnounceCard(true);
+  h+=`</div>`;// close paired row
+  } else if(milestones.length||_goalAnn){
+    // No bar to attach dots to (pre-launch / Reston) — keep the old standalone card
     h+=`<div style="display:flex;gap:12px;align-items:stretch;flex-wrap:wrap;margin-bottom:12px">`;
     if(milestones.length){
       h+=`<div class="chart-card" style="padding:14px 20px;flex:1;min-width:260px;margin-bottom:0">`;
@@ -1026,62 +1228,9 @@ function renderSummary2(){
       });
       h+=`</div></div>`;
     }
-    if(_goalAnn&&!_isOpened2){
-      const _gaActual=_isPreLaunchSumm?Math.max(0,NSO_SALES_ROWS.filter(r=>(r.studio||'').replace(/^SWEAT440\s+/,'')===(studio.data_name||studio.name)).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0)):(_sumCurTier?(_sumCurTier.t0||0)+(_sumCurTier.t1||0)+(_sumCurTier.t2||0)+(_sumCurTier.t3||0):Math.max(0,(cur.presales_count||0)-(cur.cancellations_count||0)));
-      const _gaPct=Math.min(100,Math.round(_gaActual/_goalAnn*100));const _gaMet=_gaActual>=_goalAnn;
-      h+=`<div class="chart-card" style="padding:14px 20px;min-width:200px;margin-bottom:0"><div style="font-family:Oswald,sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;color:#5a7a8a;letter-spacing:1px;margin-bottom:12px">Goal to Announce Opening${_infoBtnInline('sum_goal_announce')}</div><div style="font-size:11px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Presales as of ${_fmtDateShort(d7end)}</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px"><span style="font-family:Oswald,sans-serif;font-style:italic;font-size:32px;font-weight:700;color:${_gaMet?'#00C9A7':'#1a1a2e'};line-height:1">${_gaActual}</span><span style="font-size:13px;color:#8aaabb">/ ${_goalAnn}</span>${_gaMet?'<span style="font-size:13px;color:#00C9A7;font-weight:700">✓</span>':''}</div><div style="height:8px;background:#f0f6fa;border-radius:4px;overflow:hidden"><div style="height:100%;width:${_gaPct}%;background:${_gaMet?'#00C9A7':'#00A3E0'};border-radius:4px;transition:width .6s ease"></div></div><div style="font-size:10px;color:#8aaabb;margin-top:4px">${_gaPct}% to goal</div></div>`;
-    }
+    if(_hasGoalCard)h+=_goalAnnounceCard(false);
     h+=`</div>`;
   }
-
-  if(!_isPreLaunchSumm&&studio.code!=='VA-001'){
-  h+=`<div class="chart-card">`;
-  // Pre-launch indicator removed
-  h+=`<div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:18px"><div class="chart-card-title" style="margin-bottom:0">Presale Timeline — ${studio.name}</div>${_isOpened2?'':`<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;color:#5a7a8a;font-weight:500;text-transform:uppercase;letter-spacing:.5px;text-align:right"><span style="font-size:22px;font-weight:700;color:#e05a5a;font-family:'Oswald',sans-serif">${daysToCO!=null?daysToCO:'—'}</span>&nbsp;Days to Target C/O<div style="font-size:10px;font-weight:400;color:#e05a5a;text-transform:none;letter-spacing:0;margin-top:1px">${coDateStr?_fmtDate(coDateStr):''}</div></div>`}</div>`;
-  const _pricing=studio.pricing||{};
-  const _t2sw=_pricing.tier2_start_week,_t3sw=_pricing.tier3_start_week;
-  const _t2p=_pricing.tier2_price||129,_t3p=_pricing.tier3_price||149;
-  const _t2date=_pricing.tier2_start_date||null,_t3date=_pricing.tier3_start_date||null;
-  // Unified bar: pre-launch (grey) + scorecard (blue/teal) in a single coordinate space
-  const _hasPre=preWeeks.length>0;
-  const _totalSpan=preWeeks.length+(totalWeeks||1);
-  const _preW0Pct=_hasPre?preWeeks.length/_totalSpan*100:0;
-  const _curFullPct=_isOpened2?100:Math.min(97,Math.max(3,(preWeeks.length+_calCw)/_totalSpan*100));
-  const _scFillPct=Math.max(0,_curFullPct-_preW0Pct);
-  const _showPreLabel=_hasPre&&_preW0Pct>=12;
-  h+=`<div style="display:flex;align-items:flex-end;gap:16px"><div style="flex:1;min-width:0">`;
-  // Above-bar label row: Current week + W-N (when pre-launch segment is too narrow for below)
-  h+=`<div style="position:relative;height:32px;margin-bottom:4px">`;
-  h+=_isOpened2?''
-    :`<div style="position:absolute;left:${_curFullPct}%;transform:translateX(-50%);text-align:center;white-space:nowrap;bottom:0"><div style="font-size:9px;color:#00C9A7;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${_calCw} — Current</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(todayStr)}</div></div>`;
-  if(_hasPre&&!_showPreLabel){const _pw0=preWeeks[0];h+=`<div style="position:absolute;left:0;text-align:left;white-space:nowrap;bottom:0"><div style="font-size:9px;color:#9abdc8;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${_pw0.week_num}</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(_pw0.date_start)}</div></div>`;}
-  h+=`</div>`;
-  // The bar itself: grey pre-launch fill + blue/teal scorecard fill + markers
-  h+=`<div class="timeline-bar" style="overflow:visible;position:relative">`;
-  if(_hasPre){h+=`<div style="position:absolute;left:0;top:0;height:100%;width:${_preW0Pct}%;background:#b8cdd8;border-radius:10px 0 0 10px;z-index:1"></div>`;}
-  if(_scFillPct>0){h+=`<div class="timeline-fill" style="left:${_preW0Pct}%;width:${_scFillPct}%;border-top-left-radius:${_hasPre?0:''};border-bottom-left-radius:${_hasPre?0:''}"><div class="timeline-current"></div></div>`;}
-  if(_hasPre){h+=`<div style="position:absolute;left:${_preW0Pct}%;top:-4px;bottom:-4px;width:2px;background:#0084B5;transform:translateX(-50%);z-index:4;border-radius:1px"></div>`;}
-  {const _mk=[];
-  if(studio.co_week){const p=(preWeeks.length+studio.co_week)/_totalSpan*100;const wd=w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===studio.co_week);const cd=studio.co_date||wd?.date_start||null;_mk.push({p,cls:'co',html:`Target C/O Date${cd?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(cd)}</div>`:''}`});}
-  if(_t2sw&&totalWeeks>0){const p=(preWeeks.length+_t2sw)/_totalSpan*100;const d=_t2date||w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===_t2sw)?.date_start||null;_mk.push({p,cls:'tier2',html:`Move to $${_t2p}${d?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(d)}</div>`:''}`});}
-  if(_t3sw&&totalWeeks>0){const p=(preWeeks.length+_t3sw)/_totalSpan*100;const d=_t3date||w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===_t3sw)?.date_start||null;_mk.push({p,cls:'tier3',html:`Move to $${_t3p}${d?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(d)}</div>`:''}`});}
-  _mk.sort((a,b)=>a.p-b.p);let _lp=-999;
-  _mk.forEach(m=>{const up=m.p-_lp<9;const ls=up?'top:auto;bottom:46px':'';h+=`<div class="timeline-marker ${m.cls}" style="left:${m.p}%"><div class="timeline-marker-label" style="${ls}">${m.html}</div></div>`;_lp=m.p;});}
-  h+=`</div>`;// close timeline-bar
-  // Label row below the bar — all absolute in the same coordinate space
-  h+=`<div style="position:relative;height:30px;margin-top:6px">`;
-  if(_showPreLabel){
-    // Enough room: W-N at far left, Week 0 centered at its position
-    const _pw0=preWeeks[0];
-    h+=`<div style="position:absolute;left:0;text-align:left"><div style="font-size:9px;color:#9abdc8;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${_pw0.week_num}</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(_pw0.date_start)}</div></div>`;
-    h+=`<div style="position:absolute;left:${_preW0Pct}%;transform:translateX(-50%);text-align:center"><div style="font-size:9px;color:#0084B5;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Week 0</div>${startDate?`<div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(startDate)}</div>`:''}</div>`;
-  } else {
-    // Narrow (W-N is above bar): Week 0 centered under the colour-change line
-    h+=`<div style="position:absolute;left:${_preW0Pct}%;transform:translateX(-50%);text-align:center"><div style="font-size:9px;color:#0084B5;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Week 0</div>${startDate?`<div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(startDate)}</div>`:''}</div>`;
-  }
-  h+=`</div>`;// close label row
-  h+=`</div><div style="text-align:right;white-space:nowrap;flex-shrink:0"><div style="font-size:9px;color:${_isOpened2?'#00C9A7':'#8aaabb'};font-weight:600;text-transform:uppercase;letter-spacing:.5px">${_isOpened2?'OPENED':'GO'} W${totalWeeks}</div>${openDate?`<div style="font-size:9px;color:${_isOpened2?'#00C9A7':'#e05a5a'};margin-top:2px">${_fmtDate(openDate)}</div>`:''}</div></div></div>`;
-  } // end if not Reston / not pre-launch
 
   function _progBar(label,actual,target,color,benchVal,benchLabel,fmtFn,targetLabel,infoKey){
     const fmt=fmtFn||(v=>typeof v==='number'?v.toLocaleString('en-US'):v);
