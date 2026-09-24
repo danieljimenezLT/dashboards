@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-24",
+      "pr_number": 411,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/411",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Fixed missing data in NSO scorecards and added pre-launch progress to the timeline",
+      "summary": "Rose Creek and South End scorecards now show their data. A few studios' Total Leads were missing the leads that came in before the first scorecard week; those leads are now counted. On the Summary timeline, studios that haven't reached Week 0 show their progress so far in grey."
+    },
+    {
+      "date": "2026-09-24",
       "pr_number": 409,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/409",
       "author": "Sebastian Arango",
