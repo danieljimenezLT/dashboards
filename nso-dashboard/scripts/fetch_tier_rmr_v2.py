@@ -2,8 +2,8 @@
 """
 fetch_tier_rmr_v2.py
 
-Same logic as fetch_tier_rmr.py but patches nso_scorecard_data2.json
-instead of nso_scorecard_data.json.
+Patches nso_scorecard_data2.json (the only NSO scorecard file) with
+tier_rmr_by_week + tier_daily_sales from actual Snowflake prices.
 
 Since build_tier_rmr() uses date_end from each week object (not week number),
 running this against nso_scorecard_data2.json (which has corrected week dates)

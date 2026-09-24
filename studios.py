@@ -133,14 +133,14 @@ def social_insights_rows() -> list[dict]:
 
 
 def tier_pricing_by_code() -> dict[str, dict]:
-    """{code: tier_pricing} for studios with tier_pricing set — for fetch_tier_rmr.py's
+    """{code: tier_pricing} for studios with tier_pricing set — for fetch_tier_rmr_v2.py's
     STUDIO_PRICING."""
     return {s["code"]: s["tier_pricing"] for s in load_studios()
             if s.get("code") and s.get("tier_pricing")}
 
 
 def snowflake_id_by_code() -> dict[str, int]:
-    """{code: snowflake_id} for studios with snowflake_id set — for fetch_tier_rmr.py's
+    """{code: snowflake_id} for studios with snowflake_id set — for fetch_tier_rmr_v2.py's
     SNOWFLAKE_IDS."""
     return {s["code"]: s["snowflake_id"] for s in load_studios()
             if s.get("code") and s.get("snowflake_id")}

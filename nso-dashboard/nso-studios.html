@@ -89,9 +89,7 @@
 <nav class="nav">
   <a class="nav-logo" href="../home.html"><img src="../logo.png" alt="SWEAT440"/></a>
   <div class="nav-tabs" id="navTabs">
-    <button class="nav-tab" onclick="switchTab('summary',this)" style="display:none">Summary</button>
     <button class="nav-tab active" id="navTabSummary2" onclick="switchTab('summary2',this)">Summary</button>
-    <button class="nav-tab" onclick="switchTab('scorecard',this)" style="display:none">Scorecard</button>
     <button class="nav-tab" id="navTabScorecard2" onclick="switchTab('scorecard2',this)">Scorecard</button>
     <button class="nav-tab" id="navClientHistory" onclick="switchTab('clienthistory',this)">Client History</button>
     <div class="nav-group">
@@ -160,11 +158,6 @@
 <div class="main">
 
   <!-- SUMMARY TAB -->
-  <div class="tab-content" id="tab-summary">
-    <div id="summaryContent"></div>
-  </div>
-
-  <!-- SUMMARY TEST TAB (extended pre-weeks timeline) -->
   <div class="tab-content active" id="tab-summary2">
     <div id="summary2Content"></div>
   </div>
@@ -175,11 +168,6 @@
   </div>
 
   <!-- SCORECARD TAB -->
-  <div class="tab-content" id="tab-scorecard">
-    <div id="scorecard-content"></div>
-  </div>
-
-  <!-- SCORECARD TEST TAB -->
   <div class="tab-content" id="tab-scorecard2">
     <div id="scorecard2-content"></div>
   </div>
@@ -408,16 +396,14 @@ function switchTab(id,btn){
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
   document.getElementById('navTabs').classList.remove('open');
-  document.querySelector('.controls-bar').style.display=(id==='summary'||id==='scorecard'||id==='summary2'||id==='scorecard2')?'none':'';
+  document.querySelector('.controls-bar').style.display=(id==='summary2'||id==='scorecard2')?'none':'';
   const _alphaTabs=[];
   document.getElementById('alphaWarning').classList.toggle('visible',_alphaTabs.includes(id));
   // "Download Leads" only makes sense on the Leads tab
   const showDownload = id === 'leads';
   document.getElementById('downloadLeadsBtn').style.display = showDownload ? '' : 'none';
   document.getElementById('downloadLeadsSep').style.display = showDownload ? '' : 'none';
-  if(id==='summary'){if(_scStudio)_sumStudio=_scStudio;renderSummary();}
-  else if(id==='summary2'){if(_scStudio)_sumStudio=_scStudio;renderSummary2();}
-  else if(id==='scorecard'){if(_sumStudio)_scStudio=_sumStudio;renderScorecard();}
+  if(id==='summary2'){if(_scStudio)_sumStudio=_scStudio;renderSummary2();}
   else if(id==='scorecard2'){if(_sumStudio)_scStudio=_sumStudio;renderScorecard2();}
   else if(id==='gbp')renderGBP();
   else if(id==='ga4')renderGA4();
@@ -425,7 +411,6 @@ function switchTab(id,btn){
   else if(id==='meta')renderMeta();
   else if(id==='google')renderGoogle();
   else if(id==='instagram')renderInstagram();
-  else if(id==='funnel'){renderFunnel();applyFilters();}
   else applyFilters();
 }
 function toggleNavGroup(groupId,btn){
@@ -1654,302 +1639,6 @@ function drawPreLaunchLeadsChart(studio){
   });
 }
 
-function switchSumStudio(code){
-  const sc=SC&&SC.studios&&SC.studios.find(s=>s.code===code);
-  if(!sc)return;
-  if(_allowedStudios&&!_allowedStudios.includes((sc.data_name||sc.full_name||sc.name||'').replace(/^SWEAT440\s+/,'')))return;
-  _sumStudio=sc;
-  if(document.getElementById('tab-summary2').classList.contains('active'))renderSummary2();
-  else renderSummary();
-  if(document.getElementById('tab-funnel').classList.contains('active'))renderFunnel();
-}
-
-function renderSummary(){
-  if(!SC||!SC.studios||!SC.studios.length)return;
-
-  // Restrict visible studios to franchisee's allowed list (null = admin, sees all)
-  const _scVis=(_allowedStudios
-    ?(SC.studios||[]).filter(s=>_allowedStudios.includes((s.data_name||s.full_name||s.name||'').replace(/^SWEAT440\s+/,'')))
-    :(SC.studios||[])).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
-  // If current _sumStudio is outside the allowed list, reset it
-  if(_sumStudio&&_allowedStudios&&!_scVis.find(s=>s.code===_sumStudio.code))_sumStudio=null;
-  const studio=_sumStudio||_scVis[0];
-  if(!studio){document.getElementById('summaryContent').innerHTML='';return;}
-  if(!_sumStudio)_sumStudio=studio;
-
-  const w=studio.weeks,tgt=studio.targets;
-  const totalWeeks=studio.go_week||(w.length-1);
-  // paceWeeks: use co_week as the goal denominator so pace/benchmarks target C/O date, not GO
-  const paceWeeks=studio.co_week||totalWeeks;
-
-  // Compute current week from today vs week bounds (JS-side, for display accuracy)
-  const todayStr=new Date().toISOString().slice(0,10);
-  function _liso(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-  const _d7endDate=(()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate()-2);})();
-  const d7end=_liso(_d7endDate);
-  const d7ago=_liso(new Date(_d7endDate.getTime()-6*864e5));
-  _sumD7End=d7end;
-  // Current week: plain calendar (today), not capped by data freshness — this
-  // summary card (Last 7 Full Days / Total to Date) is meant to keep filling
-  // in with whatever data has synced so far, same as the scorecard table.
-  // Only the Leads & Presales chart (drawCum2Chart/drawWeekly2Chart) waits
-  // for a complete week. Parse week numbers via 'WEEK '-stripping, not a
-  // digit-only regex, which would drop the minus sign from negative weeks.
-  const _wkNum2=wk=>parseInt((wk.week||'0').replace('WEEK ',''))||0;
-  let cw=0;
-  for(const wk of w){
-    if(wk.date_start&&wk.date_start<=todayStr)cw=_wkNum2(wk);
-  }
-  // Week 0 has no date_start (see make_sun_sat_bounds in build_all_scorecards.py),
-  // so the loop above can never land on it and stays stuck at the last negative
-  // week. If we're past week_0_start and before week_1_start, surface Week 0.
-  if(cw<0){
-    const pwData=PRE_WEEKS&&PRE_WEEKS.studios&&PRE_WEEKS.studios[studio.code];
-    const _w0Off=pwData&&pwData.week_0_start,_w1Off=pwData&&pwData.week_1_start;
-    if(_w0Off&&_w0Off<=todayStr&&(!_w1Off||_w1Off>todayStr))cw=0;
-  }
-
-  const cur=w.find(x=>_wkNum2(x)===cw)||w[cw]||{};
-  const prev=w.find(x=>_wkNum2(x)===cw-1)||{};
-  const _sumTierLookup={};(studio.tier_rmr_by_week||[]).forEach(r=>{_sumTierLookup[r.week]=r;});
-  const _sumCurTier=_sumTierLookup[cw];
-  const displayCw=cw;
-  const _calCw=cw;
-  const pct=Math.min(100,Math.round(_calCw/totalWeeks*100));
-
-  // Opening date: use studio.opening_date from JSON, fall back to GO week data
-  const openDate=studio.opening_date||
-    (w[totalWeeks]?w[totalWeeks].date_start||w[totalWeeks].date_end:null)||
-    (w[w.length-1]?w[w.length-1].date_end:null);
-
-  // Days to open from actual opening_date vs today (used only for pct/timeline internals)
-  let daysToOpen=null;
-  if(openDate){
-    const msLeft=new Date(openDate+'T00:00:00Z')-new Date(todayStr+'T00:00:00Z');
-    daysToOpen=Math.max(0,Math.round(msLeft/864e5));
-  }else{
-    daysToOpen=(totalWeeks-cw)*7;
-  }
-  // C/O countdown (shown at top of timeline card — measures to C/O, not GO)
-  const _coWkNum=studio.co_week||null;
-  const _coWkData=_coWkNum?w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===_coWkNum):null;
-  const coDateStr=studio.co_date||(_coWkData?(_coWkData.date_start||_coWkData.date_end||null):null);
-  const daysToCO=coDateStr?Math.max(0,Math.round((new Date(coDateStr+'T00:00:00Z')-new Date(todayStr+'T00:00:00Z'))/864e5)):daysToOpen;
-
-  const presPct=tgt.presales_count?Math.min(100,Math.round((cur.presales_count||0)/tgt.presales_count*100)):0;
-
-  let h='';
-
-  const _fmtDate=iso=>iso?new Date(iso+'T00:00:00Z').toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric',timeZone:'UTC'}):'';
-  const _fmtDateShort=iso=>iso?new Date(iso+'T00:00:00Z').toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric',timeZone:'UTC'}):'';
-  const startDate=w[0]?.date_end||w[1]?.date_start||null;
-  const curPct=Math.max(4,Math.min(96,pct));
-  const _isOpened=!!(studio.opening_date&&studio.opening_date<=todayStr);
-
-  // Studio switcher tabs — Pre-Launch above, Opened below
-  {const _tS2=new Date().toISOString().slice(0,10);
-  const _preL2=_scVis.filter(s=>!s.opening_date||s.opening_date>_tS2);
-  const _opn2=_scVis.filter(s=>s.opening_date&&s.opening_date<=_tS2);
-  const _btn2=(s)=>{const active=s.code===studio.code;return`<button onclick="switchSumStudio('${s.code}')" style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;padding:6px 16px;border-radius:4px;border:2px solid ${active?'#00A3E0':'#c0d4df'};background:${active?'#00A3E0':'transparent'};color:${active?'#fff':'#5a7a8a'};cursor:pointer;letter-spacing:.5px">${s.name}</button>`;};
-  h+=`<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">`;
-  h+=`<div style="display:flex;gap:8px;flex-wrap:wrap">${_preL2.map(_btn2).join('')}</div>`;
-  if(_opn2.length){h+=`<div style="display:flex;align-items:center;gap:10px;margin-top:2px"><span style="font-size:10px;font-family:Oswald,sans-serif;font-style:italic;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:#5a7a8a;white-space:nowrap">Opened</span><div style="height:1px;background:#c0d4df;flex:1"></div></div>`;h+=`<div style="display:flex;gap:8px;flex-wrap:wrap">${_opn2.map(_btn2).join('')}</div>`;}
-  h+=`</div>`;}
-
-  // ── Pre-launch milestones + Goal to Announce Opening ──────────────────
-  const milestones=(studio.milestones||[]).filter(m=>m.date);
-  const _goalAnn=studio.goal_announce_target||null;
-  if(milestones.length||_goalAnn){
-    h+=`<div style="display:flex;gap:12px;align-items:stretch;flex-wrap:wrap;margin-bottom:12px">`;
-    if(milestones.length){
-      h+=`<div class="chart-card" style="padding:14px 20px;flex:1;min-width:260px;margin-bottom:0">`;
-      h+=`<div style="font-family:Oswald,sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;color:#5a7a8a;letter-spacing:1px;margin-bottom:12px">Pre-Launch Milestones</div>`;
-      h+=`<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:stretch">`;
-      milestones.forEach(m=>{
-        const isPast=m.date<=localDateStr(new Date());
-        const bg=isPast?'#e8f7f0':'#f4f9fd';
-        const border=isPast?'#00C9A7':'#c0d4df';
-        const labelColor=isPast?'#007a5e':'#5a7a8a';
-        const dateColor=isPast?'#007a5e':'#1a1a2e';
-        const d=new Date(m.date+'T00:00:00Z');
-        const fmt=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
-        h+=`<div style="border:1.5px solid ${border};border-radius:8px;background:${bg};padding:10px 14px;min-width:160px">`;
-        h+=`<div style="font-family:Oswald,sans-serif;font-style:italic;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:${labelColor};margin-bottom:2px">${m.label}</div>`;
-        h+=`<div style="font-size:15px;font-weight:600;color:${dateColor};font-family:Oswald,sans-serif;font-style:italic">${fmt.toUpperCase()}</div>`;
-        h+=`<div style="font-size:10px;color:#8aaabb;margin-top:2px">${m.subtitle}</div>`;
-        h+=`</div>`;
-      });
-      h+=`</div></div>`;
-    }
-    if(_goalAnn&&!_isOpened){
-      const _gaActual=_sumCurTier?(_sumCurTier.t0||0)+(_sumCurTier.t1||0)+(_sumCurTier.t2||0)+(_sumCurTier.t3||0):Math.max(0,(cur.presales_count||0)-(cur.cancellations_count||0));
-      const _gaPct=Math.min(100,Math.round(_gaActual/_goalAnn*100));
-      const _gaMet=_gaActual>=_goalAnn;
-      h+=`<div class="chart-card" style="padding:14px 20px;min-width:200px;margin-bottom:0">`;
-      h+=`<div style="font-family:Oswald,sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;color:#5a7a8a;letter-spacing:1px;margin-bottom:12px">Goal to Announce Opening${_infoBtnInline('sum_goal_announce')}</div>`;
-      h+=`<div style="font-size:11px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Presales as of ${_fmtDateShort(d7end)}</div>`;
-      h+=`<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px">`;
-      h+=`<span style="font-family:Oswald,sans-serif;font-style:italic;font-size:32px;font-weight:700;color:${_gaMet?'#00C9A7':'#1a1a2e'};line-height:1">${_gaActual}</span>`;
-      h+=`<span style="font-size:13px;color:#8aaabb">/ ${_goalAnn}</span>`;
-      if(_gaMet)h+=`<span style="font-size:13px;color:#00C9A7;font-weight:700">✓</span>`;
-      h+=`</div>`;
-      h+=`<div style="height:8px;background:#f0f6fa;border-radius:4px;overflow:hidden">`;
-      h+=`<div style="height:100%;width:${_gaPct}%;background:${_gaMet?'#00C9A7':'#00A3E0'};border-radius:4px;transition:width .6s ease"></div>`;
-      h+=`</div>`;
-      h+=`<div style="font-size:10px;color:#8aaabb;margin-top:4px">${_gaPct}% to goal</div>`;
-      h+=`</div>`;
-    }
-    h+=`</div>`;
-  }
-
-  if(studio.code!=='VA-001'){
-  h+=`<div class="chart-card">`;
-  h+=`<div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:18px">`;
-  h+=`<div class="chart-card-title" style="margin-bottom:0">Presale Timeline — ${studio.name}</div>`;
-  if(!_isOpened)h+=`<div style="font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;color:#5a7a8a;font-weight:500;text-transform:uppercase;letter-spacing:.5px;text-align:right"><span style="font-size:22px;font-weight:700;color:#e05a5a;font-family:'Oswald',sans-serif">${daysToCO!=null?daysToCO:'—'}</span>&nbsp;Days to Target C/O<div style="font-size:10px;font-weight:400;color:#e05a5a;text-transform:none;letter-spacing:0;margin-top:1px">${coDateStr?_fmtDate(coDateStr):''}</div></div>`;
-  h+=`</div>`;
-  // Tier pricing vars for markers
-  const _pricing=studio.pricing||{};
-  const _t2sw=_pricing.tier2_start_week,_t3sw=_pricing.tier3_start_week;
-  const _t2p=_pricing.tier2_price||129,_t3p=_pricing.tier3_price||149;
-  const _t2date=_pricing.tier2_start_date||null,_t3date=_pricing.tier3_start_date||null;
-
-  h+=`<div style="display:flex;align-items:flex-end;gap:16px">`;
-  h+=`<div style="flex:1;min-width:0">`;
-  // ── Row above bar: Current week label only ──────────────────────────────
-  h+=`<div style="position:relative;height:32px;margin-bottom:4px">`;
-  h+=_isOpened?''
-    :`<div style="position:absolute;left:${curPct}%;transform:translateX(-50%);text-align:center;white-space:nowrap;bottom:0"><div style="font-size:9px;color:#00C9A7;font-weight:700;text-transform:uppercase;letter-spacing:.5px">W${_calCw} — Current</div><div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(todayStr)}</div></div>`;
-  h+=`</div>`;
-  // ── Timeline bar ────────────────────────────────────────────────────────
-  h+=`<div class="timeline-bar"><div class="timeline-fill" style="width:${_isOpened?100:pct}%"><div class="timeline-current"></div></div>`;
-  {const _mk=[];
-  if(studio.co_week){const p=Math.round(studio.co_week/totalWeeks*100);const wd=w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===studio.co_week);const cd=studio.co_date||wd?.date_start||null;_mk.push({p,cls:'co',html:`Target C/O Date${cd?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(cd)}</div>`:''}`});}
-  if(_t2sw&&totalWeeks>0){const p=Math.round(_t2sw/totalWeeks*100);const d=_t2date||w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===_t2sw)?.date_start||null;_mk.push({p,cls:'tier2',html:`Move to $${_t2p}${d?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(d)}</div>`:''}`});}
-  if(_t3sw&&totalWeeks>0){const p=Math.round(_t3sw/totalWeeks*100);const d=_t3date||w.find(x=>(parseInt(String(x.week).replace(/[^0-9]/g,''))||0)===_t3sw)?.date_start||null;_mk.push({p,cls:'tier3',html:`Move to $${_t3p}${d?`<div style="font-size:10px;font-weight:400;margin-top:3px">${_fmtDate(d)}</div>`:''}`});}
-  _mk.sort((a,b)=>a.p-b.p);let _lp=-999;
-  _mk.forEach(m=>{const up=m.p-_lp<9;const ls=up?'top:auto;bottom:46px':'';h+=`<div class="timeline-marker ${m.cls}" style="left:${m.p}%"><div class="timeline-marker-label" style="${ls}">${m.html}</div></div>`;_lp=m.p;});}
-  h+=`</div>`;
-  // ── Row below bar: Week 0 label only ────────────────────────────────────
-  h+=`<div style="position:relative;height:30px;margin-top:6px">`;
-  h+=`<div style="position:absolute;left:0;text-align:left"><div style="font-size:9px;color:#8aaabb;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Week 0</div>${startDate?`<div style="font-size:9px;color:#5a7a8a;margin-top:1px">${_fmtDate(startDate)}</div>`:''}</div>`;
-  h+=`</div>`;
-  h+=`</div>`;
-  h+=`<div style="text-align:right;white-space:nowrap;flex-shrink:0"><div style="font-size:9px;color:${_isOpened?'#00C9A7':'#8aaabb'};font-weight:600;text-transform:uppercase;letter-spacing:.5px">${_isOpened?'OPENED':'GO'} W${totalWeeks}</div>${openDate?`<div style="font-size:9px;color:${_isOpened?'#00C9A7':'#e05a5a'};margin-top:2px">${_fmtDate(openDate)}</div>`:''}</div>`;
-  h+=`</div></div>`;
-  } // end if not Reston
-
-  // Progress bar helper for Total to Date
-  function _progBar(label,actual,target,color,benchVal,benchLabel,fmtFn,targetLabel,infoKey){
-    const fmt=fmtFn||(v=>typeof v==='number'?v.toLocaleString('en-US'):v);
-    const t=typeof target==='number'&&target>0?target:1;
-    const fillPct=Math.min(100,Math.round(Math.max(0,actual)/t*100));
-    const benchPct=benchVal!=null?Math.min(100,Math.round(Math.max(0,benchVal)/t*100)):null;
-    const infoHtml=infoKey&&GLOSSARY[infoKey]?_infoBtnInline(infoKey):'';
-    let b=`<div style="margin-bottom:18px">`;
-    b+=`<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">`;
-    b+=`<div style="font-size:11px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.5px">${label}${infoHtml}</div>`;
-    b+=`<div style="text-align:right"><span style="font-size:20px;font-weight:700;color:#1a1a2e;font-family:'Oswald',sans-serif">${fmt(actual)}</span><span style="font-size:10px;color:#8aaabb;margin-left:6px">/ ${fmt(target)}</span></div>`;
-    b+=`</div>`;
-    b+=`<div style="position:relative;height:14px;background:#f0f6fa;border-radius:7px;overflow:visible">`;
-    b+=`<div style="position:absolute;left:0;top:0;height:100%;width:${fillPct}%;background:${color};border-radius:7px;min-width:${fillPct>0?4:0}px"></div>`;
-    if(benchPct!==null){
-      b+=`<div style="position:absolute;top:-4px;left:${benchPct}%;width:2px;height:22px;background:#f4a021;border-radius:1px;transform:translateX(-50%);z-index:2">`;
-      b+=`<div style="position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:8px;color:#f4a021;font-weight:700;white-space:nowrap;margin-top:3px">${benchLabel}: ${fmt(benchVal)}</div>`;
-      b+=`</div>`;
-    }
-    b+=`</div>`;
-    b+=`<div style="font-size:10px;color:#8aaabb;margin-top:14px">${targetLabel||'Target'}: ${fmt(target)}</div>`;
-    b+=`</div>`;
-    return b;
-  }
-
-  // Last 7 Full Days — window ends 2 days ago to ensure complete data (d7end/d7ago declared above)
-  const _strip=s=>(s||'').replace(/^SWEAT440\s+/,'');
-  const _sname=studio.data_name||studio.name;
-  const raw7=(RAW&&RAW.daily_detail||[]).filter(r=>_strip(r.studio)===_sname&&r.date>=d7ago&&r.date<=d7end);
-  const lastLeads=raw7.reduce((s,r)=>s+(r.signups||0),0);
-  const _tds7=(studio.tier_daily_sales||[]).filter(r=>r.date>=d7ago&&r.date<=d7end);
-  const lastNetPresales=(NSO_SALES_ROWS.filter(r=>_strip(r.studio)===_sname&&r.date>=d7ago&&r.date<=d7end)).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0);
-  const lastSpend=cur.total_marketing_spend||0;
-  const _isReston=studio.code==='VA-001';
-  const annPres=_goalAnn||tgt.presales_count||0;
-  const annLeads=_goalAnn===300?860:(_goalAnn===250?715:tgt.total_leads||0);
-  // Cumulative actuals — for opened studios cap at opening_date (exclude day of opening onwards)
-  const _opCap=_isOpened&&studio.opening_date?studio.opening_date:null;
-  const netPresales=_isOpened
-    ? Math.max(0,NSO_SALES_ROWS.filter(r=>_strip(r.studio)===_sname&&(!_opCap||r.date<_opCap)).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0))
-    : (_sumCurTier?(_sumCurTier.t0||0)+(_sumCurTier.t1||0)+(_sumCurTier.t2||0)+(_sumCurTier.t3||0):Math.max(0,(cur.presales_count||0)-(cur.cancellations_count||0)));
-  // Dynamic weekly goal: remaining target ÷ weeks left until C/O
-  const weeksLeft=Math.max(0,paceWeeks-displayCw);
-  const leadsGap=Math.max(0,annLeads-(cur.total_leads||0));
-  const presalesGap=Math.max(0,annPres-netPresales);
-  const wkLeadGoal=weeksLeft>0?Math.round(leadsGap/weeksLeft):leadsGap;
-  const wkPresaleGoal=weeksLeft>0?Math.round(presalesGap/weeksLeft):presalesGap;
-  const wkGoalLabel='Goal';
-  const cumSpend=w.filter(x=>_wkNum2(x)<=displayCw).reduce((s,x)=>s+(x.total_marketing_spend||0),0);
-  const cumSpendNoLT=w.filter(x=>_wkNum2(x)<=displayCw).reduce((s,x)=>s+(x.meta_spend||0)+(x.google_spend||0)+(x.grassroots_spend||0)+(x.other_spend||0),0);
-  const estTotalSpend=displayCw>0?Math.round(cumSpendNoLT/displayCw*paceWeeks):0;
-
-  // Pacing benchmarks (300-in-12wk and 440-in-16wk) at current week
-  const pace300=Math.round(300/12*cw);
-  const pace440=Math.round(440/16*cw);
-
-  h+=_isOpened?`<div style="margin-bottom:20px">`:`<div class="two-col" style="margin-bottom:20px">`;
-  const last7Range=`${_fmtDate(d7ago)} – ${_fmtDate(d7end)}`;
-
-  // Card A — Last 7 Full Days (pre-launch only)
-  if(!_isOpened){
-  h+=`<div class="chart-card summary-card"><div class="summary-card-section">Last 7 Full Days</div><div style="font-size:10px;color:#8aaabb;margin-top:-10px;margin-bottom:10px">${last7Range}</div>`;
-  h+=skRow('Leads (New Accounts Created)',lastLeads,wkLeadGoal,'#00A3E0',true,'sum_leads_7d',wkGoalLabel);
-  h+=skRow('Presales (net)',lastNetPresales,wkPresaleGoal,'#00C9A7',true,'sum_presales_7d',wkGoalLabel);
-  const last7Cvr=lastLeads>0?Math.round(lastNetPresales/lastLeads*100):null;
-  const goalCvr=_isReston?35:(tgt.presales_count&&tgt.total_leads?Math.round(tgt.presales_count/tgt.total_leads*100):null);
-  if(last7Cvr!==null){
-    const cvrRatio=goalCvr>0?last7Cvr/goalCvr:0;
-    const cvrFillPct=Math.min(100,Math.round(cvrRatio*100));
-    const cvrOverPct=cvrRatio>1?Math.min(60,Math.round((cvrRatio-1)*100)):0;
-    h+=`<div class="sk-row"><div><div class="sk-label">Conversion Rate${_infoBtnInline('sum_cvr_7d')}</div></div><div class="sk-vals"><div class="sk-actual">${last7Cvr}%</div>${goalCvr!=null?`<div class="sk-goal">Goal: ${goalCvr}%</div>`:''}</div></div>`;
-    if(goalCvr>0){
-      if(cvrRatio>1){
-        const goalLinePct=Math.round(goalCvr/last7Cvr*100);
-        h+=`<div class="sk-progress"><div class="sk-progress-fill" style="width:100%;background:#f4a021"></div><div style="position:absolute;top:-4px;left:${goalLinePct}%;width:2px;height:22px;background:#f4a021;filter:brightness(0.7);border-radius:1px;transform:translateX(-50%);z-index:2"><div style="position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:8px;color:#f4a021;font-weight:700;white-space:nowrap;margin-top:3px">Goal: ${goalCvr}%</div></div></div>`;
-      } else {
-        h+=`<div class="sk-progress"><div class="sk-progress-fill" style="width:${cvrFillPct}%;background:#f4a021"></div></div>`;
-      }
-    }
-  }
-  h+=`</div>`;
-  } // end !_isOpened Card A
-
-  // Card B — Total to Opening Date (opened) / Total to Date (pre-launch)
-  const _cardBTitle=_isOpened?'Total to Opening Date':'Total to Date';
-  const _cardBDataLabel=_isOpened?`<div style="font-size:10px;color:#8aaabb;margin-top:-8px;margin-bottom:10px">Data through ${_fmtDate(studio.opening_date?new Date(new Date(studio.opening_date+'T00:00:00Z')-864e5).toISOString().slice(0,10):d7end)}</div>`:(_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:-8px;margin-bottom:10px">${_dataThruLabel}</div>`:'');
-  h+=`<div class="chart-card summary-card"><div class="summary-card-section">${_cardBTitle}</div>${_cardBDataLabel}`;
-  h+=_progBar('Leads (New Accounts Created)',cur.total_leads||0,annLeads||0,'#00A3E0',_isOpened?null:(annLeads?Math.round(annLeads/paceWeeks*displayCw):null),'W'+displayCw+' Pace',null,null,'sum_leads_total');
-  h+=_progBar('Presales (net)',netPresales,annPres||0,'#00C9A7',_isOpened?null:(annPres?Math.round(annPres/paceWeeks*displayCw):null),'W'+displayCw+' Pace',null,null,'sum_presales_total');
-  if((cur.estimated_day1_rmr||0)>0){const _rmrA=cur.estimated_day1_rmr||0,_rmrT=tgt.estimated_day1_rmr||0,_rmrPct=_rmrT>0?Math.min(100,Math.round(_rmrA/_rmrT*100)):0;h+=`<div style="margin-bottom:18px;position:relative">${_infoBtn('sum_rmr')}<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><div style="font-size:11px;color:#5a7a8a;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Est. Day-1 RMR</div><div style="text-align:right"><span style="font-size:20px;font-weight:700;color:#1a1a2e;font-family:'Oswald',sans-serif">$${_rmrA.toLocaleString('en-US')}</span><span style="font-size:10px;color:#8aaabb;margin-left:6px">/ $${_rmrT.toLocaleString('en-US')}</span></div></div><div style="position:relative;height:14px;background:#f0f6fa;border-radius:7px"><div style="position:absolute;left:0;top:0;height:100%;width:${_rmrPct}%;background:#f4a021;border-radius:7px;min-width:${_rmrPct>0?4:0}px"></div></div></div>`;}
-  if(estTotalSpend>0||cumSpendNoLT>0){
-    const _fmtS=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
-    const _parseCpl=s=>{if(typeof s==='number')return s;if(typeof s==='string'){const ns=s.replace(/[^0-9.]/g,' ').trim().split(/\s+/).map(Number).filter(n=>!isNaN(n)&&n>0);if(ns.length>=2)return(ns[0]+ns[ns.length-1])/2;if(ns.length===1)return ns[0];}return null;};
-    const cplMid=_parseCpl(tgt.blended_cpl);
-    const budgetTarget=tgt.marketing_budget||( cplMid&&tgt.total_leads?Math.round(cplMid*tgt.total_leads):estTotalSpend );
-    const spendBench=Math.round(budgetTarget/paceWeeks*displayCw);
-    h+=_progBar('Mktg Spend (without Leadteam Fee)',Math.round(cumSpendNoLT),budgetTarget,'#9b59b6',_isOpened?null:spendBench,'W'+displayCw+' Pace',_fmtS,'Budget','sum_spend');
-  }
-  h+=`</div>`;
-
-  h+=`</div>`;
-
-  // Charts
-  _sumStudio=studio;_sumView='cum';_sumSrcMetric='leads';
-  h+=`<div class="chart-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px"><div><div class="chart-card-title" style="margin-bottom:0">Leads &amp; Presales</div>${_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:2px">${_dataThruLabel}</div>`:''}</div><div class="gran-group"><button class="gran-btn active" id="sumCumBtn" onclick="setSumView('cum')">Cumulative</button><button class="gran-btn" id="sumWeekBtn" onclick="setSumView('weekly')">Weekly</button></div></div><div style="position:relative;width:100%;height:320px"><canvas id="sumChartCanvas"></canvas></div></div>`;
-  if(!_isOpened){h+=`<div class="chart-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px"><div><div class="chart-card-title" style="margin-bottom:0">Last 7 Full Days by Source</div><div style="font-size:10px;color:#8aaabb;margin-top:2px">${last7Range}</div></div><div class="gran-group"><button class="gran-btn active" id="sumSrcLeadsBtn" onclick="setSumSrcMetric('leads')">Leads</button><button class="gran-btn" id="sumSrcSalesBtn" onclick="setSumSrcMetric('sales')">Net Sales</button></div></div><div style="display:flex;align-items:center;justify-content:center;gap:32px;flex-wrap:wrap;margin-top:14px"><div style="width:180px;height:180px;flex-shrink:0"><canvas id="sumSrcCanvas"></canvas></div><div id="sumSrcLegend" style="min-width:160px;max-width:260px"></div></div></div>`;}
-
-  document.getElementById('summaryContent').innerHTML=h;
-  setTimeout(()=>{drawCumChart(studio);if(!_isOpened)drawSumSourceChart(studio,'leads');},50);
-}
-
 function skRow(label,actual,goal,color,noCheck,infoKey,goalLabel){
   const numActual=typeof actual==='string'?actual:actual.toLocaleString('en-US');
   const numGoal=goal!=null?(typeof goal==='string'?goal:goal.toLocaleString('en-US')):null;
@@ -1985,142 +1674,6 @@ function skValRow(label,actual,benchmark){
   return`<div class="sk-row" style="margin-top:8px"><div class="sk-label">${label}</div><div class="sk-vals"><div class="sk-actual" style="font-size:18px">${actual}</div>${bStr?`<div class="sk-goal">Target: ${bStr}</div>`:''}</div></div>`;
 }
 
-function drawCumChart(studio){
-  const ctx=document.getElementById('sumChartCanvas');if(!ctx)return;
-  if(_ch.sum){_ch.sum.destroy();_ch.sum=null}
-  const totalW=studio.go_week||studio.weeks.length-1;
-  let cw=studio.current_week||0;
-  const _isOpenedChart=!!(studio.opening_date&&studio.opening_date<=new Date().toISOString().slice(0,10));
-  if(_isOpenedChart){let _opW=0;studio.weeks.forEach((wk,i)=>{if(wk.date_start&&wk.date_start<studio.opening_date)_opW=i;});cw=Math.min(cw,_opW);}
-  const _ann=studio.goal_announce_target||null;
-  const paceW=studio.co_week||totalW;
-  const tPres=_ann||studio.targets.presales_count||0;
-  const tLeads=_ann===300?860:(_ann===250?715:(studio.targets.total_leads||0));
-  const wkLeadPace=paceW?tLeads/paceW:0;
-  const wkPresPace=paceW?tPres/paceW:0;
-  const w=studio.weeks.filter((_,i)=>i<=(_isOpenedChart?cw:Math.max(cw+2,totalW)));
-  const labels=w.map(x=>x.week.replace('WEEK ','W'));
-  const leadsD=w.map((x,i)=>i<=cw?x.total_leads||0:null);
-  const _cumTierMap={};(studio.tier_rmr_by_week||[]).forEach(r=>{_cumTierMap[r.week]=r;});
-  const presD=w.map((x,i)=>{if(i>cw)return null;const tr=_cumTierMap[i];return tr?(tr.t0||0)+(tr.t1||0)+(tr.t2||0)+(tr.t3||0):Math.max(0,(x.presales_count||0)-(x.cancellations_count||0));});
-  // For opened studios override presales with NSO_SALES_ROWS capped weekly cumulative
-  let presD2=presD;
-  if(_isOpenedChart){const _sn=studio.data_name||studio.name;const _str=s=>(s||'').replace(/^SWEAT440\s+/,'');const _opD=studio.opening_date||null;const _nr=NSO_SALES_ROWS.filter(r=>_str(r.studio)===_sn&&(!_opD||r.date<_opD));let _cp=0;presD2=w.map((wk,i)=>{if(i>cw)return null;const ds=wk.date_start,de=wk.date_end||ds;if(!ds)return _cp>0?_cp:null;_cp=Math.max(0,_cp+_nr.filter(r=>r.date>=ds&&r.date<=de).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0));return _cp>0?_cp:null;});}
-  const leadsPace=w.map((_,i)=>Math.min(tLeads,Math.round(wkLeadPace*i)));
-  const presPace=w.map((_,i)=>Math.min(tPres,Math.round(wkPresPace*i)));
-  _ch.sum=new Chart(ctx,{type:'line',data:{labels,datasets:[
-    {label:'LEADS',data:leadsD,borderColor:'#00A3E0',backgroundColor:'rgba(0,163,224,0.08)',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.3,fill:true,spanGaps:false},
-    {label:'PRESALES (NET)',data:presD2,borderColor:'#00527A',backgroundColor:'rgba(0,82,122,0.08)',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.3,fill:true,spanGaps:false},
-    {label:'LEADS PACE ('+tLeads+')',data:leadsPace,borderColor:'rgba(0,163,224,0.45)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false},
-    {label:'PRESALES PACE ('+tPres+')',data:presPace,borderColor:'rgba(0,82,122,0.55)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false},
-  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-    plugins:{legend:{position:'bottom',labels:{font:{family:'Oswald',size:12,style:'italic'},usePointStyle:true,padding:16}},tooltip:{mode:'index',intersect:false}},
-    scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',maxRotation:0}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'}}}}});
-}
-
-function drawWeeklyChart(studio){
-  const ctx=document.getElementById('sumChartCanvas');if(!ctx)return;
-  if(_ch.sum){_ch.sum.destroy();_ch.sum=null}
-  const totalW=studio.go_week||studio.weeks.length-1;
-  const cw=studio.current_week||0;
-  const _ann=studio.goal_announce_target||null;
-  const paceW=studio.co_week||totalW;
-  const tPres=_ann||studio.targets.presales_count||0;
-  const tLeads=_ann===300?860:(_ann===250?715:(studio.targets.total_leads||0));
-  const wkPresPace=tPres&&paceW?+(tPres/paceW).toFixed(1):0;
-  const wkLeadPace=tLeads&&paceW?+(tLeads/paceW).toFixed(1):0;
-  const w=studio.weeks.filter((_,i)=>i<=Math.max(cw+2,totalW));
-  const labels=w.map(x=>x.week.replace('WEEK ','W'));
-  const _wkTierMap={};(studio.tier_rmr_by_week||[]).forEach(r=>{_wkTierMap[r.week]=r;});
-  const presD=w.map((x,i)=>{if(i>cw)return null;const tr=_wkTierMap[i];return tr?(tr.t0||0)+(tr.t1||0)+(tr.t2||0)+(tr.t3||0):(x.presales_count||0)-(x.cancellations_count||0);});
-  const leadsD=w.map((x,i)=>i<=cw?x.total_leads||0:null);
-  const presDelta=presD.map((v,i)=>v===null?null:(i===0?0:v-(presD[i-1]||0)));
-  const leadsDelta=leadsD.map((v,i)=>v===null?null:(i===0?0:Math.max(0,v-(leadsD[i-1]||0))));
-  _ch.sum=new Chart(ctx,{type:'bar',data:{labels,datasets:[
-    {label:'LEADS',data:leadsDelta,backgroundColor:'rgba(0,163,224,0.3)',borderColor:'#00A3E0',borderWidth:1,type:'bar',order:3},
-    {label:'PRESALES (NET)',data:presDelta,backgroundColor:'rgba(0,82,122,0.35)',borderColor:'#00527A',borderWidth:1,type:'bar',order:4},
-    {label:'LEADS PACE ('+wkLeadPace+'/WK)',data:w.map(()=>wkLeadPace),borderColor:'rgba(0,163,224,0.6)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false,type:'line',order:1},
-    {label:'PRESALES PACE ('+wkPresPace+'/WK)',data:w.map(()=>wkPresPace),borderColor:'rgba(0,82,122,0.65)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false,type:'line',order:2},
-  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-    plugins:{legend:{position:'bottom',labels:{font:{family:'Oswald',size:12,style:'italic'},usePointStyle:true,padding:16}},tooltip:{mode:'index',intersect:false}},
-    scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',maxRotation:0}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'}}}}});
-}
-
-
-function setSumView(v){
-  _sumView=v;
-  const cb=document.getElementById('sumCumBtn'),wb=document.getElementById('sumWeekBtn');
-  if(cb)cb.classList.toggle('active',v==='cum');
-  if(wb)wb.classList.toggle('active',v==='weekly');
-  if(_sumStudio){
-    if(v==='cum')drawCumChart(_sumStudio);
-    else drawWeeklyChart(_sumStudio);
-  }
-}
-
-let _sumSrcMetric='leads';
-function setSumSrcMetric(m){
-  _sumSrcMetric=m;
-  document.getElementById('sumSrcLeadsBtn')?.classList.toggle('active',m==='leads');
-  document.getElementById('sumSrcSalesBtn')?.classList.toggle('active',m==='sales');
-  if(_sumStudio)drawSumSourceChart(_sumStudio,m);
-}
-
-function drawSumSourceChart(studio,metric){
-  const ctx=document.getElementById('sumSrcCanvas');if(!ctx)return;
-  if(_ch.sumSrc){_ch.sumSrc.destroy();_ch.sumSrc=null}
-  const _d7baseD=_sumD7End?new Date(_sumD7End+'T12:00:00Z'):(()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate()-2,12);})();
-  const days=[];
-  for(let i=6;i>=0;i--){const d=new Date(_d7baseD.getTime()-i*864e5);days.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`);}
-  const _stripS=s=>(s||'').replace(/^SWEAT440\s+/,'');
-  const _snameS=studio.data_name||studio.name;
-  let rows,netFn;
-  if(metric==='leads'){
-    rows=(RAW?.daily_detail||[]).filter(r=>_stripS(r.studio)===_snameS&&days.includes(r.date));
-    netFn=r=>r.signups||0;
-  }else{
-    rows=NSO_SALES_ROWS.filter(r=>_stripS(r.studio)===_snameS&&days.includes(r.date));
-    netFn=r=>(r.first_sales||0)-(r.cancellations||0);
-  }
-  const srcTotals={};
-  rows.forEach(r=>{const s=r.source||'Unknown';srcTotals[s]=(srcTotals[s]||0)+netFn(r);});
-  // For sales: scale positive sources so ring total = aggregate net (matches the bar)
-  let _ringNet=null;
-  if(metric!=='leads'){
-    _ringNet=Math.max(0,Object.values(srcTotals).reduce((s,v)=>s+v,0));
-    const _pos=Object.values(srcTotals).reduce((s,v)=>s+Math.max(0,v),0);
-    const _sc=_pos>0?_ringNet/_pos:1;
-    Object.keys(srcTotals).forEach(s=>{srcTotals[s]=Math.max(0,Math.round(srcTotals[s]*_sc));});
-  }else{
-    Object.keys(srcTotals).forEach(s=>{srcTotals[s]=Math.max(0,srcTotals[s]);});
-  }
-  const sources=Object.keys(srcTotals).filter(s=>srcTotals[s]>0).sort((a,b)=>srcTotals[b]-srcTotals[a]);
-  const leg=document.getElementById('sumSrcLegend');
-  if(!sources.length){
-    if(leg)leg.innerHTML=`<div style="color:#8aaabb;font-size:12px;font-style:italic">No data for the last 7 days</div>`;
-    return;
-  }
-  const values=sources.map(s=>srcTotals[s]);
-  const colors=sources.map((s,i)=>srcColor(s,i));
-  const total=_ringNet!==null?_ringNet:values.reduce((a,b)=>a+b,0);
-  _ch.sumSrc=new Chart(ctx,{
-    type:'doughnut',
-    data:{labels:sources,datasets:[{data:values,backgroundColor:colors,borderColor:'#fff',borderWidth:2,hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:true,
-      plugins:{legend:{display:false},
-        tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed.toLocaleString('en-US')} (${(c.parsed/total*100).toFixed(1)}%)`}}},
-      cutout:'62%'}
-  });
-  if(leg)leg.innerHTML=sources.map((src,i)=>{
-    const pct=total?(values[i]/total*100).toFixed(1):0;
-    return`<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
-      <div style="width:10px;height:10px;border-radius:50%;background:${colors[i]};flex-shrink:0"></div>
-      <div style="font-size:11px;color:#5a7a8a;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${src}</div>
-      <div style="font-size:11px;font-weight:700;color:#1a1a2e;margin-left:4px">${values[i].toLocaleString('en-US')}</div>
-      <div style="font-size:10px;color:#8aaabb;min-width:34px;text-align:right">${pct}%</div>
-    </div>`;
-  }).join('');
-}
 
 /* ══════════════════════════════════════════════════════════════════════════
    CHART BUILDERS (Funnel, Area, Ring, Rank)
@@ -2135,114 +1688,6 @@ function buildRing(cid,lid,rows,vk){const byS={};rows.forEach(r=>{byS[r.source]=
 function buildRank(tid,rows,vk){const tb=document.querySelector('#'+tid+' tbody');if(!tb)return;const byS={};rows.forEach(r=>{byS[r.studio]=(byS[r.studio]||0)+(r[vk]||0)});const sorted=Object.entries(byS).sort((a,b)=>b[1]-a[1]);const total=sorted.reduce((s,[,v])=>s+v,0);tb.innerHTML=sorted.map(([st,v])=>{const p=total?(v/total*100).toFixed(1):0;const bw=total?Math.round(v/total*80):0;return`<tr><td><span class="bar-mini" style="width:${bw}px"></span>${st.replace('SWEAT440 ','')}</td><td class="num">${v.toLocaleString('en-US')}</td><td class="pct">${p}%</td></tr>`}).join('')}
 
 /* ══════════════════════════════════════════════════════════════════════════ */
-function buildFunnel(){}  // retired — funnelBars replaced by renderFunnel()
-
-function renderFunnel(){
-  const el=document.getElementById('funnelAllStudios');
-  if(!el)return;
-  if(!SC||!SC.studios||!SC.studios.length){el.innerHTML='<div style="padding:32px;text-align:center;color:#8aaabb;font-family:Oswald,sans-serif;font-style:italic">Scorecard data loading…</div>';return;}
-  const fmt=n=>n!=null?n.toLocaleString('en-US'):'—';
-  const progCol=p=>p>=90?'#0a8a4a':p>=70?'#f4a021':'#e05a5a';
-
-  const _scVisFunnel=_allowedStudios
-    ?(SC.studios||[]).filter(s=>_allowedStudios.includes((s.data_name||s.full_name||s.name||'').replace(/^SWEAT440\s+/,'')))
-    :(SC.studios||[]);
-  if(!_sumStudio||(_allowedStudios&&!_scVisFunnel.find(s=>s.code===_sumStudio.code)))_sumStudio=_scVisFunnel[0]||SC.studios[0];
-  const activeCode=_sumStudio?_sumStudio.code:null;
-
-  // Studio switcher
-  let h='<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">';
-  _scVisFunnel.forEach(s=>{
-    const active=s.code===activeCode;
-    h+=`<button onclick="_sumStudio=SC.studios.find(x=>x.code==='${s.code}');renderFunnel()" style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;padding:6px 16px;border-radius:4px;border:2px solid ${active?'#00A3E0':'#2a4a5a'};background:${active?'#00A3E0':'transparent'};color:${active?'#fff':'#8aaabb'};cursor:pointer;letter-spacing:.5px">${s.name}</button>`;
-  });
-  h+='</div>';
-
-  const studio=_sumStudio||SC.studios[0];
-  const weeks=studio.weeks||[];
-  // For opened studios cap display at last week before opening_date
-  const _fOpenDate=studio.opening_date||null;
-  const _todayStr=new Date().toISOString().slice(0,10);
-  const _fIsOpened=!!(_fOpenDate&&_fOpenDate<=_todayStr);
-  // Parse signed week num; include Week 0 (date_start=null, use date_end for filter)
-  const _fRawNum=w=>{const m=String(w.week).match(/-?\d+/);return m?parseInt(m[0],10):null;};
-  const _fCapWeek=_fIsOpened?weeks
-    .filter(w=>w.date_start?w.date_start<_fOpenDate:w.date_end&&w.date_end<_fOpenDate)
-    .map(w=>_fRawNum(w))
-    .filter(n=>n!=null)
-    .reduce((a,b)=>b>a?b:a,null):null;
-  if(_fIsOpened&&_fOpenDate){const _fCap=new Date(_fOpenDate+'T00:00:00Z');_fCap.setUTCDate(_fCap.getUTCDate()-1);h=_openedCapBanner({openDate:_fOpenDate,capDate:_fCap.toISOString().slice(0,10)},'weekly')+h;}
-  const cw=_fCapWeek!=null?_fCapWeek:(studio.current_week||0);
-  const tgt=studio.targets||{};
-  const curWk=weeks.find(w=>_fRawNum(w)===cw)||{};
-
-  const cumLeads = curWk.total_leads||0;
-  const cumSales = curWk.presales_count||0;      // gross sales
-  const cumCanc  = curWk.cancellations_count||0;
-  const _fTierMap={};(studio.tier_rmr_by_week||[]).forEach(r=>{_fTierMap[r.week]=r;});
-  const _fCurTier=_fTierMap[cw];
-  const netActive=_fCurTier?(_fCurTier.t0||0)+(_fCurTier.t1||0)+(_fCurTier.t2||0)+(_fCurTier.t3||0):Math.max(0,cumSales-cumCanc);
-
-  const tLeads=tgt.total_leads;
-  const tPres=tgt.presales_count;
-  const leadsPct=tLeads&&cumLeads?Math.min(100,Math.round(cumLeads/tLeads*100)):null;
-  const salesPct=tPres&&netActive?Math.min(100,Math.round(netActive/tPres*100)):null;
-
-  const totalWeeks=studio.go_week||(weeks.length-1);
-  const isPreLaunch=cw===0;
-  const weekLabel=isPreLaunch?'Pre-Launch':`Week ${cw}`;
-  const ds=curWk.date_start,de=curWk.date_end;
-  const fmtD=iso=>{if(!iso)return'';const d=new Date(iso+'T00:00:00Z');return`${d.getUTCMonth()+1}/${d.getUTCDate()}`;};
-  const drFmt=ds&&de?`${fmtD(ds)} – ${fmtD(de)}`:curWk.date_range||'';
-
-  // Funnel bar widths — all relative to cumLeads so bars taper naturally
-  const salesW = cumLeads>0 ? Math.max(3, Math.min(100, Math.round(cumSales/cumLeads*100))) : (cumSales>0?100:0);
-  const cancW  = cumLeads>0 ? Math.max(0, Math.min(salesW, Math.round(cumCanc/cumLeads*100))) : 0;
-
-  const fRow=(label,val,target,barW,barColor,pct,detail)=>{
-    let r=`<div style="margin-bottom:14px">`;
-    r+=`<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">`;
-    r+=`<span style="font-size:11px;font-family:Oswald,sans-serif;font-style:italic;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#8aaabb">${label}</span>`;
-    r+=`<span style="font-size:18px;font-weight:700;color:#e0e8ee">${fmt(val)}${target?`<span style="font-size:11px;color:#5a7a8a"> / ${fmt(target)}</span>`:''}</span>`;
-    r+=`</div>`;
-    r+=`<div style="height:8px;background:#1a3040;border-radius:4px;overflow:hidden">`;
-    r+=`<div style="height:100%;width:${barW}%;background:${barColor};border-radius:4px;transition:width .4s"></div>`;
-    r+=`</div>`;
-    if(pct!=null||detail){
-      r+=`<div style="font-size:9px;color:#5a7a8a;text-align:right;margin-top:2px">`;
-      if(pct!=null)r+=`${pct}% of target`;
-      if(detail)r+=`${pct!=null?' · ':''}${detail}`;
-      r+=`</div>`;
-    }
-    r+=`</div>`;
-    return r;
-  };
-
-  h+=`<div class="chart-card" style="padding:18px 20px">`;
-
-  // Header
-  h+=`<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px;flex-wrap:wrap">`;
-  h+=`<span style="font-family:Oswald,sans-serif;font-style:italic;font-size:16px;font-weight:700;text-transform:uppercase;color:#e0e8ee;letter-spacing:.5px">${studio.name}</span>`;
-  h+=`<span style="font-size:12px;font-weight:700;font-family:Oswald,sans-serif;font-style:italic;text-transform:uppercase;color:#00A3E0">${weekLabel}</span>`;
-  h+=`<span style="font-size:10px;color:#5a7a8a">of ${totalWeeks}</span>`;
-  if(drFmt)h+=`<span style="font-size:10px;color:#5a7a8a">${drFmt}</span>`;
-  h+=`</div>`;
-
-  // Funnel rows: Leads → New Sales → Cancellations
-  h+=fRow('Leads (New Accounts Created)', cumLeads, tLeads, 100, '#00A3E0', leadsPct, null);
-  h+=fRow('New Sales', cumSales, tPres, salesW, '#00FFC2', salesPct, null);
-  h+=fRow('Cancellations', cumCanc, null, cancW, '#ff6b6b', null, cumSales>0?`${(cumCanc/cumSales*100).toFixed(1)}% of sales`:null);
-
-  // Net sales footer
-  h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #1a3040;margin-top:4px">`;
-  h+=`<span style="font-size:11px;font-family:Oswald,sans-serif;font-style:italic;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#8aaabb">Net Sales</span>`;
-  h+=`<span style="font-size:20px;font-weight:700;color:${progCol(salesPct||0)}">${fmt(netActive)}${tPres?`<span style="font-size:11px;color:#5a7a8a"> / ${fmt(tPres)}</span>`:''}</span>`;
-  h+=`</div>`;
-
-  h+=`</div>`;
-  el.innerHTML=h;
-}
-
 /* ── CONVERSION RATE CHART ─────────────────────────────────────────────── */
 let _cvrChart=null;
 function _cvrTog(btn){
@@ -2340,14 +1785,12 @@ function applyFilters(){
   if(document.getElementById('tab-cpr').classList.contains('active'))renderCPR();
 
   if(document.getElementById('tab-instagram').classList.contains('active'))renderInstagram();
-  if(document.getElementById('tab-scorecard').classList.contains('active'))renderScorecard();
-  if(document.getElementById('tab-summary').classList.contains('active'))renderSummary();
   if(document.getElementById('tab-summary2').classList.contains('active'))renderSummary2();
   if(document.getElementById('tab-clienthistory').classList.contains('active'))renderClientHistory();
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   NSO WEEKLY SCORECARD — dynamic, merges nso_scorecard_data.json + data.json
+   NSO WEEKLY SCORECARD — helpers (data from nso_scorecard_data2.json + data.json)
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* Parse "M/D - M/D" or "Label M/D - M/D" date strings → {start,end} YYYY-MM-DD */
@@ -2379,436 +1822,6 @@ function scKpi(label,val,target,fmt,targetLabel,auto){
   const bar=pct!=null?`<div style="height:4px;background:#f0f6fa;border-radius:2px;margin-top:8px"><div style="height:100%;width:${pct}%;background:${pct>=100?'#0a8a4a':pct>=70?'#f4a021':'#e05a5a'};border-radius:2px"></div></div>`:'';
   const badge=auto?`<span style="font-size:9px;background:#e8f4fd;color:#0077bb;border-radius:3px;padding:1px 5px;margin-left:4px;font-family:Oswald,sans-serif;letter-spacing:.03em">AUTO</span>`:'';
   return`<div class="kpi-card"><div class="kpi-card-label">${label}${badge}</div><div class="kpi-card-val">${fv}</div>${tl?`<div style="font-size:11px;color:#8aaabb;margin-top:2px">Target: ${tl}</div>`:''} ${bar}</div>`;
-}
-
-function switchScStudio(code){
-  const sc=SC.studios&&SC.studios.find(s=>s.code===code);
-  if(!sc)return;
-  if(_allowedStudios&&!_allowedStudios.includes((sc.data_name||sc.full_name||sc.name||'').replace(/^SWEAT440\s+/,'')))return;
-  _scStudio=sc;
-  renderScorecard();
-}
-
-let _scView='weekly';
-function setScView(v){
-  _scView=v;
-  document.getElementById('scWeeklyBtn')?.classList.toggle('active',v==='weekly');
-  document.getElementById('scCumBtn')?.classList.toggle('active',v==='cum');
-  renderScorecard();
-}
-function toggleScSpend(){
-  const subs=document.querySelectorAll('.sc-spend-sub');
-  const icon=document.getElementById('sc-spend-icon');
-  const open=subs[0]&&subs[0].style.display!=='none';
-  subs.forEach(r=>r.style.display=open?'none':'');
-  if(icon)icon.textContent=open?'▶':'▼';
-  if(open){
-    document.querySelectorAll('.sc-digital-sub').forEach(r=>r.style.display='none');
-    const di=document.getElementById('sc-digital-icon');if(di)di.textContent='▶';
-  }
-}
-function toggleScDigital(){
-  const subs=document.querySelectorAll('.sc-digital-sub');
-  const icon=document.getElementById('sc-digital-icon');
-  const open=subs[0]&&subs[0].style.display!=='none';
-  subs.forEach(r=>r.style.display=open?'none':'');
-  if(icon)icon.textContent=open?'▶':'▼';
-}
-function toggleScCpl(){
-  const subs=document.querySelectorAll('.sc-cpl-sub');
-  const icon=document.getElementById('sc-cpl-icon');
-  const open=subs[0]&&subs[0].style.display!=='none';
-  subs.forEach(r=>r.style.display=open?'none':'');
-  if(icon)icon.textContent=open?'▶':'▼';
-}
-function toggleScCpa(){
-  const subs=document.querySelectorAll('.sc-cpa-sub');
-  const icon=document.getElementById('sc-cpa-icon');
-  const open=subs[0]&&subs[0].style.display!=='none';
-  subs.forEach(r=>r.style.display=open?'none':'');
-  if(icon)icon.textContent=open?'▶':'▼';
-}
-
-function renderScorecard(){
-  const el=document.getElementById('scorecard-content');if(!el)return;
-  if(!SC||!SC.studios||!SC.studios.length){
-    el.innerHTML='<div style="padding:40px;text-align:center;color:#8aaabb;font-family:Oswald,sans-serif;font-style:italic">Scorecard data not available.</div>';
-    return;
-  }
-  const _scVisCard=(_allowedStudios
-    ?(SC.studios||[]).filter(s=>_allowedStudios.includes((s.data_name||s.full_name||s.name||'').replace(/^SWEAT440\s+/,'')))
-    :(SC.studios||[])).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
-  if(!_scStudio||(_allowedStudios&&!_scVisCard.find(s=>s.code===_scStudio.code))){
-    const selStudios=_getSel('studioMenu');
-    _scStudio=(selStudios.length?_scVisCard.find(s=>selStudios.includes(s.full_name)):null)||_scVisCard[0];
-  }
-  const sc=_scStudio||_scVisCard[0];
-  const cw=sc.current_week||0;
-  const tgt=sc.targets||{};
-
-  // Build week list with running cumulative spend/ig
-  let _cMs=0,_cGs=0,_cGrs=0,_cOth=0,_cLtf=0,_cTs=0,_cDs=0,_cIg=0,_cNl=0,_cDl=0,_cDp=0,_cDCanc=0,_cGl=0,_cGp=0,_cEv=0;
-  const weeks=sc.weeks.map(w=>{
-    const wn=parseInt(String(w.week).match(/-?\d+/)?.[0])||0;
-    const nl=w.new_leads??null, np=w.presales_week??null;
-    const crRaw=w.conversion_rate;
-    if(wn>=0){_cMs+=w.meta_spend||0;_cGs+=w.google_spend||0;_cGrs+=w.grassroots_spend||0;_cOth+=w.other_spend||0;
-    _cLtf+=w.leadteam_fee||0;_cTs+=w.total_marketing_spend||0;_cDs+=(w.meta_spend||0)+(w.google_spend||0);_cIg+=w.ig_new_followers||0;_cNl+=w.new_leads||0;
-    _cDl+=w.digital_leads_week||0;_cDp+=w.digital_presales_week||0;_cDCanc+=w.digital_cancellations_week||0;_cGl+=w.grassroots_leads||0;_cGp+=w.grassroots_presales||0;_cEv+=w.comm_events||0;}
-    return{
-      w:wn, date:w.date_range||'', isCur:wn===cw,
-      ds:w.date_start||null, de:w.date_end||null,
-      nl, np,
-      cr:crRaw!=null?crRaw/100:(nl>0&&np!=null?np/nl:null),
-      gl:w.grassroots_leads??null, gp:w.grassroots_presales??null,
-      ev:w.comm_events??null,
-      tl:w.total_leads??null, pc:w.presales_count??null,
-      cancTot:w.cancellations_count??null, canc:w.cancellations_week??null,
-      rmr:w.estimated_day1_rmr||null,
-      t0m:w.tier0_members??null, t1m:w.tier1_members??null, t2m:w.tier2_members??null,
-      ms:w.meta_spend??null, gs:w.google_spend??null,
-      grs:w.grassroots_spend??null, oth:w.other_spend??null, ltf:w.leadteam_fee??null,
-      ts:w.total_marketing_spend??null,
-      dsp:(w.meta_spend!=null||w.google_spend!=null)?(w.meta_spend||0)+(w.google_spend||0):null,
-      dlw:w.digital_leads_week??null, dpw:w.digital_presales_week??null, dCanc:w.digital_cancellations_week??null,
-      ig:w.ig_new_followers??null,
-      cumMs:_cMs, cumGs:_cGs, cumGrs:_cGrs, cumOth:_cOth, cumLtf:_cLtf, cumTs:_cTs, cumDsp:_cDs, cumIg:_cIg, cumNl:_cNl,
-      cumDl:_cDl, cumDp:_cDp, cumDCanc:_cDCanc, cumGl:_cGl, cumGp:_cGp, cumEv:_cEv,
-      cumCr:(w.total_leads>0&&w.presales_count!=null)?w.presales_count/w.total_leads:null,
-    };
-  }).filter(w=>w.w<=cw);
-
-  const $v=v=>v!=null?'$'+Math.round(v).toLocaleString('en-US'):'—';
-  const fInt=v=>v!=null?v:'—';
-  const fPct=v=>v!=null?(v*100).toFixed(1)+'%':'—';
-  const fCur=v=>v!=null?'$'+v.toFixed(2):'—';
-
-  // Build tier lookup early so it can be used throughout (RMR table and Net Presales row)
-  const _tierReal={};
-  (sc.tier_rmr_by_week||[]).forEach(r=>{_tierReal[r.week]=r;});
-  const _hasReal=Object.keys(_tierReal).length>0;
-
-  const scPaceWeeks=sc.co_week||sc.go_week;
-  const reqLeads=tgt.total_leads&&scPaceWeeks?+(tgt.total_leads/scPaceWeeks).toFixed(1):null;
-  const reqPresales=tgt.presales_count&&scPaceWeeks?+(tgt.presales_count/scPaceWeeks).toFixed(1):null;
-
-  const _ib=k=>_infoBtn(k);
-  const _wTs=wk=>(wk.ms||0)+(wk.gs||0)+(wk.grs||0)+(wk.oth||0)+(_cprLtFee([sc.full_name],wk.ds,wk.de)||0);
-  const _wCumTs=wk=>(wk.cumMs||0)+(wk.cumGs||0)+(wk.cumGrs||0)+(wk.cumOth||0)+(_cprLtFee([sc.full_name],weeks[0]?.ds,wk.de)||0);
-  const weeklyDefs=[
-    {label:_ib('sc_new_leads')+'New Leads (Accts.)',    key:'nl',  req:reqLeads,   fmt:fInt, color:true},
-    {label:_ib('sc_new_presales')+'New Presales',     key:'np',  req:reqPresales,fmt:fInt, color:true},
-    {label:_ib('sc_cvr')+'Conversion Rate',           key:'cr',  req:.35,        fmt:fPct, color:true},
-    {label:_ib('sc_cancellations')+'Cancellations',   key:'canc',req:null,       fmt:fInt, color:false},
-    {label:_ib('sc_grassroots_leads')+'Grassroots Leads',    key:'gl',  req:40,  fmt:fInt, color:true},
-    {label:_ib('sc_grassroots_presales')+'Grassroots Presales', key:'gp', req:20, fmt:fInt, color:true},
-    {label:_ib('sc_comm_events')+'Comm. Events',      key:'ev',  req:6,          fmt:fInt, color:true},
-    // {label:_ib('sc_ig_followers')+'IG New Followers',  key:'ig',  req:30,        fmt:fInt, color:true}, // hidden pending review
-    {label:_ib('sc_total_spend')+'▶ Total Mktg Spend', computed:wk=>_wTs(wk)||null, req:null, fmt:$v, color:false, spendParent:true},
-    {label:_ib('sc_digital_spend')+'▶ Total Digital Ad Spend (Meta & Google)',   key:'dsp', req:null, fmt:$v, color:false, spendSub:true, spendSubParent:true},
-    {label:'Meta Spend',          key:'ms',  req:null,       fmt:$v,   color:false, spendSubSub:true},
-    {label:'Google Spend',        key:'gs',  req:null,       fmt:$v,   color:false, spendSubSub:true},
-    {label:_ib('sc_grassroots_spend')+'Grassroots Spend',   key:'grs', req:null, fmt:$v, color:false, spendSub:true},
-    {label:_ib('sc_other_spend')+'Other Marketing Spend',   key:'oth', req:null, fmt:$v, color:false, spendSub:true},
-    {label:_ib('sc_leadteam_fee')+'LeadTeam Fee', computed:wk=>_cprLtFee([sc.full_name],wk.ds,wk.de)||null, fmt:$v, color:false, spendSub:true},
-    {label:_ib('sc_blended_cpl')+'▶ Blended CPL', computed:wk=>{const sp=_wTs(wk);return sp&&(wk.nl||0)>0?sp/(wk.nl||0):null;}, fmt:fCur, reqLabel:'$28 – $41', color:false, cplParent:true,
-     colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
-    {label:_ib('sc_ads_cpl')+'Ads CPL', computed:wk=>wk.dsp&&wk.dlw>0?wk.dsp/wk.dlw:null, fmt:fCur, reqLabel:'—', color:false, cplSub:true,
-     colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
-    {label:_ib('sc_blended_cpa')+'▶ Blended CPA', computed:wk=>{const sp=_wTs(wk);return sp&&((wk.np||0)-(wk.canc||0))>0?sp/((wk.np||0)-(wk.canc||0)):null;}, fmt:fCur, reqLabel:'$80 – $116', color:false, cpaParent:true,
-     colorFn:v=>!v?'':(v<=116?'sc-cell-good':v<=116*1.3?'sc-cell-warn':'sc-cell-bad')},
-    {label:_ib('sc_ads_cpa')+'Ads CPA', computed:wk=>wk.dsp&&((wk.dpw||0)-(wk.dCanc||0))>0?wk.dsp/((wk.dpw||0)-(wk.dCanc||0)):null, fmt:fCur, reqLabel:'—', color:false, cpaSub:true,
-     colorFn:v=>!v?'':(v<=116?'sc-cell-good':v<=116*1.3?'sc-cell-warn':'sc-cell-bad')},
-  ];
-
-  const _todayStrSc=new Date().toISOString().slice(0,10);
-  const _isOpened=!!(sc.opening_date&&sc.opening_date<=_todayStrSc);
-
-  const cumDefs=[
-    {label:_ib('sc_total_leads')+'Total Leads (Accts.)', key:'tl',  fmt:fInt, color:true,
-     cumReqFn:wk=>tgt.total_leads&&scPaceWeeks?Math.round(tgt.total_leads/scPaceWeeks*wk.w):null,
-     cumReqDisplay:tgt.total_leads||null},
-    {label:_ib('sc_presales_gross')+'Presales (gross)', key:'pc',  fmt:fInt, color:true,
-     cumReqFn:wk=>tgt.presales_count&&scPaceWeeks?Math.round(tgt.presales_count/scPaceWeeks*wk.w):null,
-     cumReqDisplay:tgt.presales_count||null},
-    {label:_ib('sc_net_presales')+'Net Presales',       key:null, pwKey:'netPres', computed:wk=>{if(_isOpened&&_openedCumMap)return _openedCumMap[wk.w]||0;const td=_tierReal[wk.w];if(td)return(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0);return Math.max(0,(wk.pc||0)-(wk.cancTot||0));}, fmt:fInt, color:true,
-     cumReqFn:wk=>tgt.presales_count&&scPaceWeeks?Math.round(tgt.presales_count/scPaceWeeks*wk.w):null,
-     cumReqDisplay:tgt.presales_count||null},
-    {label:_ib('sc_cum_cvr')+'Conversion Rate',         key:'cumCr', fmt:fPct, color:true,
-     cumReqFn:_=>0.35, cumReqDisplay:0.35},
-    {label:_ib('sc_cum_cancellations')+'Cancellations', key:'cancTot', req:null, fmt:fInt, color:false},
-    {label:_ib('sc_grassroots_leads')+'Grassroots Leads',    key:'cumGl', req:null, fmt:fInt, color:true},
-    {label:_ib('sc_grassroots_presales')+'Grassroots Presales', key:'cumGp', req:null, fmt:fInt, color:true},
-    {label:_ib('sc_comm_events')+'Comm. Events',        key:'cumEv', req:null, fmt:fInt, color:true},
-    {label:_ib('sc_ig_cum')+'IG Followers (cum.)',       key:'cumIg',   req:null, fmt:fInt, color:false},
-    {label:_ib('sc_total_spend')+'▶ Total Mktg Spend', computed:wk=>_wCumTs(wk)||null, req:null, fmt:$v, color:false, spendParent:true},
-    {label:_ib('sc_digital_spend')+'▶ Total Digital Ad Spend (Meta & Google)',    key:'cumDsp', req:null, fmt:$v, color:false, spendSub:true, spendSubParent:true},
-    {label:'Meta Spend',          key:'cumMs', req:null, fmt:$v, color:false, spendSubSub:true},
-    {label:'Google Spend',        key:'cumGs', req:null, fmt:$v, color:false, spendSubSub:true},
-    {label:_ib('sc_grassroots_spend')+'Grassroots Spend',   key:'cumGrs',req:null, fmt:$v, color:false, spendSub:true},
-    {label:_ib('sc_other_spend')+'Other Marketing Spend',   key:'cumOth',req:null, fmt:$v, color:false, spendSub:true},
-    {label:_ib('sc_leadteam_fee')+'LeadTeam Fee', computed:wk=>_cprLtFee([sc.full_name],weeks[0]?.ds,wk.de)||null, fmt:$v, color:false, spendSub:true},
-    {label:_ib('sc_blended_cpl')+'▶ Blended CPL', computed:wk=>{const sp=_wCumTs(wk);return sp&&(wk.cumNl||0)>0?sp/(wk.cumNl||0):null;}, fmt:fCur, reqLabel:'$28 – $41', color:false, cplParent:true,
-     colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
-    {label:_ib('sc_ads_cpl')+'Ads CPL', computed:wk=>wk.cumDsp&&wk.cumDl>0?wk.cumDsp/wk.cumDl:null, fmt:fCur, reqLabel:'—', color:false, cplSub:true,
-     colorFn:v=>!v?'':(v<=41?'sc-cell-good':v<=41*1.3?'sc-cell-warn':'sc-cell-bad')},
-    {label:_ib('sc_blended_cpa')+'▶ Blended CPA', computed:wk=>{const np=(_isOpened&&_openedCumMap)?(_openedCumMap[wk.w]||0):(()=>{const td=_tierReal[wk.w];return td?(td.t0||0)+(td.t1||0)+(td.t2||0)+(td.t3||0):Math.max(0,(wk.pc||0)-(wk.cancTot||0));})();const sp=_wCumTs(wk);return sp&&np>0?sp/np:null;}, fmt:fCur, reqLabel:'$80 – $116', color:false, cpaParent:true,
-     colorFn:v=>!v?'':(v<=116?'sc-cell-good':v<=116*1.3?'sc-cell-warn':'sc-cell-bad')},
-    {label:_ib('sc_ads_cpa')+'Ads CPA', computed:wk=>wk.cumDsp&&((wk.cumDp||0)-(wk.cumDCanc||0))>0?wk.cumDsp/((wk.cumDp||0)-(wk.cumDCanc||0)):null, fmt:fCur, reqLabel:'—', color:false, cpaSub:true,
-     colorFn:v=>!v?'':(v<=116?'sc-cell-good':v<=116*1.3?'sc-cell-warn':'sc-cell-bad')},
-  ];
-
-  let defs=_scView==='weekly'?weeklyDefs:cumDefs;
-  if(!isAdminUser())defs=defs.filter(d=>d.key!=='ig'&&d.key!=='cumIg');
-  const _scOpDate=sc.opening_date||null;
-  const pastWeeks=weeks.filter(w=>w.w>0&&(!_scOpDate||!w.ds||w.ds<_scOpDate));
-  function _fmtD(iso){if(!iso)return'?';const[y,m,d]=iso.split('-');return`${+m}/${+d}`+(y!=='2026'?`<br><span style="font-size:8px;color:#c07000">${y}</span>`:'')}
-
-  // ── RMR Tier Breakdown ──────────────────────────────────────────────────
-  const pricing=sc.pricing||{tier1_price:99,tier2_price:129,tier2_start_week:99};
-  const t0p=pricing.tier0_price||null;
-  const t1p=pricing.tier1_price||99;
-  const t2p=pricing.tier2_price||129;
-  const t3p=pricing.tier3_price||null;
-  const t2sw=pricing.tier2_start_week||99;
-  const t3sw=pricing.tier3_start_week||null;
-  let _t0=0,_t1=0,_t2=0,_t3=0;
-  // For opened studios: build NSO_SALES_ROWS weekly cumulative (used for Net Presales / CPA rows)
-  let _openedCumMap=null;
-  if(_isOpened){
-    const _sno=sc.data_name||sc.name;const _sto=s=>(s||'').replace(/^SWEAT440\s+/,'');const _nro=NSO_SALES_ROWS.filter(r=>_sto(r.studio)===_sno&&(!_scOpDate||r.date<_scOpDate));
-    let _cpno=0;_openedCumMap={};
-    pastWeeks.forEach(wk=>{
-      if(wk.ds&&wk.de){
-        const _dayR=_nro.filter(r=>r.date>=wk.ds&&r.date<=wk.de);
-        const _ns=_dayR.reduce((s,r)=>s+(r.first_sales||0),0);
-        const _nc=_dayR.reduce((s,r)=>s+(r.cancellations||0),0);
-        _cpno=Math.max(0,_cpno+_ns-_nc);
-      }
-      _openedCumMap[wk.w]=_cpno;
-    });
-  }
-  // Seed from W0 only when using week-based accumulation fallback
-  if(!_hasReal&&!_isOpened){
-    const _w0=weeks.find(w=>w.w===0);
-    if(_w0&&_w0.t1m==null){_t1+=_w0.np||0;let _c0=_w0.canc||0;_t1=Math.max(0,_t1-_c0);}
-  }
-  const rmrtRows=pastWeeks.map(wk=>{
-    if(_tierReal[wk.w]){
-      // SKU-based tier counts from fetch_tier_rmr_v2.py (correctly capped at opening_date for opened studios)
-      _t0=_tierReal[wk.w].t0||0;
-      _t1=_tierReal[wk.w].t1||0;
-      _t2=_tierReal[wk.w].t2||0;
-      _t3=_tierReal[wk.w].t3||0;
-    } else if(wk.t1m!=null){
-      // Use cumulative tier counts from scorecard data (e.g., from sheet patch)
-      _t0=wk.t0m||0;
-      _t1=wk.t1m||0;
-      _t2=wk.t2m||0;
-      _t3=0;
-    } else {
-      // Fallback: week-based tier assignment
-      const newPs=wk.np||0, canc=wk.canc||0;
-      if(t3sw&&wk.w>=t3sw)_t3+=newPs;
-      else if(wk.w>=t2sw)_t2+=newPs;
-      else _t1+=newPs;
-      let c=canc;
-      if(t3p){const c3=Math.min(c,_t3);_t3-=c3;c-=c3;}
-      const c2=Math.min(c,_t2);_t2-=c2;c-=c2;_t1=Math.max(0,_t1-c);
-    }
-    const rmr=Math.round((t0p?_t0*t0p:0)+_t1*t1p+_t2*t2p+(t3p?_t3*t3p:0));
-    const netPs=_t0+_t1+_t2+_t3;
-    const totalSpend=_wCumTs(wk);
-    const roms=totalSpend>0?((netPs*640)/totalSpend):null;
-    return{w:wk.w,isCur:wk.isCur,ds:wk.ds,de:wk.de,t0:t0p?_t0:null,t1:_t1,t2:_t2,t3:t3p?_t3:null,rmr,roms};
-  });
-
-  let h='';
-  // Studio switcher tabs — Pre-Launch above, Opened below
-  {const _tSC=new Date().toISOString().slice(0,10);
-  const _preLSC=_scVisCard.filter(s=>!s.opening_date||s.opening_date>_tSC);
-  const _opnSC=_scVisCard.filter(s=>s.opening_date&&s.opening_date<=_tSC);
-  const _btnSC=(s)=>{const active=s.code===sc.code;return`<button onclick="switchScStudio('${s.code}')" style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;padding:6px 16px;border-radius:4px;border:2px solid ${active?'#00A3E0':'#c0d4df'};background:${active?'#00A3E0':'transparent'};color:${active?'#fff':'#5a7a8a'};cursor:pointer;letter-spacing:.5px">${s.name}</button>`;};
-  h+=`<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">`;
-  h+=`<div style="display:flex;gap:8px;flex-wrap:wrap">${_preLSC.map(_btnSC).join('')}</div>`;
-  if(_opnSC.length){h+=`<div style="display:flex;align-items:center;gap:10px;margin-top:2px"><span style="font-size:10px;font-family:Oswald,sans-serif;font-style:italic;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:#5a7a8a;white-space:nowrap">Opened</span><div style="height:1px;background:#c0d4df;flex:1"></div></div>`;h+=`<div style="display:flex;gap:8px;flex-wrap:wrap">${_opnSC.map(_btnSC).join('')}</div>`;}
-  h+=`</div>`;}
-  // Mini RMR table
-  h+=`<div class="chart-card" style="padding:14px 20px;margin-bottom:12px">`;
-  h+=`<div style="font-family:Oswald,sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;color:#5a7a8a;letter-spacing:1px;margin-bottom:10px">`;
-  const _tierSubtitle=t0p
-    ?`Founders $${t0p} + Tier 1 $${t1p}`+(t2sw<99?` → Tier 2 $${t2p} from W${t2sw}`:'')+(t3p&&t3sw?` → Tier 3 $${t3p} from W${t3sw}`:'')
-    :`Tier 1 $${t1p} → Tier 2 $${t2p} from W${t2sw}`+(t3p&&t3sw?` → Tier 3 $${t3p} from W${t3sw}`:'');
-  h+=`RMR Breakdown &nbsp;<span style="font-weight:400;font-size:10px;color:#aabbc8">${_tierSubtitle}</span></div>${_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:-4px;margin-bottom:8px">${_dataThruLabel}</div>`:''}`;
-  // Target column values — read from NSO Config sheet via pricing block, fallback to calculation
-  const _t0tgt=pricing.tier0_members_target||null;
-  const _t1tgt=pricing.tier1_members_target||(()=>{
-    const _reqPs=tgt.presales_count&&scPaceWeeks?tgt.presales_count/scPaceWeeks:0;
-    return t2sw>1?Math.round(_reqPs*(t2sw-1)):0;
-  })();
-  let _t2tgt,_t3tgt=0;
-  if(pricing.tier2_members_target!=null){
-    _t2tgt=pricing.tier2_members_target;
-    _t3tgt=pricing.tier3_members_target||0;
-  } else if(t3sw&&t3p){
-    const _reqPs=tgt.presales_count&&scPaceWeeks?tgt.presales_count/scPaceWeeks:0;
-    _t2tgt=Math.round(_reqPs*(t3sw-t2sw));
-    _t3tgt=Math.max(0,Math.round(tgt.presales_count||0)-_t1tgt-_t2tgt);
-  } else {
-    const _reqPs=tgt.presales_count&&scPaceWeeks?tgt.presales_count/scPaceWeeks:0;
-    _t2tgt=Math.max(0,Math.round(tgt.presales_count||0)-_t1tgt);
-  }
-  const _totalMembersTgt=(_t0tgt||0)+_t1tgt+_t2tgt+_t3tgt;
-  const _rmrTgt=tgt.estimated_day1_rmr||null;
-  const _romsTgt=pricing.estimated_roms_target||null;
-
-  h+=`<div id="scRmrScrollWrap" style="overflow-x:auto"><table class="data-table" style="font-size:12px"><thead><tr>`;
-  h+=`<th style="min-width:200px;font-size:12px;position:sticky;left:0;z-index:3;background:#fff">KPI</th>`;
-  h+=`<th class="num" style="min-width:80px;font-size:11px;background:#f8f4ec;color:#b8860b;position:sticky;left:200px;z-index:3">Target</th>`;
-  rmrtRows.forEach(wk=>{
-    const ds=wk.ds?`<br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.ds)}</span><br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.de)}</span>`:'';
-    const _b=[];
-    if(wk.w===sc.co_week)_b.push(`<span style="font-size:7px;background:#0084B5;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">Target C/O</span>`);
-    if(wk.w===t2sw)_b.push(`<span style="font-size:7px;background:#27ae60;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">→$${t2p}</span>`);
-    else if(wk.w===t3sw)_b.push(`<span style="font-size:7px;background:#8e44ad;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">→$${t3p}</span>`);
-    const topRow=`<span style="display:block;min-height:14px;text-align:center;margin-bottom:1px">${_b.join(' ')}</span>`;
-    h+=`<th class="num${wk.isCur?' sc-cell-cur':''}" style="min-width:80px;font-size:11px;vertical-align:bottom">${topRow}W${wk.w}${ds}</th>`;
-  });
-  h+=`</tr></thead><tbody>`;
-  // Naples open-studio membership tier counts per scorecard week
-  const _isNaplesRmr=(sc.code||'').includes('naples');
-  const _naplesTierWk={};
-  if(_isNaplesRmr){
-    const _nRows=NSO_SALES_ROWS.filter(r=>r.studio.toLowerCase().includes('naples'));
-    const _tks=['unl_mo','unl_yr','std_mil','visit','other'];
-    rmrtRows.forEach(wk=>{
-      if(!wk.ds||!wk.de)return;
-      const rows=_nRows.filter(r=>r.date>=wk.ds&&r.date<=wk.de);
-      const t={};_tks.forEach(k=>{t[k]=rows.reduce((a,r)=>a+((r.tiers&&r.tiers[k])||0),0);});
-      t.total=_tks.reduce((a,k)=>a+t[k],0);
-      _naplesTierWk[wk.w]=t;
-    });
-  }
-  const _hasTierData=_isNaplesRmr&&Object.values(_naplesTierWk).some(t=>t.total>0);
-  const _tierMemberLabels={unl_mo:'Unlimited Monthly',unl_yr:'Unlimited Yearly',std_mil:'Student/Military/Teacher',visit:'Visit Packs',other:'Other'};
-  const rmrRows2=[
-    ...(t0p?[{label:`Founders ($${t0p})`,key:'t0',target:_t0tgt}]:[]),
-    {label:`Tier 1 Members ($${t1p})`,key:'t1',target:_t1tgt},
-    {label:`Tier 2 Members ($${t2p})`,key:'t2',target:_t2tgt},
-    ...(t3p?[{label:`Tier 3 Members ($${t3p})`,key:'t3',target:_t3tgt}]:[]),
-    {label:'Total Members',key:null,computed:wk=>(wk.t0||0)+(wk.t1||0)+(wk.t2||0)+(wk.t3||0),target:_totalMembersTgt,style:'font-weight:700;border-top:1px solid #e0ecf4'},
-    ...(_hasTierData?[
-      {label:'Open Memberships',key:null,computed:()=>null,style:'font-style:italic;font-size:10px;color:#8aaabb;border-top:2px solid #e0ecf4;padding-top:6px'},
-      ...['unl_mo','unl_yr','std_mil','visit','other'].map(k=>({label:_tierMemberLabels[k],key:null,computed:wk=>{const v=(_naplesTierWk[wk.w]||{})[k];return v||null;}})),
-      {label:'Total Open',key:null,computed:wk=>(_naplesTierWk[wk.w]||{}).total||null,style:'font-weight:700'},
-    ]:[]),
-    {label:_ib('sc_rmr')+'Est. Day 1 RMR',key:'rmr',fmt:v=>`$${v.toLocaleString('en-US')}`,target:_rmrTgt,tgtFmt:v=>`$${Math.round(v).toLocaleString('en-US')}`,style:'border-top:1px solid #e0ecf4'},
-    {label:_ib('sc_roms')+'Est. ROMS',key:'roms',fmt:v=>v.toFixed(1)+'x',target:_romsTgt,tgtFmt:v=>typeof v==='string'?v:(+v).toFixed(1)+'x'},
-  ];
-  rmrRows2.forEach(row=>{
-    const labelCell=row.sublabel
-      ?`<div style="font-size:12px;font-weight:600">${row.label}</div><div style="font-size:9px;color:#aabbc8;margin-top:1px">${row.sublabel}</div>`
-      :`${row.label}`;
-    const _rowStyle=row.style?`font-size:12px;font-weight:600;${row.style}`:'font-size:12px;font-weight:600';
-    h+=`<tr><td style="${_rowStyle};position:sticky;left:0;z-index:1;background:#fff">${labelCell}</td>`;
-    const tgtFmt=row.tgtFmt||(row.fmt||(v=>v));
-    const tgtVal=row.target;
-    h+=`<td class="num" style="background:#f8f4ec;color:#b8860b;font-weight:600;position:sticky;left:200px;z-index:1${row.style?';'+row.style:''}">${tgtVal!=null?tgtFmt(tgtVal):'—'}</td>`;
-    rmrtRows.forEach(wk=>{
-      const v=row.computed?row.computed(wk):(row.key!=null?wk[row.key]:null);
-      const fmt=row.fmt||(v=>v);
-      h+=`<td class="num${wk.isCur?' sc-cell-cur':''}" style="${row.style||''}">${v!=null?fmt(v):'—'}</td>`;
-    });
-    h+=`</tr>`;
-  });
-  h+=`</tbody></table></div></div>`;
-
-  h+=`<div class="chart-card" style="padding:20px 24px">`;
-  h+=`<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">`;
-  h+=`<div><div style="font-family:Oswald,sans-serif;font-style:italic;font-size:13px;color:#8aaabb;font-weight:500;text-transform:uppercase">${sc.full_name.replace('SWEAT440 ','')} — W${cw} current</div>${_dataThruLabel?`<div style="font-size:10px;color:#8aaabb;margin-top:2px">${_dataThruLabel}</div>`:''}</div>`;
-  h+=`<div class="gran-group"><button class="gran-btn${_scView==='weekly'?' active':''}" id="scWeeklyBtn" onclick="setScView('weekly')">Weekly</button><button class="gran-btn${_scView==='cum'?' active':''}" id="scCumBtn" onclick="setScView('cum')">Cumulative</button></div>`;
-  h+=`</div>`;
-  h+=`<div id="scScrollWrap" style="overflow-x:auto"><table class="data-table sc-table" style="font-size:13px"><thead><tr>`;
-  h+=`<th style="min-width:200px;font-size:13px;position:sticky;left:0;z-index:3;background:#fff">KPI</th>`;
-  h+=`<th class="num" style="background:#f8f4ec;color:#b8860b;min-width:70px;position:sticky;left:200px;z-index:3">${_scView==='weekly'?'Req/Wk':'Target'}</th>`;
-  pastWeeks.forEach(wk=>{
-    const dateSpan=wk.ds?`<span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.ds)}</span><br><span style="font-size:9px;font-weight:400;color:#5a7a8a;white-space:nowrap">${_fmtD(wk.de)}</span>`:`<span style="font-size:9px;font-weight:400;color:#8aaabb">${(wk.date||'').slice(0,9)}</span>`;
-    const _b=[];
-    if(wk.w===sc.co_week)_b.push(`<span style="font-size:7px;background:#0084B5;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">Target C/O</span>`);
-    if(wk.w===t2sw)_b.push(`<span style="font-size:7px;background:#27ae60;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">→$${t2p}</span>`);
-    else if(wk.w===t3sw)_b.push(`<span style="font-size:7px;background:#8e44ad;color:#fff;border-radius:2px;padding:1px 3px;display:inline-block">→$${t3p}</span>`);
-    const topRow=`<span style="display:block;min-height:14px;text-align:center;margin-bottom:1px">${_b.join(' ')}</span>`;
-    h+=`<th class="num${wk.isCur?' sc-cell-cur':''}" style="min-width:90px;font-size:13px;vertical-align:bottom">${topRow}W${wk.w}<br>${dateSpan}</th>`;
-  });
-  h+=`</tr></thead><tbody>`;
-
-  defs.forEach(row=>{
-    const isParent=row.spendParent;
-    const isSubParent=row.spendSubParent;
-    const isSub=row.spendSub&&!row.spendSubParent;
-    const isSubSub=row.spendSubSub;
-    const isCplParent=row.cplParent;
-    const isCplSub=row.cplSub;
-    const isCpaParent=row.cpaParent;
-    const isCpaSub=row.cpaSub;
-    let trClass='', trStyle='', tdStyle='font-size:13px;font-weight:600', trClick='', labelHtml=row.label;
-    if(isParent){
-      trClick=` onclick="toggleScSpend()" style="cursor:pointer"`;
-      labelHtml=`<span id="sc-spend-icon" style="margin-right:6px;font-size:10px">▶</span>${row.label.replace('▶ ','')}`;
-    } else if(isSubParent){
-      trClass='sc-spend-sub'; trStyle='display:none';
-      tdStyle='padding-left:20px;font-size:12px;font-weight:600';
-      trClick=` onclick="toggleScDigital()" style="cursor:pointer"`;
-      labelHtml=`<span id="sc-digital-icon" style="margin-right:6px;font-size:10px">▶</span>${row.label.replace('▶ ','')}`;
-    } else if(isSub){
-      trClass='sc-spend-sub'; trStyle='display:none';
-      tdStyle='padding-left:20px;font-size:12px;color:#7a7a9a';
-    } else if(isSubSub){
-      trClass='sc-digital-sub'; trStyle='display:none';
-      tdStyle='padding-left:40px;font-size:12px;color:#7a7a9a';
-    } else if(isCplParent){
-      trClick=` onclick="toggleScCpl()" style="cursor:pointer"`;
-      labelHtml=`<span id="sc-cpl-icon" style="margin-right:6px;font-size:10px">▶</span>${row.label.replace('▶ ','')}`;
-    } else if(isCplSub){
-      trClass='sc-cpl-sub'; trStyle='display:none';
-      tdStyle='padding-left:20px;font-size:12px;color:#7a7a9a';
-    } else if(isCpaParent){
-      trClick=` onclick="toggleScCpa()" style="cursor:pointer"`;
-      labelHtml=`<span id="sc-cpa-icon" style="margin-right:6px;font-size:10px">▶</span>${row.label.replace('▶ ','')}`;
-    } else if(isCpaSub){
-      trClass='sc-cpa-sub'; trStyle='display:none';
-      tdStyle='padding-left:20px;font-size:12px;color:#7a7a9a';
-    }
-    h+=`<tr class="${trClass}" style="${trStyle}"${trClick}>`;
-    h+=`<td style="${tdStyle};position:sticky;left:0;z-index:1;background:#fff">${labelHtml}</td>`;
-    const _reqCellVal=row.reqLabel!=null?row.reqLabel
-      :(_scView==='weekly'
-        ?(row.req!=null?row.fmt(row.req):'-')
-        :(row.cumReqDisplay!=null?row.fmt(row.cumReqDisplay):'—'));
-    h+=`<td class="num" style="background:#f8f4ec;color:#b8860b;font-size:13px;position:sticky;left:200px;z-index:1">${_reqCellVal}</td>`;
-    pastWeeks.forEach(wk=>{
-      const val=row.computed?row.computed(wk):(row.key!=null?wk[row.key]:null);
-      const isCur=wk.isCur;
-      let cls=isCur?'sc-cell-cur':'';
-      const wkReq=_scView==='cum'&&row.cumReqFn?row.cumReqFn(wk):row.req;
-      if(row.colorFn&&typeof val==='number'){
-        const _c=row.colorFn(val); if(_c)cls=_c;
-      } else if(row.color&&wkReq!=null&&typeof val==='number'){
-        if(val>=wkReq)cls='sc-cell-good';
-        else if(val>=wkReq*.7)cls='sc-cell-warn';
-        else if(wk.w>0&&val>0)cls='sc-cell-bad';
-      }
-      h+=`<td class="num ${cls}" style="font-size:${isSub?12:13}px">${row.fmt(val)}</td>`;
-    });
-    h+=`</tr>`;
-  });
-  h+=`</tbody></table></div></div></div>`;
-
-  el.innerHTML=h;
-  const scWrap=document.getElementById('scScrollWrap');
-  if(scWrap)scWrap.scrollLeft=scWrap.scrollWidth;
-  const scRmrWrap=document.getElementById('scRmrScrollWrap');
-  if(scRmrWrap)scRmrWrap.scrollLeft=scRmrWrap.scrollWidth;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -3618,27 +2631,6 @@ function renderScorecard2(){
   if(sc2Wrap)sc2Wrap.scrollLeft=sc2Wrap.scrollWidth;
   const sc2RmrWrap=document.getElementById('scRmrScrollWrap2');
   if(sc2RmrWrap)sc2RmrWrap.scrollLeft=sc2RmrWrap.scrollWidth;
-}
-
-function drawScCumChart(sc,weeks){
-  const ctx=document.getElementById('scCumChart');if(!ctx)return;
-  if(_ch.scCum){_ch.scCum.destroy();_ch.scCum=null;}
-  const go=sc.go_week||27;
-  const allW=Array.from({length:go+1},(_,i)=>i);
-  const labels=allW.map(i=>`W${i}`);
-  const actual=allW.map(i=>{const w=weeks.find(x=>x.w===i);return(w&&w.pc)?w.pc:null;});
-  const t300=allW.map((_,i)=>i<=12?Math.round(300/12*i):null);
-  const t440_16=allW.map((_,i)=>i<=16?Math.round(440/16*i):null);
-  const t440_go=allW.map((_,i)=>+(440/go*i).toFixed(1));
-  _ch.scCum=new Chart(ctx,{type:'line',data:{labels,datasets:[
-    {label:'Actual Presales',data:actual,borderColor:'#5b9bd5',borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:.3,fill:false,spanGaps:false},
-    {label:'300 in 12 Weeks',data:t300,borderColor:'#ed7d31',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false,spanGaps:false},
-    {label:'440 in 16 Weeks',data:t440_16,borderColor:'#ffc000',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false,spanGaps:false},
-    {label:`440 by GO (W${go})`,data:t440_go,borderColor:'#70ad47',borderWidth:1.5,borderDash:[4,4],pointRadius:0,tension:0,fill:false},
-  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-    plugins:{legend:{position:'bottom',labels:{font:{family:'Oswald',size:12,style:'italic'},usePointStyle:true,padding:16}}},
-    scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},color:'#5a7a8a',maxRotation:0}},
-      y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a'},min:0}}}});
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -5883,9 +4875,8 @@ async function init(){
   // All tabs now visible to all users — no role-based tab removal
 
   // Load all data files
-  const [dataRes,scRes,sc2Res,mktRes,dashRes,gadsRes,socialRes,salesRes,gbpRes,adMetaRes,chRes,pwRes,grRes,vdlRes,ocRes]=await Promise.allSettled([
+  const [dataRes,sc2Res,mktRes,dashRes,gadsRes,socialRes,salesRes,gbpRes,adMetaRes,chRes,pwRes,grRes,vdlRes,ocRes]=await Promise.allSettled([
     fetch('../data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
-    fetch('nso_scorecard_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('nso_scorecard_data2.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('marketing_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('dashboard_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
@@ -5908,11 +4899,11 @@ async function init(){
     RAW.daily_detail=_normStudio(RAW.daily_detail);RAW.monthly_detail=_normStudio(RAW.monthly_detail);}
   else{console.error('data.json failed');RAW={daily_detail:[],monthly_detail:[],sources:[],studios:[]}}
 
-  if(scRes.status==='fulfilled'){SC=scRes.value}
-  else{console.warn('nso_scorecard_data.json not found');SC={studios:[]};document.getElementById('summaryContent').innerHTML='<div style="padding:40px;text-align:center;color:#8aaabb;font-family:Oswald,sans-serif;font-style:italic">Scorecard data not yet available for NSO studios.</div>'}
-
+  // nso_scorecard_data2.json is the only scorecard file; SC and SC2 both point to it
+  // (SC is kept as an alias so helpers that read it keep working).
   if(sc2Res.status==='fulfilled'){SC2=sc2Res.value}
-  else{console.warn('nso_scorecard_data2.json not found — Test tabs will fall back to SC');SC2=SC}
+  else{console.warn('nso_scorecard_data2.json not found');SC2={studios:[]};document.getElementById('summary2Content').innerHTML='<div style="padding:40px;text-align:center;color:#8aaabb;font-family:Oswald,sans-serif;font-style:italic">Scorecard data not yet available for NSO studios.</div>'}
+  SC=SC2;
 
   if(mktRes.status==='fulfilled'){GA4_RAW=mktRes.value.ga4_traffic||[];META_RAW=mktRes.value.meta_ads||[]}
   else{console.warn('marketing_data.json not found');GA4_RAW=[];META_RAW=[]}
@@ -5966,7 +4957,7 @@ async function init(){
   renderFreshnessNote('dataFreshnessNote', [
     {raw: dataRes.status==='fulfilled'   ? dataRes.value   : null, lagDays: 2},
     {raw: salesRes.status==='fulfilled'  ? salesRes.value  : null, lagDays: 2},
-    {raw: scRes.status==='fulfilled'     ? scRes.value     : null, lagDays: 2},
+    {raw: sc2Res.status==='fulfilled'    ? sc2Res.value    : null, lagDays: 2},
     {raw: mktRes.status==='fulfilled'    ? mktRes.value    : null, lagDays: 1},
     {raw: gadsRes.status==='fulfilled'   ? gadsRes.value   : null, lagDays: 1},
     {raw: socialRes.status==='fulfilled' ? socialRes.value : null, lagDays: 1},
@@ -5997,7 +4988,6 @@ async function init(){
   document.querySelectorAll('.data-thru-label').forEach(el=>el.textContent=_dataThruLabel);
   document.querySelector('.controls-bar').style.display='none';
   renderSummary2();
-  renderFunnel();
   applyFilters();
 }
 init();

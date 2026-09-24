@@ -125,26 +125,6 @@ jobs:
         continue-on-error: true
 
       # ── SCORECARD ──────────────────────────────────────────────────────────
-      - name: Rebuild Scorecard
-        env:
-          SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
-          SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
-          SNOWFLAKE_PASSWORD:  ${{ secrets.SF_TOKEN }}
-          SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-          SNOWFLAKE_DATABASE:  ${{ secrets.SF_DATABASE }}
-          SNOWFLAKE_ROLE:      ${{ secrets.SF_ROLE }}
-        run: |
-          python nso-dashboard/scripts/build_all_scorecards.py
-        continue-on-error: true
-
-      # ── RESTON HISTORICAL DATA FROM SHEET ──────────────────────────────────
-      # Must run BEFORE fetch_sheet_milestones so the static weeks (W0-W29)
-      # are in place before the sheet patches grassroots/other spend on them.
-      - name: Patch Reston early weeks from Google Sheet
-        run: |
-          cd nso-dashboard && python scripts/patch_reston_early_weeks.py
-        continue-on-error: true
-
       # ── OTHER COSTS (Grassroots / Print / PR / External Agency) ──────────────
       - name: Fetch other costs from Google Sheet
         run: |
@@ -157,33 +137,14 @@ jobs:
           cd nso-dashboard && python scripts/fetch_pre_weeks.py
         continue-on-error: true
 
-      # ── MILESTONES + PRICING + TARGETS FROM NSO CONFIG SHEET ───────────────
-      - name: Apply pricing, milestones, targets and dates from NSO Config sheet
-        run: |
-          cd nso-dashboard && python scripts/fetch_sheet_milestones.py
-        continue-on-error: true
-
       # ── GBP (Google Business Profile) ─────────────────────────────────────
       # gbp_data.json is managed by refresh.yml (Open Studio workflow) which
       # fetches the full historical range (--start 2025-01-01) daily.
       # Do NOT fetch GBP here — a 2-day window would overwrite the historical
       # file with zeros (GBP API has 3-4 day lag) and lose all past data.
 
-      # ── TIER RMR (real prices from Snowflake) ───────────────────────────────
-      - name: Calculate tier RMR from actual prices
-        env:
-          SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
-          SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
-          SNOWFLAKE_PASSWORD:  ${{ secrets.SF_TOKEN }}
-          SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-          SNOWFLAKE_DATABASE:  ${{ secrets.SF_DATABASE }}
-          SNOWFLAKE_ROLE:      ${{ secrets.SF_ROLE }}
-        run: |
-          cd nso-dashboard && python scripts/fetch_tier_rmr.py
-        continue-on-error: true
-
-      # ── SCORECARD V2 (PRE_WEEKS-aligned week dates for test tabs) ───────────
-      - name: Rebuild Scorecard v2 (test tabs)
+      # ── SCORECARD (nso_scorecard_data2.json — the only scorecard file) ─────
+      - name: Rebuild Scorecard
         env:
           SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
           SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
@@ -195,7 +156,14 @@ jobs:
           cd nso-dashboard && python scripts/build_scorecard_v2.py
         continue-on-error: true
 
-      - name: Calculate tier RMR v2 (test tabs)
+      # ── PRICING + SKU MAP + COMM EVENTS FROM NSO CONFIG SHEET ──────────────
+      - name: Apply pricing, SKU map and comm events from NSO Config sheet
+        run: |
+          cd nso-dashboard && python scripts/fetch_sheet_milestones.py
+        continue-on-error: true
+
+      # ── TIER RMR (real prices from Snowflake) ───────────────────────────────
+      - name: Calculate tier RMR v2
         env:
           SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
           SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
@@ -216,7 +184,6 @@ jobs:
             nso-dashboard/nso_sales_data.json \
             nso-dashboard/marketing_data.json \
             nso-dashboard/nso_google_ads.json \
-            nso-dashboard/nso_scorecard_data.json \
             nso-dashboard/nso_scorecard_data2.json \
             nso-dashboard/nso_ad_meta.json \
             nso-dashboard/nso_client_history.json \
