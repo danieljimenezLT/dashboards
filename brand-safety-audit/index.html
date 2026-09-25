@@ -27,7 +27,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .metric{background:var(--surface);border-radius:var(--radius);padding:1rem 1.125rem;border:1px solid var(--border);box-shadow:var(--shadow)}
 .metric-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:6px}
 .metric-value{font-family:'Inter Tight',sans-serif;font-size:28px;font-weight:700;line-height:1}
-.mv-blue{color:var(--blue)}.mv-red{color:var(--red)}.mv-amber{color:var(--amber)}.mv-green{color:var(--green)}
+.mv-blue{color:var(--blue)}.mv-sky{color:var(--sky)}.mv-red{color:var(--red)}.mv-amber{color:var(--amber)}.mv-green{color:var(--green)}
 .metric-sub{font-size:11px;color:var(--text-3);margin-top:4px}
 .filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
 .filter-label{font-size:12px;color:var(--text-3);margin-right:4px}
@@ -110,7 +110,31 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .cycle-picker .sep{color:var(--text-3);font-size:12px}
 .footer{margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text-3);flex-wrap:wrap;gap:8px}
 .empty{text-align:center;padding:3rem 1rem;color:var(--text-3);font-size:13px}
-@media(max-width:640px){.metrics{grid-template-columns:repeat(2,1fr)}.topbar-meta{display:none}}
+.howto{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:1.25rem}
+.howto summary{cursor:pointer;padding:.875rem 1.125rem;font-weight:600;font-size:13.5px;list-style:none;display:flex;align-items:center;justify-content:space-between}
+.howto summary::-webkit-details-marker{display:none}
+.howto summary::after{content:'Show';font-size:11px;font-weight:500;color:var(--blue-dark)}
+.howto[open] summary::after{content:'Hide'}
+.howto-steps{list-style:none;counter-reset:step;padding:0 1.125rem 1rem;display:flex;flex-direction:column;gap:10px}
+.howto-steps li{counter-increment:step;display:flex;gap:10px;font-size:12.5px;color:var(--text-2);line-height:1.55}
+.howto-steps li::before{content:counter(step);flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--blue-pale);color:var(--blue-dark);font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.howto-steps strong{color:var(--text)}
+.howto-steps .status-btn{margin-top:6px}
+.howto-note{font-size:11.5px;color:var(--text-3);padding:0 1.125rem 1rem;margin-top:-2px}
+.period-summary{margin-top:1.75rem}
+.period-summary h2{font-family:'Inter Tight',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px}
+.ps-sub{font-size:12px;color:var(--text-3);margin-bottom:.875rem}
+.ps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.ps-grid.levels{grid-template-columns:repeat(3,1fr)}
+.ps-table{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border)}
+.ps-table th{background:#f0f2f5;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);padding:9px 14px;text-align:left}
+.ps-table td{padding:9px 14px;border-top:1px solid var(--border)}
+.ps-table .num{text-align:right;font-variant-numeric:tabular-nums;width:90px}
+.ps-table .zero{color:var(--text-3)}
+.studio-left{min-width:0}
+.studio-sub{overflow-wrap:anywhere}
+@media(max-width:640px){.metrics{grid-template-columns:repeat(2,1fr)}.topbar-meta{display:none}.ps-grid{grid-template-columns:repeat(2,1fr)}.ps-grid.levels{grid-template-columns:repeat(3,1fr)}
+  .studio-header{flex-wrap:wrap}.studio-right{flex-wrap:wrap;padding-left:44px}}
 </style>
 </head>
 <body>
@@ -127,6 +151,19 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <p class="page-subtitle" id="pageSubtitle">SWEAT440 network · Instagram brand safety audit · Caption + visual creative analysis — human review required on all flagged items</p>
   </div>
 
+  <details class="howto" id="howto" open>
+    <summary>How to use this tool</summary>
+    <ol class="howto-steps">
+      <li><div><strong>Install the Claude skill (one time only).</strong> Download it here, then in Claude.ai go to <em>Settings → Capabilities</em>, turn on <em>Code execution and file creation</em>, and under <em>Skills</em> click <em>Upload skill</em> and pick the downloaded .zip. The skill teaches Claude the 6 evaluation categories and the exact file format this dashboard needs. You also need the <em>Claude in Chrome</em> extension installed and connected, since that's how Claude looks at each post's image.<br>
+        <button class="status-btn st-ops" onclick="downloadSkill()">Download Claude skill</button> <span class="publish-msg" id="skillMsg"></span></div></li>
+      <li><div><strong>Download the posts.</strong> In the box below, the <em>from</em> date is already set to the day after the last reviewed date. Pick the <em>to</em> date and click <em>Download posts</em>. You get a .json file with every Static and Carousel post from all studios in that range. Reels and Stories aren't included.</div></li>
+      <li><div><strong>Run the audit in Claude.</strong> Open a new chat in Claude.ai with Claude in Chrome connected, attach the posts file and write <em>"Run the brand safety audit on this file"</em>. Claude reads each post's caption, opens its cover image in Chrome to look at it, and gives you back an audit .json file to download. Large ranges take a while. If the chat stops midway, ask Claude to continue, and it picks up where it left off.</div></li>
+      <li><div><strong>Publish the result.</strong> In <em>Publish Claude's result</em>, choose the audit file Claude gave you and click <em>Publish</em>. It's saved for everyone and the <em>Data reviewed</em> date moves forward.</div></li>
+      <li><div><strong>Review the flags.</strong> Pick a date range under <em>Filter by post date</em> and click <em>Apply</em>. Open each flagged post on Instagram and click its status to move it from <em>Pending review</em> to <em>Reported to Ops</em> or <em>Cleared</em>. Then click <em>Save status changes</em> so everyone sees it. The summary at the bottom counts accounts, clean accounts and flags for that period.</div></li>
+    </ol>
+    <div class="howto-note">Flags are a triage queue, not a verdict. A person decides on every flagged post. See the <em>Evaluation Criteria</em> tab for what each category covers.</div>
+  </details>
+
   <div class="publish-box" id="publishBox">
     <div class="publish-row">
       <span class="publish-label" id="coverageLabel">Data reviewed: —</span>
@@ -137,7 +174,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <span class="publish-msg" id="statusSaveMsg"></span>
     </div>
     <div class="publish-row">
-      <span class="publish-label">1. Get posts from:</span>
+      <span class="publish-label">Step 2 · Get posts from:</span>
       <input type="date" id="downloadFrom">
       <span style="font-size:12px;color:var(--text-3)">to</span>
       <input type="date" id="downloadTo">
@@ -145,7 +182,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <span class="publish-msg" id="downloadMsg"></span>
     </div>
     <div class="publish-row">
-      <span class="publish-label">2. Publish Claude's result:</span>
+      <span class="publish-label">Step 4 · Publish Claude's result:</span>
       <input type="file" id="publishFile" accept="application/json">
       <button class="status-btn st-ops" id="publishBtn" onclick="publishCycle()">Publish</button>
       <span class="publish-msg" id="publishMsg"></span>
@@ -176,6 +213,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <button class="filter-btn" data-f="clean" onclick="setFilter('clean',this)">Clean</button>
     </div>
     <div class="studio-list" id="studioList"><div class="empty">Pick a date range above and click Apply to see posts from that period.</div></div>
+    <div class="period-summary" id="periodSummary" style="display:none"></div>
   </div>
 
   <div class="tab-panel" id="tab-criteria">
@@ -203,6 +241,298 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   </div>
 </div>
 
+<!-- The Claude skill offered by "Download Claude skill" (step 1). Each block
+     below is one file of the skill; downloadSkill() zips them in the browser.
+     The evaluation framework in SKILL.md mirrors the Evaluation Criteria tab
+     and scripts/eval_prompt.py; if those change, update it here too. -->
+<script type="text/plain" class="skill-file" data-path="sweat440-brand-safety-audit/SKILL.md">
+---
+name: sweat440-brand-safety-audit
+description: Runs the SWEAT440 Brand Safety Audit on a posts export downloaded from the Brand Safety Audit dashboard (a file named like 2026-08-04_to_2026-09-24-posts.json). Reviews every Instagram post's caption and cover image against SWEAT440's 6 brand-safety categories and returns the audit JSON file the dashboard's Publish step accepts. Use whenever the user uploads one of these posts exports or asks to run the brand safety audit.
+---
+
+# SWEAT440 Brand Safety Audit
+
+You audit Instagram posts from SWEAT440 franchise studios. SWEAT440 is a group fitness studio franchise. You are a triage tool: your output is a flag-and-review queue that a person reviews. You surface genuine risk, not aesthetic preferences. You never make a final call.
+
+## Input
+
+The user uploads a posts export from the dashboard. Its shape:
+
+```json
+{
+  "cycle": "2026-09", "period": "September 2026", "generated": "2026-09-25",
+  "coverage": {"from": "2026-08-04", "to": "2026-09-24"},
+  "note": "...",
+  "accounts": [
+    {"name": "Boca Raton", "handle": "sweat440boca",
+     "posts": [{"id": "...", "date": "...", "postType": "Static" | "Carousel",
+                "caption": "...", "imageUrl": "...", "link": "..."}]}
+  ]
+}
+```
+
+Only Static and Carousel feed posts are in it. Reels and Stories were already excluded.
+
+## Workflow
+
+1. Load the export and report how many posts and accounts with posts it has.
+2. Before you start, check that the Claude in Chrome extension is connected. You view the cover images through it. If it isn't connected, tell the user to connect it and wait. Don't run the audit on captions alone.
+3. Review every post, one at a time:
+   - Read the caption.
+   - With Claude in Chrome, open the post's `imageUrl` in a browser tab and take a screenshot to see the cover image. For a Carousel, `imageUrl` is the first slide. If a specific image doesn't load, open the post's `link` on Instagram instead.
+   - If you still can't see the image, evaluate the caption only, set `"visualReviewed": false`, and start `why` with "Visual not reviewed."
+   - Decide a verdict using the framework below.
+   - Reuse one tab for every post rather than opening a new tab per post.
+4. Append each verdict as one line to `verdicts.jsonl`, in the format shown under "Verdict format". For big exports, work account by account and save after each account. That way nothing is lost if the conversation gets long, and you can pick up where you left off.
+5. Check progress at any point:
+   `python scripts/assemble_audit.py <export.json> verdicts.jsonl --check`
+   It lists invalid verdicts and the posts that still need one.
+6. When every post has a valid verdict, build the file:
+   `python scripts/assemble_audit.py <export.json> verdicts.jsonl <from>_to_<to>-audit.json`
+   This copies the captions, dates, links and `coverage` from the export verbatim, in exactly the format the dashboard needs.
+7. Give the user the audit file to download. Also give a short summary: posts reviewed, flags by level, and a one-line list of each flag (account, category, level).
+
+If you can't run code, write the final JSON yourself in the format under "Output format (fallback)".
+
+## Evaluation framework
+
+Evaluate the post (cover image + caption) against these 6 categories:
+
+1. **Political or religious messaging**
+   - Flag: candidate endorsement, partisan statements, proselytizing content, divisive legislation stances.
+   - Do NOT flag: cultural holiday acknowledgment, general inclusivity language, community appreciation.
+2. **Explicit lyrics in audio**
+   - Flag: Reels where the soundtrack contains confirmed explicit lyrics.
+   - Do NOT flag: energetic music without confirmed explicit content, instrumentals.
+   - These posts have no audio track (static image or carousel), so you can't confirm this category. Only flag it if the caption itself quotes or references explicit lyrics; otherwise treat it as not applicable.
+3. **Overly sexualized content**
+   - Flag: deliberate sexualization beyond fitness norms, suggestive posing unrelated to exercise.
+   - Do NOT flag: athletic bodies, gym wear, sports bras, sweat, exertion. That's standard fitness content.
+4. **Active alcohol consumption**
+   - Flag: alcohol actively consumed on camera, "happy hour" language with alcohol emojis.
+   - Do NOT flag: background presence only, non-alcoholic beverage partnerships.
+5. **Logo misuse**
+   - Flag: any modification of the official mark: recoloring, distortion, stretching, unofficial fonts, unapproved backgrounds.
+   - Do NOT flag: the official logo used correctly with approved colors and backgrounds.
+   - This is a zero-tolerance, binary category.
+6. **Loose brand adherence**
+   - Flag: unapproved external partnerships in-studio, third-party medical providers without documented approval, major brand voice departure.
+   - Do NOT flag: minor caption formatting, emoji use, slight tone variation, aligned community events.
+
+Severity (`level`), if flagged:
+- `high`: a clear, unambiguous violation, such as a recolored or distorted logo, a confirmed explicit lyric, active alcohol consumption on camera, or an overt political endorsement. Needs immediate action.
+- `medium`: a likely violation that depends on context, such as a suggestive pose, unconfirmed explicit audio, or an external partnership without documented approval. Review this week.
+- `low`: borderline and worth a quick human look, such as cultural or social messaging short of a violation, or loose brand formatting. Confirm or dismiss.
+
+For each post, decide:
+- `flagged`: true if ANY category applies, even at LOW confidence.
+- `level`: `high`, `medium` or `low`, per the severity definitions above.
+- `confidence`: `HIGH`, `MEDIUM` or `LOW`. This is how sure you are, given the caption and visual evidence. Category 5 (logo misuse) is usually HIGH because it's binary. Categories 3 and 6 are often MEDIUM or LOW because they're gradients.
+- `category`: the single category name above that fits best, with the exact text.
+- `why`: 1-3 sentences citing the caption and the visual evidence separately, for example "Caption: ... Visual analysis: ...".
+- `action`: a concrete, specific next step for the reviewer, for example "Verify X is on the approved partners list".
+
+## Verdict format
+
+One JSON object per line in `verdicts.jsonl`:
+
+```json
+{"id": "6a6e95f52155cb3411c6547f", "flagged": true, "level": "medium", "category": "Loose brand adherence", "confidence": "HIGH", "why": "Caption: ... Visual analysis: ...", "action": "Verify ...", "visualReviewed": true}
+{"id": "6a6e62eaef2e8120b322ad93", "flagged": false, "visualReviewed": true}
+```
+
+`id` must be the post's `id` from the export. If you write a second line for the same `id`, it replaces the first one.
+
+## Output format (fallback)
+
+Use this only if you can't run the script. Write one JSON object with this shape:
+
+```json
+{
+  "cycle": "<copy from export>", "period": "<copy from export>", "generated": "<copy from export>",
+  "coverage": {"from": "<copy from export>", "to": "<copy from export>"},
+  "source": "Buffer (Claude.ai review — brand-safety-audit skill)",
+  "postsReviewed": 0,
+  "accounts": [{
+    "name": "...", "handle": "...", "posts": 0, "status": "flagged | clean",
+    "flags": [{"id": "", "level": "", "category": "", "confidence": "", "date": "", "postType": "",
+               "visualReviewed": true, "caption": "", "why": "", "action": "", "link": ""}],
+    "postLog": [{"id": "", "date": "", "postType": "", "caption": "", "link": "",
+                 "flagged": false, "level": null, "category": null}]
+  }]
+}
+```
+
+Follow these rules:
+- `coverage` is required. The dashboard refuses to publish without it.
+- `postLog` lists EVERY post, flagged or clean.
+- `flags` lists only flagged posts.
+- Copy `date`, `caption` and `link` verbatim from the export.
+- Include every account from the export, even the ones with 0 posts.
+</script>
+<script type="text/plain" class="skill-file" data-path="sweat440-brand-safety-audit/scripts/assemble_audit.py">
+"""Build the dashboard's audit file from a posts export + per-post verdicts.
+
+Usage:
+  python assemble_audit.py <posts-export.json> <verdicts.jsonl> <out.json>
+  python assemble_audit.py <posts-export.json> <verdicts.jsonl> --check
+
+<verdicts.jsonl> has one JSON object per line (a .json array also works):
+  {"id": "...", "flagged": true, "level": "medium", "category": "Loose brand adherence",
+   "confidence": "HIGH", "why": "...", "action": "...", "visualReviewed": true}
+Clean posts only need: {"id": "...", "flagged": false, "visualReviewed": true}
+
+Caption, date, post type and link are copied verbatim from the export, and
+cycle/period/generated/coverage are carried through unchanged — the
+dashboard's Publish step rejects files without "coverage".
+--check only reports which posts still need a verdict.
+"""
+
+import json
+import sys
+
+CATEGORIES = {
+    "Political or religious messaging",
+    "Explicit lyrics in audio",
+    "Overly sexualized content",
+    "Active alcohol consumption",
+    "Logo misuse",
+    "Loose brand adherence",
+}
+LEVELS = {"high", "medium", "low"}
+CONFIDENCES = {"HIGH", "MEDIUM", "LOW"}
+
+
+def load_verdicts(path):
+    with open(path, encoding="utf-8") as f:
+        text = f.read().strip()
+    if not text:
+        return []
+    if text.startswith("["):
+        return json.loads(text)
+    return [json.loads(line) for line in text.splitlines() if line.strip()]
+
+
+def validate(verdict):
+    """Return a problem string, or None if the verdict is usable."""
+    if not isinstance(verdict.get("flagged"), bool):
+        return '"flagged" must be true or false'
+    if not verdict["flagged"]:
+        return None
+    if verdict.get("level") not in LEVELS:
+        return f'"level" must be one of {sorted(LEVELS)}'
+    if verdict.get("category") not in CATEGORIES:
+        return f'"category" must be one of {sorted(CATEGORIES)}'
+    if verdict.get("confidence") not in CONFIDENCES:
+        return f'"confidence" must be one of {sorted(CONFIDENCES)}'
+    if not verdict.get("why") or not verdict.get("action"):
+        return 'flagged posts need "why" and "action"'
+    return None
+
+
+def main():
+    if len(sys.argv) != 4:
+        sys.exit(__doc__)
+    export_path, verdicts_path, out = sys.argv[1:]
+
+    with open(export_path, encoding="utf-8") as f:
+        export = json.load(f)
+    if not (export.get("coverage") or {}).get("from"):
+        sys.exit("The posts export has no coverage — re-download it from the dashboard.")
+
+    export_ids = {p["id"] for a in export["accounts"] for p in a["posts"]}
+    verdicts = {}
+    problems = []
+    for v in load_verdicts(verdicts_path):
+        vid = str(v.get("id", ""))
+        if vid not in export_ids:
+            problems.append(f"{vid or '(no id)'}: not a post in this export")
+            continue
+        problem = validate(v)
+        if problem:
+            problems.append(f"{vid}: {problem}")
+            continue
+        verdicts[vid] = v  # a later line for the same id replaces an earlier one
+
+    missing = [
+        (a["name"], p["id"]) for a in export["accounts"] for p in a["posts"] if p["id"] not in verdicts
+    ]
+    print(f"{len(verdicts)}/{len(export_ids)} posts have a verdict.")
+    for problem in problems:
+        print("  INVALID", problem)
+    if missing:
+        print(f"  {len(missing)} still missing, e.g.:")
+        for name, pid in missing[:15]:
+            print(f"    {name}: {pid}")
+    if out == "--check":
+        return
+    if missing or problems:
+        sys.exit("Not writing the audit file until every post has a valid verdict.")
+
+    accounts = []
+    for a in export["accounts"]:
+        flags, post_log = [], []
+        for p in a["posts"]:
+            v = verdicts[p["id"]]
+            flagged = v["flagged"]
+            if flagged:
+                flags.append(
+                    {
+                        "id": p["id"],
+                        "level": v["level"],
+                        "category": v["category"],
+                        "confidence": v["confidence"],
+                        "date": p["date"],
+                        "postType": p["postType"],
+                        "visualReviewed": bool(v.get("visualReviewed", True)),
+                        "caption": p["caption"],
+                        "why": v["why"],
+                        "action": v["action"],
+                        "link": p["link"],
+                    }
+                )
+            post_log.append(
+                {
+                    "id": p["id"],
+                    "date": p["date"],
+                    "postType": p["postType"],
+                    "caption": p["caption"],
+                    "link": p["link"],
+                    "flagged": flagged,
+                    "level": v["level"] if flagged else None,
+                    "category": v["category"] if flagged else None,
+                }
+            )
+        accounts.append(
+            {
+                "name": a["name"],
+                "handle": a["handle"],
+                "posts": len(a["posts"]),
+                "status": "flagged" if flags else "clean",
+                "flags": flags,
+                "postLog": post_log,
+            }
+        )
+
+    audit = {
+        "cycle": export["cycle"],
+        "period": export["period"],
+        "generated": export["generated"],
+        "coverage": export["coverage"],
+        "source": "Buffer (Claude.ai review — brand-safety-audit skill)",
+        "postsReviewed": len(export_ids),
+        "accounts": accounts,
+    }
+    with open(out, "w", encoding="utf-8") as f:
+        json.dump(audit, f, indent=2, ensure_ascii=False)
+    n_flags = sum(len(a["flags"]) for a in accounts)
+    print(f"Wrote {out}: {len(export_ids)} posts, {n_flags} flagged.")
+
+
+if __name__ == "__main__":
+    main()
+</script>
 <script src="../users.js"></script>
 <script src="../shared/auth.js"></script>
 <script>
@@ -227,7 +557,7 @@ const STATUS_FLOW=["pending","ops","cleared"];
 const STATUS_LABEL={pending:"⏳ Pending review",ops:"📤 Reported to Ops",cleared:"✓ Cleared"};
 const STATUS_CLASS={pending:"st-pending",ops:"st-ops",cleared:"st-cleared"};
 
-let AUDIT=null,LATEST_AUDIT=null,statuses={},currentFilter="all",expanded=null,dateFilterActive=false,DATE_FILTER_RESULTS=[];
+let AUDIT=null,LATEST_AUDIT=null,statuses={},currentFilter="all",expanded=null,dateFilterActive=false,DATE_FILTER_RESULTS=[],HISTORY_CYCLES=[];
 let dirtyStatusIds=new Set();
 
 // Flag statuses (Pending review / Reported to Ops / Cleared) live in
@@ -312,6 +642,7 @@ function render(){
   // works off DATE_FILTER_RESULTS, not AUDIT, and AUDIT is null by design
   // whenever no cycle has been explicitly published/loaded this session.
   // Checking !AUDIT first short-circuited every date-filter render.
+  renderPeriodSummary();
   if(dateFilterActive){filterBar.style.display="";renderDateFilteredList();return;}
   if(!AUDIT){filterBar.style.display="none";return;}
   filterBar.style.display="";
@@ -381,6 +712,7 @@ function render(){
 async function collectAllHistoricalPosts(){
   const cycles=await listCycles();
   const out=[];
+  HISTORY_CYCLES=[];
   for(const cycle of cycles){
     try{
       const r=await fetch("data/"+cycle+".json?cb="+Date.now());
@@ -390,6 +722,7 @@ async function collectAllHistoricalPosts(){
       // cycle has one, since "cycle" alone (e.g. "2026-08") is no longer
       // unique — a month can now hold several separately-published runs.
       const label=data.period||cycle;
+      HISTORY_CYCLES.push({label,coverage:data.coverage||null,handles:(data.accounts||[]).map(a=>a.handle)});
       for(const a of(data.accounts||[])){
         if(Array.isArray(a.postLog)){
           for(const p of a.postLog)out.push(Object.assign({accountName:a.name,accountHandle:a.handle,cycle:label},p));
@@ -500,6 +833,78 @@ function renderDateFilteredList(){
       +(p.caption||statusRow?'<div class="detail-panel" style="display:block">'+(p.caption?'<div class="flag-caption">&ldquo;'+p.caption+'&rdquo;</div>':"")+statusRow+'</div>':"")
     +'</div>';
   }).join("");
+}
+
+const CATEGORIES=["Political or religious messaging","Explicit lyrics in audio","Overly sexualized content","Active alcohol consumption","Logo misuse","Loose brand adherence"];
+
+// Counts for whatever is on screen — the post-date range (across every
+// cycle whose coverage overlaps it) or a just-published cycle. Independent
+// of the Show: severity filter, so it always describes the whole period.
+function periodSummaryData(){
+  if(dateFilterActive){
+    const fromVal=document.getElementById("postDateFrom").value;
+    const toVal=document.getElementById("postDateTo").value;
+    const from=new Date(fromVal+"T00:00:00Z"),to=new Date(toVal+"T23:59:59Z");
+    // A range can be published twice (a "-2" re-run) — count each post once.
+    const seen=new Set();
+    const posts=DATE_FILTER_RESULTS.filter(p=>{
+      const d=new Date(p.date);
+      if(isNaN(d.getTime())||d<from||d>to||seen.has(p.id))return false;
+      seen.add(p.id);return true;
+    });
+    const postCycles=new Set(posts.map(p=>p.cycle));
+    const cycles=HISTORY_CYCLES.filter(c=>c.coverage&&c.coverage.from&&c.coverage.to
+      ?c.coverage.from<=toVal&&c.coverage.to>=fromVal
+      :postCycles.has(c.label));
+    const reviewed=new Set(cycles.flatMap(c=>c.handles));
+    const covered=[...new Set(cycles.filter(c=>c.coverage).map(c=>c.coverage.from+" – "+c.coverage.to))].sort();
+    return {title:fromVal+" – "+toVal,posts,reviewed,withPosts:new Set(posts.map(p=>p.accountHandle)),covered};
+  }
+  if(!AUDIT)return null;
+  const posts=AUDIT.accounts.flatMap(a=>(Array.isArray(a.postLog)?a.postLog:a.flags.map(f=>Object.assign({flagged:true},f)))
+    .map(p=>Object.assign({accountHandle:a.handle},p)));
+  const cov=AUDIT.coverage;
+  return {
+    title:cov&&cov.from?cov.from+" – "+cov.to:AUDIT.period,
+    posts,
+    reviewed:new Set(AUDIT.accounts.map(a=>a.handle)),
+    withPosts:new Set(AUDIT.accounts.filter(a=>a.posts>0).map(a=>a.handle)),
+    covered:cov&&cov.from?[cov.from+" – "+cov.to]:[],
+  };
+}
+
+function renderPeriodSummary(){
+  const el=document.getElementById("periodSummary");
+  const s=periodSummaryData();
+  if(!s){el.style.display="none";return;}
+  const flags=s.posts.filter(p=>p.flagged);
+  const flaggedAccounts=new Set(flags.map(p=>p.accountHandle));
+  const clean=[...s.withPosts].filter(h=>!flaggedAccounts.has(h)).length;
+  const byLevel=l=>flags.filter(p=>p.level===l).length;
+  const pct=(n,d)=>d?Math.round(n/d*100)+"%":"—";
+  const tile=(label,val,cls,sub)=>'<div class="metric"><div class="metric-label">'+label+'</div><div class="metric-value '+cls+'">'+val+'</div><div class="metric-sub">'+sub+'</div></div>';
+  const rows=CATEGORIES.map(c=>{
+    const f=flags.filter(p=>p.category===c);
+    const accts=new Set(f.map(p=>p.accountHandle)).size;
+    const z=f.length?"":" zero";
+    return '<tr><td class="'+z.trim()+'">'+c+'</td><td class="num'+z+'">'+f.length+'</td><td class="num'+z+'">'+accts+'</td></tr>';
+  }).join("");
+  el.style.display="";
+  el.innerHTML='<h2>Period summary</h2>'
+    +'<div class="ps-sub">'+s.title+' · '+s.posts.length+' posts reviewed · '
+      +(s.covered.length?'Audited in this range: '+s.covered.join(", "):'No published audit covers this range yet')+'</div>'
+    +'<div class="ps-grid">'
+      +tile("Accounts reviewed",s.reviewed.size,"mv-blue","In the published audits for this period")
+      +tile("Accounts with posts",s.withPosts.size,"mv-blue",pct(s.withPosts.size,s.reviewed.size)+" of reviewed accounts")
+      +tile("Clean accounts",clean,"mv-green","Had posts, no flags")
+      +tile("Accounts with flags",flaggedAccounts.size,"mv-amber",flags.length+" flag"+(flags.length===1?"":"s")+" in total")
+    +'</div>'
+    +'<div class="ps-grid levels">'
+      +tile("HIGH flags",byLevel("high"),"mv-red","Immediate action")
+      +tile("MEDIUM flags",byLevel("medium"),"mv-amber","Review this week")
+      +tile("LOW flags",byLevel("low"),"mv-sky","Confirm or dismiss")
+    +'</div>'
+    +'<table class="ps-table"><thead><tr><th>Category</th><th class="num">Flags</th><th class="num">Accounts</th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
 
 // Plain fallback: data/latest.json is kept in sync with whichever cycle
@@ -698,6 +1103,46 @@ async function publishCycle(){
   msg.textContent="Published — committed to the repo, and shown here now.";
   setTimeout(()=>{msg.textContent="";},6000);
 }
+
+// Minimal stored (uncompressed) .zip writer — enough for the skill's two
+// text files, and avoids pulling in a zip library for one button.
+const CRC_TABLE=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(bytes){let c=0xFFFFFFFF;for(const b of bytes)c=CRC_TABLE[(c^b)&0xFF]^(c>>>8);return(c^0xFFFFFFFF)>>>0;}
+function makeZip(files){
+  const enc=new TextEncoder(),local=[],central=[];
+  let offset=0;
+  for(const f of files){
+    const name=enc.encode(f.path),data=enc.encode(f.content),crc=crc32(data);
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true); // UTF-8 names
+    lh.setUint32(14,crc,true);lh.setUint32(18,data.length,true);lh.setUint32(22,data.length,true);lh.setUint16(26,name.length,true);
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);
+    ch.setUint32(16,crc,true);ch.setUint32(20,data.length,true);ch.setUint32(24,data.length,true);ch.setUint16(28,name.length,true);ch.setUint32(42,offset,true);
+    local.push(lh,name,data);central.push(ch,name);
+    offset+=30+name.length+data.length;
+  }
+  const size=central.reduce((n,p)=>n+p.byteLength,0);
+  const end=new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true);end.setUint16(8,files.length,true);end.setUint16(10,files.length,true);end.setUint32(12,size,true);end.setUint32(16,offset,true);
+  return new Blob([...local,...central,end],{type:"application/zip"});
+}
+function downloadSkill(){
+  const files=[...document.querySelectorAll("script.skill-file")].map(s=>({path:s.dataset.path,content:s.textContent.replace(/^\n/,"")}));
+  const url=URL.createObjectURL(makeZip(files));
+  const a=document.createElement("a");
+  a.href=url;a.download="sweat440-brand-safety-audit.zip";
+  document.body.appendChild(a);a.click();a.remove();
+  URL.revokeObjectURL(url);
+  document.getElementById("skillMsg").textContent="Downloaded — upload this .zip in Claude.ai → Settings → Capabilities → Skills.";
+}
+
+// Remember whether this viewer collapsed "How to use" (per browser only).
+(()=>{
+  const d=document.getElementById("howto");
+  try{if(localStorage.getItem("bsaHowtoClosed")==="1")d.open=false;}catch(e){}
+  d.addEventListener("toggle",()=>{try{localStorage.setItem("bsaHowtoClosed",d.open?"0":"1");}catch(e){}});
+})();
 
 // No default view on load — the results area stays on its "pick a date
 // range" prompt until the reviewer applies a filter, per how this dashboard
