@@ -6,7 +6,8 @@ The Brand Safety Audit evaluation framework — shared by:
 
 Source of truth: the "Evaluation Criteria" tab already built into index.html.
 Copied verbatim from there — if that tab's copy changes, update this file
-(and the category enum in FLAG_OUTPUT_SCHEMA) to match.
+(and the category enum in FLAG_OUTPUT_SCHEMA) to match, and the Claude skill
+embedded in index.html (the SKILL.md <script class="skill-file"> block).
 
 Reels (video + audio) are out of scope — see "Current scope" in README.md.
 Category 2 (explicit lyrics in audio) requires an audio track this pipeline
