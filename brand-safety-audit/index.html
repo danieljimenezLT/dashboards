@@ -23,7 +23,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .tab-btn:hover{color:var(--text)}
 .tab-btn.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
 .tab-panel{display:none}.tab-panel.active{display:block}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.75rem}
 .metric{background:var(--surface);border-radius:var(--radius);padding:1rem 1.125rem;border:1px solid var(--border);box-shadow:var(--shadow)}
 .metric-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:6px}
 .metric-value{font-family:'Inter Tight',sans-serif;font-size:28px;font-weight:700;line-height:1}
@@ -121,19 +120,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .howto-steps strong{color:var(--text)}
 .howto-steps .status-btn{margin-top:6px}
 .howto-note{font-size:11.5px;color:var(--text-3);padding:0 1.125rem 1rem;margin-top:-2px}
-.period-summary{margin-top:1.75rem}
+.period-summary{margin-bottom:1.75rem}
 .period-summary h2{font-family:'Inter Tight',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px}
 .ps-sub{font-size:12px;color:var(--text-3);margin-bottom:.875rem}
 .ps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
 .ps-grid.levels{grid-template-columns:repeat(3,1fr)}
-.ps-table{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border)}
-.ps-table th{background:#f0f2f5;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);padding:9px 14px;text-align:left}
-.ps-table td{padding:9px 14px;border-top:1px solid var(--border)}
-.ps-table .num{text-align:right;font-variant-numeric:tabular-nums;width:90px}
-.ps-table .zero{color:var(--text-3)}
 .studio-left{min-width:0}
 .studio-sub{overflow-wrap:anywhere}
-@media(max-width:640px){.metrics{grid-template-columns:repeat(2,1fr)}.topbar-meta{display:none}.ps-grid{grid-template-columns:repeat(2,1fr)}.ps-grid.levels{grid-template-columns:repeat(3,1fr)}
+@media(max-width:640px){.topbar-meta{display:none}.ps-grid{grid-template-columns:repeat(2,1fr)}.ps-grid.levels{grid-template-columns:repeat(3,1fr)}
   .studio-header{flex-wrap:wrap}.studio-right{flex-wrap:wrap;padding-left:44px}}
 </style>
 </head>
@@ -159,7 +153,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <li><div><strong>Download the posts.</strong> In the box below, the <em>from</em> date is already set to the day after the last reviewed date. Pick the <em>to</em> date and click <em>Download posts</em>. You get a .json file with every Static and Carousel post from all studios in that range. Reels and Stories aren't included.</div></li>
       <li><div><strong>Run the audit in Claude.</strong> Open a new chat in Claude.ai with Claude in Chrome connected, attach the posts file and write <em>"Run the brand safety audit on this file"</em>. Claude reads each post's caption, opens its cover image in Chrome to look at it, and gives you back an audit .json file to download. Large ranges take a while. If the chat stops midway, ask Claude to continue, and it picks up where it left off.</div></li>
       <li><div><strong>Publish the result.</strong> In <em>Publish Claude's result</em>, choose the audit file Claude gave you and click <em>Publish</em>. It's saved for everyone and the <em>Data reviewed</em> date moves forward.</div></li>
-      <li><div><strong>Review the flags.</strong> Pick a date range under <em>Filter by post date</em> and click <em>Apply</em>. Open each flagged post on Instagram and click its status to move it from <em>Pending review</em> to <em>Reported to Ops</em> or <em>Cleared</em>. Then click <em>Save status changes</em> so everyone sees it. The summary at the bottom counts accounts, clean accounts and flags for that period.</div></li>
+      <li><div><strong>Review the flags.</strong> Pick a date range under <em>Filter by post date</em> and click <em>Apply</em>. Open each flagged post on Instagram and click its status to move it from <em>Pending review</em> to <em>Reported to Ops</em> or <em>Cleared</em>. Then click <em>Save status changes</em> so everyone sees it. The period summary under the date filter counts accounts, clean accounts and flags for that period.</div></li>
     </ol>
     <div class="howto-note">Flags are a triage queue, not a verdict. A person decides on every flagged post. See the <em>Evaluation Criteria</em> tab for what each category covers.</div>
   </details>
@@ -204,7 +198,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <button class="filter-btn" id="clearDateFilterBtn" style="display:none" onclick="clearPostDateFilter()">Clear</button>
       <span class="publish-msg" id="dateFilterMsg"></span>
     </div>
-    <div class="metrics" id="metricsRow"></div>
+    <div class="period-summary" id="periodSummary" style="display:none"></div>
     <div class="filter-bar" id="filterBar" style="display:none">
       <span class="filter-label">Show:</span>
       <button class="filter-btn fb-all" data-f="all" onclick="setFilter('all',this)">All accounts</button>
@@ -213,7 +207,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <button class="filter-btn" data-f="clean" onclick="setFilter('clean',this)">Clean</button>
     </div>
     <div class="studio-list" id="studioList"><div class="empty">Pick a date range above and click Apply to see posts from that period.</div></div>
-    <div class="period-summary" id="periodSummary" style="display:none"></div>
   </div>
 
   <div class="tab-panel" id="tab-criteria">
@@ -623,19 +616,6 @@ function topLevel(a){
   return"low";
 }
 
-function renderMetrics(){
-  if(!AUDIT){document.getElementById("metricsRow").innerHTML="";return;}
-  const accounts=AUDIT.accounts;
-  const high=accounts.reduce((n,a)=>n+a.flags.filter(f=>f.level==="high").length,0);
-  const med=accounts.reduce((n,a)=>n+a.flags.filter(f=>f.level==="medium").length,0);
-  const clean=accounts.filter(a=>!a.flags.length).length;
-  document.getElementById("metricsRow").innerHTML=
-    '<div class="metric"><div class="metric-label">Accounts reviewed</div><div class="metric-value mv-blue">'+accounts.length+'</div><div class="metric-sub">'+AUDIT.postsReviewed+' posts · '+AUDIT.period+'</div></div>'
-    +'<div class="metric"><div class="metric-label">HIGH flags</div><div class="metric-value mv-red">'+high+'</div><div class="metric-sub">'+(high?"Immediate action":"No immediate actions")+'</div></div>'
-    +'<div class="metric"><div class="metric-label">MEDIUM flags</div><div class="metric-value mv-amber">'+med+'</div><div class="metric-sub">Review this week</div></div>'
-    +'<div class="metric"><div class="metric-label">Clean accounts</div><div class="metric-value mv-green">'+clean+'</div><div class="metric-sub">No flags detected</div></div>';
-}
-
 function render(){
   const filterBar=document.getElementById("filterBar");
   // dateFilterActive must be checked BEFORE !AUDIT — the date-filtered view
@@ -835,8 +815,6 @@ function renderDateFilteredList(){
   }).join("");
 }
 
-const CATEGORIES=["Political or religious messaging","Explicit lyrics in audio","Overly sexualized content","Active alcohol consumption","Logo misuse","Loose brand adherence"];
-
 // Counts for whatever is on screen — the post-date range (across every
 // cycle whose coverage overlaps it) or a just-published cycle. Independent
 // of the Show: severity filter, so it always describes the whole period.
@@ -883,12 +861,6 @@ function renderPeriodSummary(){
   const byLevel=l=>flags.filter(p=>p.level===l).length;
   const pct=(n,d)=>d?Math.round(n/d*100)+"%":"—";
   const tile=(label,val,cls,sub)=>'<div class="metric"><div class="metric-label">'+label+'</div><div class="metric-value '+cls+'">'+val+'</div><div class="metric-sub">'+sub+'</div></div>';
-  const rows=CATEGORIES.map(c=>{
-    const f=flags.filter(p=>p.category===c);
-    const accts=new Set(f.map(p=>p.accountHandle)).size;
-    const z=f.length?"":" zero";
-    return '<tr><td class="'+z.trim()+'">'+c+'</td><td class="num'+z+'">'+f.length+'</td><td class="num'+z+'">'+accts+'</td></tr>';
-  }).join("");
   el.style.display="";
   el.innerHTML='<h2>Period summary</h2>'
     +'<div class="ps-sub">'+s.title+' · '+s.posts.length+' posts reviewed · '
@@ -903,8 +875,7 @@ function renderPeriodSummary(){
       +tile("HIGH flags",byLevel("high"),"mv-red","Immediate action")
       +tile("MEDIUM flags",byLevel("medium"),"mv-amber","Review this week")
       +tile("LOW flags",byLevel("low"),"mv-sky","Confirm or dismiss")
-    +'</div>'
-    +'<table class="ps-table"><thead><tr><th>Category</th><th class="num">Flags</th><th class="num">Accounts</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    +'</div>';
 }
 
 // Plain fallback: data/latest.json is kept in sync with whichever cycle
@@ -1096,7 +1067,6 @@ async function publishCycle(){
   }
   refreshHeader();
   updateCoverageUI();
-  renderMetrics();
   render();
   input.value="";
   btn.disabled=false;
@@ -1157,7 +1127,6 @@ async function init(){
   }
   updateCoverageUI();
   await loadStatuses();
-  renderMetrics();
   render();
 }
 init();
