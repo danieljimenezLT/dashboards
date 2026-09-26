@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-09-26",
+      "pr_number": 414,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/414",
+      "author": "Santiago Estrada",
+      "categories": [
+        "Paid Ads Dashboard"
+      ],
+      "title": "Shared ad sets now split spend evenly between studios",
+      "summary": "A Meta ad set named with more than one studio code (e.g. Miramar + Pembroke Pines) now credits each studio an equal share of spend, leads and impressions instead of giving it all to one studio."
+    },
+    {
       "date": "2026-09-25",
       "pr_number": 413,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/413",
