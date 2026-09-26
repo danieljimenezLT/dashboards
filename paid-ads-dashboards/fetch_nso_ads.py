@@ -44,6 +44,7 @@ def match_studio(name: str, studios: list[dict]) -> dict | None:
        -- confiable incluso cuando el nombre/keyword del studio no aparece.
     2) Coincidencia por keyword (campo 'match' no vacio).
     3) Catch-all (studio con match='').
+    Para adsets compartidos entre varios studios ver match_studios_shared().
     """
     n = name or ""
     for s in studios:
@@ -58,6 +59,17 @@ def match_studio(name: str, studios: list[dict]) -> dict | None:
         if not m and catchall is None:
             catchall = s
     return catchall
+
+
+def match_studios_shared(name: str, studios: list[dict]) -> list[dict]:
+    """Adset compartido entre studios (varios codigos en el nombre, ej.
+    "26-FL-012+FL-014-01") -> todos esos studios, y las metricas se reparten en
+    partes iguales. Si no, el mismo resultado de match_studio() (incluye catch-all)."""
+    matched = studios_registry.match_studios(name, studios)
+    if len(matched) > 1:
+        return matched
+    one = match_studio(name, studios)
+    return [one] if one else []
 
 
 def _has_token(name: str, token: str) -> bool:
@@ -360,21 +372,15 @@ def run_one(
     ad_dims: dict[str, dict] = {}
 
     for ins in ad_insights:
-        adset  = adset_by_id.get(ins.get("adset_id"), {})
-        studio = match_studio(adset.get("name", ""), studios_cfg)
-        if not studio:
+        adset   = adset_by_id.get(ins.get("adset_id"), {})
+        matched = match_studios_shared(adset.get("name", ""), studios_cfg)
+        if not matched:
             continue
 
         ad_name  = ins.get("ad_name", "")
         aud      = match_audience(ad_name, aud_tokens_cfg)
         pillar   = match_pillar(ad_name, pillar_tokens_cfg)
         tier     = match_tier(ad_name, tier_tokens_cfg)
-        concept  = detect_concept(
-            ad_name,
-            studio_match=studio.get("match") or None,
-            audience_tokens_flat=aud_flat,
-            pillar_tokens_flat=pillar_flat,
-        )
         creative   = creative_by_ad.get(ins.get("ad_id")) or {}
         media_type = detect_media_type(ad_name, creative)
 
@@ -386,35 +392,55 @@ def run_one(
         purchases   = purchases_of(ins)
         trials      = trials_of(ins)
 
-        agg = studio_agg[studio["code"]]
-        agg["impressions"] += impressions
-        agg["clicks"]      += clicks
-        agg["spend"]       += spend
-        agg["reach"]       += reach
-        agg["leads"]       += leads
-        agg["purchases"]   += purchases
-        agg["trials"]      += trials
+        # Por studio: una parte igual de cada metrica si el adset es compartido
+        n = len(matched)
+        concept = None
+        for studio, sp, im, cl, rc, le, pu, tr in zip(
+            matched,
+            studios_registry.split_evenly(spend, n),
+            studios_registry.split_evenly(impressions, n),
+            studios_registry.split_evenly(clicks, n),
+            studios_registry.split_evenly(reach, n),
+            studios_registry.split_evenly(leads, n),
+            studios_registry.split_evenly(purchases, n),
+            studios_registry.split_evenly(trials, n),
+        ):
+            concept = detect_concept(
+                ad_name,
+                studio_match=studio.get("match") or None,
+                audience_tokens_flat=aud_flat,
+                pillar_tokens_flat=pillar_flat,
+            )
 
-        def _bump(bucket: dict, ad: str):
-            bucket["spend"]       += spend
-            bucket["impressions"] += impressions
-            bucket["leads"]       += leads
-            if ad and ad not in bucket["ads"]:
-                bucket["ads"].append(ad)
+            agg = studio_agg[studio["code"]]
+            agg["impressions"] += im
+            agg["clicks"]      += cl
+            agg["spend"]       += sp
+            agg["reach"]       += rc
+            agg["leads"]       += le
+            agg["purchases"]   += pu
+            agg["trials"]      += tr
 
-        if aud:
-            _bump(agg["_audiences"][aud], ad_name)
-            _bump(global_aud[aud], ad_name)
-        if pillar:
-            _bump(agg["_pillars"][pillar], ad_name)
-            _bump(global_pillar[pillar], ad_name)
-        if concept and concept != "(other)":
-            _bump(agg["_concepts"][concept], ad_name)
-            _bump(global_concept[concept], ad_name)
-        _bump(agg["_media_types"][media_type], ad_name)
-        _bump(global_media_type[media_type], ad_name)
+            def _bump(bucket: dict, ad: str):
+                bucket["spend"]       += sp
+                bucket["impressions"] += im
+                bucket["leads"]       += le
+                if ad and ad not in bucket["ads"]:
+                    bucket["ads"].append(ad)
 
-        # Acumular tier y ad-level
+            if aud:
+                _bump(agg["_audiences"][aud], ad_name)
+                _bump(global_aud[aud], ad_name)
+            if pillar:
+                _bump(agg["_pillars"][pillar], ad_name)
+                _bump(global_pillar[pillar], ad_name)
+            if concept and concept != "(other)":
+                _bump(agg["_concepts"][concept], ad_name)
+                _bump(global_concept[concept], ad_name)
+            _bump(agg["_media_types"][media_type], ad_name)
+            _bump(global_media_type[media_type], ad_name)
+
+        # Acumular tier y ad-level (ad completo, sin repartir)
         if tier:
             t = global_tier[tier]
             t["spend"]       += spend
@@ -441,7 +467,8 @@ def run_one(
         ad_id = ins.get("ad_id")
         if ad_id:
             ad_dims[ad_id] = {
-                "studio_code": studio["code"],
+                "studio_code":  matched[0]["code"],
+                "studio_codes": [st["code"] for st in matched],
                 "audience":    aud,
                 "pillar":      pillar,
                 "tier":        tier,
@@ -675,23 +702,29 @@ def run_one(
             purchases   = purchases_of(row)
 
             _bump_d(camp_d[d], spend, impressions, clicks, reach, leads, trials, purchases)
-            sc = dims["studio_code"]
-            _bump_d(d_studio[(sc, d)], spend, impressions, clicks, reach, leads, trials, purchases)
             if dims["audience"]:
-                a = dims["audience"]
-                _bump_d(d_aud[(a, d)],         spend, impressions, clicks, reach, leads, trials, purchases)
-                _bump_d(d_stu_aud[(sc, a, d)], spend, impressions, clicks, reach, leads, trials, purchases)
+                _bump_d(d_aud[(dims["audience"], d)], spend, impressions, clicks, reach, leads, trials, purchases)
             if dims["pillar"]:
-                p = dims["pillar"]
-                _bump_d(d_pillar[(p, d)],          spend, impressions, clicks, reach, leads, trials, purchases)
-                _bump_d(d_stu_pillar[(sc, p, d)],  spend, impressions, clicks, reach, leads, trials, purchases)
+                _bump_d(d_pillar[(dims["pillar"], d)], spend, impressions, clicks, reach, leads, trials, purchases)
             if dims["concept"]:
-                co = dims["concept"]
-                _bump_d(d_concept[(co, d)],          spend, impressions, clicks, reach, leads, trials, purchases)
-                _bump_d(d_stu_concept[(sc, co, d)],  spend, impressions, clicks, reach, leads, trials, purchases)
+                _bump_d(d_concept[(dims["concept"], d)], spend, impressions, clicks, reach, leads, trials, purchases)
             mt = dims.get("media_type") or "Other"
-            _bump_d(d_media_type[(mt, d)],    spend, impressions, clicks, reach, leads, trials, purchases)
-            _bump_d(d_stu_media[(sc, mt, d)], spend, impressions, clicks, reach, leads, trials, purchases)
+            _bump_d(d_media_type[(mt, d)], spend, impressions, clicks, reach, leads, trials, purchases)
+
+            # Buckets por studio: parte igual para cada studio de un adset compartido
+            codes = dims["studio_codes"]
+            n = len(codes)
+            per_studio = zip(*(studios_registry.split_evenly(v, n) for v in
+                               (spend, impressions, clicks, reach, leads, trials, purchases)))
+            for sc, m in zip(codes, per_studio):
+                _bump_d(d_studio[(sc, d)], *m)
+                if dims["audience"]:
+                    _bump_d(d_stu_aud[(sc, dims["audience"], d)], *m)
+                if dims["pillar"]:
+                    _bump_d(d_stu_pillar[(sc, dims["pillar"], d)], *m)
+                if dims["concept"]:
+                    _bump_d(d_stu_concept[(sc, dims["concept"], d)], *m)
+                _bump_d(d_stu_media[(sc, mt, d)], *m)
             if dims.get("tier"):
                 _bump_d(d_tier[(dims["tier"], d)], spend, impressions, clicks, reach, leads, trials, purchases)
 

@@ -60,23 +60,12 @@ log = logging.getLogger("meta-ads-etl")
 
 # ── classification helpers (unchanged) ──────────────────────────────
 
-def match_studio(name: str, studios: list[dict]) -> dict | None:
-    """Match an ad/adset name to a studio. Every ad follows a "{date}-{CODE}-{seq}
-    - ..." naming convention (e.g. "26-FL-018-01 Open"), so the studio's own code
-    is checked first — it's embedded reliably even when the studio name/keyword
-    isn't (many NSO adsets say just "Open", never the studio name). Falls back to
-    the keyword `match` substring for any legacy naming that doesn't embed a code.
-    """
-    n = name or ""
-    for s in studios:
-        if s.get("code") and s["code"] in n:
-            return s
-    n_lower = n.lower()
-    for s in studios:
-        if s.get("match") and s["match"].lower() in n_lower:
-            return s
-    return None
 
+def _flat(ad_daily_idx: dict[tuple, list[dict]]):
+    """Every ad_daily row across all (date, ad_id) buckets — a shared-adset
+    bucket contributes one row per studio."""
+    for rows in ad_daily_idx.values():
+        yield from rows
 
 
 _VIDEO_KEYWORDS  = {"VIDEO", "REEL", "REELS", "GIF", "STORY", "STORIES"}
@@ -366,19 +355,21 @@ def run(start_override: str | None = None, end_override: str | None = None):
             library_id_by_ad[ad_id] = eosi
 
     # ── 3. Process daily ad rows → ad_daily ──────────────────────────
-    # Index bucket keyed by (date, ad_id) — deliberately NOT studio_code. An ad
-    # belongs to exactly one studio on a given day; if a re-fetch resolves it to
-    # a different studio than before (adset renamed/reassigned, or a one-off bad
-    # match from Meta's API), this key shape means the new attribution REPLACES
-    # the old one instead of sitting alongside it. Keying by (date, studio_code,
-    # ad_id) previously let both linger forever once written, double-counting
-    # that ad's spend across two studios for as long as both entries existed.
-    ad_daily_idx: dict[tuple, dict] = {}
+    # Index bucket keyed by (date, ad_id) — deliberately NOT studio_code. Each
+    # bucket holds that ad's row(s) for the day: one row normally, or one row
+    # per studio for an ad set shared between studios (every studio code in the
+    # adset name, e.g. "26-FL-012+FL-014-01", metrics split evenly — see
+    # studios.match_studios). A re-fetch REPLACES the whole bucket, so if the
+    # adset is renamed/reassigned (or Meta returns a one-off bad match) the new
+    # attribution supersedes the old instead of sitting alongside it. Keying by
+    # (date, studio_code, ad_id) previously let both linger forever once
+    # written, double-counting that ad's spend across two studios.
+    ad_daily_idx: dict[tuple, list[dict]] = {}
 
     # Seed from existing data (will be overwritten for dates we're refetching)
     for r in existing_ad_daily:
         k = (r["date"], r["ad_id"])
-        ad_daily_idx[k] = r
+        ad_daily_idx.setdefault(k, []).append(r)
 
     # Track ad name per ad_id (for ad_meta, in case list_ads_for_account failed)
     ad_name_seen: dict[str, str] = {}
@@ -397,12 +388,13 @@ def run(start_override: str | None = None, end_override: str | None = None):
             rows_skipped += 1
             continue
 
-        studio = match_studio(adset_name, studios_cfg)
-        if not studio:
+        matched = studios_registry.match_studios(adset_name, studios_cfg)
+        if not matched:
             rows_skipped += 1
             continue
 
-        sc       = studio["code"]
+        codes    = [s["code"] for s in matched]
+        sc       = "+".join(codes)  # single code for normal ads; "FL-012+FL-014" for shared
         ad_name  = row.get("ad_name", "")
         spend    = round(safe_float(row.get("spend")), 2)
         impr     = int(safe_float(row.get("impressions")))
@@ -412,47 +404,60 @@ def run(start_override: str | None = None, end_override: str | None = None):
         trials         = trials_of(row)
 
         ad_name_seen[ad_id]  = ad_name
-        ad_studio_seen[ad_id] = sc
+        ad_studio_seen[ad_id] = codes[0]
 
         # ad_daily upsert — (date, ad_id) only, see key-shape comment above.
         ak = (d, ad_id)
-        prev = ad_daily_idx.get(ak)
-        if prev and prev.get("studio_code") and prev["studio_code"] != sc:
+        prev_codes = "+".join(r["studio_code"] for r in ad_daily_idx.get(ak, []) if r.get("studio_code"))
+        if prev_codes and prev_codes != sc:
             log.warning(
                 f"  ⚠ ad {ad_id} ({ad_name!r}) on {d} matched to {sc}, was "
-                f"{prev['studio_code']} — adset renamed/reassigned, or a stale/"
+                f"{prev_codes} — adset renamed/reassigned, or a stale/"
                 f"inconsistent match. Verify against the ad account if unexpected."
             )
             rows_reattributed += 1
             dq_alerts_new.append({
-                "id":           f"{d}:{ad_id}:{prev['studio_code']}:{sc}",
+                "id":           f"{d}:{ad_id}:{prev_codes}:{sc}",
                 "type":         "meta_ad_reattribution",
                 "date":         d,
                 "ad_id":        ad_id,
                 "ad_name":      ad_name,
-                "from_studio":  prev["studio_code"],
+                "from_studio":  prev_codes,
                 "to_studio":    sc,
                 "detected_at":  datetime.now(timezone.utc).isoformat(),
             })
-        ad_daily_idx[ak] = {
-            "date":          d,
-            "studio_code":   sc,
-            "ad_id":         ad_id,
-            "ad_name":       ad_name,
-            "spend":         spend,
-            "impressions":   impr,
-            "clicks":        clicks,
-            "leads":         leads,
-            "offsite_leads": offsite_leads,
-            "trials":        trials,
-        }
+        n = len(codes)
+        shares = zip(
+            codes,
+            studios_registry.split_evenly(spend, n),
+            studios_registry.split_evenly(impr, n),
+            studios_registry.split_evenly(clicks, n),
+            studios_registry.split_evenly(leads, n),
+            studios_registry.split_evenly(offsite_leads, n),
+            studios_registry.split_evenly(trials, n),
+        )
+        ad_daily_idx[ak] = [
+            {
+                "date":          d,
+                "studio_code":   c,
+                "ad_id":         ad_id,
+                "ad_name":       ad_name,
+                "spend":         sp,
+                "impressions":   im,
+                "clicks":        cl,
+                "leads":         ld,
+                "offsite_leads": ol,
+                "trials":        tr,
+            }
+            for c, sp, im, cl, ld, ol, tr in shares
+        ]
 
         rows_written += 1
 
     log.info(f"  processed: {rows_written} matched, {rows_skipped} skipped (no studio match)")
     if rows_reattributed:
         log.warning(f"  ⚠ {rows_reattributed} (date, ad_id) rows changed studio attribution this run — see warnings above")
-    log.info(f"  ad_daily:  {len(ad_daily_idx)} total (date×ad) rows")
+    log.info(f"  ad_daily:  {len(ad_daily_idx)} total (date×ad) buckets")
 
     # ── 3b. Dedicated per-studio accounts (ad-level with creatives) ──
     # Studios on their own Meta account — 100% of the account belongs to that
@@ -523,7 +528,7 @@ def run(start_override: str | None = None, end_override: str | None = None):
                     if not d:
                         continue
                     account_ad_id = f"ACCOUNT_TOTAL:{code}"
-                    ad_daily_idx[(d, account_ad_id)] = {
+                    ad_daily_idx[(d, account_ad_id)] = [{
                         "date": d, "studio_code": code, "ad_id": account_ad_id,
                         "ad_name": "(account-level total)",
                         "spend": round(safe_float(row.get("spend")), 2),
@@ -531,7 +536,7 @@ def run(start_override: str | None = None, end_override: str | None = None):
                         "clicks": int(safe_float(row.get("clicks"))),
                         "leads": leads_of(row), "offsite_leads": offsite_leads_of(row),
                         "trials": trials_of(row),
-                    }
+                    }]
             except Exception as e2:
                 log.warning(f"  ❌ account-level fallback also failed for {name}: {e2}")
             continue
@@ -544,7 +549,7 @@ def run(start_override: str | None = None, end_override: str | None = None):
             ad_name = row.get("ad_name", "")
             ad_name_seen[ad_id]   = ad_name
             ad_studio_seen[ad_id] = code
-            ad_daily_idx[(d, ad_id)] = {
+            ad_daily_idx[(d, ad_id)] = [{
                 "date":          d,
                 "studio_code":   code,
                 "ad_id":         ad_id,
@@ -555,7 +560,7 @@ def run(start_override: str | None = None, end_override: str | None = None):
                 "leads":         leads_of(row),
                 "offsite_leads": offsite_leads_of(row),
                 "trials":        trials_of(row),
-            }
+            }]
 
     # ── 4. Build ad_meta snapshot ─────────────────────────────────────
     # Start from existing, then update with fresh data
@@ -613,7 +618,7 @@ def run(start_override: str | None = None, end_override: str | None = None):
     }
 
     studio_daily_fresh: dict[tuple, dict] = {}
-    for r in ad_daily_idx.values():
+    for r in _flat(ad_daily_idx):
         if r["date"] < STUDIO_DAILY_FLOOR:
             continue
         k = (r["date"], r["studio_code"])
@@ -640,25 +645,25 @@ def run(start_override: str | None = None, end_override: str | None = None):
     # that already has at least one real ad-level row.
     real_studio_dates = {
         (r["date"], r["studio_code"])
-        for r in ad_daily_idx.values()
+        for r in _flat(ad_daily_idx)
         if not r["ad_id"].startswith("ACCOUNT_TOTAL:")
     }
     stub_removed = sum(
-        1 for r in ad_daily_idx.values()
+        1 for r in _flat(ad_daily_idx)
         if r["ad_id"].startswith("ACCOUNT_TOTAL:")
         and (r["date"], r["studio_code"]) in real_studio_dates
     )
     if stub_removed:
         log.info(f"  Removing {stub_removed} ACCOUNT_TOTAL stubs superseded by ad-level rows")
         ad_daily_idx = {
-            k: r for k, r in ad_daily_idx.items()
-            if not r["ad_id"].startswith("ACCOUNT_TOTAL:")
-            or (r["date"], r["studio_code"]) not in real_studio_dates
+            k: rows for k, rows in ad_daily_idx.items()
+            if not k[1].startswith("ACCOUNT_TOTAL:")
+            or (rows[0]["date"], rows[0]["studio_code"]) not in real_studio_dates
         }
 
     # ── 5. Sort, trim to 90-day rolling window, and write ────────────
     ad_daily_out = sorted(
-        ad_daily_idx.values(),
+        _flat(ad_daily_idx),
         key=lambda r: (r["date"], r["studio_code"], r["ad_id"])
     )
 

@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 
 from meta_client import MetaClient
-from fetch_meta_ads import match_studio, safe_float
+from fetch_meta_ads import safe_float
 
 REPO_ROOT  = Path(__file__).resolve().parent
 BAKED_PATH = REPO_ROOT / "meta-ads-baked.json"
@@ -60,12 +60,15 @@ def run(month_str: str) -> None:
         if not d:
             skipped += 1
             continue
-        studio = match_studio(adset_name, studios_cfg)
-        if not studio:
+        matched = studios_registry.match_studios(adset_name, studios_cfg)
+        if not matched:
             skipped += 1
             continue
-        k = (d, studio["code"])
-        spend_by_day[k] = round(spend_by_day.get(k, 0.0) + safe_float(row.get("spend")), 2)
+        # Shared adsets (several codes in the name) split spend evenly
+        shares = studios_registry.split_evenly(safe_float(row.get("spend")), len(matched))
+        for studio, spend in zip(matched, shares):
+            k = (d, studio["code"])
+            spend_by_day[k] = round(spend_by_day.get(k, 0.0) + spend, 2)
 
     print(f"  matched {len(rows) - skipped} rows, skipped {skipped} (no studio match)")
     total = round(sum(spend_by_day.values()), 2)
