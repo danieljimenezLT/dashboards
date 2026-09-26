@@ -51,7 +51,6 @@ from meta_client import MetaClient
 REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 import studios as studios_registry
-from fetch_meta_ads import match_studio  # same code-first/keyword matcher used everywhere else
 
 OUT_PATH = REPO_ROOT / "meta-corporate-spend-monthly.json"
 
@@ -84,7 +83,7 @@ def run(month: str | None = None):
     # querying the corporate account here, so there's nothing to double-fetch
     # or exclude — if an adset name in this account happens to embed a
     # dedicated-account studio's code, it should still resolve to that
-    # studio like anywhere else match_studio() is used.
+    # studio like anywhere else match_studios() is used.
     studios_cfg = studios_registry.meta_studio_rows()
 
     meta = MetaClient()
@@ -98,13 +97,15 @@ def run(month: str | None = None):
         spend = float(row.get("spend") or 0)
         if spend <= 0:
             continue
-        studio = match_studio(row.get("adset_name", ""), studios_cfg)
-        if not studio:
+        studios = studios_registry.match_studios(row.get("adset_name", ""), studios_cfg)
+        if not studios:
             skipped += 1
             continue
         matched += 1
-        code = studio["code"]
-        by_studio[code] = by_studio.get(code, 0) + spend
+        # Shared adsets (several codes in the name) split spend evenly
+        for studio, share in zip(studios, studios_registry.split_evenly(spend, len(studios))):
+            code = studio["code"]
+            by_studio[code] = by_studio.get(code, 0) + share
 
     log.info(f"  {matched} adsets matched to a studio, {skipped} skipped (no studio match)")
 

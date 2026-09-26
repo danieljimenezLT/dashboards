@@ -36,10 +36,10 @@ def by_name() -> dict[str, dict]:
 
 
 def meta_studio_rows() -> list[dict]:
-    """Shape expected by fetch_meta_ads.py's match_studio(): {code, name, state, match}.
+    """Shape expected by match_studios(): {code, name, state, match}.
 
     Includes any studio with a `code` OR a `meta.match` — not just ones with a
-    match keyword — because match_studio() checks the code embedded in the ad/
+    match keyword — because match_studios() checks the code embedded in the ad/
     adset name first (e.g. "26-FL-018-01 Open" -> FL-018) and only falls back to
     the keyword. A studio with a code but no match keyword is still matchable.
     """
@@ -51,6 +51,40 @@ def meta_studio_rows() -> list[dict]:
             continue
         rows.append({"code": code, "name": s["name"], "state": s.get("state"), "match": match})
     return rows
+
+
+def match_studios(name: str, studios: list[dict]) -> list[dict]:
+    """Match an ad/adset name to one or MORE studios, for ad sets shared between
+    studios (e.g. "26-FL-012+FL-014-01 - Miramar/Pembroke"). Every studio code
+    embedded in the name is returned, in the order it appears in the name, and
+    callers split spend/metrics evenly across them (see split_evenly). With no
+    code in the name, falls back to the first keyword `match` substring hit.
+    """
+    n = name or ""
+    hits = [(n.find(s["code"]), s) for s in studios if s.get("code") and s["code"] in n]
+    if hits:
+        out, seen = [], set()
+        for _, s in sorted(hits, key=lambda h: h[0]):
+            if s["code"] not in seen:
+                seen.add(s["code"])
+                out.append(s)
+        return out
+    n_lower = n.lower()
+    for s in studios:
+        if s.get("match") and s["match"].lower() in n_lower:
+            return [s]
+    return []
+
+
+def split_evenly(value, n: int, ndigits: int = 2) -> list:
+    """Split `value` into n even shares whose sum is exactly `value` (any rounding
+    remainder goes to the first share). n == 1 returns [value] unchanged, so
+    single-studio ads keep their original int/float types."""
+    if n <= 1:
+        return [value]
+    shares = [round(value / n, ndigits)] * n
+    shares[0] = round(value - sum(shares[1:]), ndigits)
+    return shares
 
 
 def meta_dedicated_accounts() -> list[dict]:

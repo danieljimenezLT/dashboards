@@ -60,22 +60,6 @@ log = logging.getLogger("paid-ads-etl")
 
 
 # ── helpers de clasificación ─────────────────────────────────────────
-def match_studio(name: str, studios: list[dict]) -> dict | None:
-    """Match an ad/adset name to a studio. Checks the studio's own code first —
-    ads follow a "{date}-{CODE}-{seq} - ..." naming convention where the code is
-    always embedded, even when the studio name/keyword isn't (e.g. many NSO
-    adsets just say "Open"). Falls back to the keyword `match` substring."""
-    n = name or ""
-    for s in studios:
-        if s.get("code") and s["code"] in n:
-            return s
-    n_lower = n.lower()
-    for s in studios:
-        if s.get("match") and s["match"].lower() in n_lower:
-            return s
-    return None
-
-
 def _has_token(name: str, token: str) -> bool:
     if not name or not token:
         return False
@@ -390,20 +374,15 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
 
     for ins in ad_insights:
         adset = adset_by_id.get(ins.get("adset_id"), {})
-        studio = match_studio(adset.get("name", ""), studios_cfg)
-        if not studio:
+        # One studio normally; several for an adset shared between studios
+        # (e.g. "26-FL-012+FL-014-01") — metrics are split evenly across them.
+        matched = studios_registry.match_studios(adset.get("name", ""), studios_cfg)
+        if not matched:
             continue
 
         ad_name = ins.get("ad_name", "")
         aud    = match_audience(ad_name, aud_tokens_cfg)
         pillar = match_pillar(ad_name, pillar_tokens_cfg)
-        concept = detect_concept(
-            ad_name,
-            studio_match=studio.get("match"),
-            audience_tokens_flat=aud_flat,
-            pillar_tokens_flat=pillar_flat,
-            state_code=studio.get("state"),
-        )
         # Clasificación de tipo de creatividad. Usamos creative (Meta API)
         # como fuente primaria; ad_name es fallback.
         creative = creative_by_ad.get(ins.get("ad_id")) or {}
@@ -415,48 +394,64 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
             media_type = _media_type_from_name(ad_name)
             mt_via_name += 1
 
-        spend = safe_float(ins.get("spend"))
-        impressions = int(safe_float(ins.get("impressions")))
-        clicks = int(safe_float(ins.get("clicks")))
-        reach = int(safe_float(ins.get("reach")))
         _lead_types = adset_lead_types.get(ins.get("adset_id", ""), LEAD_ACTION_TYPES)
-        leads = (pixel_custom_leads_of(ins) if "_pixel_custom" in _lead_types
-                 else count_actions(ins.get("actions"), _lead_types))
-        purchases = purchases_of(ins)
-        trials = trials_of(ins)
+        n = len(matched)
+        shares = zip(
+            matched,
+            studios_registry.split_evenly(safe_float(ins.get("spend")), n),
+            studios_registry.split_evenly(int(safe_float(ins.get("impressions"))), n),
+            studios_registry.split_evenly(int(safe_float(ins.get("clicks"))), n),
+            studios_registry.split_evenly(int(safe_float(ins.get("reach"))), n),
+            studios_registry.split_evenly(
+                pixel_custom_leads_of(ins) if "_pixel_custom" in _lead_types
+                else count_actions(ins.get("actions"), _lead_types), n),
+            studios_registry.split_evenly(purchases_of(ins), n),
+            studios_registry.split_evenly(trials_of(ins), n),
+        )
 
-        agg = studio_agg[studio["code"]]
-        agg["impressions"] += impressions
-        agg["clicks"] += clicks
-        agg["spend"] += spend
-        agg["reach"] += reach
-        agg["leads"] += leads
-        agg["purchases"] += purchases
-        agg["trials"] += trials
+        concept = None
+        for studio, spend, impressions, clicks, reach, leads, purchases, trials in shares:
+            concept = detect_concept(
+                ad_name,
+                studio_match=studio.get("match"),
+                audience_tokens_flat=aud_flat,
+                pillar_tokens_flat=pillar_flat,
+                state_code=studio.get("state"),
+            )
 
-        def _bump(bucket: dict, ad: str):
-            bucket["spend"] += spend
-            bucket["impressions"] += impressions
-            bucket["leads"] += leads
-            if ad and ad not in bucket["ads"]:
-                bucket["ads"].append(ad)
+            agg = studio_agg[studio["code"]]
+            agg["impressions"] += impressions
+            agg["clicks"] += clicks
+            agg["spend"] += spend
+            agg["reach"] += reach
+            agg["leads"] += leads
+            agg["purchases"] += purchases
+            agg["trials"] += trials
 
-        if aud:
-            _bump(agg["_audiences"][aud], ad_name)
-            _bump(global_aud[aud], ad_name)
-        if pillar:
-            _bump(agg["_pillars"][pillar], ad_name)
-            _bump(global_pillar[pillar], ad_name)
-        if concept and concept != "(other)":
-            _bump(agg["_concepts"][concept], ad_name)
-            _bump(global_concept[concept], ad_name)
-        _bump(agg["_media_types"][media_type], ad_name)
-        _bump(global_media_type[media_type], ad_name)
+            def _bump(bucket: dict, ad: str):
+                bucket["spend"] += spend
+                bucket["impressions"] += impressions
+                bucket["leads"] += leads
+                if ad and ad not in bucket["ads"]:
+                    bucket["ads"].append(ad)
+
+            if aud:
+                _bump(agg["_audiences"][aud], ad_name)
+                _bump(global_aud[aud], ad_name)
+            if pillar:
+                _bump(agg["_pillars"][pillar], ad_name)
+                _bump(global_pillar[pillar], ad_name)
+            if concept and concept != "(other)":
+                _bump(agg["_concepts"][concept], ad_name)
+                _bump(global_concept[concept], ad_name)
+            _bump(agg["_media_types"][media_type], ad_name)
+            _bump(global_media_type[media_type], ad_name)
 
         ad_id = ins.get("ad_id")
         if ad_id:
             ad_dims[ad_id] = {
-                "studio_code": studio["code"],
+                "studio_code":  matched[0]["code"],
+                "studio_codes": [st["code"] for st in matched],
                 "ad_name":     ad_name,
                 "audience":    aud,
                 "pillar":      pillar,
@@ -644,8 +639,7 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
             if spend > 0 and (ad_id not in ad_first_seen or d < ad_first_seen[ad_id]):
                 ad_first_seen[ad_id] = d
 
-            sc = dims["studio_code"]
-            b  = d_ad_studio[(d, sc, ad_id)]
+            b  = d_ad_studio[(d, ad_id)]
             b["spend"]       += spend
             b["impressions"] += int(safe_float(row.get("impressions")))
             b["clicks"]      += int(safe_float(row.get("clicks")))
@@ -654,19 +648,30 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
                                  else count_actions(row.get("actions"), _lt))
             b["trials"]      += trials_of(row)
 
-        for (d, sc, ad_id) in sorted(d_ad_studio.keys()):
-            b = d_ad_studio[(d, sc, ad_id)]
-            das_rows.append({
-                "date":        d,
-                "studio_code": sc,
-                "ad_id":       ad_id,
-                "ad_name":     ad_dims.get(ad_id, {}).get("ad_name", ""),
-                "spend":       round(b["spend"], 2),
-                "impressions": b["impressions"],
-                "clicks":      b["clicks"],
-                "leads":       b["leads"],
-                "trials":      b["trials"],
-            })
+        for (d, ad_id) in sorted(d_ad_studio.keys()):
+            b = d_ad_studio[(d, ad_id)]
+            # Shared adsets emit one row per studio with metrics split evenly
+            codes = ad_dims[ad_id]["studio_codes"]
+            n = len(codes)
+            for sc, sp, im, cl, le, tr in zip(
+                codes,
+                studios_registry.split_evenly(round(b["spend"], 2), n),
+                studios_registry.split_evenly(b["impressions"], n),
+                studios_registry.split_evenly(b["clicks"], n),
+                studios_registry.split_evenly(b["leads"], n),
+                studios_registry.split_evenly(b["trials"], n),
+            ):
+                das_rows.append({
+                    "date":        d,
+                    "studio_code": sc,
+                    "ad_id":       ad_id,
+                    "ad_name":     ad_dims[ad_id].get("ad_name", ""),
+                    "spend":       sp,
+                    "impressions": im,
+                    "clicks":      cl,
+                    "leads":       le,
+                    "trials":      tr,
+                })
 
         log.info(f"  daily_ad_studio: {len(das_rows)} rows")
 
@@ -695,7 +700,7 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
             d_ = row.get("date_start")
             if not d_:
                 continue
-            sc_  = dims["studio_code"]
+            codes_ = dims["studio_codes"]
             aud_ = dims["audience"]
             pil_ = dims["pillar"]
             con_ = dims["concept"]
@@ -711,25 +716,31 @@ def run_one(meta: MetaClient, campaign_key: str, c: dict) -> dict:
             tr = trials_of(row)
             pu = purchases_of(row)
 
-            def _add(b, has_reach=False):
-                b["spend"]       += sp
-                b["impressions"] += im
-                b["clicks"]      += cl
-                b["leads"]       += le
-                b["trials"]      += tr
-                b["purchases"]   += pu
+            def _add(b, m, has_reach=False):
+                sp_, im_, cl_, le_, tr_, pu_, rc_ = m
+                b["spend"]       += sp_
+                b["impressions"] += im_
+                b["clicks"]      += cl_
+                b["leads"]       += le_
+                b["trials"]      += tr_
+                b["purchases"]   += pu_
                 if has_reach:
-                    b["reach"]   += rc
+                    b["reach"]   += rc_
 
-            _add(ds_studio[(d_, sc_)], has_reach=True)
-            if aud_: _add(ds_audience[(d_, aud_)])
-            if pil_: _add(ds_pillar[(d_, pil_)])
-            if con_ and con_ != "(other)": _add(ds_concept[(d_, con_)])
-            _add(ds_media[(d_, mt_)])
-            if aud_: _add(ds_stu_aud[(d_, sc_, aud_)])
-            if pil_: _add(ds_stu_pil[(d_, sc_, pil_)])
-            if con_ and con_ != "(other)": _add(ds_stu_con[(d_, sc_, con_)])
-            _add(ds_stu_med[(d_, sc_, mt_)])
+            full = (sp, im, cl, le, tr, pu, rc)
+            if aud_: _add(ds_audience[(d_, aud_)], full)
+            if pil_: _add(ds_pillar[(d_, pil_)], full)
+            if con_ and con_ != "(other)": _add(ds_concept[(d_, con_)], full)
+            _add(ds_media[(d_, mt_)], full)
+            # Per-studio buckets: each studio's even share of a shared adset
+            n_ = len(codes_)
+            per_studio = zip(*(studios_registry.split_evenly(v, n_) for v in full))
+            for sc_, m in zip(codes_, per_studio):
+                _add(ds_studio[(d_, sc_)], m, has_reach=True)
+                if aud_: _add(ds_stu_aud[(d_, sc_, aud_)], m)
+                if pil_: _add(ds_stu_pil[(d_, sc_, pil_)], m)
+                if con_ and con_ != "(other)": _add(ds_stu_con[(d_, sc_, con_)], m)
+                _add(ds_stu_med[(d_, sc_, mt_)], m)
 
         def _finish(b, extra_keys=()):
             b["cpl"] = round(b["spend"] / b["leads"],     2) if b["leads"]     else 0
@@ -964,43 +975,49 @@ def run():
         })
 
     # Merge _das_rows from all campaigns into the existing daily_ad_studio.
-    # Key: (date, ad_id) only — deliberately NOT studio_code. An ad belongs to
-    # exactly one studio on a given day; if a re-fetch resolves it to a
-    # different studio than before (adset renamed/reassigned, or a bad match),
-    # this key shape means the new attribution REPLACES the old one instead of
-    # sitting alongside it. Keying by (date, studio_code, ad_id) previously let
-    # both linger forever once written, double-counting that ad's spend across
-    # two studios for as long as both entries existed — the same bug found and
-    # fixed in the root fetch_meta_ads.py's ad_daily_idx.
-    das_index: dict[tuple, dict] = {
-        (r["date"], r["ad_id"]): r
-        for r in existing_das
-    }
-    dq_alerts_new: list[dict] = []
+    # Key: (date, ad_id) only — deliberately NOT studio_code. Each bucket holds
+    # that ad's row(s) for the day: one normally, or one per studio for an
+    # adset shared between studios (metrics split evenly). A re-fetch REPLACES
+    # the whole bucket, so if the adset is renamed/reassigned (or a bad match)
+    # the new attribution supersedes the old instead of sitting alongside it.
+    # Keying by (date, studio_code, ad_id) previously let both linger forever
+    # once written, double-counting that ad's spend across two studios — the
+    # same bug found and fixed in the root fetch_meta_ads.py's ad_daily_idx.
+    das_index: dict[tuple, list[dict]] = defaultdict(list)
+    for r in existing_das:
+        das_index[(r["date"], r["ad_id"])].append(r)
+    fresh_das: dict[tuple, list[dict]] = defaultdict(list)
     for data in campaigns_data.values():
         for r in data.pop("_das_rows", []):
-            dk = (r["date"], r["ad_id"])
-            prev = das_index.get(dk)
-            if prev and prev.get("studio_code") and prev["studio_code"] != r["studio_code"]:
-                log.warning(
-                    f"  ⚠ ad {r['ad_id']} on {r['date']} matched to {r['studio_code']}, was "
-                    f"{prev['studio_code']} — adset renamed/reassigned, or a stale/inconsistent "
-                    f"match. Verify against the ad account if unexpected."
-                )
-                dq_alerts_new.append({
-                    "id":           f"paid_ads:{r['date']}:{r['ad_id']}:{prev['studio_code']}:{r['studio_code']}",
-                    "type":         "meta_ad_reattribution",
-                    "source":       "paid_ads_daniel",
-                    "date":         r["date"],
-                    "ad_id":        r["ad_id"],
-                    "ad_name":      r.get("ad_name", ""),
-                    "from_studio":  prev["studio_code"],
-                    "to_studio":    r["studio_code"],
-                    "detected_at":  datetime.now(timezone.utc).isoformat(),
-                })
-            das_index[dk] = r
+            fresh_das[(r["date"], r["ad_id"])].append(r)
+    dq_alerts_new: list[dict] = []
+    for dk, rows in fresh_das.items():
+        prev_codes = "+".join(r["studio_code"] for r in das_index.get(dk, []) if r.get("studio_code"))
+        new_codes  = "+".join(r["studio_code"] for r in rows)
+        if prev_codes and prev_codes != new_codes:
+            date_, ad_id_ = dk
+            log.warning(
+                f"  ⚠ ad {ad_id_} on {date_} matched to {new_codes}, was "
+                f"{prev_codes} — adset renamed/reassigned, or a stale/inconsistent "
+                f"match. Verify against the ad account if unexpected."
+            )
+            dq_alerts_new.append({
+                "id":           f"paid_ads:{date_}:{ad_id_}:{prev_codes}:{new_codes}",
+                "type":         "meta_ad_reattribution",
+                "source":       "paid_ads_daniel",
+                "date":         date_,
+                "ad_id":        ad_id_,
+                "ad_name":      rows[0].get("ad_name", ""),
+                "from_studio":  prev_codes,
+                "to_studio":    new_codes,
+                "detected_at":  datetime.now(timezone.utc).isoformat(),
+            })
+        das_index[dk] = rows
 
-    daily_ad_studio = sorted(das_index.values(), key=lambda r: (r["date"], r["studio_code"], r["ad_id"]))
+    daily_ad_studio = sorted(
+        (r for rows in das_index.values() for r in rows),
+        key=lambda r: (r["date"], r["studio_code"], r["ad_id"]),
+    )
     log.info(f"  daily_ad_studio total rows: {len(daily_ad_studio)} (was {len(existing_das)})")
 
     # Merge into the shared data-quality-alerts.json (see DQ_ALERTS_PATH comment
