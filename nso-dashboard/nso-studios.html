@@ -1033,18 +1033,18 @@ function renderSummary2(){
     else inner=`<circle cx="${c}" cy="${c}" r="${c-1.5}" fill="${fillAttr}" stroke="${color}" stroke-width="2"/>`;
     return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" style="display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))">${inner}</svg>`;
   }
-  // Green flag for the always-first milestone (Full Marketing Build Out)
+  // Orange flag for the always-first milestone (Full Marketing Build Out)
   function _flagIcon(isPast,size){
-    const s=size||14,color='#27ae60';
+    const s=size||14,color='#F28C28';
     return `<svg width="${s}" height="${s}" viewBox="0 0 14 14" style="display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))"><line x1="2.5" y1="1" x2="2.5" y2="13" stroke="#1a1a2e" stroke-width="1.6" stroke-linecap="round"/><path d="M3,1.5 L11.5,3.8 L3,6.2 Z" fill="${isPast?color:'#fff'}" stroke="${color}" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
   }
   // Colors reused from the Funnel Over Time toggle (Leads / New Sales / Cancellations),
-  // plus a second, darker green so the two Paid-* milestones (which commonly
-  // appear together) don't land on the exact same color.
-  const _FUNNEL_BLUE='#00A3E0',_FUNNEL_MINT='#00FFC2',_FUNNEL_RED='#ff6b6b',_FUNNEL_MINT2='#16a085';
+  // plus purple for Paid Presales Start / Grand Opening, which a teal would lose
+  // against the bar's blue/teal gradient.
+  const _FUNNEL_BLUE='#00A3E0',_FUNNEL_MINT='#00FFC2',_FUNNEL_RED='#ff6b6b',_MS_PURPLE='#B026FF';
   const _MS_COLOR={
-    paid_presales_start_date:_FUNNEL_MINT2, preview_week:_FUNNEL_MINT, early_lead_date:_FUNNEL_RED,
-    paid_lead_gen_date:_FUNNEL_MINT, grand_opening:_FUNNEL_MINT2,
+    paid_presales_start_date:_MS_PURPLE, preview_week:_FUNNEL_MINT, early_lead_date:_FUNNEL_RED,
+    paid_lead_gen_date:_FUNNEL_MINT, grand_opening:_MS_PURPLE,
   };
   const _TIER_COLOR={tier2:_FUNNEL_BLUE, tier3:_FUNNEL_RED, tier4:_FUNNEL_MINT};
   function _msShape(m,isPast,size){
