@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-28",
+      "pr_number": 416,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/416",
+      "author": "Sebastian Arango",
+      "categories": [
+        "Campaign Dashboard"
+      ],
+      "title": "Campaign dashboard: Buy 3 Get 5 Free now shows its real sales, 2 Weeks for $40 follow-up extended",
+      "summary": "Buy 3 Get 5 Free was reading the wrong product and showed almost no sales; it now shows 22 purchases and $2,234 in revenue. The 2 Weeks for $40 post-promo period now runs through September 26, and all campaigns show up-to-date numbers."
+    },
+    {
+      "date": "2026-09-28",
       "pr_number": 415,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/415",
       "author": "Sebastian Arango",
