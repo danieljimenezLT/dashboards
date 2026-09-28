@@ -54,21 +54,31 @@ CAMPAIGNS = [
         "date_to":       "2026-07-31",
         "post_promo_to": "2026-09-26",
     },
+    # Buy 3 Get 5 Free — two variants sharing one campaign button (the
+    # dashboard groups entries by "name" and shows a toggle for "variant").
+    # SKU is "Buy 3 get 5 free" (8 classes, $96). "Buy 3 Get 2 Free" is an
+    # unrelated 5-class pack. The product stayed on sale in MindBody after the
+    # promo ended, so the second variant tracks those out-of-window sales.
     {
         "id":            "buy-3-get-5",
         "name":          "Buy 3 Get 5 Free",
-        # MindBody SKU for this promo is "Buy 3 Get 2 Free" (the $96 product; its
-        # name differs from the marketing name). The literal "Buy 3 get 5 free"
-        # SKU is a different product.
-        "product":       "Buy 3 Get 2 Free",   # exact PRODUCT_DESCRIPTION in Snowflake
+        "variant":       "Official Campaign",
+        "product":       "Buy 3 get 5 free",   # exact PRODUCT_DESCRIPTION in Snowflake
         "date_from":     "2026-08-31",
         "date_to":       "2026-09-07",
-        "post_promo_to": "2026-10-07",
-        # Hidden from the dashboard while the team reviews it: the product kept
-        # selling after the promo ended (still available in MindBody), and the
-        # SKU above is under review — "Buy 3 get 5 free" (8 classes, $96) looks
-        # like the real promo product; "Buy 3 Get 2 Free" is a 5-class pack.
-        "hidden":        True,
+        "post_promo_to": "2026-09-27",
+    },
+    {
+        "id":            "buy-3-get-5-outside",
+        "name":          "Buy 3 Get 5 Free",
+        "variant":       "Outside Official Dates",
+        "product":       "Buy 3 get 5 free",
+        "date_from":     "2026-08-25",
+        "date_to":       "2026-09-27",
+        # Sales inside the official window belong to the other variant.
+        "exclude_from":  "2026-08-31",
+        "exclude_to":    "2026-09-07",
+        "post_promo_to": "2026-09-27",
     },
     {
         "id":            "two-weeks-for-40",
@@ -204,6 +214,13 @@ def build_campaign(cur, camp):
     filt     = f"{fc} = %s"                                  # positive filter
     neg_filt = f"({fc} != %s OR {fc} IS NULL)" if fc != "PRODUCT_DESCRIPTION" else f"{fc} != %s"
 
+    # Net sales only: a refunded sale (IS_RETURNED=1) and its refund row
+    # (IS_RETURN=1, negative amount) cancel out, so neither counts as a campaign
+    # purchase, and a refunded post-promo purchase isn't a conversion. filt is
+    # only used on bare {SALES} scans; neg_filt only in joins aliased "sd".
+    filt     = f"{filt} AND IS_RETURN = 0 AND IS_RETURNED = 0"
+    neg_filt = f"{neg_filt} AND sd.IS_RETURNED = 0"
+
     # Optional studio allowlist — restricts which studios' purchases count as
     # this campaign (e.g. "2 Weeks for $40" only ran at ~25 open studios, not
     # NSO/presale locations that happened to sell the same-named product).
@@ -220,6 +237,15 @@ def build_campaign(cur, camp):
         studio_clause_sd = "(" + " OR ".join(f"sd.STUDIO_NAME ILIKE '%%{s}%%'" for s in studio_names) + ")"
         filt     = f"{filt} AND {studio_clause}"
         neg_filt = f"{neg_filt} AND {studio_clause_sd}"
+
+    # Optional excluded sub-range inside date_from..date_to (e.g. the "outside
+    # official dates" variant skips the official promo window). Only filt gets
+    # it: it defines which purchases count as the campaign; post-promo
+    # purchases (neg_filt) are unaffected. Dates come from the config above,
+    # so embedding them as literals is safe.
+    ex_from, ex_to = camp.get("exclude_from"), camp.get("exclude_to")
+    if ex_from and ex_to:
+        filt = f"{filt} AND NOT (SALE_DATE BETWEEN '{ex_from}' AND '{ex_to}')"
 
     # ── 1. Basic KPIs ───────────────────────────────────────────────────────
     r = q1(cur, f"""
@@ -970,6 +996,9 @@ def build_campaign(cur, camp):
         "date_from":         frm,
         "date_to":           to,
         "post_promo_to":     ppt,
+        "variant":           camp.get("variant"),
+        "exclude_from":      ex_from,
+        "exclude_to":        ex_to,
         "notes":             camp.get("notes", ""),
         "kpis":              kpis,
         "lead_sources":      lead_sources,
