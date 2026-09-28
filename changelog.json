@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-28",
+      "pr_number": 417,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/417",
+      "author": "Sebastian Arango",
+      "categories": [
+        "Campaign Dashboard"
+      ],
+      "title": "Campaign dashboard: Ads Report no longer shows another campaign's numbers",
+      "summary": "Switching campaigns while on the Ads Report tab used to keep showing the previous campaign's Meta Ads numbers. Campaigns without Meta ads (Buy 3 Get 5 Free, Summer Pass, 33% Off) now hide the Ads Report tab and open on Summary."
+    },
+    {
+      "date": "2026-09-28",
       "pr_number": 416,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/416",
       "author": "Sebastian Arango",
