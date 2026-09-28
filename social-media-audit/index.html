@@ -739,9 +739,9 @@ function viewStudioRubric(code){
 async function loadData(){
   const _authUser = checkAuth();
   if (!_authUser) return;
-  if (_authUser.role !== 'admin') { location.replace('../home.html'); return; }
+  if (_authUser.role !== 'admin' && _authUser.role !== 'corporate') { location.replace('../home.html'); return; }
   renderAuthNav(_authUser);
-  document.getElementById('fetchDataBtn').style.display = '';
+  if (_authUser.role === 'admin') document.getElementById('fetchDataBtn').style.display = '';
 
   try {
     const res = await fetch('data/latest.json?_=' + Date.now());
