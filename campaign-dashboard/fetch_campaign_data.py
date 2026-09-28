@@ -57,7 +57,10 @@ CAMPAIGNS = [
     {
         "id":            "buy-3-get-5",
         "name":          "Buy 3 Get 5 Free",
-        "product":       "Buy 3 get 5 free",   # exact PRODUCT_DESCRIPTION in Snowflake
+        # MindBody SKU for this promo is "Buy 3 Get 2 Free" (the $96 product; its
+        # name differs from the marketing name). The literal "Buy 3 get 5 free"
+        # SKU is a different product.
+        "product":       "Buy 3 Get 2 Free",   # exact PRODUCT_DESCRIPTION in Snowflake
         "date_from":     "2026-08-31",
         "date_to":       "2026-09-07",
         "post_promo_to": "2026-10-07",
@@ -68,7 +71,7 @@ CAMPAIGNS = [
         "product":       "2 Weeks for $40",
         "date_from":     "2026-08-25",
         "date_to":       "2026-09-07",
-        "post_promo_to": "2026-09-19",
+        "post_promo_to": "2026-09-26",
         # Same ~25-studio allowlist fetch_2weeks_data.py used — this promo
         # ran at open studios only, not NSO/presale locations (e.g. Naples -
         # Mercato sold the same-named product during its own presale, but
