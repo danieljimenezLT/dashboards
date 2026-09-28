@@ -42,7 +42,7 @@ CAMPAIGNS = [
         "product":       "3 Month Summer Pass",
         "date_from":     "2026-05-15",
         "date_to":       "2026-06-15",
-        "post_promo_to": "2026-08-15",
+        "post_promo_to": "2026-09-26",
     },
     {
         "id":            "33-percent-off",
@@ -52,7 +52,7 @@ CAMPAIGNS = [
         "filter_value":  "Summer 33% off 10 and 20 pack",
         "date_from":     "2026-07-01",
         "date_to":       "2026-07-31",
-        "post_promo_to": "2026-08-15",
+        "post_promo_to": "2026-09-26",
     },
     {
         "id":            "buy-3-get-5",
@@ -64,6 +64,11 @@ CAMPAIGNS = [
         "date_from":     "2026-08-31",
         "date_to":       "2026-09-07",
         "post_promo_to": "2026-10-07",
+        # Hidden from the dashboard while the team reviews it: the product kept
+        # selling after the promo ended (still available in MindBody), and the
+        # SKU above is under review — "Buy 3 get 5 free" (8 classes, $96) looks
+        # like the real promo product; "Buy 3 Get 2 Free" is a 5-class pack.
+        "hidden":        True,
     },
     {
         "id":            "two-weeks-for-40",
@@ -994,6 +999,9 @@ cur = conn.cursor()
 
 results = []
 for camp in CAMPAIGNS:
+    if camp.get("hidden"):
+        print(f"  Skipping (hidden): {camp['name']}")
+        continue
     print(f"  Fetching: {camp['name']} ({camp['product']})…")
     try:
         data = build_campaign(cur, camp)
