@@ -42,6 +42,10 @@
   .camp-btn.active{background:#00A3E0;color:#fff}
   .camp-btn:hover:not(.active){background:rgba(0,163,224,.08)}
   .camp-select-sub{font-family:'Open Sans',sans-serif;font-size:12px;color:#5a7a8a}
+  .camp-variant-group{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:10px}
+  .variant-btn{font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:6px 18px;border-radius:20px;border:1.5px solid #0084B5;background:transparent;color:#0084B5;cursor:pointer}
+  .variant-btn.active{background:#0084B5;color:#fff}
+  .variant-btn:hover:not(.active){background:rgba(0,132,181,.08)}
   /* Tab nav — simple underline style */
   .tab-nav{display:flex;background:#fff;border-bottom:1.5px solid #dde8ef;padding:0 24px;gap:0}
   .tab-btn{font-family:'Oswald',sans-serif;font-style:italic;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a7a8a;background:none;border:none;border-bottom:3px solid transparent;padding:12px 16px;cursor:pointer;margin-bottom:-1.5px;transition:color .15s,border-color .15s}
@@ -71,6 +75,7 @@
 <!-- Campaign selector -->
 <div class="camp-select-bar">
   <div id="campSelector" class="camp-select-group"></div>
+  <div id="campVariants" class="camp-variant-group" style="display:none"></div>
   <div class="camp-select-sub" id="campSub"></div>
 </div>
 
@@ -459,9 +464,42 @@ function getEmailData() {
   return (EMAIL_METRICS_BY_CAMPAIGN[CAMP && CAMP.id] || []);
 }
 
-function selectCampaign(idx, btn) {
+// Entries that share a name are variants of one campaign (e.g. Buy 3 Get 5
+// Free: official window vs. sales outside it): one button, plus a toggle.
+let CAMP_GROUPS = [];   // [[idx in ALL_CAMPAIGNS, ...], ...] in first-seen order
+
+function renderCampaignSelector() {
+  const byName = new Map();
+  ALL_CAMPAIGNS.forEach((c, i) => {
+    if (!byName.has(c.name)) byName.set(c.name, []);
+    byName.get(c.name).push(i);
+  });
+  CAMP_GROUPS = [...byName.values()];
+  document.getElementById('campSelector').innerHTML = CAMP_GROUPS.map((g, gi) =>
+    `<button class="camp-btn${gi===0?' active':''}" onclick="selectCampaign(${gi},this)">${ALL_CAMPAIGNS[g[0]].name}</button>`
+  ).join('');
+}
+
+function renderVariantToggle(gi, activeIdx) {
+  const el = document.getElementById('campVariants');
+  const g = CAMP_GROUPS[gi] || [];
+  if (g.length < 2) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  el.style.display = '';
+  el.innerHTML = g.map(i =>
+    `<button class="variant-btn${i===activeIdx?' active':''}" onclick="selectVariant(${gi},${i})">${ALL_CAMPAIGNS[i].variant || ALL_CAMPAIGNS[i].id}</button>`
+  ).join('');
+}
+
+function selectCampaign(gi, btn) {
   document.querySelectorAll('.camp-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  const idx = CAMP_GROUPS[gi][0];
+  renderVariantToggle(gi, idx);
+  applyCampaign(ALL_CAMPAIGNS[idx]);
+}
+
+function selectVariant(gi, idx) {
+  renderVariantToggle(gi, idx);
   applyCampaign(ALL_CAMPAIGNS[idx]);
 }
 let ALL_STUDIOS = [];
@@ -800,10 +838,12 @@ function renderFunnel() {
   const participants = k.unique_clients;
   const memClients   = k.membership_conversions;
 
+  // No participants (e.g. every promo sale was refunded) → show 0%, not NaN%
+  const pctOf = v => participants > 0 ? fmtP(v / participants * 100) : fmtP(0);
   const steps = [
-    {val:participants, label:'Promo Participants',    rate:'100%',                                  color:'#00A3E0'},
-    {val:memClients,   label:'Membership Clients',    rate:fmtP(memClients/participants*100),        color:'#0a8a4a'},
-    {val:packTxn,      label:'Class Pack Transactions', rate:fmtP(packTxn/participants*100),         color:'#0084B5'},
+    {val:participants, label:'Promo Participants',    rate:'100%',          color:'#00A3E0'},
+    {val:memClients,   label:'Membership Clients',    rate:pctOf(memClients), color:'#0a8a4a'},
+    {val:packTxn,      label:'Class Pack Transactions', rate:pctOf(packTxn),  color:'#0084B5'},
   ];
   document.getElementById('funnelVisual').innerHTML = steps.map(s =>
     `<div class="funnel-step" style="border-top-color:${s.color}">
@@ -1387,12 +1427,14 @@ function renderB1g3Ads() {
 }
 
 // ── Ads Report ────────────────────────────────────────────────────────────
-// Finds the matching paid-ads campaign by date proximity
+// Finds the matching paid-ads campaign by date proximity. Both ends must
+// match: start alone let "Buy 3 Get 5 — Outside Official Dates" (Aug 25 –
+// Sep 27) pick up 2 Weeks for $40's ads (Aug 25 – Sep 7).
 function findPaidAdsCampaign() {
   if (!PAID_ADS_DATA || !CAMP) return null;
-  const target = CAMP.date_from;
+  const near = (a, b) => a && b && Math.abs(new Date(a) - new Date(b)) <= 2 * 86400000;
   for (const [, c] of Object.entries(PAID_ADS_DATA.campaigns || {})) {
-    if (c.date_start && Math.abs(new Date(c.date_start) - new Date(target)) <= 2 * 86400000) {
+    if (near(c.date_start, CAMP.date_from) && near(c.date_end, CAMP.date_to)) {
       return c;
     }
   }
@@ -1577,8 +1619,10 @@ function renderAdsReport() {
 // ── Main ──────────────────────────────────────────────────────────────────
 function applyCampaign(camp) {
   CAMP = camp;
+  const excl = camp.exclude_from && camp.exclude_to
+    ? ` (excluding ${fmtDateStr(camp.exclude_from)} – ${fmtDateStr(camp.exclude_to)})` : '';
   document.getElementById('campSub').textContent =
-    `Promo: ${fmtDateStr(camp.date_from)} – ${fmtDateStr(camp.date_to)}  ·  Post-promo through ${fmtDateStr(camp.post_promo_to)}`;
+    `Promo: ${fmtDateStr(camp.date_from)} – ${fmtDateStr(camp.date_to)}${excl}  ·  Post-promo through ${fmtDateStr(camp.post_promo_to)}`;
 
   const ppEnd = document.getElementById('postPromoEnd');
   if (ppEnd) ppEnd.textContent = fmtDateStr(camp.post_promo_to);
@@ -1618,11 +1662,11 @@ async function loadData() {
     }
 
     ALL_CAMPAIGNS = json.campaigns || [json];
-    const sel = document.getElementById('campSelector');
-    sel.innerHTML = ALL_CAMPAIGNS.map((c, i) =>
-      `<button class="camp-btn${i===0?' active':''}" onclick="selectCampaign(${i},this)">${c.name}</button>`
-    ).join('');
-    if (ALL_CAMPAIGNS.length) applyCampaign(ALL_CAMPAIGNS[0]);
+    renderCampaignSelector();
+    if (ALL_CAMPAIGNS.length) {
+      renderVariantToggle(0, CAMP_GROUPS[0][0]);
+      applyCampaign(ALL_CAMPAIGNS[CAMP_GROUPS[0][0]]);
+    }
   } catch(e) {
     console.error('Failed to load campaign data:', e);
     document.getElementById('campSub').textContent = 'Error loading data — check console';
