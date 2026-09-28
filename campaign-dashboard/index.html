@@ -81,7 +81,7 @@
   <button class="tab-btn" onclick="showTab('sources',this)">Sources</button>
   <button class="tab-btn" onclick="showTab('segments',this)">Client Segments</button>
   <button class="tab-btn" onclick="showTab('email',this)">Email Metrics</button>
-  <button class="tab-btn" onclick="showTab('ads',this)">Ads Report</button>
+  <button class="tab-btn" id="adsTabBtn" onclick="showTab('ads',this)">Ads Report</button>
 </nav>
 
 <!-- Studio filter -->
@@ -319,6 +319,7 @@
 
 <!-- ── TAB 6: ADS REPORT ──────────────────────────────────────────── -->
 <div class="tab-pane" id="tab-ads">
+  <p class="filter-note" id="adsEmpty" style="display:none">No Meta Ads data for this campaign.</p>
   <div id="std-ads-content">
     <p class="filter-note" id="adsNote">Meta Ads · promo period</p>
     <div class="kpi-grid" id="adsKpiGrid"></div>
@@ -1401,21 +1402,39 @@ function findPaidAdsCampaign() {
 function renderAdsReport() {
   const b1g3El  = document.getElementById('b1g3-ads-content');
   const stdEl   = document.getElementById('std-ads-content');
+  const emptyEl = document.getElementById('adsEmpty');
+  const tabBtn  = document.getElementById('adsTabBtn');
 
   // If buy-1-get-3 and dedicated data loaded, use the B1G3 ads view
   if (CAMP && CAMP.id === 'buy-1-get-3' && B1G3_DATA) {
-    if (stdEl)  stdEl.style.display  = 'none';
-    if (b1g3El) b1g3El.style.display = '';
+    if (emptyEl) emptyEl.style.display = 'none';
+    if (tabBtn)  tabBtn.style.display  = '';
+    if (stdEl)   stdEl.style.display   = 'none';
+    if (b1g3El)  b1g3El.style.display  = '';
     renderB1g3Ads();
     return;
   }
 
   // Otherwise show standard paid-ads view
   if (b1g3El) b1g3El.style.display = 'none';
-  if (stdEl)  stdEl.style.display  = '';
 
+  // No matching Meta campaign (e.g. Buy 3 Get 5 had no ads): hide the tab and
+  // clear the view — returning early used to leave the previous campaign's
+  // numbers on screen. If the user was on this tab, fall back to Summary.
   const pac = findPaidAdsCampaign();
-  if (!pac) return;
+  if (!pac) {
+    if (stdEl)   stdEl.style.display   = 'none';
+    if (emptyEl) emptyEl.style.display = '';
+    if (tabBtn) {
+      tabBtn.style.display = 'none';
+      if (tabBtn.classList.contains('active'))
+        showTab('summary', document.querySelector('.tab-btn'));
+    }
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+  if (tabBtn)  tabBtn.style.display  = '';
+  if (stdEl)   stdEl.style.display   = '';
 
   const sel = getSelected('studioMenu');
   const allSelected = !sel || sel.length === 0 || sel.length === ALL_STUDIOS.length;
