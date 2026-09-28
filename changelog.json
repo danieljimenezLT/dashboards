@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-28",
+      "pr_number": 421,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/421",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Summary for Ops now lives in the same table as the rest of the Social Media Audit summary",
+      "summary": "Merged the separate \"Summary for Ops\" table into the \"All Studios\" table on the Summary tab instead of duplicating Studio/Type columns in two places."
+    },
+    {
+      "date": "2026-09-28",
       "pr_number": 422,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/422",
       "author": "Sebastian Arango",
