@@ -482,7 +482,12 @@ function computeScores(studio, monthKey){
   const localContent = Math.min(11, round1(0.7*postsReels + 0.3*stories));
 
   const sDMs = m.repliesDMs==='Yes' ? 10 : (m.repliesDMs==='Sometimes' ? 5 : 0);
-  const sComments = m.repliesComments ? 10 : 0;
+  // repliesComments is "Yes"/"Sometimes"/"No" going forward (mirroring
+  // repliesDMs — a single late reply gets partial credit instead of the
+  // same 0 as never replying at all). Older fetched months stored it as a
+  // plain boolean before this changed, so both forms are handled here.
+  const commentsTier = m.repliesComments===true ? 'Yes' : (m.repliesComments===false ? 'No' : m.repliesComments);
+  const sComments = commentsTier==='Yes' ? 10 : (commentsTier==='Sometimes' ? 5 : 0);
 
   let sGrowth, growthGoalLabel;
   if(exempt){ sGrowth=10; growthGoalLabel='Exempt (legacy account)'; }
@@ -524,13 +529,13 @@ function computeScores(studio, monthKey){
   if(sStoriesCount<10) recs.push(`Post more Stories — currently averaging ${m.storiesCount}/mo vs. a goal of 20.`);
   if(sStoriesBrand<10) recs.push('Keep Stories on-brand — avoid off-brand filters, music, or third-party logos.');
   if(sDMs<10) recs.push(m.repliesDMs==='Sometimes' ? 'Reply to all DMs, not just some — aim for 100% response rate.' : 'No DM replies recorded — this needs immediate attention.');
-  if(!m.repliesComments) recs.push('Reply to comments on posts within 48 hours.');
+  if(sComments<10) recs.push(commentsTier==='Sometimes' ? 'Reply to all comments, not just some — aim for 100% within 1 business day.' : 'No on-time comment replies recorded — this needs immediate attention.');
   if(sGrowth<10 && !exempt) recs.push(`Follower growth is ${fmtPctSigned(m.followerGrowthPct)}, below the goal (${growthGoalLabel}) — increase posting cadence and cross-promote in Stories.`);
   if(isNso && sNewFollowers<10 && !exempt) recs.push(`Net new followers (${m.netNewFollowers||0}) fell short of the 120+ goal for NSO studios.`);
 
   return { m, isNso, exempt, sImgVideo, sCaption, sAudio, sEngagement, sReach, reachGoal, reachBonus, onBrandCalc,
     postsGoal, sPosts, postsReels, sStoriesCount, sStoriesBrand, stories, localContent,
-    sDMs, sComments, sGrowth, growthGoalLabel, sNewFollowers, communityMgmt, classification, recs };
+    sDMs, sComments, commentsTier, sGrowth, growthGoalLabel, sNewFollowers, communityMgmt, classification, recs };
 }
 
 // Short, ops-facing paraphrase of a Brand Offenses Tracker feedback string.
@@ -655,11 +660,11 @@ function renderRubric(){
 
   const wCm = r.isNso
     ? [['1. Replies to DMs'+_mockFlag('repliesDMs'),'40%',m.repliesDMs,'Yes',r.sDMs,'dms'],
-       ['2. Replies to comments'+_mockFlag('repliesComments'),'15%',m.repliesComments?'Yes':'No','Yes',r.sComments,'comments'],
+       ['2. Replies to comments'+_mockFlag('repliesComments'),'15%',r.commentsTier,'Yes',r.sComments,'comments'],
        ['3. Follower Growth','22.5%',fmtPctSigned(m.followerGrowthPct),r.growthGoalLabel,r.sGrowth,'growth'],
        ['4. Net New Followers (NSO only)'+_mockFlag('netNewFollowers'),'22.5%',r.exempt?'—':(m.netNewFollowers||0),'120+',r.sNewFollowers,'newFollowers']]
     : [['1. Replies to DMs'+_mockFlag('repliesDMs'),'40%',m.repliesDMs,'Yes',r.sDMs,'dms'],
-       ['2. Replies to comments'+_mockFlag('repliesComments'),'15%',m.repliesComments?'Yes':'No','Yes',r.sComments,'comments'],
+       ['2. Replies to comments'+_mockFlag('repliesComments'),'15%',r.commentsTier,'Yes',r.sComments,'comments'],
        ['3. Follower Growth','45%',fmtPctSigned(m.followerGrowthPct),r.growthGoalLabel,r.sGrowth,'growth']];
 
   const cmBadge = document.getElementById('communityScoreBadge');

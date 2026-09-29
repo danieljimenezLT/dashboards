@@ -144,8 +144,16 @@ def classify_dms(total: int, on_time: int) -> str:
     return DM_ONTIME_PARTIAL
 
 
-def classify_comments(total: int, on_time: int) -> bool:
-    return total == 0 or on_time == total
+def classify_comments(total: int, on_time: int) -> str:
+    """Mirrors classify_dms(): full credit if every comment was replied to in
+    time (or there were none), no credit if none were, partial credit
+    ("Sometimes") in between — instead of collapsing any single late reply
+    down to the same 0 credit as never replying at all."""
+    if total == 0 or on_time == total:
+        return DM_ONTIME_PASS
+    if on_time == 0:
+        return DM_ONTIME_FAIL
+    return DM_ONTIME_PARTIAL
 
 
 # ── Network calls ───────────────────────────────────────────────────────────

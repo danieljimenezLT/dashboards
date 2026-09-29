@@ -67,7 +67,7 @@ EXEMPT_GROWTH_STUDIOS = {"Dallas - Uptown"}
 # not (kept in sync manually; there's no shared source of truth for this).
 MOCK_DEFAULTS = {
     "repliesDMs": "Yes",
-    "repliesComments": True,
+    "repliesComments": "Yes",
 }
 
 # Brand Offenses Tracker "Type of offense" values -> the rubric's on-brand
