@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-29",
+      "pr_number": 430,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/430",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Follower Growth targets on the Social Media Audit now scale with how long a studio has been open",
+      "summary": "NSO studios are unchanged (10% goal). Studios in their first 12 months use a steeper 2% goal with different Community Management weights (40/20/40). After 12 months, growth drops out of Community Management entirely (DM/Comments split 60/40)."
+    },
+    {
+      "date": "2026-09-29",
       "pr_number": 431,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/431",
       "author": "Santiago Estrada",
