@@ -48,6 +48,7 @@
   <div class="nav-tabs" id="navTabs">
     <button class="nav-tab active" id="navTabOs" onclick="switchTab('os')">OS</button>
     <button class="nav-tab" id="navTabNso" onclick="switchTab('nso')">NSO</button>
+    <button class="nav-tab" id="navTabMonthly" onclick="switchTab('monthly')">Monthly summary</button>
   </div>
   <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Toggle navigation">
     <span></span><span></span><span></span>
@@ -295,6 +296,46 @@
     </div>
   </div>
 
+  <!-- ========================= MONTHLY SUMMARY TAB ========================= -->
+  <div class="tab-content" id="tab-monthly">
+
+    <div class="controls-bar">
+      <button class="controls-toggle" onclick="toggleControls(this)">Filters ▾</button>
+      <div class="controls-inner">
+        <span class="ctrl-label">Studio</span>
+        <div class="multi-select" id="studioDropdownMS">
+          <button class="ms-trigger" onclick="toggleDropdown('studioMS')">
+            <span id="studioLabelMS">All Studios</span><span class="ms-arrow">▾</span>
+          </button>
+          <div class="ms-menu" id="studioMSMenu"></div>
+        </div>
+        <div class="ctrl-sep"></div>
+        <span class="ctrl-label">Source</span>
+        <div class="multi-select" id="sourceDropdownMS">
+          <button class="ms-trigger" onclick="toggleDropdown('sourceMS')">
+            <span id="sourceLabelMS">All Sources</span><span class="ms-arrow">▾</span>
+          </button>
+          <div class="ms-menu" id="sourceMSMenu"></div>
+        </div>
+        <div class="ctrl-sep"></div>
+        <span class="ctrl-label">Date range</span>
+        <div class="ctrl-date">
+          <input type="date" id="msFFrom" onchange="applyMonthlyFilters()"/>
+          <span style="font-size:12px;color:#5a7a8a">→</span>
+          <input type="date" id="msFTo" onchange="applyMonthlyFilters()"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card" style="margin:16px 24px 20px">
+      <div class="chart-card-title-row">
+        <div class="chart-card-title">Monthly Performance by Studio</div>
+        <button class="download-btn" onclick="downloadMonthlySummaryCSV()">⬇ Download CSV</button>
+      </div>
+      <div style="overflow-x:auto"><table class="data-table" id="monthlySummaryTable"></table></div>
+    </div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -430,9 +471,9 @@ function switchTab(id){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
-  document.getElementById(id==='os'?'navTabOs':'navTabNso').classList.add('active');
+  document.getElementById({os:'navTabOs',nso:'navTabNso',monthly:'navTabMonthly'}[id]).classList.add('active');
   document.getElementById('navTabs').classList.remove('open');
-  if(id==='os') applyOsFilters(); else applyNsoFilters();
+  if(id==='os') applyOsFilters(); else if(id==='nso') applyNsoFilters(); else applyMonthlyFilters();
 }
 function toggleNav(){ document.getElementById('navTabs').classList.toggle('open'); }
 function toggleControls(btn){
@@ -445,7 +486,8 @@ function toggleControls(btn){
 // is currently visible (the only one a user's checkbox click could target).
 function applyFilters(){
   if(document.getElementById('tab-os').classList.contains('active')) applyOsFilters();
-  else applyNsoFilters();
+  else if(document.getElementById('tab-nso').classList.contains('active')) applyNsoFilters();
+  else applyMonthlyFilters();
 }
 
 // Renders the "LAST" column beside a timeline chart: one row per dataset,
@@ -1254,6 +1296,198 @@ function buildNsoCprStudioTable(activeStudios,fromStr,toStr,selSrc){
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
+   MONTHLY SUMMARY TAB — per-studio, per-month Leads / FT / Members / spend /
+   CPL / CPFT / CPA table with CSV export (formerly studio-performance-summary.html).
+   Reuses OS_RAW + OS_SPEND_RAW loaded in loadData().
+   ══════════════════════════════════════════════════════════════════════════ */
+const MS_COLS=[
+  {key:'leads',    label:'Leads',        fmt:v=>Math.round(v)},
+  {key:'ft',       label:'FT',           fmt:v=>Math.round(v)},
+  {key:'mem',      label:'Members',      fmt:v=>Math.round(v)},
+  {key:'spend',    label:'Mkt Spend',    fmt:v=>v.toFixed(2)},
+  {key:'google',   label:'Google Ads',   fmt:v=>v.toFixed(2)},
+  {key:'meta',     label:'Meta Ads',     fmt:v=>v.toFixed(2)},
+  {key:'leadteam', label:'Leadteam Fee', fmt:v=>v.toFixed(2)},
+  {key:'cpl',      label:'CPL',          fmt:v=>v.toFixed(2)},
+  {key:'cpft',     label:'CPFT',         fmt:v=>v.toFixed(2)},
+  {key:'cpa',      label:'CPA',          fmt:v=>v.toFixed(2)},
+];
+let _msExport=null;
+
+// Default: last full month; falls back to the last month with data.
+function msDefaultRange(){
+  const today=new Date();
+  let from=localDateStr(new Date(today.getFullYear(), today.getMonth()-1, 1));
+  let to=localDateStr(new Date(today.getFullYear(), today.getMonth(), 0));
+  const keys=[...(OS_RAW.daily_detail||[]), ...(OS_RAW.monthly_detail||[])].map(r=>r.date||r.month).filter(Boolean).sort();
+  if(keys.length && !keys.some(k=>k>=from.slice(0,7)+'-01' && k<=to.slice(0,7)+'-31')){
+    const last=new Date(keys[keys.length-1].slice(0,7)+'-01T00:00:00Z');
+    const y=last.getUTCFullYear(), m=last.getUTCMonth();
+    from=new Date(Date.UTC(y,m,1)).toISOString().slice(0,10);
+    to=new Date(Date.UTC(y,m+1,0)).toISOString().slice(0,10);
+  }
+  return {from,to};
+}
+
+function applyMonthlyFilters(){
+  if(!OS_RAW) return;
+  const fromStr=document.getElementById('msFFrom').value;
+  const toStr=document.getElementById('msFTo').value;
+  const from=fromStr ? new Date(fromStr+'T00:00:00Z') : new Date(OS_RAW.monthly_detail[0]?.month+'T00:00:00Z');
+  const to=toStr ? new Date(toStr+'T23:59:59Z') : new Date();
+  buildMonthlySummaryTable(from, to);
+}
+
+function _msMonthList(from, to){
+  const months=[];
+  let cur=new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), 1));
+  const end=new Date(Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), 1));
+  while(cur<=end){
+    const mStart=new Date(Math.max(cur.getTime(), from.getTime()));
+    const mEndFull=new Date(Date.UTC(cur.getUTCFullYear(), cur.getUTCMonth()+1, 0, 23, 59, 59));
+    const mEnd=new Date(Math.min(mEndFull.getTime(), to.getTime()));
+    months.push({start:mStart, end:mEnd, label:cur.toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'})});
+    cur=new Date(Date.UTC(cur.getUTCFullYear(), cur.getUTCMonth()+1, 1));
+  }
+  return months;
+}
+
+// Same definition as spendFor() in index.html — reads spend-data.json
+// (daily rows cover all of 2026, monthly rows cover pre-2026).
+function _msSpendFor(studio, f, t){
+  if(!OS_SPEND_RAW) return {meta:0, google:0};
+  const fT=f.getTime(), tT=t.getTime();
+  let meta=0, google=0;
+  const dailyCovered=new Set();
+  for(const r of (OS_SPEND_RAW.daily||[])){
+    const d=new Date(r.date+'T00:00:00Z').getTime();
+    if(d<fT || d>tT) continue;
+    const nm=META_CODE_TO_STUDIO[r.studio_code] || r.studio_code;
+    if(nm!==studio) continue;
+    meta+=r.meta_spend||0;
+    google+=r.google_spend||0;
+    dailyCovered.add(r.studio_code+'|'+r.date.slice(0,7));
+  }
+  for(const r of (OS_SPEND_RAW.monthly||[])){
+    const d=new Date(r.month+'T00:00:00Z').getTime();
+    if(d<fT || d>tT) continue;
+    if(dailyCovered.has(r.studio_code+'|'+r.month.slice(0,7))) continue;
+    const nm=META_CODE_TO_STUDIO[r.studio_code] || r.studio_code;
+    if(nm!==studio) continue;
+    meta+=r.meta_spend||0;
+    google+=r.google_spend||0;
+  }
+  return {meta:Math.round(meta*100)/100, google:Math.round(google*100)/100};
+}
+
+function _msLeadteamFee(f, t){
+  const days=Math.round((t.getTime()-f.getTime())/86400000);
+  return LTFEE_MONTHLY*(days/30.4375);
+}
+
+function buildMonthlySummaryTable(from, to){
+  const table=document.getElementById('monthlySummaryTable');
+  if(!table || !OS_RAW) return;
+
+  const selStudios=getSelected('studioMSMenu')||[];
+  const selSources=getSelected('sourceMSMenu')||[];
+  const studios=(selStudios.length ? selStudios : OS_RAW.studios).slice().sort();
+  const months=_msMonthList(from, to);
+
+  const f$=v=>'$'+Math.round(v).toLocaleString('en-US');
+  const f$2=v=>v>0 ? '$'+v.toFixed(2) : '—';
+
+  function metricsFor(studio, mFrom, mTo){
+    const daily=filterRows(OS_RAW.daily_detail||[], mFrom, mTo, [studio], selSources);
+    const monthly=filterRows(OS_RAW.monthly_detail||[], mFrom, mTo, [studio], selSources);
+    const {leads, ft, mem}=sumRows([...daily, ...monthly]);
+    const {meta, google}=_msSpendFor(studio, mFrom, mTo);
+    const leadteam=_msLeadteamFee(mFrom, mTo);
+    const spend=google+meta+leadteam;
+    return {
+      leads, ft, mem, spend, google, meta, leadteam,
+      cpl:  leads>0 ? spend/leads : 0,
+      cpft: ft>0    ? spend/ft    : 0,
+      cpa:  mem>0   ? spend/mem   : 0,
+    };
+  }
+
+  function blank(){ return {leads:0, ft:0, mem:0, spend:0, google:0, meta:0, leadteam:0, cpl:0, cpft:0, cpa:0}; }
+  function addInto(acc, m){ acc.leads+=m.leads; acc.ft+=m.ft; acc.mem+=m.mem; acc.spend+=m.spend; acc.google+=m.google; acc.meta+=m.meta; acc.leadteam+=m.leadteam; }
+  function finalize(acc){
+    acc.cpl =acc.leads>0 ? acc.spend/acc.leads : 0;
+    acc.cpft=acc.ft>0    ? acc.spend/acc.ft    : 0;
+    acc.cpa =acc.mem>0   ? acc.spend/acc.mem   : 0;
+    return acc;
+  }
+
+  const studioRows=studios.map(studio=>{
+    const perMonth=months.map(m=>metricsFor(studio, m.start, m.end));
+    const grand=finalize(perMonth.reduce((acc,m)=>{ addInto(acc,m); return acc; }, blank()));
+    return {studio, perMonth, grand};
+  });
+  const totalPerMonth=months.map((m,i)=>finalize(studioRows.reduce((acc,row)=>{ addInto(acc,row.perMonth[i]); return acc; }, blank())));
+  const totalGrand=finalize(studioRows.reduce((acc,row)=>{ addInto(acc,row.grand); return acc; }, blank()));
+
+  const groupStyle='border-left:1.5px solid #dde8ef';
+  const zeroSpendClass=v=>v<=0 ? ' spend-zero' : '';
+  function metricCells(m){
+    return `<td class="num" style="${groupStyle}">${m.leads.toLocaleString()}</td><td class="num">${m.ft.toLocaleString()}</td><td class="num">${m.mem.toLocaleString()}</td>`+
+           `<td class="num">${f$(m.spend)}</td>`+
+           `<td class="num${zeroSpendClass(m.google)}">${f$(m.google)}</td>`+
+           `<td class="num${zeroSpendClass(m.meta)}">${f$(m.meta)}</td>`+
+           `<td class="num${zeroSpendClass(m.leadteam)}">${f$(m.leadteam)}</td>`+
+           `<td class="num">${f$2(m.cpl)}</td><td class="num">${f$2(m.cpft)}</td><td class="num">${f$2(m.cpa)}</td>`;
+  }
+  const subHeads=MS_COLS.map((c,i)=>`<th class="num"${i===0?` style="${groupStyle}"`:''}>${c.label}</th>`).join('');
+
+  const thead='<thead>'+
+    '<tr><th rowspan="2">Studio</th>'+
+      months.map(m=>`<th colspan="${MS_COLS.length}" style="text-align:center;${groupStyle}">${m.label}</th>`).join('')+
+      `<th colspan="${MS_COLS.length}" style="text-align:center;${groupStyle}">Grand total</th>`+
+    '</tr>'+
+    '<tr>'+months.map(()=>subHeads).join('')+subHeads+'</tr>'+
+  '</thead>';
+  const tbody='<tbody>'+studioRows.map(row=>
+    `<tr><td>${row.studio}</td>`+row.perMonth.map(metricCells).join('')+metricCells(row.grand)+'</tr>'
+  ).join('')+'</tbody>';
+  const tfoot='<tfoot><tr><td>Grand Total</td>'+totalPerMonth.map(metricCells).join('')+metricCells(totalGrand)+'</tr></tfoot>';
+
+  table.innerHTML=thead+tbody+tfoot;
+  _msExport={months, studioRows, totalPerMonth, totalGrand};
+}
+
+function _msCsvField(v){
+  const s=String(v);
+  return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+
+function downloadMonthlySummaryCSV(){
+  const data=_msExport;
+  if(!data) return;
+  const {months, studioRows, totalPerMonth, totalGrand}=data;
+  const metricValues=m=>MS_COLS.map(c=>c.fmt(m[c.key]));
+
+  const header=['Studio']
+    .concat(months.flatMap(mo=>MS_COLS.map(c=>`${mo.label} ${c.label}`)))
+    .concat(MS_COLS.map(c=>`Grand Total ${c.label}`));
+  const rows=studioRows.map(row=>[row.studio].concat(row.perMonth.flatMap(metricValues)).concat(metricValues(row.grand)));
+  rows.push(['Grand Total'].concat(totalPerMonth.flatMap(metricValues)).concat(metricValues(totalGrand)));
+
+  const csv=[header, ...rows].map(r=>r.map(_msCsvField).join(',')).join('\r\n');
+  const url=URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
+  const fromStr=document.getElementById('msFFrom').value||'start';
+  const toStr=document.getElementById('msFTo').value||'end';
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`monthly-summary_${fromStr}_to_${toStr}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
    BOOTSTRAP
    ══════════════════════════════════════════════════════════════════════════ */
 async function loadData(){
@@ -1324,6 +1558,8 @@ async function loadData(){
   document.getElementById('osFFrom').value=osRange.from; document.getElementById('osFTo').value=osRange.to;
   const nsoRange=defaultRange();
   document.getElementById('nsoFFrom').value=nsoRange.from; document.getElementById('nsoFTo').value=nsoRange.to;
+  const msRange=msDefaultRange();
+  document.getElementById('msFFrom').value=msRange.from; document.getElementById('msFTo').value=msRange.to;
 
   buildMultiSelect('studioOSMenu','studioLabelOS', OS_RAW.studios, DEFAULT_EXCL_STUDIOS);
   buildSourceSelect('sourceOSMenu','sourceLabelOS', OS_RAW.sources, DEFAULT_EXCL_SOURCES);
@@ -1331,6 +1567,8 @@ async function loadData(){
   buildMultiSelect('studioNSOMenu','studioLabelNSO', NSO_TAB_STUDIOS, []);
   buildSourceSelect('sourceNSOMenu','sourceLabelNSO', NSO_ALL_SOURCES, NSO_EXCL_SRC);
   buildNsoCostMenu();
+  buildMultiSelect('studioMSMenu','studioLabelMS', OS_RAW.studios, DEFAULT_EXCL_STUDIOS);
+  buildSourceSelect('sourceMSMenu','sourceLabelMS', OS_RAW.sources, DEFAULT_EXCL_SOURCES);
 
   applyOsFilters();
   // NSO tab's canvases are hidden (max-height:0) until its nav tab is first
