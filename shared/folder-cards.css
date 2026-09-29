@@ -1,0 +1,32 @@
+/* SWEAT440 — Folder cards for hub pages (home.html, admin-reports/index.html, ...).
+   Use .folder-card (inside a .folders row placed ABOVE the .cards row) for any
+   card whose link opens another hub page / subfolder of reports, instead of a
+   single dashboard. Markup:
+
+   <div class="folders">
+     <a class="folder-card" href="sub/index.html">
+       <div class="dash-icon"><svg ...folder icon.../></div>
+       <div class="folder-body">
+         <span class="folder-badge">Folder</span>
+         <div class="dash-title">Title</div>
+         <div class="dash-desc">Description</div>
+       </div>
+       <svg class="folder-chev" ...chevron.../>
+     </a>
+   </div>
+*/
+.folders{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;width:100%;max-width:1020px;margin-bottom:32px;padding-top:14px}
+.folder-card{flex:0 1 380px;position:relative;display:flex;align-items:center;gap:18px;background:#D2EFFF;border-radius:0 18px 18px 18px;padding:22px 22px 22px 20px;text-decoration:none;text-align:left;filter:drop-shadow(0 12px 28px rgba(0,0,0,.22));transition:transform .2s ease,filter .2s ease}
+.folder-card::before{content:'';position:absolute;left:0;top:-14px;width:120px;height:15px;background:#D2EFFF;border-radius:12px 18px 0 0}
+.folder-card:hover{transform:translateY(-4px);filter:drop-shadow(0 20px 40px rgba(0,0,0,.3))}
+.folder-card .dash-icon{flex:none;margin:0;background:#fff}
+.folder-card .dash-title{margin-bottom:4px}
+.folder-card .dash-desc{color:#4a7a90}
+.folder-body{flex:1;min-width:0}
+.folder-badge{display:inline-block;background:#0084B5;color:#fff;font-family:'Oswald',sans-serif;font-style:italic;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;padding:3px 9px;border-radius:20px;margin-bottom:6px}
+.folder-chev{flex:none;width:22px;height:22px;color:#0084B5;transition:transform .2s ease}
+.folder-card:hover .folder-chev{transform:translateX(4px)}
+
+@media(max-width:600px){
+  .folder-card{flex:none;width:100%;max-width:360px}
+}
