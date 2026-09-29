@@ -145,7 +145,7 @@ Monthly: 3 years of history (by month, per studio+source)
 - `.funnel-wrap` / `.funnel-row` / `.funnel-bar-track` — funnel chart components
 
 ## Hub pages & folder cards
-Hub pages (`home.html`, `admin-reports/index.html`, `admin-reports/staging-reports.html`) list dashboards as `.dash-card`s (≈225px, up to 4 per row, centered).
+Hub pages (`home.html`, `admin-reports/index.html`, `admin-reports/dashboard-tools.html`, `admin-reports/staging-reports.html`) list dashboards as `.dash-card`s (≈225px, up to 4 per row, centered).
 Any card that links to **another hub page / subfolder of reports** (not a single dashboard) must be a `.folder-card` instead:
 - Link `shared/folder-cards.css` in the page (the markup template is in that file's header comment)
 - Place it in a `.folders` row **above** the `.cards` row
