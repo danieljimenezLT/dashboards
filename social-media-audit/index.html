@@ -493,7 +493,6 @@ function computeScores(studio, monthKey){
   const recs = [];
   if(sPosts<10) recs.push(`Post more local content — currently ${m.posts} posts vs. a goal of ${postsGoal}${isNso?' (20+ earns a bonus point)':''}.`);
   if(sImgVideo<10) recs.push('Review recent image & video posts against the brand asset library before publishing.');
-  if(sCaption<10) recs.push('Run captions through the approved caption checklist before posting.');
   if(sAudio<10) recs.push('Use only brand-approved audio tracks on Reels and Stories.');
   if(sEngagement<10) recs.push(`Median engagement rate is ${fmtPct(m.engagementPct)}, below the ${isNso?'':''}3.0% goal — consider more interactive content (polls, questions, carousels).`);
   if(sReachBase<10) recs.push(`Monthly reach is ${m.monthlyReach.toLocaleString()}, below the ${reachGoal.toLocaleString()} goal — boost top posts or lean into Reels distribution.`);
