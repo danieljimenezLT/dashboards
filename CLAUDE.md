@@ -144,6 +144,13 @@ Monthly: 3 years of history (by month, per studio+source)
 - `.delta.pos` / `.delta.neg` / `.delta.neu` — inline delta indicators
 - `.funnel-wrap` / `.funnel-row` / `.funnel-bar-track` — funnel chart components
 
+## Hub pages & folder cards
+Hub pages (`home.html`, `admin-reports/index.html`, `admin-reports/staging-reports.html`) list dashboards as `.dash-card`s (≈225px, up to 4 per row, centered).
+Any card that links to **another hub page / subfolder of reports** (not a single dashboard) must be a `.folder-card` instead:
+- Link `shared/folder-cards.css` in the page (the markup template is in that file's header comment)
+- Place it in a `.folders` row **above** the `.cards` row
+- Use the folder icon, the "Folder" badge and the chevron — don't style it like a dashboard card
+
 ## Excluded studios (default)
 These are excluded by default in all dashboards (override if needed):
 - Aventura
