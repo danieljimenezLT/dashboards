@@ -18,6 +18,12 @@
   .sm-rubric-sub td:first-child{font-family:'Oswald',sans-serif;font-style:italic;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#0a4a66}
   .sm-rubric-sub td:first-child .kpi-info-btn{text-transform:none}
   .sm-rubric-item td:first-child{color:#3a5a6a}
+  .sm-rubric-table{table-layout:fixed}
+  .sm-rubric-table th:nth-child(1),.sm-rubric-table td:nth-child(1){width:44%}
+  .sm-rubric-table th:nth-child(2),.sm-rubric-table td:nth-child(2){width:12%}
+  .sm-rubric-table th:nth-child(3),.sm-rubric-table td:nth-child(3){width:18%}
+  .sm-rubric-table th:nth-child(4),.sm-rubric-table td:nth-child(4){width:12%}
+  .sm-rubric-table th:nth-child(5),.sm-rubric-table td:nth-child(5){width:14%}
   .sm-table-flex{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
   .sm-table-flex .data-table-wrap{flex:1;min-width:340px}
   .sm-score-cell{display:inline-block;min-width:44px;padding:3px 10px;border-radius:6px;font-weight:700}
@@ -79,7 +85,7 @@
         <div class="chart-card-title">Local Content Score <span class="sm-total-badge" id="localContentScoreBadge">—</span></div>
         <div class="sm-legend">9+ Green &nbsp;·&nbsp; 7.5–8.99 Yellow &nbsp;·&nbsp; 0–7.49 Red</div>
       </div>
-      <div style="overflow-x:auto"><table class="data-table" id="localContentTable"></table></div>
+      <div style="overflow-x:auto"><table class="data-table sm-rubric-table" id="localContentTable"></table></div>
     </div>
 
     <div class="chart-card">
@@ -87,7 +93,7 @@
         <div class="chart-card-title">Community Management <span class="sm-total-badge" id="communityScoreBadge">—</span></div>
         <div class="sm-legend">8.5+ Green &nbsp;·&nbsp; 7.5–8.49 Yellow &nbsp;·&nbsp; 0–7.49 Red</div>
       </div>
-      <div style="overflow-x:auto"><table class="data-table" id="communityTable"></table></div>
+      <div style="overflow-x:auto"><table class="data-table sm-rubric-table" id="communityTable"></table></div>
     </div>
 
     <div class="chart-card">
@@ -486,12 +492,12 @@ function computeScores(studio, monthKey){
     // short, double-penalizing the same shortfall on both items. No floor
     // below the 10% goal (any positive growth earns some credit).
     sGrowth = goalRatioScore(Math.max(0, m.followerGrowthPct), 0.10, 0);
-    growthGoalLabel = '10%+ growth';
+    growthGoalLabel = '10%';
   } else {
     // Floor stays at the studio's existing 0.5%/1.5% breakpoint (1/3 of
     // goal) rather than resetting to the 50% default.
     sGrowth = goalRatioScore(Math.max(0, m.followerGrowthPct), 0.015, 1/3);
-    growthGoalLabel = '1.5%+ growth';
+    growthGoalLabel = '1.5%';
   }
 
   let sNewFollowers = null;
@@ -640,7 +646,7 @@ function renderRubric(){
     ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.2. % On-brand Caption'+_mockFlag('captionPct'), '5%', fmtPct(m.captionPct), '90%', r.sCaption, 'item', null, 'caption'],
     ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.3. % On-brand Audio'+_mockFlag('audioPct'), '5%', fmtPct(m.audioPct), '90%', r.sAudio, 'item', null, 'audio'],
     ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.4. Median Engagement Rate', '4%', fmtPct(m.engagementPct), '3.0%', r.sEngagement, 'item', null, 'engagement'],
-    ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.5. Monthly Reach', '4%', m.monthlyReach.toLocaleString(), `${r.reachGoal.toLocaleString()} (20,000+ = +0.5 bonus)`, r.sReach, 'item', null, 'reach'],
+    ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.5. Monthly Reach', '4%', m.monthlyReach.toLocaleString(), r.reachGoal.toLocaleString(), r.sReach, 'item', null, 'reach'],
     ['2. Stories', '30%', '', '', r.stories, 'sub', null, 'stories'],
     ['&nbsp;&nbsp;2.1. Number of stories', '15%', m.storiesCount, '20', r.sStoriesCount, 'item', null, 'storiesCount'],
     ['&nbsp;&nbsp;2.2. % On-brand stories'+_mockFlag('storiesOnBrandPct'), '15%', fmtPct(m.storiesOnBrandPct), '90%', r.sStoriesBrand, 'item', null, 'storiesBrand'],
