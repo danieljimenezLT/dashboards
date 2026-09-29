@@ -741,7 +741,7 @@ function renderRubric(){
 
   const rows = [
     ['1. Posts &amp; Reels', '70%', '', '', r.postsReels, 'sub', null, 'postsReels'],
-    ['&nbsp;&nbsp;1.1. Total # of local posts on IG feed'+_mockFlag('posts'), '35%', m.posts, `${r.postsGoal}${r.isNso?' (20+ = bonus point)':''}`, r.sPosts, 'item', null, 'totalPosts'],
+    ['&nbsp;&nbsp;1.1. Total # of local posts on IG feed'+_mockFlag('posts'), '35%', m.posts, r.postsGoal, r.sPosts, 'item', null, 'totalPosts'],
     ['&nbsp;&nbsp;1.2. On-brand content (Calculated)', '35%', '', '', r.onBrandCalc, 'sub', null, 'onBrandCalc'],
     ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.1. % On-brand Image and Video'+_mockFlag('imgVideoPct'), '17%', fmtPct(m.imgVideoPct), '90%', r.sImgVideo, 'item', null, 'imgVideo'],
     ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.2. % On-brand Caption'+_mockFlag('captionPct'), '5%', fmtPct(m.captionPct), '90%', r.sCaption, 'item', null, 'caption'],
