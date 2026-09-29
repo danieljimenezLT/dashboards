@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-29",
+      "pr_number": 432,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/432",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Cleaner Goal column for the posts item on the Social Media Audit",
+      "summary": "The Goal column for \"Total # of local posts\" now just shows the number — the bonus-point detail already lives in that item's info popup."
+    },
+    {
+      "date": "2026-09-29",
       "pr_number": 430,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/430",
       "author": "Santiago Estrada",
