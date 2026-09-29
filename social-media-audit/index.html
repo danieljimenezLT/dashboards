@@ -426,6 +426,22 @@ function scoreCell(score, greenMin, yellowMin){
   return `<span class="sm-score-cell" style="background:${c.bg};color:${c.color}">${score.toFixed(1)}</span>`;
 }
 
+// Shared "hit the goal, don't just approach it" partial-credit curve for
+// every value-vs-a-single-numeric-goal rubric item (posts, stories, reach,
+// engagement, follower growth, net new followers). Below floorFrac of
+// goal: no credit at all. At/above it: credit = 0.8 * (value/goal), so
+// merely reaching 100% of goal is worth 8/10 — reaching 125% of goal is
+// what earns full credit, which is the point: hitting the goal exactly is
+// "Needs Improvement" territory, not "Consistently On Brand". floorFrac
+// defaults to 50% of goal; pass a different value for a metric that
+// already had its own deliberately-chosen floor before this change.
+function goalRatioScore(value, goal, floorFrac=0.5){
+  if(!goal) return 0;
+  const ratio = value/goal;
+  if(ratio < floorFrac) return 0;
+  return round1(Math.min(10, 8*ratio));
+}
+
 function computeScores(studio, monthKey){
   const m = studio.months[monthKey];
   const isNso = studio.type==='nso';
@@ -434,12 +450,10 @@ function computeScores(studio, monthKey){
   const sImgVideo = m.imgVideoPct>=0.9 ? 10 : round1(m.imgVideoPct/2*10);
   const sCaption  = m.captionPct>=0.9  ? 10 : round1(m.captionPct/2*10);
   const sAudio    = m.audioPct>=0.9    ? 10 : round1(m.audioPct/2*10);
-  const sEngagement = m.engagementPct>=0.03 ? 10 : (m.engagementPct>=0.024 ? 5 : round1(m.engagementPct/0.024*5));
+  const sEngagement = goalRatioScore(m.engagementPct, 0.03);
 
   const reachGoal = isNso ? 6000 : 10000;
-  let sReachBase;
-  if(isNso) sReachBase = m.monthlyReach>=6000 ? 10 : (m.monthlyReach>=3000 ? 5 : round1(m.monthlyReach/3000*5));
-  else      sReachBase = m.monthlyReach>=10000 ? 10 : round1(m.monthlyReach/10000*10);
+  const sReachBase = goalRatioScore(m.monthlyReach, reachGoal);
   const reachBonus = m.monthlyReach>20000 ? 0.5 : 0;
   const sReach = round1(sReachBase + reachBonus);
 
@@ -448,12 +462,12 @@ function computeScores(studio, monthKey){
 
   const postsGoal = isNso ? 16 : 8;
   let sPosts;
-  if(isNso) sPosts = m.posts>=20 ? 11 : (m.posts>=16 ? 10 : round1(m.posts/16*10));
-  else sPosts = (m.posts>=12 && onBrandCalc>=9) ? 13 : (m.posts>=12 ? 12 : (m.posts>=8 ? 10 : round1(m.posts/8*10)));
+  if(isNso) sPosts = m.posts>=20 ? 11 : goalRatioScore(m.posts, 16);
+  else sPosts = (m.posts>=12 && onBrandCalc>=9) ? 13 : (m.posts>=12 ? 12 : goalRatioScore(m.posts, 8));
 
   const postsReels = round1((sPosts*35 + onBrandCalc*35)/70);
 
-  const sStoriesCount = m.storiesCount>=20 ? 10 : round1(m.storiesCount/20*8);
+  const sStoriesCount = goalRatioScore(m.storiesCount, 20);
   const sStoriesBrand = m.storiesOnBrandPct>=0.9 ? 10 : round1(m.storiesOnBrandPct/4*10);
   const stories = round1((sStoriesCount*WEIGHTS.storiesCount + sStoriesBrand*WEIGHTS.storiesOnBrand)/30);
 
@@ -465,29 +479,24 @@ function computeScores(studio, monthKey){
   let sGrowth, growthGoalLabel;
   if(exempt){ sGrowth=10; growthGoalLabel='Exempt (legacy account)'; }
   else if(isNso){
-    // Scored on % growth alone now — previously AND-combined with Net New
+    // Scored on % growth alone — previously AND-combined with Net New
     // Followers below, so strong % growth still scored 0 if net-new fell
-    // short, double-penalizing the same shortfall on both items. 10%+ =
-    // full credit, 0% or below = no credit, linear ramp in between.
-    sGrowth = m.followerGrowthPct>=0.10 ? 10 : round1(Math.max(0, m.followerGrowthPct)/0.10*10);
-    growthGoalLabel = '10%+ growth (partial credit 0–10%)';
+    // short, double-penalizing the same shortfall on both items. No floor
+    // below the 10% goal (any positive growth earns some credit).
+    sGrowth = goalRatioScore(Math.max(0, m.followerGrowthPct), 0.10, 0);
+    growthGoalLabel = '10%+ growth (partial credit from 0%)';
   } else {
-    // 1.5%+ growth = full credit, below 0.5% = no credit, linear ramp of
-    // partial credit in between (e.g. 1.0% growth = 5.0).
-    const growthPts = m.followerGrowthPct*100;
-    if(growthPts>=1.5) sGrowth = 10;
-    else if(growthPts<0.5) sGrowth = 0;
-    else sGrowth = round1((growthPts-0.5)*10);
-    growthGoalLabel = '≥1.5% (partial credit 0.5–1.5%)';
+    // Floor stays at the studio's existing 0.5%/1.5% breakpoint (1/3 of
+    // goal) rather than resetting to the 50% default.
+    sGrowth = goalRatioScore(Math.max(0, m.followerGrowthPct), 0.015, 1/3);
+    growthGoalLabel = '1.5%+ growth (partial credit from 0.5%)';
   }
 
   let sNewFollowers = null;
   if(isNso){
-    // Mirrors the growth% curve above: 120+ net new = full credit, 0 or
-    // below = no credit, linear ramp in between — scored independently of
-    // % growth, not AND-combined.
-    const netNew = m.netNewFollowers||0;
-    sNewFollowers = exempt ? 10 : (netNew>=120 ? 10 : round1(Math.max(0, netNew)/120*10));
+    // Mirrors the growth% curve above: scored independently of % growth,
+    // not AND-combined, no floor below the 120 goal.
+    sNewFollowers = exempt ? 10 : goalRatioScore(Math.max(0, m.netNewFollowers||0), 120, 0);
   }
 
   const wCm = isNso
@@ -623,15 +632,15 @@ function renderRubric(){
 
   const rows = [
     ['1. Posts &amp; Reels', '70%', '', '', r.postsReels, 'sub', null, 'postsReels'],
-    ['&nbsp;&nbsp;1.1. Total # of local posts on IG feed'+_mockFlag('posts'), '35%', m.posts, `${r.postsGoal}${r.isNso?' (20+ = bonus point)':''}`, r.sPosts, 'item', null, 'totalPosts'],
+    ['&nbsp;&nbsp;1.1. Total # of local posts on IG feed'+_mockFlag('posts'), '35%', m.posts, `${r.postsGoal} (partial credit from ${Math.round(r.postsGoal/2)}${r.isNso?', 20+ = bonus point':''})`, r.sPosts, 'item', null, 'totalPosts'],
     ['&nbsp;&nbsp;1.2. On-brand content (Calculated)', '35%', '', '', r.onBrandCalc, 'sub', null, 'onBrandCalc'],
     ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.1. % On-brand Image and Video'+_mockFlag('imgVideoPct'), '17%', fmtPct(m.imgVideoPct), '90%', r.sImgVideo, 'item', null, 'imgVideo'],
     ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.2. % On-brand Caption'+_mockFlag('captionPct'), '5%', fmtPct(m.captionPct), '90%', r.sCaption, 'item', null, 'caption'],
     ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.3. % On-brand Audio'+_mockFlag('audioPct'), '5%', fmtPct(m.audioPct), '90%', r.sAudio, 'item', null, 'audio'],
-    ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.4. Median Engagement Rate', '4%', fmtPct(m.engagementPct), '3.0% (2.4%+ = half credit)', r.sEngagement, 'item', null, 'engagement'],
-    ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.5. Monthly Reach', '4%', m.monthlyReach.toLocaleString(), `${r.reachGoal.toLocaleString()} (20,000+ = +0.5 bonus)`, r.sReach, 'item', null, 'reach'],
+    ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.4. Median Engagement Rate', '4%', fmtPct(m.engagementPct), '3.0% (partial credit from 1.5%)', r.sEngagement, 'item', null, 'engagement'],
+    ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.5. Monthly Reach', '4%', m.monthlyReach.toLocaleString(), `${r.reachGoal.toLocaleString()} (partial credit from ${(r.reachGoal/2).toLocaleString()}; 20,000+ = +0.5 bonus)`, r.sReach, 'item', null, 'reach'],
     ['2. Stories', '30%', '', '', r.stories, 'sub', null, 'stories'],
-    ['&nbsp;&nbsp;2.1. Number of stories', '15%', m.storiesCount, '20', r.sStoriesCount, 'item', null, 'storiesCount'],
+    ['&nbsp;&nbsp;2.1. Number of stories', '15%', m.storiesCount, '20 (partial credit from 10)', r.sStoriesCount, 'item', null, 'storiesCount'],
     ['&nbsp;&nbsp;2.2. % On-brand stories'+_mockFlag('storiesOnBrandPct'), '15%', fmtPct(m.storiesOnBrandPct), '90%', r.sStoriesBrand, 'item', null, 'storiesBrand'],
   ];
   document.getElementById('localContentTable').innerHTML = buildRubricTable(rows);
@@ -640,7 +649,7 @@ function renderRubric(){
     ? [['1. Replies to DMs'+_mockFlag('repliesDMs'),'40%',m.repliesDMs,'Yes',r.sDMs,'dms'],
        ['2. Replies to comments'+_mockFlag('repliesComments'),'15%',m.repliesComments?'Yes':'No','Yes',r.sComments,'comments'],
        ['3. Follower Growth','22.5%',fmtPctSigned(m.followerGrowthPct),r.growthGoalLabel,r.sGrowth,'growth'],
-       ['4. Net New Followers (NSO only)'+_mockFlag('netNewFollowers'),'22.5%',r.exempt?'—':(m.netNewFollowers||0),'120+',r.sNewFollowers,'newFollowers']]
+       ['4. Net New Followers (NSO only)'+_mockFlag('netNewFollowers'),'22.5%',r.exempt?'—':(m.netNewFollowers||0),'120+ (partial credit from 0)',r.sNewFollowers,'newFollowers']]
     : [['1. Replies to DMs'+_mockFlag('repliesDMs'),'40%',m.repliesDMs,'Yes',r.sDMs,'dms'],
        ['2. Replies to comments'+_mockFlag('repliesComments'),'15%',m.repliesComments?'Yes':'No','Yes',r.sComments,'comments'],
        ['3. Follower Growth','45%',fmtPctSigned(m.followerGrowthPct),r.growthGoalLabel,r.sGrowth,'growth']];
