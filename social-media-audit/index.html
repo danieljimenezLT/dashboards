@@ -465,9 +465,12 @@ function computeScores(studio, monthKey){
   let sGrowth, growthGoalLabel;
   if(exempt){ sGrowth=10; growthGoalLabel='Exempt (legacy account)'; }
   else if(isNso){
-    const pass = m.followerGrowthPct>0.10 && (m.netNewFollowers||0)>=120;
-    sGrowth = pass ? 10 : 0;
-    growthGoalLabel = '>10% growth AND 120+ net new';
+    // Scored on % growth alone now — previously AND-combined with Net New
+    // Followers below, so strong % growth still scored 0 if net-new fell
+    // short, double-penalizing the same shortfall on both items. 10%+ =
+    // full credit, 0% or below = no credit, linear ramp in between.
+    sGrowth = m.followerGrowthPct>=0.10 ? 10 : round1(Math.max(0, m.followerGrowthPct)/0.10*10);
+    growthGoalLabel = '10%+ growth (partial credit 0–10%)';
   } else {
     // 1.5%+ growth = full credit, below 0.5% = no credit, linear ramp of
     // partial credit in between (e.g. 1.0% growth = 5.0).
@@ -479,7 +482,13 @@ function computeScores(studio, monthKey){
   }
 
   let sNewFollowers = null;
-  if(isNso) sNewFollowers = exempt ? 10 : ((m.netNewFollowers||0)>=120 ? 10 : 0);
+  if(isNso){
+    // Mirrors the growth% curve above: 120+ net new = full credit, 0 or
+    // below = no credit, linear ramp in between — scored independently of
+    // % growth, not AND-combined.
+    const netNew = m.netNewFollowers||0;
+    sNewFollowers = exempt ? 10 : (netNew>=120 ? 10 : round1(Math.max(0, netNew)/120*10));
+  }
 
   const wCm = isNso
     ? {dms:40, comments:15, growth:22.5, newFollowers:22.5}
@@ -500,7 +509,7 @@ function computeScores(studio, monthKey){
   if(sDMs<10) recs.push(m.repliesDMs==='Sometimes' ? 'Reply to all DMs, not just some — aim for 100% response rate.' : 'No DM replies recorded — this needs immediate attention.');
   if(!m.repliesComments) recs.push('Reply to comments on posts within 48 hours.');
   if(sGrowth<10 && !exempt) recs.push(`Follower growth is ${fmtPctSigned(m.followerGrowthPct)}, below the goal (${growthGoalLabel}) — increase posting cadence and cross-promote in Stories.`);
-  if(isNso && sNewFollowers===0) recs.push(`Net new followers (${m.netNewFollowers||0}) fell short of the 120+ goal for NSO studios.`);
+  if(isNso && sNewFollowers<10 && !exempt) recs.push(`Net new followers (${m.netNewFollowers||0}) fell short of the 120+ goal for NSO studios.`);
 
   return { m, isNso, exempt, sImgVideo, sCaption, sAudio, sEngagement, sReach, reachGoal, reachBonus, onBrandCalc,
     postsGoal, sPosts, postsReels, sStoriesCount, sStoriesBrand, stories, localContent,
@@ -556,7 +565,7 @@ function buildOpsSummary(r){
   if(r.sDMs<10) parts.push('Not replying to DMs within 4 business hours');
   if(r.sComments<10) parts.push('Not replying to comments');
   if(r.sGrowth<10 && !r.exempt) parts.push('Missed the follower growth goal');
-  if(r.isNso && r.sNewFollowers===0 && !r.exempt) parts.push('Missed the net new followers goal (120+)');
+  if(r.isNso && r.sNewFollowers<10 && !r.exempt) parts.push('Missed the net new followers goal (120+)');
 
   return parts.length ? parts.join('. ')+'.' : 'Perfect';
 }
