@@ -426,20 +426,22 @@ function scoreCell(score, greenMin, yellowMin){
   return `<span class="sm-score-cell" style="background:${c.bg};color:${c.color}">${score.toFixed(1)}</span>`;
 }
 
-// Shared "hit the goal, don't just approach it" partial-credit curve for
-// every value-vs-a-single-numeric-goal rubric item (posts, stories, reach,
-// engagement, follower growth, net new followers). Below floorFrac of
-// goal: no credit at all. At/above it: credit = 0.8 * (value/goal), so
-// merely reaching 100% of goal is worth 8/10 — reaching 125% of goal is
-// what earns full credit, which is the point: hitting the goal exactly is
-// "Needs Improvement" territory, not "Consistently On Brand". floorFrac
-// defaults to 50% of goal; pass a different value for a metric that
-// already had its own deliberately-chosen floor before this change.
+// Shared "penalize falling short, reward hitting the goal" partial-credit
+// curve for every value-vs-a-single-numeric-goal rubric item (posts,
+// stories, reach, engagement, follower growth, net new followers).
+// Hitting or beating the goal is still full credit. Below goal but at/above
+// floorFrac of it, credit = 0.8 * (value/goal) — steeper than a plain
+// value/goal ramp, so falling short costs more than it used to (e.g. 50%
+// of goal = 4.0/10, not 5.0/10; 99% of goal = 7.9/10, not 9.9/10). Below
+// floorFrac of goal: no credit at all. floorFrac defaults to 50% of goal;
+// pass a different value for a metric that already had its own
+// deliberately-chosen floor before this change.
 function goalRatioScore(value, goal, floorFrac=0.5){
   if(!goal) return 0;
   const ratio = value/goal;
+  if(ratio >= 1) return 10;
   if(ratio < floorFrac) return 0;
-  return round1(Math.min(10, 8*ratio));
+  return round1(8*ratio);
 }
 
 function computeScores(studio, monthKey){
