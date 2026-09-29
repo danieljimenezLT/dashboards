@@ -173,6 +173,70 @@ const WEIGHTS = {
   storiesCount:15, storiesOnBrand:15,
 };
 
+// Studio opening dates, baked in (historical facts — they don't change).
+// Sources: already-open studios come from the Master Studio Info sheet's
+// OPENING_DATE column (https://docs.google.com/spreadsheets/d/1vnONe0LTxKsrJAbcH4CM1w5vzQ7PcADN7FncoPV3qL0);
+// not-yet-open studios come from nso-dashboard/nso_scorecard_data2.json's
+// opening_date field. Naples - Mercato and Reston appear in both sources
+// with matching dates, confirming they agree. Drives the Community
+// Management growth-formula tier in computeScores() below — once a
+// studio's opening month arrives, it's scored as Open (not NSO) even if
+// studios.json hasn't been manually flipped yet.
+const OPEN_DATES = {
+  'Austin - Highland': '2022-09-17',
+  'Boca Raton': '2026-01-31',
+  'Charlotte - Noda': '2023-06-24',
+  'Coral Gables': '2019-12-07',
+  'Coral Springs': '2023-04-08',
+  'Dallas - Prestonwood': '2026-05-16',
+  'Deerfield Beach': '2023-04-01',
+  'Doral': '2022-08-13',
+  'Eastchester': '2026-01-17',
+  'Fort Lauderdale - Las Olas': '2024-09-28',
+  'Madison': '2022-12-01',
+  'Miami - Brickell': '2019-09-01',
+  'Miami - Coconut Grove': '2024-06-08',
+  'Miami - Midtown': '2024-01-20',
+  'Miami - Upper East Side': '2023-02-25',
+  'Miami Beach': '2018-04-03',
+  'Miami Lakes': '2022-10-22',
+  'Miramar': '2025-05-17',
+  'NYC - Chelsea': '2019-12-07',
+  'NYC - FiDi': '2022-02-26',
+  'NYC - Park Slope': '2025-12-13',
+  'Naples - Mercato': '2026-08-22',
+  'Ocean Township': '2025-06-17',
+  'Pembroke Pines': '2024-11-16',
+  'Pinecrest - Palmetto Bay': '2026-05-09',
+  'Reston': '2026-09-05',
+  'South Miami': '2023-10-07',
+  'Toms River': '2023-04-22',
+  'Wall Township': '2026-01-10',
+  'West Palm Beach': '2026-01-17',
+  // NSO — scheduled opening dates, from nso_scorecard_data2.json
+  'Aventura': '2026-10-24',
+  'Burlington': '2027-03-13',
+  'Charlotte - South End': '2027-04-10',
+  'Dallas - Uptown': '2026-11-07',
+  'Dunwoody': '2026-11-07',
+  'Fort Myers': '2027-02-06',
+  'Herriman': '2026-10-01',
+  'Long Beach': '2027-04-10',
+  'Middletown': '2027-01-16',
+  'North Miami': '2026-11-28',
+  'OKC - Rose Creek': '2027-01-23',
+  'Old Bridge': '2027-01-09',
+  'Orlando - Dr Phillips': '2026-11-20',
+};
+
+// Whole calendar months elapsed from openDate's month to monthKey's month
+// (both "YYYY-MM" or "YYYY-MM-DD" — only the first 7 chars are used).
+function monthsSinceOpen(openDate, monthKey){
+  const [oy, om] = openDate.slice(0,7).split('-').map(Number);
+  const [my, mm] = monthKey.slice(0,7).split('-').map(Number);
+  return (my - oy) * 12 + (mm - om);
+}
+
 // Which rubric fields are real (from the Instagram connection / Brand
 // Offenses Tracker) vs still mocked, keyed the same as each month's data
 // object. Drives the "MOCK" flag shown next to a value in the rubric
@@ -225,7 +289,7 @@ const ITEM_INFO = {
     pass:'✔ Reply to all post comments within 24 business hours\n✔ Responses can be short and simple (an emoji, "Thanks!", etc.)\n✔ Like the comment in addition to replying\n✔ Maintain a positive, encouraging, and on-brand tone in replies',
     mistakes:'✖ Letting comments go unanswered for days' },
   growth: { title:'Follower Growth',
-    desc:'New metric introduced with this rubric update, replacing Follows Synergistic Businesses. Month-over-month follower growth rate, computed from the studio\'s Instagram connection.\n\nScoring — Open Studio: below 0.5% growth = 0 credit. From 0.5% up to the 1.5% goal, credit = 0.8 × (growth ÷ 1.5%). At 1.5%+ = full credit.\nScoring — NSO: no floor (any positive growth earns some credit). Up to the 10% goal, credit = 0.8 × (growth ÷ 10%). At 10%+ = full credit.\nLegacy-exempt studios always score full credit here.',
+    desc:'New metric introduced with this rubric update, replacing Follows Synergistic Businesses. Month-over-month follower growth rate, computed from the studio\'s Instagram connection.\n\nScoring depends on how long the studio has been open (based on its actual opening date, not just its NSO/Open Studio status):\nNSO (not yet open): no floor. Up to the 10% goal, credit = 0.8 × (growth ÷ 10%). At 10%+ = full credit.\nFirst 12 months after opening: below 1% growth = 0 credit. From there up to the 2% goal, credit = 0.8 × (growth ÷ 2%). At 2%+ = full credit.\n12+ months after opening: growth is no longer part of Community Management at all — DM replies and comment replies split the full 100% instead.\nLegacy-exempt studios always score full credit here.',
     pass:'', mistakes:'' },
   newFollowers: { title:'Net New Followers (NSO only)',
     desc:'New metric introduced with this rubric update, replacing Follows Community Individuals. Measures net new followers gained during the month. Applies to NSO studios only.\n\nScoring: no floor (any positive net-new earns some credit). Up to the goal of 120, credit = 0.8 × (net new ÷ 120). At 120+ = full credit.',
@@ -452,8 +516,25 @@ function goalRatioScore(value, goal, floorFrac=0.5){
 
 function computeScores(studio, monthKey){
   const m = studio.months[monthKey];
-  const isNso = studio.type==='nso';
   const exempt = !!studio.exemptGrowth;
+
+  // Lifecycle stage drives Community Management's growth formula/weights:
+  // 'nso' (not yet open — NSO targets/weights unchanged), 'new-open'
+  // (0-11 months since opening — 2% growth goal, 40/20/40 weights),
+  // 'mature-open' (12+ months — 60/40 weights, growth drops out entirely),
+  // 'legacy-open' (no baked open date on file — falls back to the original
+  // single Open Studio formula so nothing breaks for a studio not yet in
+  // OPEN_DATES). A studio's opening month flips it out of the NSO stage
+  // even if studios.json's static status field hasn't been updated yet.
+  const openDate = OPEN_DATES[studio.name];
+  let stage;
+  if(openDate){
+    const months = monthsSinceOpen(openDate, monthKey);
+    stage = months < 0 ? 'nso' : (months < 12 ? 'new-open' : 'mature-open');
+  } else {
+    stage = studio.type==='nso' ? 'nso' : 'legacy-open';
+  }
+  const isNso = stage==='nso';
 
   const sImgVideo = m.imgVideoPct>=0.9 ? 10 : round1(m.imgVideoPct/2*10);
   const sCaption  = m.captionPct>=0.9  ? 10 : round1(m.captionPct/2*10);
@@ -491,32 +572,47 @@ function computeScores(studio, monthKey){
 
   let sGrowth, growthGoalLabel;
   if(exempt){ sGrowth=10; growthGoalLabel='Exempt (legacy account)'; }
-  else if(isNso){
+  else if(stage==='nso'){
     // Scored on % growth alone — previously AND-combined with Net New
     // Followers below, so strong % growth still scored 0 if net-new fell
     // short, double-penalizing the same shortfall on both items. No floor
     // below the 10% goal (any positive growth earns some credit).
     sGrowth = goalRatioScore(Math.max(0, m.followerGrowthPct), 0.10, 0);
     growthGoalLabel = '10%';
+  } else if(stage==='new-open'){
+    // First 12 months after opening: a steeper 2% goal than the
+    // long-established Open Studio target below, default 50% floor (1%).
+    sGrowth = goalRatioScore(Math.max(0, m.followerGrowthPct), 0.02);
+    growthGoalLabel = '2%';
+  } else if(stage==='mature-open'){
+    // 12+ months after opening: growth drops out of Community Management
+    // entirely (wCm.growth is 0 below), so sGrowth is never used, but is
+    // left null rather than 0 to make "not scored" distinct from "scored
+    // and failing" wherever it's read.
+    sGrowth = null;
+    growthGoalLabel = null;
   } else {
-    // Floor stays at the studio's existing 0.5%/1.5% breakpoint (1/3 of
-    // goal) rather than resetting to the 50% default.
+    // legacy-open fallback (no baked open date on file): the original
+    // single Open Studio formula. Floor stays at the studio's existing
+    // 0.5%/1.5% breakpoint (1/3 of goal) rather than resetting to 50%.
     sGrowth = goalRatioScore(Math.max(0, m.followerGrowthPct), 0.015, 1/3);
     growthGoalLabel = '1.5%';
   }
 
   let sNewFollowers = null;
-  if(isNso){
+  if(stage==='nso'){
     // Mirrors the growth% curve above: scored independently of % growth,
-    // not AND-combined, no floor below the 120 goal.
+    // not AND-combined, no floor below the 120 goal. NSO-only item —
+    // doesn't carry over once a studio opens.
     sNewFollowers = exempt ? 10 : goalRatioScore(Math.max(0, m.netNewFollowers||0), 120, 0);
   }
 
-  const wCm = isNso
-    ? {dms:40, comments:15, growth:22.5, newFollowers:22.5}
-    : {dms:40, comments:15, growth:45,   newFollowers:0};
+  const wCm = stage==='nso' ? {dms:40, comments:15, growth:22.5, newFollowers:22.5}
+    : stage==='new-open'    ? {dms:40, comments:20, growth:40,   newFollowers:0}
+    : stage==='mature-open' ? {dms:60, comments:40, growth:0,    newFollowers:0}
+    :                         {dms:40, comments:15, growth:45,   newFollowers:0}; // legacy-open
 
-  const communityMgmt = round1((sDMs*wCm.dms + sComments*wCm.comments + sGrowth*wCm.growth + (sNewFollowers||0)*wCm.newFollowers)/100);
+  const communityMgmt = round1((sDMs*wCm.dms + sComments*wCm.comments + (sGrowth||0)*wCm.growth + (sNewFollowers||0)*wCm.newFollowers)/100);
 
   const classification = localContent>=9 ? 'Consistently On Brand' : (localContent>=7 ? 'Needs Improvement' : 'Off Brand');
 
@@ -530,10 +626,10 @@ function computeScores(studio, monthKey){
   if(sStoriesBrand<10) recs.push('Keep Stories on-brand — avoid off-brand filters, music, or third-party logos.');
   if(sDMs<10) recs.push(m.repliesDMs==='Sometimes' ? 'Reply to all DMs, not just some — aim for 100% response rate.' : 'No DM replies recorded — this needs immediate attention.');
   if(sComments<10) recs.push(commentsTier==='Sometimes' ? 'Reply to all comments, not just some — aim for 100% within 1 business day.' : 'No on-time comment replies recorded — this needs immediate attention.');
-  if(sGrowth<10 && !exempt) recs.push(`Follower growth is ${fmtPctSigned(m.followerGrowthPct)}, below the goal (${growthGoalLabel}) — increase posting cadence and cross-promote in Stories.`);
-  if(isNso && sNewFollowers<10 && !exempt) recs.push(`Net new followers (${m.netNewFollowers||0}) fell short of the 120+ goal for NSO studios.`);
+  if(sGrowth!=null && sGrowth<10 && !exempt) recs.push(`Follower growth is ${fmtPctSigned(m.followerGrowthPct)}, below the goal (${growthGoalLabel}) — increase posting cadence and cross-promote in Stories.`);
+  if(stage==='nso' && sNewFollowers<10 && !exempt) recs.push(`Net new followers (${m.netNewFollowers||0}) fell short of the 120+ goal for NSO studios.`);
 
-  return { m, isNso, exempt, sImgVideo, sCaption, sAudio, sEngagement, sReach, reachGoal, reachBonus, onBrandCalc,
+  return { m, isNso, stage, exempt, sImgVideo, sCaption, sAudio, sEngagement, sReach, reachGoal, reachBonus, onBrandCalc,
     postsGoal, sPosts, postsReels, sStoriesCount, sStoriesBrand, stories, localContent,
     sDMs, sComments, commentsTier, sGrowth, growthGoalLabel, sNewFollowers, communityMgmt, classification, recs };
 }
@@ -586,8 +682,8 @@ function buildOpsSummary(r){
   if(r.sStoriesBrand<10 && !covered.has('stories')) parts.push('Off-brand Stories content');
   if(r.sDMs<10) parts.push('Not replying to DMs within 4 business hours');
   if(r.sComments<10) parts.push('Not replying to comments');
-  if(r.sGrowth<10 && !r.exempt) parts.push('Missed the follower growth goal');
-  if(r.isNso && r.sNewFollowers<10 && !r.exempt) parts.push('Missed the net new followers goal (120+)');
+  if(r.sGrowth!=null && r.sGrowth<10 && !r.exempt) parts.push('Missed the follower growth goal');
+  if(r.stage==='nso' && r.sNewFollowers<10 && !r.exempt) parts.push('Missed the net new followers goal (120+)');
 
   return parts.length ? parts.join('. ')+'.' : 'Perfect';
 }
@@ -658,12 +754,21 @@ function renderRubric(){
   ];
   document.getElementById('localContentTable').innerHTML = buildRubricTable(rows);
 
-  const wCm = r.isNso
+  const wCm = r.stage==='nso'
     ? [['1. Replies to DMs'+_mockFlag('repliesDMs'),'40%',m.repliesDMs,'Yes',r.sDMs,'dms'],
        ['2. Replies to comments'+_mockFlag('repliesComments'),'15%',r.commentsTier,'Yes',r.sComments,'comments'],
        ['3. Follower Growth','22.5%',fmtPctSigned(m.followerGrowthPct),r.growthGoalLabel,r.sGrowth,'growth'],
        ['4. Net New Followers (NSO only)'+_mockFlag('netNewFollowers'),'22.5%',r.exempt?'—':(m.netNewFollowers||0),'120+',r.sNewFollowers,'newFollowers']]
-    : [['1. Replies to DMs'+_mockFlag('repliesDMs'),'40%',m.repliesDMs,'Yes',r.sDMs,'dms'],
+    : r.stage==='mature-open'
+    // 12+ months since opening: growth no longer figures into Community
+    // Management at all, not even at 0% weight — it's simply not a row.
+    ? [['1. Replies to DMs'+_mockFlag('repliesDMs'),'60%',m.repliesDMs,'Yes',r.sDMs,'dms'],
+       ['2. Replies to comments'+_mockFlag('repliesComments'),'40%',r.commentsTier,'Yes',r.sComments,'comments']]
+    : r.stage==='new-open'
+    ? [['1. Replies to DMs'+_mockFlag('repliesDMs'),'40%',m.repliesDMs,'Yes',r.sDMs,'dms'],
+       ['2. Replies to comments'+_mockFlag('repliesComments'),'20%',r.commentsTier,'Yes',r.sComments,'comments'],
+       ['3. Follower Growth','40%',fmtPctSigned(m.followerGrowthPct),r.growthGoalLabel,r.sGrowth,'growth']]
+    : [['1. Replies to DMs'+_mockFlag('repliesDMs'),'40%',m.repliesDMs,'Yes',r.sDMs,'dms'],  // legacy-open
        ['2. Replies to comments'+_mockFlag('repliesComments'),'15%',r.commentsTier,'Yes',r.sComments,'comments'],
        ['3. Follower Growth','45%',fmtPctSigned(m.followerGrowthPct),r.growthGoalLabel,r.sGrowth,'growth']];
 
