@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-29",
+      "pr_number": 424,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/424",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Section labels in the Social Media Audit rubric tables are now ALL CAPS, matching brand style",
+      "summary": "Rows like \"1. Posts & Reels\" and \"2. Stories\" now render in uppercase, per SWEAT440's Oswald titles-in-all-caps guideline."
+    },
+    {
+      "date": "2026-09-29",
       "pr_number": 423,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/423",
       "author": "Santiago Estrada",
