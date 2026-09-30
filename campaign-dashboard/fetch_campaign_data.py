@@ -25,6 +25,10 @@ ROLE      = os.environ.get("SNOWFLAKE_ROLE", "SYSADMIN")
 SALES     = "PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS"
 LEADS_LOG = "PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_LEADS_LOG"
 CLIENTS   = "PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_CLIENTS"
+# Client-level version of MARKETING_REPORTS.PUBLIC.LEADS (the view behind the
+# Open Studio dashboard's data.json) — same SOURCE attribution, one row per
+# client+studio.
+LEADS_LIST = "MARKETING_REPORTS.PUBLIC.LEADS_LIST"
 
 # ── Campaign definitions ────────────────────────────────────────────────────
 CAMPAIGNS = [
@@ -86,7 +90,7 @@ CAMPAIGNS = [
         "product":       "2 Weeks for $40",
         "date_from":     "2026-08-25",
         "date_to":       "2026-09-07",
-        "post_promo_to": "2026-09-26",
+        "post_promo_to": "2026-09-28",
         # Same ~25-studio allowlist fetch_2weeks_data.py used — this promo
         # ran at open studios only, not NSO/presale locations (e.g. Naples -
         # Mercato sold the same-named product during its own presale, but
@@ -98,6 +102,12 @@ CAMPAIGNS = [
             "NoDa", "Park Slope", "Pembroke", "Pinecrest", "Prestonwood", "Reston",
             "South Miami", "Upper East", "West Palm",
         ],
+        # Meta-only post-promo for the Ads Report tab (see build_meta_post_promo).
+        # Excludes studios where this Meta campaign had no spend: their "Meta
+        # Ads" leads come from other campaigns (NSO / presale).
+        "meta_post_promo": {
+            "exclude_studios": ["Prestonwood", "Highland", "Reston"],
+        },
     },
 ]
 
@@ -1026,6 +1036,135 @@ conn = snowflake.connector.connect(
 )
 cur = conn.cursor()
 
+def build_meta_post_promo(cur, camp):
+    """Post-promo for the campaign's Meta audience, split into two groups that
+    never overlap:
+      - buyers: net purchasers of the campaign product whose source is Meta Ads
+        (same rule as fetch_2weeks_data.py: LEADS_LIST source or REFERRED_BY);
+      - leads:  Meta Ads sign-ups in the promo window (same definition as
+        data.json) who did NOT buy the campaign product at that studio.
+    Post-promo = net paid purchases of any other product at the same studio,
+    after the promo purchase (buyers) / from the sign-up date (leads), through
+    post_promo_to. Membership revenue follows the main query's rule (only the
+    client's first post-promo purchase counts), so autopay renewals don't
+    inflate it."""
+    cfg = camp["meta_post_promo"]
+    frm, to, ppt, prod = camp["date_from"], camp["date_to"], camp["post_promo_to"], camp["product"]
+
+    def studios_ok(col):
+        parts = []
+        inc = camp.get("studio_filter") or []
+        if inc:
+            parts.append("(" + " OR ".join(f"{col} ILIKE '%%{s}%%'" for s in inc) + ")")
+        parts += [f"{col} NOT ILIKE '%%{s}%%'" for s in cfg.get("exclude_studios") or []]
+        return " AND ".join(parts) or "TRUE"
+
+    cte = f"""
+        WITH meta_leads AS (
+            SELECT LOWER(TRIM(EMAIL_ID)) AS email, STUDIO_ID,
+                   MIN(STUDIO_NAME) AS studio_name, MIN(SIGNUP_DATE) AS start_date
+            FROM {LEADS_LIST}
+            WHERE SOURCE = 'Meta Ads' AND EMAIL_ID IS NOT NULL
+              AND SIGNUP_DATE BETWEEN %s AND %s AND {studios_ok('STUDIO_NAME')}
+            GROUP BY 1, 2
+        ),
+        buys AS (
+            SELECT LOWER(TRIM(EMAIL_ID)) AS email, CLIENT_ID, STUDIO_ID,
+                   MIN(STUDIO_NAME) AS studio_name, MIN(SALE_DATE)::DATE AS buy_date
+            FROM {SALES}
+            WHERE PRODUCT_DESCRIPTION = %s AND IS_RETURN = 0 AND IS_RETURNED = 0
+              AND SALE_DATE BETWEEN %s AND %s AND {studios_ok('STUDIO_NAME')}
+            GROUP BY 1, 2, 3
+        ),
+        meta_buyers AS (
+            SELECT DISTINCT b.email, b.STUDIO_ID, b.studio_name, b.buy_date AS start_date
+            FROM buys b
+            LEFT JOIN {LEADS_LIST} ll
+                   ON LOWER(TRIM(ll.EMAIL_ID)) = b.email AND ll.STUDIO_ID = b.STUDIO_ID
+            LEFT JOIN {CLIENTS} c
+                   ON c.CLIENT_ID = b.CLIENT_ID AND c.STUDIO_ID = b.STUDIO_ID
+            WHERE ll.SOURCE = 'Meta Ads' OR LOWER(TRIM(c.REFERRED_BY)) = 'meta ads'
+        ),
+        grp AS (
+            SELECT 'buyers' AS grp, email, STUDIO_ID, studio_name, start_date FROM meta_buyers
+            UNION ALL
+            SELECT 'leads', m.email, m.STUDIO_ID, m.studio_name, m.start_date
+            FROM meta_leads m
+            WHERE NOT EXISTS (SELECT 1 FROM buys b WHERE b.email = m.email AND b.STUDIO_ID = m.STUDIO_ID)
+        ),
+        pp_raw AS (
+            SELECT g.grp, g.email, g.STUDIO_ID, sd.PRODUCT_DESCRIPTION, sd.REVENUE_CATEGORY,
+                   sd.PAYMENTAMT_LOCAL, IFF({_QUALITY_FILTER}, 1, 0) AS is_quality,
+                   ROW_NUMBER() OVER (PARTITION BY g.grp, g.email, g.STUDIO_ID ORDER BY sd.SALE_DATE) AS rn
+            FROM grp g
+            JOIN {SALES} sd
+              ON LOWER(TRIM(sd.EMAIL_ID)) = g.email AND sd.STUDIO_ID = g.STUDIO_ID
+             AND (sd.SALE_DATE::DATE > g.start_date
+                  OR (g.grp = 'leads' AND sd.SALE_DATE::DATE = g.start_date))
+             AND sd.SALE_DATE <= %s AND sd.PRODUCT_DESCRIPTION != %s
+             AND sd.PAYMENTAMT_LOCAL > 0 AND sd.IS_RETURN = 0 AND sd.IS_RETURNED = 0
+        ),
+        pp AS (
+            SELECT *, CASE WHEN REVENUE_CATEGORY = 'Memberships' AND rn > 1 THEN 0
+                           ELSE PAYMENTAMT_LOCAL END AS rev
+            FROM pp_raw
+        )"""
+    params = (frm, to, prod, frm, to, ppt, prod)
+
+    # Group sizes + conversions per studio (studio rows are disjoint, so the
+    # dashboard can sum them for any studio filter).
+    studio_rows = qall(cur, cte + """
+        , sizes AS (
+            SELECT g.STUDIO_ID, REPLACE(MIN(g.studio_name), 'SWEAT440 ', '') AS studio,
+                   COUNT_IF(g.grp = 'buyers') AS buyers,
+                   COUNT_IF(g.grp = 'leads')  AS lead_only
+            FROM grp g GROUP BY g.STUDIO_ID
+        ),
+        lead_counts AS (
+            SELECT STUDIO_ID, COUNT(*) AS leads FROM meta_leads GROUP BY 1
+        ),
+        conv AS (
+            SELECT grp, STUDIO_ID,
+                   COUNT(DISTINCT email) AS converted,
+                   COUNT(DISTINCT IFF(is_quality = 1, email, NULL)) AS quality,
+                   SUM(rev) AS revenue
+            FROM pp GROUP BY 1, 2
+        )
+        SELECT s.studio, COALESCE(lc.leads, 0), s.buyers, s.lead_only,
+               COALESCE(cb.converted, 0), COALESCE(cb.quality, 0), COALESCE(cb.revenue, 0),
+               COALESCE(cl.converted, 0), COALESCE(cl.quality, 0), COALESCE(cl.revenue, 0)
+        FROM sizes s
+        LEFT JOIN lead_counts lc ON lc.STUDIO_ID = s.STUDIO_ID
+        LEFT JOIN conv cb ON cb.grp = 'buyers' AND cb.STUDIO_ID = s.STUDIO_ID
+        LEFT JOIN conv cl ON cl.grp = 'leads'  AND cl.STUDIO_ID = s.STUDIO_ID
+        ORDER BY 2 DESC, 1
+    """, params)
+    product_rows = qall(cur, cte + """
+        SELECT pp.grp, REPLACE(st.studio_name, 'SWEAT440 ', ''), pp.PRODUCT_DESCRIPTION, pp.REVENUE_CATEGORY,
+               MAX(pp.is_quality), COUNT(DISTINCT pp.email), SUM(pp.rev)
+        FROM pp
+        JOIN (SELECT STUDIO_ID, MIN(studio_name) AS studio_name FROM grp GROUP BY 1) st
+          ON st.STUDIO_ID = pp.STUDIO_ID
+        GROUP BY 1, 2, 3, 4 ORDER BY 6 DESC, 7 DESC
+    """, params)
+
+    return {
+        "lead_date_from":   frm,
+        "lead_date_to":     to,
+        "post_promo_to":    ppt,
+        "excluded_studios": cfg.get("exclude_studios") or [],
+        "studios": [{
+            "studio": r[0], "leads": int(r[1]), "buyers": int(r[2]), "lead_only": int(r[3]),
+            "buyers_converted": int(r[4]), "buyers_quality": int(r[5]), "buyers_revenue": round(float(r[6]), 2),
+            "leads_converted":  int(r[7]), "leads_quality":  int(r[8]), "leads_revenue":  round(float(r[9]), 2),
+        } for r in studio_rows],
+        "products": [{
+            "group": r[0], "studio": r[1], "product": r[2], "category": r[3],
+            "quality": bool(r[4]), "clients": int(r[5]), "revenue": round(float(r[6] or 0), 2),
+        } for r in product_rows],
+    }
+
+
 results = []
 for camp in CAMPAIGNS:
     if camp.get("hidden"):
@@ -1034,6 +1173,11 @@ for camp in CAMPAIGNS:
     print(f"  Fetching: {camp['name']} ({camp['product']})…")
     try:
         data = build_campaign(cur, camp)
+        if camp.get("meta_post_promo"):
+            data["meta_post_promo"] = build_meta_post_promo(cur, camp)
+            m = data["meta_post_promo"]["studios"]
+            print(f"    Meta post-promo: {sum(r['leads'] for r in m)} leads | "
+                  f"{sum(r['buyers'] for r in m)} buyers | {sum(r['lead_only'] for r in m)} lead-only")
         results.append(data)
         k = data["kpis"]
         print(f"    OK  {k['total_purchases']} purchases | {k['unique_clients']} clients | "
