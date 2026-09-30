@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-28T20:07:10.719566Z",
+  "generated_at": "2026-09-30T14:09:49.980975Z",
   "campaigns": [
     {
       "id": "buy-1-get-3",
@@ -23,17 +23,17 @@
         "avg_ticket": 32.06,
         "quality_converted": 78,
         "quality_conv_rate": 20.1,
-        "quality_revenue": 13015.7,
+        "quality_revenue": 13164.7,
         "membership_conversions": 71,
         "membership_conv_rate": 18.3,
-        "membership_revenue": 10978.4,
+        "membership_revenue": 11127.4,
         "pack_conversions": 7,
         "pack_conv_rate": 1.8,
         "pack_revenue": 2037.3,
         "converted_to_paid": 114,
         "conversion_rate": 29.3,
-        "post_promo_revenue": 15206.82,
-        "revenue_per_participant": 39.09
+        "post_promo_revenue": 15355.82,
+        "revenue_per_participant": 39.48
       },
       "lead_sources": [
         {
@@ -125,17 +125,6 @@
           "existing_clients": 2
         },
         {
-          "source": "Google Ads",
-          "clients": 1,
-          "transactions": 1,
-          "revenue": 32.0,
-          "avg_ticket": 32.0,
-          "new_clients": 0,
-          "platform_clients": 0,
-          "free_class_clients": 0,
-          "existing_clients": 1
-        },
-        {
           "source": "ClassPass / Platforms",
           "clients": 1,
           "transactions": 1,
@@ -145,6 +134,17 @@
           "platform_clients": 1,
           "free_class_clients": 0,
           "existing_clients": 0
+        },
+        {
+          "source": "Google Ads",
+          "clients": 1,
+          "transactions": 1,
+          "revenue": 32.0,
+          "avg_ticket": 32.0,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 0,
+          "existing_clients": 1
         }
       ],
       "studios": [
@@ -205,7 +205,7 @@
         },
         {
           "studio": "Austin - Zilker",
-          "source": "Business Mode",
+          "source": "N/A",
           "clients": 1,
           "purchases": 1,
           "revenue": 32.0,
@@ -216,7 +216,7 @@
         },
         {
           "studio": "Austin - Zilker",
-          "source": "N/A",
+          "source": "Business Mode",
           "clients": 1,
           "purchases": 1,
           "revenue": 32.0,
@@ -304,17 +304,6 @@
         },
         {
           "studio": "Coral Gables",
-          "source": "N/A",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 32.0,
-          "new_clients": 0,
-          "platform_clients": 1,
-          "free_class_clients": 0,
-          "existing_clients": 0
-        },
-        {
-          "studio": "Coral Gables",
           "source": "SWEAT440 App",
           "clients": 1,
           "purchases": 1,
@@ -323,6 +312,17 @@
           "platform_clients": 0,
           "free_class_clients": 0,
           "existing_clients": 1
+        },
+        {
+          "studio": "Coral Gables",
+          "source": "N/A",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 32.0,
+          "new_clients": 0,
+          "platform_clients": 1,
+          "free_class_clients": 0,
+          "existing_clients": 0
         },
         {
           "studio": "Coral Gables",
@@ -381,7 +381,7 @@
         },
         {
           "studio": "Doral",
-          "source": "N/A",
+          "source": "SWEAT440 App",
           "clients": 1,
           "purchases": 1,
           "revenue": 32.0,
@@ -392,7 +392,7 @@
         },
         {
           "studio": "Doral",
-          "source": "SWEAT440 App",
+          "source": "N/A",
           "clients": 1,
           "purchases": 1,
           "revenue": 32.0,
@@ -436,17 +436,6 @@
         },
         {
           "studio": "Eastchester",
-          "source": "Business Mode",
-          "clients": 2,
-          "purchases": 2,
-          "revenue": 64.0,
-          "new_clients": 0,
-          "platform_clients": 0,
-          "free_class_clients": 0,
-          "existing_clients": 2
-        },
-        {
-          "studio": "Eastchester",
           "source": "MindBody App",
           "clients": 2,
           "purchases": 2,
@@ -466,6 +455,17 @@
           "platform_clients": 1,
           "free_class_clients": 0,
           "existing_clients": 1
+        },
+        {
+          "studio": "Eastchester",
+          "source": "Business Mode",
+          "clients": 2,
+          "purchases": 2,
+          "revenue": 64.0,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 0,
+          "existing_clients": 2
         },
         {
           "studio": "Eastchester",
@@ -513,17 +513,6 @@
         },
         {
           "studio": "Fort Lauderdale - Las Olas",
-          "source": "Meta Ads",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 32.0,
-          "new_clients": 0,
-          "platform_clients": 0,
-          "free_class_clients": 0,
-          "existing_clients": 1
-        },
-        {
-          "studio": "Fort Lauderdale - Las Olas",
           "source": "N/A",
           "clients": 1,
           "purchases": 1,
@@ -532,6 +521,17 @@
           "platform_clients": 1,
           "free_class_clients": 0,
           "existing_clients": 0
+        },
+        {
+          "studio": "Fort Lauderdale - Las Olas",
+          "source": "Meta Ads",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 32.0,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 0,
+          "existing_clients": 1
         },
         {
           "studio": "Madison",
@@ -722,7 +722,7 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "MindBody App",
+          "source": "N/A",
           "clients": 2,
           "purchases": 2,
           "revenue": 64.0,
@@ -733,7 +733,7 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "N/A",
+          "source": "MindBody App",
           "clients": 2,
           "purchases": 2,
           "revenue": 64.0,
@@ -799,7 +799,7 @@
         },
         {
           "studio": "Miami Beach",
-          "source": "Meta Ads",
+          "source": "Grassroots",
           "clients": 1,
           "purchases": 1,
           "revenue": 32.0,
@@ -810,7 +810,7 @@
         },
         {
           "studio": "Miami Beach",
-          "source": "Grassroots",
+          "source": "Meta Ads",
           "clients": 1,
           "purchases": 1,
           "revenue": 32.0,
@@ -986,17 +986,6 @@
         },
         {
           "studio": "NYC - FiDi",
-          "source": "N/A",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 35.0,
-          "new_clients": 0,
-          "platform_clients": 1,
-          "free_class_clients": 0,
-          "existing_clients": 0
-        },
-        {
-          "studio": "NYC - FiDi",
           "source": "Business Mode",
           "clients": 1,
           "purchases": 1,
@@ -1005,6 +994,17 @@
           "platform_clients": 0,
           "free_class_clients": 0,
           "existing_clients": 1
+        },
+        {
+          "studio": "NYC - FiDi",
+          "source": "N/A",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 35.0,
+          "new_clients": 0,
+          "platform_clients": 1,
+          "free_class_clients": 0,
+          "existing_clients": 0
         },
         {
           "studio": "NYC - Park Slope",
@@ -1041,7 +1041,7 @@
         },
         {
           "studio": "NYC - Park Slope",
-          "source": "Meta Ads",
+          "source": "ClassPass / Platforms",
           "clients": 1,
           "purchases": 1,
           "revenue": 32.0,
@@ -1074,7 +1074,7 @@
         },
         {
           "studio": "NYC - Park Slope",
-          "source": "ClassPass / Platforms",
+          "source": "Meta Ads",
           "clients": 1,
           "purchases": 1,
           "revenue": 32.0,
@@ -1129,7 +1129,7 @@
         },
         {
           "studio": "Ocean Township",
-          "source": "MindBody App",
+          "source": "Local Listings",
           "clients": 1,
           "purchases": 1,
           "revenue": 32.0,
@@ -1140,7 +1140,7 @@
         },
         {
           "studio": "Ocean Township",
-          "source": "Local Listings",
+          "source": "MindBody App",
           "clients": 1,
           "purchases": 1,
           "revenue": 32.0,
@@ -1195,17 +1195,6 @@
         },
         {
           "studio": "South Miami",
-          "source": "MindBody App",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 32.0,
-          "new_clients": 0,
-          "platform_clients": 1,
-          "free_class_clients": 0,
-          "existing_clients": 0
-        },
-        {
-          "studio": "South Miami",
           "source": "Meta Ads",
           "clients": 1,
           "purchases": 1,
@@ -1214,6 +1203,17 @@
           "platform_clients": 0,
           "free_class_clients": 0,
           "existing_clients": 1
+        },
+        {
+          "studio": "South Miami",
+          "source": "MindBody App",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 32.0,
+          "new_clients": 0,
+          "platform_clients": 1,
+          "free_class_clients": 0,
+          "existing_clients": 0
         },
         {
           "studio": "Toms River",
@@ -1228,7 +1228,7 @@
         },
         {
           "studio": "Toms River",
-          "source": "MindBody App",
+          "source": "N/A",
           "clients": 3,
           "purchases": 3,
           "revenue": 96.0,
@@ -1239,7 +1239,7 @@
         },
         {
           "studio": "Toms River",
-          "source": "N/A",
+          "source": "MindBody App",
           "clients": 3,
           "purchases": 3,
           "revenue": 96.0,
@@ -1488,13 +1488,13 @@
           "promo_clients": 12,
           "mem_conv": 2,
           "mem_conv_pct": 16.7,
-          "mem_revenue": 419.0,
+          "mem_revenue": 568.0,
           "pack_conv": 0,
           "pack_revenue": 0.0,
           "quality_conv": 2,
           "quality_conv_pct": 16.7,
-          "quality_revenue": 419.0,
-          "total_post_rev": 444.0
+          "quality_revenue": 568.0,
+          "total_post_rev": 593.0
         },
         {
           "studio": "Miami - Midtown",
@@ -1769,18 +1769,18 @@
           "post_promo_revenue": 149.0
         },
         {
-          "source": "Google Ads",
-          "received_promo": 1,
-          "converted_to_paid": 1,
-          "conversion_pct": 100.0,
-          "post_promo_revenue": 379.0
-        },
-        {
           "source": "ClassPass / Platforms",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
           "post_promo_revenue": 0.0
+        },
+        {
+          "source": "Google Ads",
+          "received_promo": 1,
+          "converted_to_paid": 1,
+          "conversion_pct": 100.0,
+          "post_promo_revenue": 379.0
         }
       ],
       "funnel_by_studio": [
@@ -1826,7 +1826,7 @@
         },
         {
           "studio": "Austin - Zilker",
-          "source": "N/A",
+          "source": "Business Mode",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -1834,7 +1834,7 @@
         },
         {
           "studio": "Austin - Zilker",
-          "source": "Business Mode",
+          "source": "N/A",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -1922,7 +1922,7 @@
         },
         {
           "studio": "Coral Springs",
-          "source": "SWEAT440 App",
+          "source": "Website (unattributed)",
           "received_promo": 2,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -1930,7 +1930,7 @@
         },
         {
           "studio": "Coral Springs",
-          "source": "Website (unattributed)",
+          "source": "SWEAT440 App",
           "received_promo": 2,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -1954,7 +1954,7 @@
         },
         {
           "studio": "Doral",
-          "source": "SWEAT440 App",
+          "source": "N/A",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -1962,7 +1962,7 @@
         },
         {
           "studio": "Doral",
-          "source": "N/A",
+          "source": "SWEAT440 App",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -1994,6 +1994,14 @@
         },
         {
           "studio": "Eastchester",
+          "source": "N/A",
+          "received_promo": 2,
+          "converted_to_paid": 1,
+          "conversion_pct": 50.0,
+          "post_promo_revenue": 379.0
+        },
+        {
+          "studio": "Eastchester",
           "source": "Business Mode",
           "received_promo": 2,
           "converted_to_paid": 0,
@@ -2007,14 +2015,6 @@
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
           "post_promo_revenue": 0.0
-        },
-        {
-          "studio": "Eastchester",
-          "source": "N/A",
-          "received_promo": 2,
-          "converted_to_paid": 1,
-          "conversion_pct": 50.0,
-          "post_promo_revenue": 379.0
         },
         {
           "studio": "Eastchester",
@@ -2130,14 +2130,6 @@
         },
         {
           "studio": "Miami - Coconut Grove",
-          "source": "MindBody App",
-          "received_promo": 1,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
-        },
-        {
-          "studio": "Miami - Coconut Grove",
           "source": "Local Listings",
           "received_promo": 1,
           "converted_to_paid": 1,
@@ -2151,6 +2143,14 @@
           "converted_to_paid": 1,
           "conversion_pct": 100.0,
           "post_promo_revenue": 419.0
+        },
+        {
+          "studio": "Miami - Coconut Grove",
+          "source": "MindBody App",
+          "received_promo": 1,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
         },
         {
           "studio": "Miami - Midtown",
@@ -2178,7 +2178,7 @@
         },
         {
           "studio": "Miami - Midtown",
-          "source": "SWEAT440 App",
+          "source": "N/A",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -2186,7 +2186,7 @@
         },
         {
           "studio": "Miami - Midtown",
-          "source": "N/A",
+          "source": "SWEAT440 App",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -2202,7 +2202,7 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "N/A",
+          "source": "MindBody App",
           "received_promo": 2,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -2210,7 +2210,7 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "MindBody App",
+          "source": "N/A",
           "received_promo": 2,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -2354,7 +2354,7 @@
         },
         {
           "studio": "NYC - Chelsea",
-          "source": "Meta Ads",
+          "source": "Business Mode",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -2362,7 +2362,7 @@
         },
         {
           "studio": "NYC - Chelsea",
-          "source": "Business Mode",
+          "source": "Meta Ads",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -2394,7 +2394,7 @@
         },
         {
           "studio": "NYC - FiDi",
-          "source": "N/A",
+          "source": "Business Mode",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -2402,7 +2402,7 @@
         },
         {
           "studio": "NYC - FiDi",
-          "source": "Business Mode",
+          "source": "N/A",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -2434,14 +2434,6 @@
         },
         {
           "studio": "NYC - Park Slope",
-          "source": "Meta Ads",
-          "received_promo": 1,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
-        },
-        {
-          "studio": "NYC - Park Slope",
           "source": "Business Mode",
           "received_promo": 1,
           "converted_to_paid": 0,
@@ -2450,7 +2442,7 @@
         },
         {
           "studio": "NYC - Park Slope",
-          "source": "N/A",
+          "source": "ClassPass / Platforms",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -2458,7 +2450,15 @@
         },
         {
           "studio": "NYC - Park Slope",
-          "source": "ClassPass / Platforms",
+          "source": "Meta Ads",
+          "received_promo": 1,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
+        },
+        {
+          "studio": "NYC - Park Slope",
+          "source": "N/A",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -2546,19 +2546,19 @@
         },
         {
           "studio": "South Miami",
-          "source": "MindBody App",
-          "received_promo": 1,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
-        },
-        {
-          "studio": "South Miami",
           "source": "Meta Ads",
           "received_promo": 1,
           "converted_to_paid": 1,
           "conversion_pct": 100.0,
           "post_promo_revenue": 149.0
+        },
+        {
+          "studio": "South Miami",
+          "source": "MindBody App",
+          "received_promo": 1,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
         },
         {
           "studio": "Toms River",
@@ -2683,6 +2683,14 @@
           "revenue": 263.8
         },
         {
+          "product": "4 Visits",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 1,
+          "transactions": 1,
+          "revenue": 99.0
+        },
+        {
           "product": "20 Pack",
           "item_type": "Pricing Option",
           "category": "Class/Class Packs",
@@ -2697,26 +2705,9 @@
           "clients": 1,
           "transactions": 1,
           "revenue": 189.0
-        },
-        {
-          "product": "4 Visits",
-          "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 1,
-          "transactions": 1,
-          "revenue": 99.0
         }
       ],
       "products_by_studio": [
-        {
-          "studio": "Austin - Highland",
-          "product": "Unlimited Monthly",
-          "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 1,
-          "transactions": 1,
-          "revenue": 84.5
-        },
         {
           "studio": "Austin - Highland",
           "product": "3 Month Summer Pass",
@@ -2725,6 +2716,15 @@
           "clients": 1,
           "transactions": 1,
           "revenue": 379.0
+        },
+        {
+          "studio": "Austin - Highland",
+          "product": "Unlimited Monthly",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 1,
+          "transactions": 1,
+          "revenue": 84.5
         },
         {
           "studio": "Boca Raton",
@@ -2944,24 +2944,6 @@
         },
         {
           "studio": "NYC - FiDi",
-          "product": "Unlimited Monthly",
-          "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 1,
-          "transactions": 1,
-          "revenue": 197.5
-        },
-        {
-          "studio": "NYC - FiDi",
-          "product": "10 Pack",
-          "item_type": "Pricing Option",
-          "category": "Class/Class Packs",
-          "clients": 1,
-          "transactions": 1,
-          "revenue": 234.34
-        },
-        {
-          "studio": "NYC - FiDi",
           "product": "Student/Teacher/Military Monthly Unlimited",
           "item_type": "Pricing Option",
           "category": "Memberships",
@@ -2977,6 +2959,24 @@
           "clients": 1,
           "transactions": 1,
           "revenue": 419.0
+        },
+        {
+          "studio": "NYC - FiDi",
+          "product": "Unlimited Monthly",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 1,
+          "transactions": 1,
+          "revenue": 197.5
+        },
+        {
+          "studio": "NYC - FiDi",
+          "product": "10 Pack",
+          "item_type": "Pricing Option",
+          "category": "Class/Class Packs",
+          "clients": 1,
+          "transactions": 1,
+          "revenue": 234.34
         },
         {
           "studio": "NYC - Park Slope",
@@ -3088,21 +3088,21 @@
         },
         {
           "studio": "West Palm Beach",
-          "product": "3 Month Summer Pass",
-          "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 1,
-          "transactions": 1,
-          "revenue": 299.0
-        },
-        {
-          "studio": "West Palm Beach",
           "product": "Unlimited Monthly",
           "item_type": "Pricing Option",
           "category": "Memberships",
           "clients": 1,
           "transactions": 1,
           "revenue": 149.0
+        },
+        {
+          "studio": "West Palm Beach",
+          "product": "3 Month Summer Pass",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 1,
+          "transactions": 1,
+          "revenue": 299.0
         }
       ],
       "time_series": [
@@ -4847,7 +4847,7 @@
         },
         {
           "studio": "NYC - Chelsea",
-          "segment": "Platform",
+          "segment": "Existing",
           "total_clients": 1,
           "converted": 0,
           "conversion_pct": 0.0,
@@ -4856,7 +4856,7 @@
         },
         {
           "studio": "NYC - Chelsea",
-          "segment": "Existing",
+          "segment": "Platform",
           "total_clients": 1,
           "converted": 0,
           "conversion_pct": 0.0,
@@ -5019,18 +5019,46 @@
       ],
       "multi_location": [
         {
-          "email": "Jodiboockvar@gmail.com",
-          "name": "Fabiana Boockvar",
-          "studio_count": 3,
-          "purchases": 3,
-          "studios": "Doral, Pembroke Pines, Eastchester"
-        },
-        {
           "email": "Victor22al_@hotmail.com",
           "name": "Arianna Alvarez",
           "studio_count": 3,
           "purchases": 3,
-          "studios": "South Miami, Doral, Miami - Upper East Side"
+          "studios": "Miami - Upper East Side, South Miami, Doral"
+        },
+        {
+          "email": "Jodiboockvar@gmail.com",
+          "name": "Fabiana Boockvar",
+          "studio_count": 3,
+          "purchases": 3,
+          "studios": "Pembroke Pines, Doral, Eastchester"
+        },
+        {
+          "email": "Jenminelli@icloud.com",
+          "name": "Jennifer Juneja",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "Charlotte - Noda, Austin - Highland"
+        },
+        {
+          "email": "Stephandrews16@icloud.com",
+          "name": "Anjelly Almonte",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "South Miami, Miami - Midtown"
+        },
+        {
+          "email": "e.betancurt@hotmail.com",
+          "name": "Erika Cook",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "Miami - Coconut Grove, Miramar"
+        },
+        {
+          "email": "Jessymp34@gmail.com",
+          "name": "Jessica Mizrahi",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "Fort Lauderdale - Las Olas, Eastchester"
         },
         {
           "email": "shainaweinstein@yahoo.com",
@@ -5040,50 +5068,50 @@
           "studios": "Miami - Midtown, West Palm Beach"
         },
         {
-          "email": "Jenminelli@icloud.com",
-          "name": "Jennifer Juneja",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "Austin - Highland, Charlotte - Noda"
-        },
-        {
-          "email": "magincorsini@gmail.com",
-          "name": "Mariana Baena",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "Miami - Coconut Grove, Miramar"
-        },
-        {
-          "email": "Randyrcohen@gmail.com",
-          "name": "Christine  Cohen",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "Ocean Township, Wall Township"
-        },
-        {
-          "email": "estherecohen@gmail.com",
-          "name": "Esther Cohen",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "Ocean Township, Deerfield Beach"
-        },
-        {
-          "email": "Seiland13@gmail.com",
-          "name": "Emilio Campo",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "Miami - Midtown, Charlotte - Noda"
-        },
-        {
-          "email": "Katieformato@gmail.com",
-          "name": "Katie Formato",
+          "email": "abigail.sooy@gmail.com",
+          "name": "Abigail Mendoza",
           "studio_count": 2,
           "purchases": 2,
           "studios": "Eastchester, Fort Lauderdale - Las Olas"
         },
         {
-          "email": "Denisedpowell@gmail.com",
-          "name": "Denise DeCesare",
+          "email": "gabyh21@gmail.com",
+          "name": "Gabriela C. Hamer",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "Miami - Upper East Side, Boca Raton"
+        },
+        {
+          "email": "gabriellacuevas09@gmail.com",
+          "name": "Lauren Setton",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "Ocean Township, Wall Township"
+        },
+        {
+          "email": "Gallucci17@gmail.com",
+          "name": "Jose Escola",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "Coral Springs, Wall Township"
+        },
+        {
+          "email": "caseycondehurley@gmail.com",
+          "name": "Isabella Rodriguez",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "NYC - Chelsea, Miami - Brickell"
+        },
+        {
+          "email": "biancahernandez0660@gmail.com",
+          "name": "Bianca Hernandez",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "Miami - Upper East Side, South Miami"
+        },
+        {
+          "email": "Randyrcohen@gmail.com",
+          "name": "Christine  Cohen",
           "studio_count": 2,
           "purchases": 2,
           "studios": "Wall Township, Ocean Township"
@@ -5096,88 +5124,18 @@
           "studios": "Coral Gables, Eastchester"
         },
         {
-          "email": "Ala106@pharmacy.rutgers.edu",
-          "name": "Angelica Arroyo",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "Coral Springs, Ocean Township"
-        },
-        {
-          "email": "caseycondehurley@gmail.com",
-          "name": "Isabella Rodriguez",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "Miami - Brickell, NYC - Chelsea"
-        },
-        {
-          "email": "emilygoldstein27@gmail.com",
-          "name": "Emily Goldstein",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "Miami - Brickell, NYC - Chelsea"
-        },
-        {
-          "email": "Jessymp34@gmail.com",
-          "name": "Jessica Mizrahi",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "Fort Lauderdale - Las Olas, Eastchester"
-        },
-        {
-          "email": "biancahernandez0660@gmail.com",
-          "name": "Bianca Hernandez",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "South Miami, Miami - Upper East Side"
-        },
-        {
-          "email": "Gallucci17@gmail.com",
-          "name": "Jose Escola",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "Wall Township, Coral Springs"
-        },
-        {
-          "email": "gabyh21@gmail.com",
-          "name": "Gabriela C. Hamer",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "Boca Raton, Miami - Upper East Side"
-        },
-        {
-          "email": "Appelbaum.shane@gmail.com",
-          "name": "Monica Appelbaum",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "South Miami, Austin - Highland"
-        },
-        {
-          "email": "gabriellacuevas09@gmail.com",
-          "name": "Lauren Setton",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "Wall Township, Ocean Township"
-        },
-        {
-          "email": "Rkcurious@yahoo.com",
-          "name": "Melanie Klein",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "Fort Lauderdale - Las Olas, Eastchester"
-        },
-        {
-          "email": "Stephandrews16@icloud.com",
-          "name": "Anjelly Almonte",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "South Miami, Miami - Midtown"
-        },
-        {
           "email": "Kmg547@nyu.edu",
           "name": "Kristy Engstrom",
           "studio_count": 2,
           "purchases": 2,
           "studios": "Eastchester, Fort Lauderdale - Las Olas"
+        },
+        {
+          "email": "Ala106@pharmacy.rutgers.edu",
+          "name": "Angelica Arroyo",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "Ocean Township, Coral Springs"
         },
         {
           "email": "icrusoe331@gmail.com",
@@ -5187,11 +5145,53 @@
           "studios": "Miami Lakes, Eastchester"
         },
         {
-          "email": "abigail.sooy@gmail.com",
-          "name": "Abigail Mendoza",
+          "email": "estherecohen@gmail.com",
+          "name": "Esther Cohen",
           "studio_count": 2,
           "purchases": 2,
-          "studios": "Eastchester, Fort Lauderdale - Las Olas"
+          "studios": "Deerfield Beach, Ocean Township"
+        },
+        {
+          "email": "emilygoldstein27@gmail.com",
+          "name": "Emily Goldstein",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "NYC - Chelsea, Miami - Brickell"
+        },
+        {
+          "email": "Denisedpowell@gmail.com",
+          "name": "Denise DeCesare",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "Wall Township, Ocean Township"
+        },
+        {
+          "email": "Seiland13@gmail.com",
+          "name": "Emilio Campo",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "Miami - Midtown, Charlotte - Noda"
+        },
+        {
+          "email": "Appelbaum.shane@gmail.com",
+          "name": "Monica Appelbaum",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "South Miami, Austin - Highland"
+        },
+        {
+          "email": "Katieformato@gmail.com",
+          "name": "Katie Formato",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "Fort Lauderdale - Las Olas, Eastchester"
+        },
+        {
+          "email": "magincorsini@gmail.com",
+          "name": "Mariana Baena",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "Miramar, Miami - Coconut Grove"
         },
         {
           "email": "adneyvaldes96@gmail.com",
@@ -5201,11 +5201,11 @@
           "studios": "Eastchester, Miami Lakes"
         },
         {
-          "email": "e.betancurt@hotmail.com",
-          "name": "Erika Cook",
+          "email": "Rkcurious@yahoo.com",
+          "name": "Melanie Klein",
           "studio_count": 2,
           "purchases": 2,
-          "studios": "Miami - Coconut Grove, Miramar"
+          "studios": "Fort Lauderdale - Las Olas, Eastchester"
         }
       ]
     },
@@ -5322,6 +5322,17 @@
           "existing_clients": 4
         },
         {
+          "source": "Meta Ads",
+          "clients": 3,
+          "transactions": 3,
+          "revenue": 1127.0,
+          "avg_ticket": 375.67,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 0,
+          "existing_clients": 3
+        },
+        {
           "source": "Local Listings",
           "clients": 3,
           "transactions": 3,
@@ -5353,17 +5364,6 @@
           "platform_clients": 1,
           "free_class_clients": 0,
           "existing_clients": 2
-        },
-        {
-          "source": "Meta Ads",
-          "clients": 3,
-          "transactions": 3,
-          "revenue": 1127.0,
-          "avg_ticket": 375.67,
-          "new_clients": 0,
-          "platform_clients": 0,
-          "free_class_clients": 0,
-          "existing_clients": 3
         }
       ],
       "studios": [
@@ -5380,17 +5380,6 @@
         },
         {
           "studio": "Austin - Highland",
-          "source": "Website (unattributed)",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 379.0,
-          "new_clients": 0,
-          "platform_clients": 0,
-          "free_class_clients": 0,
-          "existing_clients": 1
-        },
-        {
-          "studio": "Austin - Highland",
           "source": "N/A",
           "clients": 1,
           "purchases": 1,
@@ -5399,6 +5388,17 @@
           "platform_clients": 0,
           "free_class_clients": 1,
           "existing_clients": 0
+        },
+        {
+          "studio": "Austin - Highland",
+          "source": "Website (unattributed)",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 379.0,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 0,
+          "existing_clients": 1
         },
         {
           "studio": "Austin - Zilker",
@@ -5446,10 +5446,10 @@
         },
         {
           "studio": "Boca Raton",
-          "source": "Business Mode",
+          "source": "N/A",
           "clients": 1,
           "purchases": 1,
-          "revenue": 299.0,
+          "revenue": 379.0,
           "new_clients": 0,
           "platform_clients": 0,
           "free_class_clients": 0,
@@ -5457,10 +5457,10 @@
         },
         {
           "studio": "Boca Raton",
-          "source": "N/A",
+          "source": "Business Mode",
           "clients": 1,
           "purchases": 1,
-          "revenue": 379.0,
+          "revenue": 299.0,
           "new_clients": 0,
           "platform_clients": 0,
           "free_class_clients": 0,
@@ -5490,7 +5490,7 @@
         },
         {
           "studio": "Charlotte - Noda",
-          "source": "SWEAT440 App",
+          "source": "Grassroots",
           "clients": 1,
           "purchases": 1,
           "revenue": 379.0,
@@ -5523,7 +5523,7 @@
         },
         {
           "studio": "Charlotte - Noda",
-          "source": "Grassroots",
+          "source": "Meta Ads",
           "clients": 1,
           "purchases": 1,
           "revenue": 379.0,
@@ -5534,7 +5534,7 @@
         },
         {
           "studio": "Charlotte - Noda",
-          "source": "Meta Ads",
+          "source": "SWEAT440 App",
           "clients": 1,
           "purchases": 1,
           "revenue": 379.0,
@@ -5589,17 +5589,6 @@
         },
         {
           "studio": "Coral Gables",
-          "source": "MindBody App",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 379.0,
-          "new_clients": 0,
-          "platform_clients": 1,
-          "free_class_clients": 0,
-          "existing_clients": 0
-        },
-        {
-          "studio": "Coral Gables",
           "source": "ClassPass / Platforms",
           "clients": 1,
           "purchases": 1,
@@ -5608,6 +5597,17 @@
           "platform_clients": 0,
           "free_class_clients": 0,
           "existing_clients": 1
+        },
+        {
+          "studio": "Coral Gables",
+          "source": "MindBody App",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 379.0,
+          "new_clients": 0,
+          "platform_clients": 1,
+          "free_class_clients": 0,
+          "existing_clients": 0
         },
         {
           "studio": "Coral Springs",
@@ -5732,14 +5732,14 @@
         },
         {
           "studio": "Eastchester",
-          "source": "N/A",
+          "source": "MindBody App",
           "clients": 4,
           "purchases": 4,
           "revenue": 1516.0,
           "new_clients": 0,
-          "platform_clients": 1,
+          "platform_clients": 0,
           "free_class_clients": 0,
-          "existing_clients": 3
+          "existing_clients": 4
         },
         {
           "studio": "Eastchester",
@@ -5754,14 +5754,14 @@
         },
         {
           "studio": "Eastchester",
-          "source": "MindBody App",
+          "source": "N/A",
           "clients": 4,
           "purchases": 4,
           "revenue": 1516.0,
           "new_clients": 0,
-          "platform_clients": 0,
+          "platform_clients": 1,
           "free_class_clients": 0,
-          "existing_clients": 4
+          "existing_clients": 3
         },
         {
           "studio": "Eastchester",
@@ -5776,17 +5776,6 @@
         },
         {
           "studio": "Fort Lauderdale - Las Olas",
-          "source": "N/A",
-          "clients": 3,
-          "purchases": 3,
-          "revenue": 1257.0,
-          "new_clients": 0,
-          "platform_clients": 0,
-          "free_class_clients": 0,
-          "existing_clients": 3
-        },
-        {
-          "studio": "Fort Lauderdale - Las Olas",
           "source": "Website (unattributed)",
           "clients": 3,
           "purchases": 3,
@@ -5795,6 +5784,17 @@
           "platform_clients": 1,
           "free_class_clients": 0,
           "existing_clients": 2
+        },
+        {
+          "studio": "Fort Lauderdale - Las Olas",
+          "source": "N/A",
+          "clients": 3,
+          "purchases": 3,
+          "revenue": 1257.0,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 0,
+          "existing_clients": 3
         },
         {
           "studio": "Fort Lauderdale - Las Olas",
@@ -5842,7 +5842,7 @@
         },
         {
           "studio": "Miami - Brickell",
-          "source": "Business Mode",
+          "source": "Website (unattributed)",
           "clients": 1,
           "purchases": 1,
           "revenue": 419.0,
@@ -5853,7 +5853,7 @@
         },
         {
           "studio": "Miami - Brickell",
-          "source": "Website (unattributed)",
+          "source": "Business Mode",
           "clients": 1,
           "purchases": 1,
           "revenue": 419.0,
@@ -5886,7 +5886,7 @@
         },
         {
           "studio": "Miami - Coconut Grove",
-          "source": "Meta Ads",
+          "source": "Business Mode",
           "clients": 1,
           "purchases": 1,
           "revenue": 419.0,
@@ -5897,7 +5897,7 @@
         },
         {
           "studio": "Miami - Coconut Grove",
-          "source": "Business Mode",
+          "source": "Meta Ads",
           "clients": 1,
           "purchases": 1,
           "revenue": 419.0,
@@ -5952,17 +5952,6 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "SWEAT440 App",
-          "clients": 2,
-          "purchases": 2,
-          "revenue": 838.0,
-          "new_clients": 0,
-          "platform_clients": 0,
-          "free_class_clients": 0,
-          "existing_clients": 2
-        },
-        {
-          "studio": "Miami - Upper East Side",
           "source": "Website (unattributed)",
           "clients": 2,
           "purchases": 2,
@@ -5974,14 +5963,14 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "Internet / AI Search",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 419.0,
+          "source": "SWEAT440 App",
+          "clients": 2,
+          "purchases": 2,
+          "revenue": 838.0,
           "new_clients": 0,
           "platform_clients": 0,
           "free_class_clients": 0,
-          "existing_clients": 1
+          "existing_clients": 2
         },
         {
           "studio": "Miami - Upper East Side",
@@ -5997,6 +5986,17 @@
         {
           "studio": "Miami - Upper East Side",
           "source": "MindBody App",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 419.0,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 0,
+          "existing_clients": 1
+        },
+        {
+          "studio": "Miami - Upper East Side",
+          "source": "Internet / AI Search",
           "clients": 1,
           "purchases": 1,
           "revenue": 419.0,
@@ -6128,17 +6128,6 @@
         },
         {
           "studio": "NYC - Chelsea",
-          "source": "Business Mode",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 419.0,
-          "new_clients": 0,
-          "platform_clients": 1,
-          "free_class_clients": 0,
-          "existing_clients": 0
-        },
-        {
-          "studio": "NYC - Chelsea",
           "source": "SWEAT440 App",
           "clients": 1,
           "purchases": 1,
@@ -6146,6 +6135,17 @@
           "new_clients": 0,
           "platform_clients": 0,
           "free_class_clients": 1,
+          "existing_clients": 0
+        },
+        {
+          "studio": "NYC - Chelsea",
+          "source": "Business Mode",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 419.0,
+          "new_clients": 0,
+          "platform_clients": 1,
+          "free_class_clients": 0,
           "existing_clients": 0
         },
         {
@@ -6249,17 +6249,6 @@
         },
         {
           "studio": "Ocean Township",
-          "source": "Business Mode",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 379.0,
-          "new_clients": 0,
-          "platform_clients": 0,
-          "free_class_clients": 0,
-          "existing_clients": 1
-        },
-        {
-          "studio": "Ocean Township",
           "source": "SWEAT440 App",
           "clients": 1,
           "purchases": 1,
@@ -6268,6 +6257,17 @@
           "platform_clients": 0,
           "free_class_clients": 1,
           "existing_clients": 0
+        },
+        {
+          "studio": "Ocean Township",
+          "source": "Business Mode",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 379.0,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 0,
+          "existing_clients": 1
         },
         {
           "studio": "Pembroke Pines",
@@ -6337,7 +6337,7 @@
         },
         {
           "studio": "South Miami",
-          "source": "ClassPass / Platforms",
+          "source": "SWEAT440 App",
           "clients": 1,
           "purchases": 1,
           "revenue": 379.0,
@@ -6348,7 +6348,7 @@
         },
         {
           "studio": "South Miami",
-          "source": "SWEAT440 App",
+          "source": "ClassPass / Platforms",
           "clients": 1,
           "purchases": 1,
           "revenue": 379.0,
@@ -6403,17 +6403,6 @@
         },
         {
           "studio": "West Palm Beach",
-          "source": "Local Listings",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 379.0,
-          "new_clients": 0,
-          "platform_clients": 1,
-          "free_class_clients": 0,
-          "existing_clients": 0
-        },
-        {
-          "studio": "West Palm Beach",
           "source": "MindBody App",
           "clients": 1,
           "purchases": 2,
@@ -6425,7 +6414,7 @@
         },
         {
           "studio": "West Palm Beach",
-          "source": "Grassroots",
+          "source": "N/A",
           "clients": 1,
           "purchases": 1,
           "revenue": 299.0,
@@ -6436,7 +6425,18 @@
         },
         {
           "studio": "West Palm Beach",
-          "source": "N/A",
+          "source": "Local Listings",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 379.0,
+          "new_clients": 0,
+          "platform_clients": 1,
+          "free_class_clients": 0,
+          "existing_clients": 0
+        },
+        {
+          "studio": "West Palm Beach",
+          "source": "Grassroots",
           "clients": 1,
           "purchases": 1,
           "revenue": 299.0,
@@ -6851,6 +6851,20 @@
           "post_promo_revenue": 1018.0
         },
         {
+          "source": "Meta Ads",
+          "received_promo": 3,
+          "converted_to_paid": 3,
+          "conversion_pct": 100.0,
+          "post_promo_revenue": 1837.0
+        },
+        {
+          "source": "Internet / AI Search",
+          "received_promo": 3,
+          "converted_to_paid": 1,
+          "conversion_pct": 33.3,
+          "post_promo_revenue": 939.0
+        },
+        {
           "source": "Grassroots",
           "received_promo": 3,
           "converted_to_paid": 0,
@@ -6863,20 +6877,6 @@
           "converted_to_paid": 1,
           "conversion_pct": 33.3,
           "post_promo_revenue": 849.0
-        },
-        {
-          "source": "Internet / AI Search",
-          "received_promo": 3,
-          "converted_to_paid": 1,
-          "conversion_pct": 33.3,
-          "post_promo_revenue": 939.0
-        },
-        {
-          "source": "Meta Ads",
-          "received_promo": 3,
-          "converted_to_paid": 3,
-          "conversion_pct": 100.0,
-          "post_promo_revenue": 1837.0
         }
       ],
       "funnel_by_studio": [
@@ -6970,27 +6970,11 @@
         },
         {
           "studio": "Charlotte - Noda",
-          "source": "Meta Ads",
-          "received_promo": 1,
-          "converted_to_paid": 1,
-          "conversion_pct": 100.0,
-          "post_promo_revenue": 149.0
-        },
-        {
-          "studio": "Charlotte - Noda",
           "source": "ClassPass / Platforms",
           "received_promo": 1,
           "converted_to_paid": 1,
           "conversion_pct": 100.0,
           "post_promo_revenue": 149.0
-        },
-        {
-          "studio": "Charlotte - Noda",
-          "source": "Local Listings",
-          "received_promo": 1,
-          "converted_to_paid": 1,
-          "conversion_pct": 100.0,
-          "post_promo_revenue": 849.0
         },
         {
           "studio": "Charlotte - Noda",
@@ -7007,6 +6991,22 @@
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
           "post_promo_revenue": 0.0
+        },
+        {
+          "studio": "Charlotte - Noda",
+          "source": "Local Listings",
+          "received_promo": 1,
+          "converted_to_paid": 1,
+          "conversion_pct": 100.0,
+          "post_promo_revenue": 849.0
+        },
+        {
+          "studio": "Charlotte - Noda",
+          "source": "Meta Ads",
+          "received_promo": 1,
+          "converted_to_paid": 1,
+          "conversion_pct": 100.0,
+          "post_promo_revenue": 149.0
         },
         {
           "studio": "Coral Gables",
@@ -7026,7 +7026,7 @@
         },
         {
           "studio": "Coral Gables",
-          "source": "Business Mode",
+          "source": "SWEAT440 App",
           "received_promo": 3,
           "converted_to_paid": 1,
           "conversion_pct": 33.3,
@@ -7034,7 +7034,7 @@
         },
         {
           "studio": "Coral Gables",
-          "source": "SWEAT440 App",
+          "source": "Business Mode",
           "received_promo": 3,
           "converted_to_paid": 1,
           "conversion_pct": 33.3,
@@ -7106,19 +7106,19 @@
         },
         {
           "studio": "Deerfield Beach",
-          "source": "Business Mode",
-          "received_promo": 1,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
-        },
-        {
-          "studio": "Deerfield Beach",
           "source": "Meta Ads",
           "received_promo": 1,
           "converted_to_paid": 1,
           "conversion_pct": 100.0,
           "post_promo_revenue": 749.0
+        },
+        {
+          "studio": "Deerfield Beach",
+          "source": "Business Mode",
+          "received_promo": 1,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
         },
         {
           "studio": "Doral",
@@ -7146,19 +7146,19 @@
         },
         {
           "studio": "Eastchester",
-          "source": "N/A",
-          "received_promo": 4,
-          "converted_to_paid": 2,
-          "conversion_pct": 50.0,
-          "post_promo_revenue": 318.0
-        },
-        {
-          "studio": "Eastchester",
           "source": "Google Ads",
           "received_promo": 4,
           "converted_to_paid": 2,
           "conversion_pct": 50.0,
           "post_promo_revenue": 1018.0
+        },
+        {
+          "studio": "Eastchester",
+          "source": "N/A",
+          "received_promo": 4,
+          "converted_to_paid": 2,
+          "conversion_pct": 50.0,
+          "post_promo_revenue": 318.0
         },
         {
           "studio": "Eastchester",
@@ -7178,19 +7178,19 @@
         },
         {
           "studio": "Fort Lauderdale - Las Olas",
-          "source": "N/A",
-          "received_promo": 3,
-          "converted_to_paid": 3,
-          "conversion_pct": 100.0,
-          "post_promo_revenue": 3789.0
-        },
-        {
-          "studio": "Fort Lauderdale - Las Olas",
           "source": "Website (unattributed)",
           "received_promo": 3,
           "converted_to_paid": 2,
           "conversion_pct": 66.7,
           "post_promo_revenue": 1068.0
+        },
+        {
+          "studio": "Fort Lauderdale - Las Olas",
+          "source": "N/A",
+          "received_promo": 3,
+          "converted_to_paid": 3,
+          "conversion_pct": 100.0,
+          "post_promo_revenue": 3789.0
         },
         {
           "studio": "Fort Lauderdale - Las Olas",
@@ -7226,19 +7226,19 @@
         },
         {
           "studio": "Miami - Brickell",
-          "source": "Website (unattributed)",
-          "received_promo": 1,
-          "converted_to_paid": 1,
-          "conversion_pct": 100.0,
-          "post_promo_revenue": 149.0
-        },
-        {
-          "studio": "Miami - Brickell",
           "source": "Business Mode",
           "received_promo": 1,
           "converted_to_paid": 1,
           "conversion_pct": 100.0,
           "post_promo_revenue": 94.5
+        },
+        {
+          "studio": "Miami - Brickell",
+          "source": "Website (unattributed)",
+          "received_promo": 1,
+          "converted_to_paid": 1,
+          "conversion_pct": 100.0,
+          "post_promo_revenue": 149.0
         },
         {
           "studio": "Miami - Coconut Grove",
@@ -7282,7 +7282,7 @@
         },
         {
           "studio": "Miami - Midtown",
-          "source": "ClassPass / Platforms",
+          "source": "Website (unattributed)",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -7290,7 +7290,7 @@
         },
         {
           "studio": "Miami - Midtown",
-          "source": "Website (unattributed)",
+          "source": "ClassPass / Platforms",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -7306,14 +7306,6 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "Website (unattributed)",
-          "received_promo": 2,
-          "converted_to_paid": 1,
-          "conversion_pct": 50.0,
-          "post_promo_revenue": 939.0
-        },
-        {
-          "studio": "Miami - Upper East Side",
           "source": "SWEAT440 App",
           "received_promo": 2,
           "converted_to_paid": 0,
@@ -7322,11 +7314,11 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "MindBody App",
-          "received_promo": 1,
+          "source": "Website (unattributed)",
+          "received_promo": 2,
           "converted_to_paid": 1,
-          "conversion_pct": 100.0,
-          "post_promo_revenue": 94.5
+          "conversion_pct": 50.0,
+          "post_promo_revenue": 939.0
         },
         {
           "studio": "Miami - Upper East Side",
@@ -7335,6 +7327,14 @@
           "converted_to_paid": 1,
           "conversion_pct": 100.0,
           "post_promo_revenue": 939.0
+        },
+        {
+          "studio": "Miami - Upper East Side",
+          "source": "MindBody App",
+          "received_promo": 1,
+          "converted_to_paid": 1,
+          "conversion_pct": 100.0,
+          "post_promo_revenue": 94.5
         },
         {
           "studio": "Miami - Upper East Side",
@@ -7466,14 +7466,6 @@
         },
         {
           "studio": "NYC - FiDi",
-          "source": "Business Mode",
-          "received_promo": 2,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
-        },
-        {
-          "studio": "NYC - FiDi",
           "source": "Website (unattributed)",
           "received_promo": 2,
           "converted_to_paid": 0,
@@ -7481,12 +7473,12 @@
           "post_promo_revenue": 0.0
         },
         {
-          "studio": "NYC - Park Slope",
-          "source": "N/A",
-          "received_promo": 4,
-          "converted_to_paid": 2,
-          "conversion_pct": 50.0,
-          "post_promo_revenue": 1514.2
+          "studio": "NYC - FiDi",
+          "source": "Business Mode",
+          "received_promo": 2,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
         },
         {
           "studio": "NYC - Park Slope",
@@ -7495,6 +7487,14 @@
           "converted_to_paid": 3,
           "conversion_pct": 75.0,
           "post_promo_revenue": 2296.9
+        },
+        {
+          "studio": "NYC - Park Slope",
+          "source": "N/A",
+          "received_promo": 4,
+          "converted_to_paid": 2,
+          "conversion_pct": 50.0,
+          "post_promo_revenue": 1514.2
         },
         {
           "studio": "NYC - Park Slope",
@@ -7522,7 +7522,7 @@
         },
         {
           "studio": "Ocean Township",
-          "source": "SWEAT440 App",
+          "source": "Business Mode",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -7530,7 +7530,7 @@
         },
         {
           "studio": "Ocean Township",
-          "source": "Business Mode",
+          "source": "SWEAT440 App",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -7546,7 +7546,7 @@
         },
         {
           "studio": "Pembroke Pines",
-          "source": "N/A",
+          "source": "SWEAT440 App",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -7554,7 +7554,7 @@
         },
         {
           "studio": "Pembroke Pines",
-          "source": "SWEAT440 App",
+          "source": "N/A",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -7626,23 +7626,15 @@
         },
         {
           "studio": "West Palm Beach",
-          "source": "MindBody App",
-          "received_promo": 1,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
-        },
-        {
-          "studio": "West Palm Beach",
-          "source": "Local Listings",
-          "received_promo": 1,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
-        },
-        {
-          "studio": "West Palm Beach",
           "source": "N/A",
+          "received_promo": 1,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
+        },
+        {
+          "studio": "West Palm Beach",
+          "source": "SWEAT440 App",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -7658,7 +7650,15 @@
         },
         {
           "studio": "West Palm Beach",
-          "source": "SWEAT440 App",
+          "source": "MindBody App",
+          "received_promo": 1,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
+        },
+        {
+          "studio": "West Palm Beach",
+          "source": "Local Listings",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -7691,22 +7691,6 @@
           "revenue": 3234.0
         },
         {
-          "product": "Unlimited Yearly",
-          "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 3,
-          "transactions": 3,
-          "revenue": 3849.0
-        },
-        {
-          "product": "8 Visits",
-          "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 3,
-          "transactions": 3,
-          "revenue": 427.0
-        },
-        {
           "product": "4 Visits",
           "item_type": "Pricing Option",
           "category": "Memberships",
@@ -7723,12 +7707,20 @@
           "revenue": 897.75
         },
         {
-          "product": "Unlimited Monthly Membership",
+          "product": "Unlimited Yearly",
           "item_type": "Pricing Option",
           "category": "Memberships",
-          "clients": 1,
-          "transactions": 1,
-          "revenue": 149.0
+          "clients": 3,
+          "transactions": 3,
+          "revenue": 3849.0
+        },
+        {
+          "product": "8 Visits",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 3,
+          "transactions": 3,
+          "revenue": 427.0
         },
         {
           "product": "8 Monthly Visits",
@@ -7737,6 +7729,14 @@
           "clients": 1,
           "transactions": 1,
           "revenue": 96.75
+        },
+        {
+          "product": "Unlimited Monthly Membership",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 1,
+          "transactions": 1,
+          "revenue": 149.0
         }
       ],
       "products_by_studio": [
@@ -7796,6 +7796,15 @@
         },
         {
           "studio": "Coral Springs",
+          "product": "Unlimited Monthly",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 1,
+          "transactions": 1,
+          "revenue": 149.0
+        },
+        {
+          "studio": "Coral Springs",
           "product": "Unlimited 6 Months",
           "item_type": "Pricing Option",
           "category": "Memberships",
@@ -7813,7 +7822,7 @@
           "revenue": 79.0
         },
         {
-          "studio": "Coral Springs",
+          "studio": "Deerfield Beach",
           "product": "Unlimited Monthly",
           "item_type": "Pricing Option",
           "category": "Memberships",
@@ -7829,15 +7838,6 @@
           "clients": 1,
           "transactions": 1,
           "revenue": 749.0
-        },
-        {
-          "studio": "Deerfield Beach",
-          "product": "Unlimited Monthly",
-          "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 1,
-          "transactions": 1,
-          "revenue": 149.0
         },
         {
           "studio": "Doral",
@@ -7859,21 +7859,21 @@
         },
         {
           "studio": "Eastchester",
-          "product": "Student/Teacher/Military Monthly Unlimited",
-          "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 3,
-          "transactions": 3,
-          "revenue": 447.0
-        },
-        {
-          "studio": "Eastchester",
           "product": "Unlimited 6 Months",
           "item_type": "Pricing Option",
           "category": "Memberships",
           "clients": 3,
           "transactions": 3,
           "revenue": 2547.0
+        },
+        {
+          "studio": "Eastchester",
+          "product": "Student/Teacher/Military Monthly Unlimited",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 3,
+          "transactions": 3,
+          "revenue": 447.0
         },
         {
           "studio": "Eastchester",
@@ -7940,21 +7940,21 @@
         },
         {
           "studio": "Miami - Coconut Grove",
-          "product": "Student/Teacher/Military Monthly Unlimited",
-          "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 2,
-          "transactions": 2,
-          "revenue": 318.0
-        },
-        {
-          "studio": "Miami - Coconut Grove",
           "product": "20 Pack",
           "item_type": "Pricing Option",
           "category": "Class/Class Packs",
           "clients": 2,
           "transactions": 2,
           "revenue": 598.5
+        },
+        {
+          "studio": "Miami - Coconut Grove",
+          "product": "Student/Teacher/Military Monthly Unlimited",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 2,
+          "transactions": 2,
+          "revenue": 318.0
         },
         {
           "studio": "Miami - Coconut Grove",
@@ -8012,21 +8012,21 @@
         },
         {
           "studio": "NYC - Chelsea",
-          "product": "Unlimited 6 Months",
-          "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 2,
-          "transactions": 2,
-          "revenue": 1753.51
-        },
-        {
-          "studio": "NYC - Chelsea",
           "product": "Unlimited Monthly",
           "item_type": "Pricing Option",
           "category": "Memberships",
           "clients": 2,
           "transactions": 2,
           "revenue": 233.55
+        },
+        {
+          "studio": "NYC - Chelsea",
+          "product": "Unlimited 6 Months",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 2,
+          "transactions": 2,
+          "revenue": 1753.51
         },
         {
           "studio": "NYC - Chelsea",
@@ -9718,21 +9718,21 @@
         },
         {
           "studio": "Miami Beach",
-          "segment": "Platform",
-          "total_clients": 1,
-          "converted": 1,
-          "conversion_pct": 100.0,
-          "post_rev": 84.5,
-          "avg_per_converter": 84.5
-        },
-        {
-          "studio": "Miami Beach",
           "segment": "Existing",
           "total_clients": 1,
           "converted": 1,
           "conversion_pct": 100.0,
           "post_rev": 169.0,
           "avg_per_converter": 169.0
+        },
+        {
+          "studio": "Miami Beach",
+          "segment": "Platform",
+          "total_clients": 1,
+          "converted": 1,
+          "conversion_pct": 100.0,
+          "post_rev": 84.5,
+          "avg_per_converter": 84.5
         },
         {
           "studio": "Miami Lakes",
@@ -9799,21 +9799,21 @@
         },
         {
           "studio": "NYC - Chelsea",
-          "segment": "New",
-          "total_clients": 3,
-          "converted": 1,
-          "conversion_pct": 33.3,
-          "post_rev": 981.26,
-          "avg_per_converter": 981.26
-        },
-        {
-          "studio": "NYC - Chelsea",
           "segment": "Existing",
           "total_clients": 3,
           "converted": 2,
           "conversion_pct": 66.7,
           "post_rev": 860.55,
           "avg_per_converter": 430.27
+        },
+        {
+          "studio": "NYC - Chelsea",
+          "segment": "New",
+          "total_clients": 3,
+          "converted": 1,
+          "conversion_pct": 33.3,
+          "post_rev": 981.26,
+          "avg_per_converter": 981.26
         },
         {
           "studio": "NYC - FiDi",
@@ -9889,21 +9889,21 @@
         },
         {
           "studio": "Pembroke Pines",
-          "segment": "Platform",
-          "total_clients": 1,
-          "converted": 1,
-          "conversion_pct": 100.0,
-          "post_rev": 74.5,
-          "avg_per_converter": 74.5
-        },
-        {
-          "studio": "Pembroke Pines",
           "segment": "Free Class",
           "total_clients": 1,
           "converted": 0,
           "conversion_pct": 0.0,
           "post_rev": 0.0,
           "avg_per_converter": 0.0
+        },
+        {
+          "studio": "Pembroke Pines",
+          "segment": "Platform",
+          "total_clients": 1,
+          "converted": 1,
+          "conversion_pct": 100.0,
+          "post_rev": 74.5,
+          "avg_per_converter": 74.5
         },
         {
           "studio": "South Miami",
@@ -9953,11 +9953,18 @@
       ],
       "multi_location": [
         {
-          "email": "k000beck@yahoo.com",
-          "name": "Karen Beck",
+          "email": "allisonbrecher21@gmail.com",
+          "name": "Allison Brecher",
           "studio_count": 2,
           "purchases": 2,
-          "studios": "NYC - Park Slope, Charlotte - Noda"
+          "studios": "Fort Lauderdale - Las Olas, Deerfield Beach"
+        },
+        {
+          "email": "alexbern13@gmail.com",
+          "name": "Alexander Bernard",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "Eastchester, NYC - FiDi"
         },
         {
           "email": "karastennis@gmail.com",
@@ -9971,14 +9978,7 @@
           "name": "Carie Claro",
           "studio_count": 2,
           "purchases": 2,
-          "studios": "Doral, Miami - Upper East Side"
-        },
-        {
-          "email": "alexbern13@gmail.com",
-          "name": "Alexander Bernard",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "Eastchester, NYC - FiDi"
+          "studios": "Miami - Upper East Side, Doral"
         },
         {
           "email": "marcela.ganem@gmail.com",
@@ -9988,11 +9988,11 @@
           "studios": "Miami - Coconut Grove, Deerfield Beach"
         },
         {
-          "email": "allisonbrecher21@gmail.com",
-          "name": "Allison Brecher",
+          "email": "k000beck@yahoo.com",
+          "name": "Karen Beck",
           "studio_count": 2,
           "purchases": 2,
-          "studios": "Fort Lauderdale - Las Olas, Deerfield Beach"
+          "studios": "NYC - Park Slope, Charlotte - Noda"
         }
       ]
     },
@@ -10008,27 +10008,27 @@
       "exclude_to": null,
       "notes": "",
       "kpis": {
-        "total_purchases": 249,
-        "unique_clients": 241,
+        "total_purchases": 247,
+        "unique_clients": 239,
         "new_clients": 0,
         "platform_clients": 25,
         "free_class_clients": 27,
-        "existing_clients": 189,
-        "total_revenue": 58826.64,
-        "avg_ticket": 236.25,
+        "existing_clients": 187,
+        "total_revenue": 58291.98,
+        "avg_ticket": 236.0,
         "quality_converted": 25,
-        "quality_conv_rate": 10.4,
+        "quality_conv_rate": 10.5,
         "quality_revenue": 4737.03,
         "membership_conversions": 20,
-        "membership_conv_rate": 8.3,
+        "membership_conv_rate": 8.4,
         "membership_revenue": 3465.78,
         "pack_conversions": 5,
         "pack_conv_rate": 2.1,
         "pack_revenue": 1271.25,
         "converted_to_paid": 39,
-        "conversion_rate": 16.2,
+        "conversion_rate": 16.3,
         "post_promo_revenue": 5789.18,
-        "revenue_per_participant": 24.02
+        "revenue_per_participant": 24.22
       },
       "lead_sources": [
         {
@@ -10055,14 +10055,14 @@
         },
         {
           "source": "Business Mode",
-          "clients": 44,
-          "transactions": 45,
-          "revenue": 10542.96,
-          "avg_ticket": 234.29,
+          "clients": 42,
+          "transactions": 43,
+          "revenue": 10008.3,
+          "avg_ticket": 232.75,
           "new_clients": 0,
           "platform_clients": 3,
           "free_class_clients": 2,
-          "existing_clients": 39
+          "existing_clients": 37
         },
         {
           "source": "SWEAT440 App",
@@ -10098,17 +10098,6 @@
           "existing_clients": 4
         },
         {
-          "source": "Local Listings",
-          "clients": 3,
-          "transactions": 3,
-          "revenue": 734.99,
-          "avg_ticket": 245.0,
-          "new_clients": 0,
-          "platform_clients": 2,
-          "free_class_clients": 0,
-          "existing_clients": 1
-        },
-        {
           "source": "Internet / AI Search",
           "clients": 3,
           "transactions": 3,
@@ -10120,15 +10109,26 @@
           "existing_clients": 2
         },
         {
-          "source": "Grassroots",
-          "clients": 2,
-          "transactions": 2,
-          "revenue": 400.66,
-          "avg_ticket": 200.33,
+          "source": "Local Listings",
+          "clients": 3,
+          "transactions": 3,
+          "revenue": 734.99,
+          "avg_ticket": 245.0,
           "new_clients": 0,
-          "platform_clients": 1,
+          "platform_clients": 2,
           "free_class_clients": 0,
           "existing_clients": 1
+        },
+        {
+          "source": "Meta Ads",
+          "clients": 2,
+          "transactions": 2,
+          "revenue": 534.66,
+          "avg_ticket": 267.33,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 0,
+          "existing_clients": 2
         },
         {
           "source": "Google Ads",
@@ -10142,15 +10142,15 @@
           "existing_clients": 2
         },
         {
-          "source": "Meta Ads",
+          "source": "Grassroots",
           "clients": 2,
           "transactions": 2,
-          "revenue": 534.66,
-          "avg_ticket": 267.33,
+          "revenue": 400.66,
+          "avg_ticket": 200.33,
           "new_clients": 0,
-          "platform_clients": 0,
+          "platform_clients": 1,
           "free_class_clients": 0,
-          "existing_clients": 2
+          "existing_clients": 1
         },
         {
           "source": "Social Media Organic",
@@ -10167,21 +10167,21 @@
       "studios": [
         {
           "studio": "Austin - Zilker",
-          "source": "Business Mode",
-          "clients": 4,
-          "purchases": 4,
-          "revenue": 1002.32,
-          "new_clients": 0,
-          "platform_clients": 0,
-          "free_class_clients": 0,
-          "existing_clients": 4
-        },
-        {
-          "studio": "Austin - Zilker",
           "source": "Website (unattributed)",
           "clients": 2,
           "purchases": 2,
           "revenue": 534.66,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 0,
+          "existing_clients": 2
+        },
+        {
+          "studio": "Austin - Zilker",
+          "source": "Business Mode",
+          "clients": 2,
+          "purchases": 2,
+          "revenue": 467.66,
           "new_clients": 0,
           "platform_clients": 0,
           "free_class_clients": 0,
@@ -10244,17 +10244,6 @@
         },
         {
           "studio": "Boca Raton",
-          "source": "ClassPass / Platforms",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 267.33,
-          "new_clients": 0,
-          "platform_clients": 0,
-          "free_class_clients": 0,
-          "existing_clients": 1
-        },
-        {
-          "studio": "Boca Raton",
           "source": "Grassroots",
           "clients": 1,
           "purchases": 1,
@@ -10276,15 +10265,15 @@
           "existing_clients": 1
         },
         {
-          "studio": "Charlotte - Noda",
-          "source": "N/A",
+          "studio": "Boca Raton",
+          "source": "ClassPass / Platforms",
           "clients": 1,
           "purchases": 1,
-          "revenue": 200.33,
+          "revenue": 267.33,
           "new_clients": 0,
           "platform_clients": 0,
-          "free_class_clients": 1,
-          "existing_clients": 0
+          "free_class_clients": 0,
+          "existing_clients": 1
         },
         {
           "studio": "Charlotte - Noda",
@@ -10296,6 +10285,17 @@
           "platform_clients": 0,
           "free_class_clients": 0,
           "existing_clients": 1
+        },
+        {
+          "studio": "Charlotte - Noda",
+          "source": "N/A",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 200.33,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 1,
+          "existing_clients": 0
         },
         {
           "studio": "Coral Gables",
@@ -10321,7 +10321,7 @@
         },
         {
           "studio": "Coral Springs",
-          "source": "MindBody App",
+          "source": "Business Mode",
           "clients": 1,
           "purchases": 1,
           "revenue": 233.83,
@@ -10332,7 +10332,7 @@
         },
         {
           "studio": "Coral Springs",
-          "source": "Business Mode",
+          "source": "MindBody App",
           "clients": 1,
           "purchases": 1,
           "revenue": 233.83,
@@ -10409,14 +10409,14 @@
         },
         {
           "studio": "Eastchester",
-          "source": "Business Mode",
+          "source": "N/A",
           "clients": 1,
           "purchases": 1,
           "revenue": 267.33,
           "new_clients": 0,
-          "platform_clients": 0,
+          "platform_clients": 1,
           "free_class_clients": 0,
-          "existing_clients": 1
+          "existing_clients": 0
         },
         {
           "studio": "Eastchester",
@@ -10431,14 +10431,14 @@
         },
         {
           "studio": "Eastchester",
-          "source": "N/A",
+          "source": "Business Mode",
           "clients": 1,
           "purchases": 1,
           "revenue": 267.33,
           "new_clients": 0,
-          "platform_clients": 1,
+          "platform_clients": 0,
           "free_class_clients": 0,
-          "existing_clients": 0
+          "existing_clients": 1
         },
         {
           "studio": "Fort Lauderdale - Las Olas",
@@ -10486,7 +10486,7 @@
         },
         {
           "studio": "Fort Lauderdale - Las Olas",
-          "source": "Grassroots",
+          "source": "MindBody App",
           "clients": 1,
           "purchases": 1,
           "revenue": 200.33,
@@ -10508,10 +10508,10 @@
         },
         {
           "studio": "Fort Lauderdale - Las Olas",
-          "source": "MindBody App",
+          "source": "ClassPass / Platforms",
           "clients": 1,
           "purchases": 1,
-          "revenue": 200.33,
+          "revenue": 267.33,
           "new_clients": 0,
           "platform_clients": 0,
           "free_class_clients": 0,
@@ -10530,10 +10530,10 @@
         },
         {
           "studio": "Fort Lauderdale - Las Olas",
-          "source": "ClassPass / Platforms",
+          "source": "Grassroots",
           "clients": 1,
           "purchases": 1,
-          "revenue": 267.33,
+          "revenue": 200.33,
           "new_clients": 0,
           "platform_clients": 0,
           "free_class_clients": 0,
@@ -10761,7 +10761,7 @@
         },
         {
           "studio": "NYC - FiDi",
-          "source": "SWEAT440 App",
+          "source": "Social Media Organic",
           "clients": 1,
           "purchases": 1,
           "revenue": 279.36,
@@ -10772,7 +10772,7 @@
         },
         {
           "studio": "NYC - FiDi",
-          "source": "Social Media Organic",
+          "source": "SWEAT440 App",
           "clients": 1,
           "purchases": 1,
           "revenue": 279.36,
@@ -10915,17 +10915,6 @@
         },
         {
           "studio": "Pinecrest - Palmetto Bay",
-          "source": "SWEAT440 App",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 267.33,
-          "new_clients": 0,
-          "platform_clients": 0,
-          "free_class_clients": 0,
-          "existing_clients": 1
-        },
-        {
-          "studio": "Pinecrest - Palmetto Bay",
           "source": "N/A",
           "clients": 1,
           "purchases": 1,
@@ -10938,6 +10927,17 @@
         {
           "studio": "Pinecrest - Palmetto Bay",
           "source": "Meta Ads",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 267.33,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 0,
+          "existing_clients": 1
+        },
+        {
+          "studio": "Pinecrest - Palmetto Bay",
+          "source": "SWEAT440 App",
           "clients": 1,
           "purchases": 1,
           "revenue": 267.33,
@@ -10981,6 +10981,17 @@
         },
         {
           "studio": "Toms River",
+          "source": "ClassPass / Platforms",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 166.83,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 0,
+          "existing_clients": 1
+        },
+        {
+          "studio": "Toms River",
           "source": "SWEAT440 App",
           "clients": 1,
           "purchases": 1,
@@ -10996,17 +11007,6 @@
           "clients": 1,
           "purchases": 2,
           "revenue": 333.66,
-          "new_clients": 0,
-          "platform_clients": 0,
-          "free_class_clients": 0,
-          "existing_clients": 1
-        },
-        {
-          "studio": "Toms River",
-          "source": "ClassPass / Platforms",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 166.83,
           "new_clients": 0,
           "platform_clients": 0,
           "free_class_clients": 0,
@@ -11060,14 +11060,14 @@
       "studio_conversions": [
         {
           "studio": "Austin - Zilker",
-          "promo_clients": 8,
+          "promo_clients": 6,
           "mem_conv": 1,
-          "mem_conv_pct": 12.5,
+          "mem_conv_pct": 16.7,
           "mem_revenue": 70.33,
           "pack_conv": 0,
           "pack_revenue": 0.0,
           "quality_conv": 1,
-          "quality_conv_pct": 12.5,
+          "quality_conv_pct": 16.7,
           "quality_revenue": 70.33,
           "total_post_rev": 70.33
         },
@@ -11348,8 +11348,8 @@
       "channels": [
         {
           "channel": "Business Mode Web",
-          "transactions": 210,
-          "clients": 202
+          "transactions": 208,
+          "clients": 200
         },
         {
           "channel": "Business Mobile App",
@@ -11384,9 +11384,9 @@
         },
         {
           "source": "Business Mode",
-          "received_promo": 44,
+          "received_promo": 42,
           "converted_to_paid": 7,
-          "conversion_pct": 15.9,
+          "conversion_pct": 16.7,
           "post_promo_revenue": 1176.53
         },
         {
@@ -11411,6 +11411,13 @@
           "post_promo_revenue": 0.0
         },
         {
+          "source": "Local Listings",
+          "received_promo": 3,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
+        },
+        {
           "source": "Internet / AI Search",
           "received_promo": 3,
           "converted_to_paid": 0,
@@ -11418,8 +11425,8 @@
           "post_promo_revenue": 0.0
         },
         {
-          "source": "Local Listings",
-          "received_promo": 3,
+          "source": "Google Ads",
+          "received_promo": 2,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
           "post_promo_revenue": 0.0
@@ -11439,13 +11446,6 @@
           "post_promo_revenue": 0.0
         },
         {
-          "source": "Google Ads",
-          "received_promo": 2,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
-        },
-        {
           "source": "Social Media Organic",
           "received_promo": 1,
           "converted_to_paid": 0,
@@ -11457,9 +11457,9 @@
         {
           "studio": "Austin - Zilker",
           "source": "Business Mode",
-          "received_promo": 4,
+          "received_promo": 2,
           "converted_to_paid": 1,
-          "conversion_pct": 25.0,
+          "conversion_pct": 50.0,
           "post_promo_revenue": 70.33
         },
         {
@@ -11496,19 +11496,19 @@
         },
         {
           "studio": "Boca Raton",
-          "source": "SWEAT440 App",
-          "received_promo": 2,
-          "converted_to_paid": 1,
-          "conversion_pct": 50.0,
-          "post_promo_revenue": 129.0
-        },
-        {
-          "studio": "Boca Raton",
           "source": "Website (unattributed)",
           "received_promo": 2,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
           "post_promo_revenue": 0.0
+        },
+        {
+          "studio": "Boca Raton",
+          "source": "SWEAT440 App",
+          "received_promo": 2,
+          "converted_to_paid": 1,
+          "conversion_pct": 50.0,
+          "post_promo_revenue": 129.0
         },
         {
           "studio": "Boca Raton",
@@ -11568,14 +11568,6 @@
         },
         {
           "studio": "Coral Springs",
-          "source": "Business Mode",
-          "received_promo": 1,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
-        },
-        {
-          "studio": "Coral Springs",
           "source": "MindBody App",
           "received_promo": 1,
           "converted_to_paid": 0,
@@ -11585,6 +11577,14 @@
         {
           "studio": "Coral Springs",
           "source": "N/A",
+          "received_promo": 1,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
+        },
+        {
+          "studio": "Coral Springs",
+          "source": "Business Mode",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -11632,14 +11632,6 @@
         },
         {
           "studio": "Eastchester",
-          "source": "Business Mode",
-          "received_promo": 1,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
-        },
-        {
-          "studio": "Eastchester",
           "source": "SWEAT440 App",
           "received_promo": 1,
           "converted_to_paid": 0,
@@ -11649,6 +11641,14 @@
         {
           "studio": "Eastchester",
           "source": "N/A",
+          "received_promo": 1,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
+        },
+        {
+          "studio": "Eastchester",
+          "source": "Business Mode",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -11688,7 +11688,15 @@
         },
         {
           "studio": "Fort Lauderdale - Las Olas",
-          "source": "Grassroots",
+          "source": "Meta Ads",
+          "received_promo": 1,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
+        },
+        {
+          "studio": "Fort Lauderdale - Las Olas",
+          "source": "ClassPass / Platforms",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -11704,7 +11712,7 @@
         },
         {
           "studio": "Fort Lauderdale - Las Olas",
-          "source": "Meta Ads",
+          "source": "Grassroots",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -11713,14 +11721,6 @@
         {
           "studio": "Fort Lauderdale - Las Olas",
           "source": "MindBody App",
-          "received_promo": 1,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
-        },
-        {
-          "studio": "Fort Lauderdale - Las Olas",
-          "source": "ClassPass / Platforms",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -11760,6 +11760,14 @@
         },
         {
           "studio": "Miami - Coconut Grove",
+          "source": "Website (unattributed)",
+          "received_promo": 1,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
+        },
+        {
+          "studio": "Miami - Coconut Grove",
           "source": "ClassPass / Platforms",
           "received_promo": 1,
           "converted_to_paid": 0,
@@ -11769,14 +11777,6 @@
         {
           "studio": "Miami - Coconut Grove",
           "source": "MindBody App",
-          "received_promo": 1,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
-        },
-        {
-          "studio": "Miami - Coconut Grove",
-          "source": "Website (unattributed)",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -11800,7 +11800,7 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "Website (unattributed)",
+          "source": "SWEAT440 App",
           "received_promo": 2,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -11808,7 +11808,7 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "SWEAT440 App",
+          "source": "Website (unattributed)",
           "received_promo": 2,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -11856,7 +11856,7 @@
         },
         {
           "studio": "NYC - Chelsea",
-          "source": "Business Mode",
+          "source": "Google Ads",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -11864,7 +11864,7 @@
         },
         {
           "studio": "NYC - Chelsea",
-          "source": "Google Ads",
+          "source": "Business Mode",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -11888,7 +11888,7 @@
         },
         {
           "studio": "NYC - FiDi",
-          "source": "SWEAT440 App",
+          "source": "Social Media Organic",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -11896,7 +11896,7 @@
         },
         {
           "studio": "NYC - FiDi",
-          "source": "Social Media Organic",
+          "source": "SWEAT440 App",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -12000,7 +12000,7 @@
         },
         {
           "studio": "Pinecrest - Palmetto Bay",
-          "source": "SWEAT440 App",
+          "source": "Meta Ads",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -12016,7 +12016,7 @@
         },
         {
           "studio": "Pinecrest - Palmetto Bay",
-          "source": "Meta Ads",
+          "source": "SWEAT440 App",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -12048,7 +12048,7 @@
         },
         {
           "studio": "Toms River",
-          "source": "SWEAT440 App",
+          "source": "Website (unattributed)",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -12056,7 +12056,7 @@
         },
         {
           "studio": "Toms River",
-          "source": "Website (unattributed)",
+          "source": "SWEAT440 App",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -12137,14 +12137,6 @@
           "revenue": 672.75
         },
         {
-          "product": "20 Pack",
-          "item_type": "Pricing Option",
-          "category": "Class/Class Packs",
-          "clients": 2,
-          "transactions": 2,
-          "revenue": 598.5
-        },
-        {
           "product": "Pre Sale Membership",
           "item_type": "Pricing Option",
           "category": "Memberships",
@@ -12153,12 +12145,12 @@
           "revenue": 258.0
         },
         {
-          "product": "Unlimited 6 Months",
+          "product": "20 Pack",
           "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 1,
-          "transactions": 1,
-          "revenue": 749.0
+          "category": "Class/Class Packs",
+          "clients": 2,
+          "transactions": 2,
+          "revenue": 598.5
         },
         {
           "product": "All Access",
@@ -12167,6 +12159,14 @@
           "clients": 1,
           "transactions": 1,
           "revenue": 70.33
+        },
+        {
+          "product": "Unlimited 6 Months",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 1,
+          "transactions": 1,
+          "revenue": 749.0
         },
         {
           "product": "Unlimited Yearly",
@@ -12189,15 +12189,6 @@
         },
         {
           "studio": "Boca Raton",
-          "product": "Student/Teacher/Military Monthly Unlimited",
-          "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 1,
-          "transactions": 1,
-          "revenue": 129.0
-        },
-        {
-          "studio": "Boca Raton",
           "product": "Pre Sale Membership",
           "item_type": "Pricing Option",
           "category": "Memberships",
@@ -12206,13 +12197,13 @@
           "revenue": 129.0
         },
         {
-          "studio": "Deerfield Beach",
+          "studio": "Boca Raton",
           "product": "Student/Teacher/Military Monthly Unlimited",
           "item_type": "Pricing Option",
           "category": "Memberships",
           "clients": 1,
           "transactions": 1,
-          "revenue": 109.0
+          "revenue": 129.0
         },
         {
           "studio": "Deerfield Beach",
@@ -12222,6 +12213,15 @@
           "clients": 1,
           "transactions": 1,
           "revenue": 1125.0
+        },
+        {
+          "studio": "Deerfield Beach",
+          "product": "Student/Teacher/Military Monthly Unlimited",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 1,
+          "transactions": 1,
+          "revenue": 109.0
         },
         {
           "studio": "Miami - Coconut Grove",
@@ -12234,21 +12234,21 @@
         },
         {
           "studio": "Miami - Coconut Grove",
-          "product": "4 Visits",
-          "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 2,
-          "transactions": 2,
-          "revenue": 218.0
-        },
-        {
-          "studio": "Miami - Coconut Grove",
           "product": "Unlimited Monthly",
           "item_type": "Pricing Option",
           "category": "Memberships",
           "clients": 2,
           "transactions": 2,
           "revenue": 338.0
+        },
+        {
+          "studio": "Miami - Coconut Grove",
+          "product": "4 Visits",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 2,
+          "transactions": 2,
+          "revenue": 218.0
         },
         {
           "studio": "Miami - Coconut Grove",
@@ -12306,6 +12306,15 @@
         },
         {
           "studio": "Pinecrest - Palmetto Bay",
+          "product": "Pre Sale Membership",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 1,
+          "transactions": 1,
+          "revenue": 129.0
+        },
+        {
+          "studio": "Pinecrest - Palmetto Bay",
           "product": "4 Visits",
           "item_type": "Pricing Option",
           "category": "Memberships",
@@ -12321,15 +12330,6 @@
           "clients": 1,
           "transactions": 1,
           "revenue": 169.0
-        },
-        {
-          "studio": "Pinecrest - Palmetto Bay",
-          "product": "Pre Sale Membership",
-          "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 1,
-          "transactions": 1,
-          "revenue": 129.0
         },
         {
           "studio": "Toms River",
@@ -12443,8 +12443,8 @@
         },
         {
           "date": "2026-07-19",
-          "purchases": 4,
-          "revenue": 1014.35
+          "purchases": 2,
+          "revenue": 479.69
         },
         {
           "date": "2026-07-20",
@@ -13019,12 +13019,6 @@
           "revenue": 166.83
         },
         {
-          "studio": "Austin - Zilker",
-          "date": "2026-07-19",
-          "purchases": 2,
-          "revenue": 534.66
-        },
-        {
           "studio": "NYC - Park Slope",
           "date": "2026-07-19",
           "purchases": 1,
@@ -13532,9 +13526,9 @@
       "segment_breakdown": [
         {
           "segment": "Existing",
-          "total_clients": 189,
+          "total_clients": 187,
           "converted": 22,
-          "conversion_pct": 11.6,
+          "conversion_pct": 11.8,
           "post_rev": 4103.03,
           "avg_per_converter": 186.5
         },
@@ -13559,9 +13553,9 @@
         {
           "studio": "Austin - Zilker",
           "segment": "Existing",
-          "total_clients": 8,
+          "total_clients": 6,
           "converted": 1,
-          "conversion_pct": 12.5,
+          "conversion_pct": 16.7,
           "post_rev": 70.33,
           "avg_per_converter": 70.33
         },
@@ -13828,21 +13822,21 @@
         },
         {
           "studio": "Ocean Township",
-          "segment": "Existing",
-          "total_clients": 2,
-          "converted": 1,
-          "conversion_pct": 50.0,
-          "post_rev": 89.0,
-          "avg_per_converter": 89.0
-        },
-        {
-          "studio": "Ocean Township",
           "segment": "Free Class",
           "total_clients": 2,
           "converted": 0,
           "conversion_pct": 0.0,
           "post_rev": 0.0,
           "avg_per_converter": 0.0
+        },
+        {
+          "studio": "Ocean Township",
+          "segment": "Existing",
+          "total_clients": 2,
+          "converted": 1,
+          "conversion_pct": 50.0,
+          "post_rev": 89.0,
+          "avg_per_converter": 89.0
         },
         {
           "studio": "Pembroke Pines",
@@ -14045,6 +14039,17 @@
           "existing_clients": 5
         },
         {
+          "source": "SWEAT440 App",
+          "clients": 2,
+          "transactions": 2,
+          "revenue": 192.0,
+          "avg_ticket": 96.0,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 0,
+          "existing_clients": 2
+        },
+        {
           "source": "MindBody App",
           "clients": 2,
           "transactions": 2,
@@ -14067,26 +14072,15 @@
           "existing_clients": 2
         },
         {
-          "source": "SWEAT440 App",
-          "clients": 2,
-          "transactions": 2,
-          "revenue": 192.0,
-          "avg_ticket": 96.0,
-          "new_clients": 0,
-          "platform_clients": 0,
-          "free_class_clients": 0,
-          "existing_clients": 2
-        },
-        {
-          "source": "Internet / AI Search",
+          "source": "Grassroots",
           "clients": 1,
           "transactions": 1,
           "revenue": 96.0,
           "avg_ticket": 96.0,
-          "new_clients": 0,
+          "new_clients": 1,
           "platform_clients": 0,
           "free_class_clients": 0,
-          "existing_clients": 1
+          "existing_clients": 0
         },
         {
           "source": "Local Listings",
@@ -14100,18 +14094,29 @@
           "existing_clients": 0
         },
         {
-          "source": "Grassroots",
+          "source": "Internet / AI Search",
           "clients": 1,
           "transactions": 1,
           "revenue": 96.0,
           "avg_ticket": 96.0,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 0,
+          "existing_clients": 1
+        }
+      ],
+      "studios": [
+        {
+          "studio": "Austin - Highland",
+          "source": "Grassroots",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 96.0,
           "new_clients": 1,
           "platform_clients": 0,
           "free_class_clients": 0,
           "existing_clients": 0
-        }
-      ],
-      "studios": [
+        },
         {
           "studio": "Austin - Highland",
           "source": "Website (unattributed)",
@@ -14122,17 +14127,6 @@
           "platform_clients": 0,
           "free_class_clients": 0,
           "existing_clients": 1
-        },
-        {
-          "studio": "Austin - Highland",
-          "source": "Grassroots",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 96.0,
-          "new_clients": 1,
-          "platform_clients": 0,
-          "free_class_clients": 0,
-          "existing_clients": 0
         },
         {
           "studio": "Boca Raton",
@@ -14147,7 +14141,7 @@
         },
         {
           "studio": "Boca Raton",
-          "source": "ClassPass / Platforms",
+          "source": "N/A",
           "clients": 1,
           "purchases": 1,
           "revenue": 96.0,
@@ -14158,7 +14152,7 @@
         },
         {
           "studio": "Boca Raton",
-          "source": "N/A",
+          "source": "ClassPass / Platforms",
           "clients": 1,
           "purchases": 1,
           "revenue": 96.0,
@@ -14191,7 +14185,7 @@
         },
         {
           "studio": "Fort Lauderdale - Las Olas",
-          "source": "N/A",
+          "source": "Website (unattributed)",
           "clients": 1,
           "purchases": 1,
           "revenue": 96.0,
@@ -14202,7 +14196,7 @@
         },
         {
           "studio": "Fort Lauderdale - Las Olas",
-          "source": "Website (unattributed)",
+          "source": "N/A",
           "clients": 1,
           "purchases": 1,
           "revenue": 96.0,
@@ -14279,17 +14273,6 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "Website (unattributed)",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 96.0,
-          "new_clients": 0,
-          "platform_clients": 0,
-          "free_class_clients": 0,
-          "existing_clients": 1
-        },
-        {
-          "studio": "Miami - Upper East Side",
           "source": "Local Listings",
           "clients": 1,
           "purchases": 1,
@@ -14298,6 +14281,17 @@
           "platform_clients": 1,
           "free_class_clients": 0,
           "existing_clients": 0
+        },
+        {
+          "studio": "Miami - Upper East Side",
+          "source": "Website (unattributed)",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 96.0,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 0,
+          "existing_clients": 1
         },
         {
           "studio": "Miami Beach",
@@ -14334,7 +14328,7 @@
         },
         {
           "studio": "NYC - Chelsea",
-          "source": "Website (unattributed)",
+          "source": "N/A",
           "clients": 1,
           "purchases": 1,
           "revenue": 96.0,
@@ -14345,7 +14339,7 @@
         },
         {
           "studio": "NYC - Chelsea",
-          "source": "N/A",
+          "source": "Website (unattributed)",
           "clients": 1,
           "purchases": 1,
           "revenue": 96.0,
@@ -14367,7 +14361,7 @@
         },
         {
           "studio": "NYC - Park Slope",
-          "source": "SWEAT440 App",
+          "source": "N/A",
           "clients": 1,
           "purchases": 1,
           "revenue": 96.0,
@@ -14378,7 +14372,7 @@
         },
         {
           "studio": "NYC - Park Slope",
-          "source": "N/A",
+          "source": "SWEAT440 App",
           "clients": 1,
           "purchases": 1,
           "revenue": 96.0,
@@ -14466,7 +14460,7 @@
         },
         {
           "studio": "Wall Township",
-          "source": "Business Mode",
+          "source": "Internet / AI Search",
           "clients": 1,
           "purchases": 1,
           "revenue": 96.0,
@@ -14477,7 +14471,7 @@
         },
         {
           "studio": "Wall Township",
-          "source": "Internet / AI Search",
+          "source": "Business Mode",
           "clients": 1,
           "purchases": 1,
           "revenue": 96.0,
@@ -14828,14 +14822,14 @@
           "post_promo_revenue": 0.0
         },
         {
-          "source": "MindBody App",
+          "source": "ClassPass / Platforms",
           "received_promo": 2,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
           "post_promo_revenue": 0.0
         },
         {
-          "source": "ClassPass / Platforms",
+          "source": "MindBody App",
           "received_promo": 2,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -14847,6 +14841,13 @@
           "converted_to_paid": 1,
           "conversion_pct": 50.0,
           "post_promo_revenue": 129.0
+        },
+        {
+          "source": "Grassroots",
+          "received_promo": 1,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
         },
         {
           "source": "Local Listings",
@@ -14861,19 +14862,12 @@
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
           "post_promo_revenue": 0.0
-        },
-        {
-          "source": "Grassroots",
-          "received_promo": 1,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
         }
       ],
       "funnel_by_studio": [
         {
           "studio": "Austin - Highland",
-          "source": "Website (unattributed)",
+          "source": "Grassroots",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -14881,7 +14875,7 @@
         },
         {
           "studio": "Austin - Highland",
-          "source": "Grassroots",
+          "source": "Website (unattributed)",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -14897,7 +14891,7 @@
         },
         {
           "studio": "Boca Raton",
-          "source": "ClassPass / Platforms",
+          "source": "N/A",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -14905,7 +14899,7 @@
         },
         {
           "studio": "Boca Raton",
-          "source": "N/A",
+          "source": "ClassPass / Platforms",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -14993,7 +14987,7 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "Website (unattributed)",
+          "source": "Local Listings",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -15001,7 +14995,7 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "Local Listings",
+          "source": "Website (unattributed)",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -15057,7 +15051,7 @@
         },
         {
           "studio": "NYC - Park Slope",
-          "source": "SWEAT440 App",
+          "source": "N/A",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -15065,7 +15059,7 @@
         },
         {
           "studio": "NYC - Park Slope",
-          "source": "N/A",
+          "source": "SWEAT440 App",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -15081,7 +15075,7 @@
         },
         {
           "studio": "Pembroke Pines",
-          "source": "N/A",
+          "source": "Website (unattributed)",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -15089,7 +15083,7 @@
         },
         {
           "studio": "Pembroke Pines",
-          "source": "Website (unattributed)",
+          "source": "N/A",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -15129,7 +15123,7 @@
         },
         {
           "studio": "Wall Township",
-          "source": "Internet / AI Search",
+          "source": "Business Mode",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -15137,7 +15131,7 @@
         },
         {
           "studio": "Wall Township",
-          "source": "Business Mode",
+          "source": "Internet / AI Search",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -15548,7 +15542,7 @@
       "segment_by_studio": [
         {
           "studio": "Austin - Highland",
-          "segment": "Existing",
+          "segment": "New",
           "total_clients": 1,
           "converted": 0,
           "conversion_pct": 0.0,
@@ -15557,7 +15551,7 @@
         },
         {
           "studio": "Austin - Highland",
-          "segment": "New",
+          "segment": "Existing",
           "total_clients": 1,
           "converted": 0,
           "conversion_pct": 0.0,
@@ -15647,7 +15641,7 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "segment": "Platform",
+          "segment": "Existing",
           "total_clients": 1,
           "converted": 0,
           "conversion_pct": 0.0,
@@ -15656,7 +15650,7 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "segment": "Existing",
+          "segment": "Platform",
           "total_clients": 1,
           "converted": 0,
           "conversion_pct": 0.0,
@@ -15780,7 +15774,7 @@
       "product": "2 Weeks for $40",
       "date_from": "2026-08-25",
       "date_to": "2026-09-07",
-      "post_promo_to": "2026-09-26",
+      "post_promo_to": "2026-09-28",
       "variant": null,
       "exclude_from": null,
       "exclude_to": null,
@@ -15794,19 +15788,19 @@
         "existing_clients": 121,
         "total_revenue": 8280.0,
         "avg_ticket": 40.0,
-        "quality_converted": 53,
-        "quality_conv_rate": 26.8,
-        "quality_revenue": 7974.96,
-        "membership_conversions": 52,
-        "membership_conv_rate": 26.3,
-        "membership_revenue": 7675.96,
+        "quality_converted": 54,
+        "quality_conv_rate": 27.3,
+        "quality_revenue": 7900.46,
+        "membership_conversions": 53,
+        "membership_conv_rate": 26.8,
+        "membership_revenue": 7601.46,
         "pack_conversions": 1,
         "pack_conv_rate": 0.5,
         "pack_revenue": 299.0,
-        "converted_to_paid": 69,
-        "conversion_rate": 34.8,
-        "post_promo_revenue": 8886.38,
-        "revenue_per_participant": 44.88
+        "converted_to_paid": 71,
+        "conversion_rate": 35.9,
+        "post_promo_revenue": 8891.88,
+        "revenue_per_participant": 44.91
       },
       "lead_sources": [
         {
@@ -15945,17 +15939,6 @@
         },
         {
           "studio": "Boca Raton",
-          "source": "Meta Ads",
-          "clients": 3,
-          "purchases": 3,
-          "revenue": 120.0,
-          "new_clients": 0,
-          "platform_clients": 0,
-          "free_class_clients": 0,
-          "existing_clients": 3
-        },
-        {
-          "studio": "Boca Raton",
           "source": "Website (unattributed)",
           "clients": 3,
           "purchases": 3,
@@ -15964,6 +15947,17 @@
           "platform_clients": 1,
           "free_class_clients": 0,
           "existing_clients": 2
+        },
+        {
+          "studio": "Boca Raton",
+          "source": "Meta Ads",
+          "clients": 3,
+          "purchases": 3,
+          "revenue": 120.0,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 0,
+          "existing_clients": 3
         },
         {
           "studio": "Charlotte - Noda",
@@ -16033,7 +16027,7 @@
         },
         {
           "studio": "Coral Springs",
-          "source": "N/A",
+          "source": "Local Listings",
           "clients": 1,
           "purchases": 1,
           "revenue": 40.0,
@@ -16044,7 +16038,7 @@
         },
         {
           "studio": "Coral Springs",
-          "source": "Local Listings",
+          "source": "N/A",
           "clients": 1,
           "purchases": 1,
           "revenue": 40.0,
@@ -16165,7 +16159,7 @@
         },
         {
           "studio": "Eastchester",
-          "source": "Internet / AI Search",
+          "source": "Business Mode",
           "clients": 2,
           "purchases": 2,
           "revenue": 80.0,
@@ -16176,7 +16170,7 @@
         },
         {
           "studio": "Eastchester",
-          "source": "Business Mode",
+          "source": "Internet / AI Search",
           "clients": 2,
           "purchases": 2,
           "revenue": 80.0,
@@ -16253,6 +16247,17 @@
         },
         {
           "studio": "Miami - Brickell",
+          "source": "MindBody App",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 40.0,
+          "new_clients": 0,
+          "platform_clients": 1,
+          "free_class_clients": 0,
+          "existing_clients": 0
+        },
+        {
+          "studio": "Miami - Brickell",
           "source": "N/A",
           "clients": 1,
           "purchases": 1,
@@ -16271,17 +16276,6 @@
           "new_clients": 0,
           "platform_clients": 0,
           "free_class_clients": 1,
-          "existing_clients": 0
-        },
-        {
-          "studio": "Miami - Brickell",
-          "source": "MindBody App",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 40.0,
-          "new_clients": 0,
-          "platform_clients": 1,
-          "free_class_clients": 0,
           "existing_clients": 0
         },
         {
@@ -16396,7 +16390,7 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "MindBody App",
+          "source": "SWEAT440 App",
           "clients": 1,
           "purchases": 1,
           "revenue": 40.0,
@@ -16407,7 +16401,7 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "SWEAT440 App",
+          "source": "MindBody App",
           "clients": 1,
           "purchases": 1,
           "revenue": 40.0,
@@ -16484,17 +16478,6 @@
         },
         {
           "studio": "Miami Lakes",
-          "source": "Social Media Organic",
-          "clients": 1,
-          "purchases": 1,
-          "revenue": 40.0,
-          "new_clients": 0,
-          "platform_clients": 0,
-          "free_class_clients": 1,
-          "existing_clients": 0
-        },
-        {
-          "studio": "Miami Lakes",
           "source": "Business Mode",
           "clients": 1,
           "purchases": 1,
@@ -16503,6 +16486,17 @@
           "platform_clients": 0,
           "free_class_clients": 0,
           "existing_clients": 1
+        },
+        {
+          "studio": "Miami Lakes",
+          "source": "Social Media Organic",
+          "clients": 1,
+          "purchases": 1,
+          "revenue": 40.0,
+          "new_clients": 0,
+          "platform_clients": 0,
+          "free_class_clients": 1,
+          "existing_clients": 0
         },
         {
           "studio": "Miramar",
@@ -16594,14 +16588,14 @@
         },
         {
           "studio": "NYC - Park Slope",
-          "source": "Meta Ads",
+          "source": "Internet / AI Search",
           "clients": 2,
           "purchases": 2,
           "revenue": 80.0,
           "new_clients": 0,
-          "platform_clients": 2,
+          "platform_clients": 1,
           "free_class_clients": 0,
-          "existing_clients": 0
+          "existing_clients": 1
         },
         {
           "studio": "NYC - Park Slope",
@@ -16616,14 +16610,14 @@
         },
         {
           "studio": "NYC - Park Slope",
-          "source": "Internet / AI Search",
+          "source": "Meta Ads",
           "clients": 2,
           "purchases": 2,
           "revenue": 80.0,
           "new_clients": 0,
-          "platform_clients": 1,
+          "platform_clients": 2,
           "free_class_clients": 0,
-          "existing_clients": 1
+          "existing_clients": 0
         },
         {
           "studio": "NYC - Park Slope",
@@ -16770,7 +16764,7 @@
         },
         {
           "studio": "West Palm Beach",
-          "source": "Business Mode",
+          "source": "Meta Ads",
           "clients": 1,
           "purchases": 1,
           "revenue": 40.0,
@@ -16781,7 +16775,7 @@
         },
         {
           "studio": "West Palm Beach",
-          "source": "Meta Ads",
+          "source": "Business Mode",
           "clients": 1,
           "purchases": 1,
           "revenue": 40.0,
@@ -16894,7 +16888,7 @@
           "quality_conv": 4,
           "quality_conv_pct": 44.4,
           "quality_revenue": 318.0,
-          "total_post_rev": 358.0
+          "total_post_rev": 398.0
         },
         {
           "studio": "Eastchester",
@@ -16946,7 +16940,7 @@
           "quality_conv": 4,
           "quality_conv_pct": 36.4,
           "quality_revenue": 581.5,
-          "total_post_rev": 584.5
+          "total_post_rev": 624.5
         },
         {
           "studio": "Miami - Midtown",
@@ -17081,13 +17075,13 @@
         {
           "studio": "South Miami",
           "promo_clients": 13,
-          "mem_conv": 3,
-          "mem_conv_pct": 23.1,
+          "mem_conv": 4,
+          "mem_conv_pct": 30.8,
           "mem_revenue": 233.5,
           "pack_conv": 0,
           "pack_revenue": 0.0,
-          "quality_conv": 3,
-          "quality_conv_pct": 23.1,
+          "quality_conv": 4,
+          "quality_conv_pct": 30.8,
           "quality_revenue": 233.5,
           "total_post_rev": 276.5
         },
@@ -17127,12 +17121,12 @@
           "clients": 12
         },
         {
-          "channel": "MB.IO",
+          "channel": "Business Mobile App",
           "transactions": 1,
           "clients": 1
         },
         {
-          "channel": "Business Mobile App",
+          "channel": "MB.IO",
           "transactions": 1,
           "clients": 1
         }
@@ -17141,9 +17135,9 @@
         {
           "source": "Website (unattributed)",
           "received_promo": 117,
-          "converted_to_paid": 35,
-          "conversion_pct": 29.9,
-          "post_promo_revenue": 5888.7
+          "converted_to_paid": 36,
+          "conversion_pct": 30.8,
+          "post_promo_revenue": 6037.7
         },
         {
           "source": "Meta Ads",
@@ -17181,6 +17175,13 @@
           "post_promo_revenue": 299.0
         },
         {
+          "source": "N/A",
+          "received_promo": 4,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
+        },
+        {
           "source": "Social Media Organic",
           "received_promo": 4,
           "converted_to_paid": 0,
@@ -17189,13 +17190,6 @@
         },
         {
           "source": "Internet / AI Search",
-          "received_promo": 4,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
-        },
-        {
-          "source": "N/A",
           "received_promo": 4,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -17292,11 +17286,11 @@
         },
         {
           "studio": "Coral Springs",
-          "source": "N/A",
+          "source": "Local Listings",
           "received_promo": 1,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
+          "converted_to_paid": 1,
+          "conversion_pct": 100.0,
+          "post_promo_revenue": 129.0
         },
         {
           "studio": "Coral Springs",
@@ -17308,11 +17302,11 @@
         },
         {
           "studio": "Coral Springs",
-          "source": "Local Listings",
+          "source": "N/A",
           "received_promo": 1,
-          "converted_to_paid": 1,
-          "conversion_pct": 100.0,
-          "post_promo_revenue": 129.0
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
         },
         {
           "studio": "Dallas - Prestonwood",
@@ -17348,19 +17342,19 @@
         },
         {
           "studio": "Doral",
-          "source": "Business Mode",
-          "received_promo": 2,
-          "converted_to_paid": 2,
-          "conversion_pct": 100.0,
-          "post_promo_revenue": 149.0
-        },
-        {
-          "studio": "Doral",
           "source": "SWEAT440 App",
           "received_promo": 2,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
           "post_promo_revenue": 0.0
+        },
+        {
+          "studio": "Doral",
+          "source": "Business Mode",
+          "received_promo": 2,
+          "converted_to_paid": 2,
+          "conversion_pct": 100.0,
+          "post_promo_revenue": 149.0
         },
         {
           "studio": "Doral",
@@ -17388,7 +17382,7 @@
         },
         {
           "studio": "Eastchester",
-          "source": "Business Mode",
+          "source": "Internet / AI Search",
           "received_promo": 2,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -17396,7 +17390,7 @@
         },
         {
           "studio": "Eastchester",
-          "source": "Internet / AI Search",
+          "source": "Business Mode",
           "received_promo": 2,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -17409,14 +17403,6 @@
           "converted_to_paid": 3,
           "conversion_pct": 75.0,
           "post_promo_revenue": 402.5
-        },
-        {
-          "studio": "Fort Lauderdale - Las Olas",
-          "source": "MindBody App",
-          "received_promo": 1,
-          "converted_to_paid": 1,
-          "conversion_pct": 100.0,
-          "post_promo_revenue": 299.0
         },
         {
           "studio": "Fort Lauderdale - Las Olas",
@@ -17433,6 +17419,14 @@
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
           "post_promo_revenue": 0.0
+        },
+        {
+          "studio": "Fort Lauderdale - Las Olas",
+          "source": "MindBody App",
+          "received_promo": 1,
+          "converted_to_paid": 1,
+          "conversion_pct": 100.0,
+          "post_promo_revenue": 299.0
         },
         {
           "studio": "Miami - Brickell",
@@ -17452,14 +17446,6 @@
         },
         {
           "studio": "Miami - Brickell",
-          "source": "SWEAT440 App",
-          "received_promo": 1,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
-        },
-        {
-          "studio": "Miami - Brickell",
           "source": "MindBody App",
           "received_promo": 1,
           "converted_to_paid": 0,
@@ -17469,6 +17455,14 @@
         {
           "studio": "Miami - Brickell",
           "source": "N/A",
+          "received_promo": 1,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
+        },
+        {
+          "studio": "Miami - Brickell",
+          "source": "SWEAT440 App",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -17492,11 +17486,11 @@
         },
         {
           "studio": "Miami - Coconut Grove",
-          "source": "Local Listings",
+          "source": "MindBody App",
           "received_promo": 1,
-          "converted_to_paid": 1,
-          "conversion_pct": 100.0,
-          "post_promo_revenue": 94.5
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
         },
         {
           "studio": "Miami - Coconut Grove",
@@ -17508,11 +17502,11 @@
         },
         {
           "studio": "Miami - Coconut Grove",
-          "source": "MindBody App",
+          "source": "Local Listings",
           "received_promo": 1,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
+          "converted_to_paid": 1,
+          "conversion_pct": 100.0,
+          "post_promo_revenue": 94.5
         },
         {
           "studio": "Miami - Midtown",
@@ -17524,19 +17518,19 @@
         },
         {
           "studio": "Miami - Midtown",
-          "source": "Meta Ads",
-          "received_promo": 2,
-          "converted_to_paid": 1,
-          "conversion_pct": 50.0,
-          "post_promo_revenue": 84.5
-        },
-        {
-          "studio": "Miami - Midtown",
           "source": "SWEAT440 App",
           "received_promo": 2,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
           "post_promo_revenue": 0.0
+        },
+        {
+          "studio": "Miami - Midtown",
+          "source": "Meta Ads",
+          "received_promo": 2,
+          "converted_to_paid": 1,
+          "conversion_pct": 50.0,
+          "post_promo_revenue": 84.5
         },
         {
           "studio": "Miami - Midtown",
@@ -17556,7 +17550,7 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "MindBody App",
+          "source": "SWEAT440 App",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -17564,7 +17558,7 @@
         },
         {
           "studio": "Miami - Upper East Side",
-          "source": "SWEAT440 App",
+          "source": "MindBody App",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -17644,7 +17638,7 @@
         },
         {
           "studio": "Miramar",
-          "source": "Meta Ads",
+          "source": "Business Mode",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -17652,7 +17646,7 @@
         },
         {
           "studio": "Miramar",
-          "source": "Business Mode",
+          "source": "Meta Ads",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -17700,6 +17694,14 @@
         },
         {
           "studio": "NYC - Park Slope",
+          "source": "Internet / AI Search",
+          "received_promo": 2,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
+        },
+        {
+          "studio": "NYC - Park Slope",
           "source": "Meta Ads",
           "received_promo": 2,
           "converted_to_paid": 1,
@@ -17716,14 +17718,6 @@
         },
         {
           "studio": "NYC - Park Slope",
-          "source": "Internet / AI Search",
-          "received_promo": 2,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
-        },
-        {
-          "studio": "NYC - Park Slope",
           "source": "SWEAT440 App",
           "received_promo": 1,
           "converted_to_paid": 0,
@@ -17732,19 +17726,19 @@
         },
         {
           "studio": "Pembroke Pines",
-          "source": "Website (unattributed)",
-          "received_promo": 2,
-          "converted_to_paid": 1,
-          "conversion_pct": 50.0,
-          "post_promo_revenue": 74.5
-        },
-        {
-          "studio": "Pembroke Pines",
           "source": "Business Mode",
           "received_promo": 2,
           "converted_to_paid": 1,
           "conversion_pct": 50.0,
           "post_promo_revenue": 149.0
+        },
+        {
+          "studio": "Pembroke Pines",
+          "source": "Website (unattributed)",
+          "received_promo": 2,
+          "converted_to_paid": 1,
+          "conversion_pct": 50.0,
+          "post_promo_revenue": 74.5
         },
         {
           "studio": "Pinecrest - Palmetto Bay",
@@ -17756,19 +17750,19 @@
         },
         {
           "studio": "Pinecrest - Palmetto Bay",
-          "source": "Social Media Organic",
-          "received_promo": 2,
-          "converted_to_paid": 0,
-          "conversion_pct": 0.0,
-          "post_promo_revenue": 0.0
-        },
-        {
-          "studio": "Pinecrest - Palmetto Bay",
           "source": "Business Mode",
           "received_promo": 2,
           "converted_to_paid": 1,
           "conversion_pct": 50.0,
           "post_promo_revenue": 84.5
+        },
+        {
+          "studio": "Pinecrest - Palmetto Bay",
+          "source": "Social Media Organic",
+          "received_promo": 2,
+          "converted_to_paid": 0,
+          "conversion_pct": 0.0,
+          "post_promo_revenue": 0.0
         },
         {
           "studio": "Pinecrest - Palmetto Bay",
@@ -17782,9 +17776,9 @@
           "studio": "South Miami",
           "source": "Website (unattributed)",
           "received_promo": 9,
-          "converted_to_paid": 3,
-          "conversion_pct": 33.3,
-          "post_promo_revenue": 382.5
+          "converted_to_paid": 4,
+          "conversion_pct": 44.4,
+          "post_promo_revenue": 531.5
         },
         {
           "studio": "South Miami",
@@ -17796,7 +17790,7 @@
         },
         {
           "studio": "South Miami",
-          "source": "Meta Ads",
+          "source": "SWEAT440 App",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -17804,7 +17798,7 @@
         },
         {
           "studio": "South Miami",
-          "source": "SWEAT440 App",
+          "source": "Meta Ads",
           "received_promo": 1,
           "converted_to_paid": 0,
           "conversion_pct": 0.0,
@@ -17828,19 +17822,19 @@
         },
         {
           "studio": "West Palm Beach",
-          "source": "Business Mode",
-          "received_promo": 1,
-          "converted_to_paid": 1,
-          "conversion_pct": 100.0,
-          "post_promo_revenue": 84.5
-        },
-        {
-          "studio": "West Palm Beach",
           "source": "Meta Ads",
           "received_promo": 1,
           "converted_to_paid": 1,
           "conversion_pct": 100.0,
           "post_promo_revenue": 74.5
+        },
+        {
+          "studio": "West Palm Beach",
+          "source": "Business Mode",
+          "received_promo": 1,
+          "converted_to_paid": 1,
+          "conversion_pct": 100.0,
+          "post_promo_revenue": 84.5
         }
       ],
       "post_promo_products": [
@@ -17848,9 +17842,9 @@
           "product": "Unlimited Monthly",
           "item_type": "Pricing Option",
           "category": "Memberships",
-          "clients": 25,
-          "transactions": 25,
-          "revenue": 2962.0
+          "clients": 26,
+          "transactions": 26,
+          "revenue": 3111.0
         },
         {
           "product": "Student/Teacher/Military Monthly Unlimited",
@@ -17861,14 +17855,6 @@
           "revenue": 2119.8
         },
         {
-          "product": "Unlimited 6 Months",
-          "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 3,
-          "transactions": 3,
-          "revenue": 2400.36
-        },
-        {
           "product": "8 Visits",
           "item_type": "Pricing Option",
           "category": "Memberships",
@@ -17877,12 +17863,12 @@
           "revenue": 432.8
         },
         {
-          "product": "4 Visits",
+          "product": "Unlimited 6 Months",
           "item_type": "Pricing Option",
           "category": "Memberships",
-          "clients": 1,
-          "transactions": 1,
-          "revenue": 99.0
+          "clients": 3,
+          "transactions": 3,
+          "revenue": 2400.36
         },
         {
           "product": "10 Pack",
@@ -17891,6 +17877,14 @@
           "clients": 1,
           "transactions": 1,
           "revenue": 299.0
+        },
+        {
+          "product": "4 Visits",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 1,
+          "transactions": 1,
+          "revenue": 99.0
         }
       ],
       "products_by_studio": [
@@ -17923,21 +17917,21 @@
         },
         {
           "studio": "Coral Gables",
-          "product": "Student/Teacher/Military Monthly Unlimited",
-          "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 1,
-          "transactions": 1,
-          "revenue": 149.0
-        },
-        {
-          "studio": "Coral Gables",
           "product": "4 Visits",
           "item_type": "Pricing Option",
           "category": "Memberships",
           "clients": 1,
           "transactions": 1,
           "revenue": 99.0
+        },
+        {
+          "studio": "Coral Gables",
+          "product": "Student/Teacher/Military Monthly Unlimited",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 1,
+          "transactions": 1,
+          "revenue": 149.0
         },
         {
           "studio": "Coral Springs",
@@ -18151,9 +18145,9 @@
           "product": "Unlimited Monthly",
           "item_type": "Pricing Option",
           "category": "Memberships",
-          "clients": 2,
-          "transactions": 2,
-          "revenue": 233.5
+          "clients": 3,
+          "transactions": 3,
+          "revenue": 382.5
         },
         {
           "studio": "South Miami",
@@ -18166,21 +18160,21 @@
         },
         {
           "studio": "West Palm Beach",
-          "product": "Student/Teacher/Military Monthly Unlimited",
-          "item_type": "Pricing Option",
-          "category": "Memberships",
-          "clients": 3,
-          "transactions": 3,
-          "revenue": 223.5
-        },
-        {
-          "studio": "West Palm Beach",
           "product": "Unlimited Monthly",
           "item_type": "Pricing Option",
           "category": "Memberships",
           "clients": 3,
           "transactions": 3,
           "revenue": 318.0
+        },
+        {
+          "studio": "West Palm Beach",
+          "product": "Student/Teacher/Military Monthly Unlimited",
+          "item_type": "Pricing Option",
+          "category": "Memberships",
+          "clients": 3,
+          "transactions": 3,
+          "revenue": 223.5
         }
       ],
       "time_series": [
@@ -18999,10 +18993,10 @@
         {
           "segment": "Existing",
           "total_clients": 121,
-          "converted": 34,
-          "conversion_pct": 28.1,
-          "post_rev": 4892.5,
-          "avg_per_converter": 143.9
+          "converted": 35,
+          "conversion_pct": 28.9,
+          "post_rev": 5041.5,
+          "avg_per_converter": 144.04
         },
         {
           "segment": "Platform",
@@ -19385,9 +19379,9 @@
           "studio": "South Miami",
           "segment": "Existing",
           "total_clients": 12,
-          "converted": 2,
-          "conversion_pct": 16.7,
-          "post_rev": 298.0,
+          "converted": 3,
+          "conversion_pct": 25.0,
+          "post_rev": 447.0,
           "avg_per_converter": 149.0
         },
         {
@@ -19429,11 +19423,25 @@
       ],
       "multi_location": [
         {
-          "email": "jdelarosa07091@icloud.com",
-          "name": "Jasmine De La Rosa",
+          "email": "Gabriela@citycontents.com",
+          "name": "Gabriela Arredondo",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "Pembroke Pines, Boca Raton"
+        },
+        {
+          "email": "Rosarioleilani@yahoo.com",
+          "name": "Leilani Reinoso",
           "studio_count": 2,
           "purchases": 2,
           "studios": "Fort Lauderdale - Las Olas, Miami Lakes"
+        },
+        {
+          "email": "alexiacm@gmail.com",
+          "name": "Chelsea Macbeath",
+          "studio_count": 2,
+          "purchases": 2,
+          "studios": "Pembroke Pines, Miami - Upper East Side"
         },
         {
           "email": "Lishann26@yahoo.com",
@@ -19443,11 +19451,11 @@
           "studios": "Miami Lakes, West Palm Beach"
         },
         {
-          "email": "Gabriela@citycontents.com",
-          "name": "Gabriela Arredondo",
+          "email": "jdelarosa07091@icloud.com",
+          "name": "Jasmine De La Rosa",
           "studio_count": 2,
           "purchases": 2,
-          "studios": "Pembroke Pines, Boca Raton"
+          "studios": "Fort Lauderdale - Las Olas, Miami Lakes"
         },
         {
           "email": "Shantel3900ai@gmail.com",
@@ -19457,41 +19465,293 @@
           "studios": "Miami Lakes, West Palm Beach"
         },
         {
-          "email": "d.perezvasquez13@gmail.com",
-          "name": "David Berhane",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "Miramar, Charlotte - Noda"
-        },
-        {
           "email": "alicemurillo02@gmail.com",
           "name": "Alice Murillo",
           "studio_count": 2,
           "purchases": 2,
-          "studios": "South Miami, Doral"
-        },
-        {
-          "email": "Rosarioleilani@yahoo.com",
-          "name": "Leilani Reinoso",
-          "studio_count": 2,
-          "purchases": 2,
-          "studios": "Miami Lakes, Fort Lauderdale - Las Olas"
+          "studios": "Doral, South Miami"
         },
         {
           "email": "Ashleymarie0220@gmail.com",
           "name": "Ashley Bonelli",
           "studio_count": 2,
           "purchases": 2,
-          "studios": "Miami - Midtown, Doral"
+          "studios": "Doral, Miami - Midtown"
         },
         {
-          "email": "alexiacm@gmail.com",
-          "name": "Chelsea Macbeath",
+          "email": "d.perezvasquez13@gmail.com",
+          "name": "David Berhane",
           "studio_count": 2,
           "purchases": 2,
-          "studios": "Miami - Upper East Side, Pembroke Pines"
+          "studios": "Charlotte - Noda, Miramar"
         }
-      ]
+      ],
+      "meta_post_promo": {
+        "lead_date_from": "2026-08-25",
+        "lead_date_to": "2026-09-07",
+        "post_promo_to": "2026-09-28",
+        "excluded_studios": [
+          "Prestonwood",
+          "Highland",
+          "Reston"
+        ],
+        "studios": [
+          {
+            "studio": "Miami Lakes",
+            "leads": 24,
+            "buyers": 1,
+            "lead_only": 23,
+            "buyers_converted": 0,
+            "buyers_quality": 0,
+            "buyers_revenue": 0.0,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          },
+          {
+            "studio": "Miramar",
+            "leads": 20,
+            "buyers": 1,
+            "lead_only": 19,
+            "buyers_converted": 0,
+            "buyers_quality": 0,
+            "buyers_revenue": 0.0,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          },
+          {
+            "studio": "Eastchester",
+            "leads": 19,
+            "buyers": 4,
+            "lead_only": 15,
+            "buyers_converted": 0,
+            "buyers_quality": 0,
+            "buyers_revenue": 0.0,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          },
+          {
+            "studio": "Boca Raton",
+            "leads": 18,
+            "buyers": 3,
+            "lead_only": 15,
+            "buyers_converted": 0,
+            "buyers_quality": 0,
+            "buyers_revenue": 0.0,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          },
+          {
+            "studio": "Charlotte - Noda",
+            "leads": 17,
+            "buyers": 2,
+            "lead_only": 15,
+            "buyers_converted": 0,
+            "buyers_quality": 0,
+            "buyers_revenue": 0.0,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          },
+          {
+            "studio": "Pembroke Pines",
+            "leads": 16,
+            "buyers": 0,
+            "lead_only": 16,
+            "buyers_converted": 0,
+            "buyers_quality": 0,
+            "buyers_revenue": 0.0,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          },
+          {
+            "studio": "South Miami",
+            "leads": 15,
+            "buyers": 2,
+            "lead_only": 13,
+            "buyers_converted": 0,
+            "buyers_quality": 0,
+            "buyers_revenue": 0.0,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          },
+          {
+            "studio": "Coral Springs",
+            "leads": 10,
+            "buyers": 2,
+            "lead_only": 8,
+            "buyers_converted": 0,
+            "buyers_quality": 0,
+            "buyers_revenue": 0.0,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          },
+          {
+            "studio": "Doral",
+            "leads": 10,
+            "buyers": 0,
+            "lead_only": 10,
+            "buyers_converted": 0,
+            "buyers_quality": 0,
+            "buyers_revenue": 0.0,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          },
+          {
+            "studio": "Miami - Coconut Grove",
+            "leads": 8,
+            "buyers": 0,
+            "lead_only": 8,
+            "buyers_converted": 0,
+            "buyers_quality": 0,
+            "buyers_revenue": 0.0,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          },
+          {
+            "studio": "West Palm Beach",
+            "leads": 8,
+            "buyers": 1,
+            "lead_only": 7,
+            "buyers_converted": 1,
+            "buyers_quality": 1,
+            "buyers_revenue": 74.5,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          },
+          {
+            "studio": "NYC - Park Slope",
+            "leads": 7,
+            "buyers": 2,
+            "lead_only": 5,
+            "buyers_converted": 1,
+            "buyers_quality": 1,
+            "buyers_revenue": 625.96,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          },
+          {
+            "studio": "Miami - Midtown",
+            "leads": 5,
+            "buyers": 2,
+            "lead_only": 3,
+            "buyers_converted": 1,
+            "buyers_quality": 1,
+            "buyers_revenue": 84.5,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          },
+          {
+            "studio": "Coral Gables",
+            "leads": 4,
+            "buyers": 0,
+            "lead_only": 4,
+            "buyers_converted": 0,
+            "buyers_quality": 0,
+            "buyers_revenue": 0.0,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          },
+          {
+            "studio": "Miami - Upper East Side",
+            "leads": 4,
+            "buyers": 0,
+            "lead_only": 4,
+            "buyers_converted": 0,
+            "buyers_quality": 0,
+            "buyers_revenue": 0.0,
+            "leads_converted": 1,
+            "leads_quality": 1,
+            "leads_revenue": 84.5
+          },
+          {
+            "studio": "Deerfield Beach",
+            "leads": 3,
+            "buyers": 1,
+            "lead_only": 2,
+            "buyers_converted": 0,
+            "buyers_quality": 0,
+            "buyers_revenue": 0.0,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          },
+          {
+            "studio": "Fort Lauderdale - Las Olas",
+            "leads": 2,
+            "buyers": 1,
+            "lead_only": 1,
+            "buyers_converted": 0,
+            "buyers_quality": 0,
+            "buyers_revenue": 0.0,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          },
+          {
+            "studio": "NYC - Chelsea",
+            "leads": 2,
+            "buyers": 0,
+            "lead_only": 2,
+            "buyers_converted": 0,
+            "buyers_quality": 0,
+            "buyers_revenue": 0.0,
+            "leads_converted": 0,
+            "leads_quality": 0,
+            "leads_revenue": 0.0
+          }
+        ],
+        "products": [
+          {
+            "group": "buyers",
+            "studio": "NYC - Park Slope",
+            "product": "Unlimited 6 Months",
+            "category": "Memberships",
+            "quality": true,
+            "clients": 1,
+            "revenue": 625.96
+          },
+          {
+            "group": "buyers",
+            "studio": "Miami - Midtown",
+            "product": "Unlimited Monthly",
+            "category": "Memberships",
+            "quality": true,
+            "clients": 1,
+            "revenue": 84.5
+          },
+          {
+            "group": "leads",
+            "studio": "Miami - Upper East Side",
+            "product": "Student/Teacher/Military Monthly Unlimited",
+            "category": "Memberships",
+            "quality": true,
+            "clients": 1,
+            "revenue": 84.5
+          },
+          {
+            "group": "buyers",
+            "studio": "West Palm Beach",
+            "product": "Student/Teacher/Military Monthly Unlimited ",
+            "category": "Memberships",
+            "quality": true,
+            "clients": 1,
+            "revenue": 74.5
+          }
+        ]
+      }
     }
   ]
 }

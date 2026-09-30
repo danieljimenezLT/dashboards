@@ -56,6 +56,11 @@
 
   /* Source note */
   .filter-note{font-size:11px;color:#8aaabb;font-style:italic;margin-bottom:12px}
+  .kpi-card-sub{font-size:11px;color:#8aaabb;margin-top:4px}
+  .meta-pp-head{font-family:'Oswald',sans-serif;font-style:italic;font-size:18px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#1a1a2e;margin:28px 0 6px}
+  .meta-pp-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid #eef4f8;font-size:13px;color:#5a7a8a}
+  .meta-pp-row:last-child{border-bottom:none}
+  .meta-pp-row b{font-family:'Oswald',sans-serif;font-size:18px;color:#1a1a2e;font-variant-numeric:tabular-nums}
 
   /* Sortable table headers */
   .data-table thead th{cursor:pointer;user-select:none;white-space:nowrap}
@@ -369,6 +374,28 @@
           </tr></thead>
           <tbody id="adsAdBody"></tbody>
         </table>
+      </div>
+    </div>
+    <div id="adsMetaPP" style="display:none">
+      <div class="meta-pp-head">Meta Post-Promo</div>
+      <p class="filter-note" id="adsMetaPPNote"></p>
+      <div class="kpi-grid" id="adsMetaPPKpis"></div>
+      <div class="two-col" id="adsMetaPPGroups"></div>
+      <div class="chart-card">
+        <div class="chart-card-title">Post-Promo Purchases by Product</div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr>
+              <th>Product</th>
+              <th>Category</th>
+              <th class="num">Meta Buyers</th>
+              <th class="num">Buyers Revenue</th>
+              <th class="num">Meta Leads</th>
+              <th class="num">Leads Revenue</th>
+            </tr></thead>
+            <tbody id="adsMetaPPProdBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -1442,6 +1469,10 @@ function findPaidAdsCampaign() {
 }
 
 function renderAdsReport() {
+  // Shown again by renderMetaPostPromo() only for campaigns that have it
+  const mppEl = document.getElementById('adsMetaPP');
+  if (mppEl) mppEl.style.display = 'none';
+
   const b1g3El  = document.getElementById('b1g3-ads-content');
   const stdEl   = document.getElementById('std-ads-content');
   const emptyEl = document.getElementById('adsEmpty');
@@ -1524,6 +1555,8 @@ function renderAdsReport() {
        <div class="kpi-card-val">${c.val}</div>
      </div>`
   ).join('');
+
+  renderMetaPostPromo(totLeads, totPurchases);
 
   // Studios table
   const sorted = studioRows.slice().sort((a, b) => b.spend - a.spend);
@@ -1614,6 +1647,76 @@ function renderAdsReport() {
       <td class="num">${aCTR}</td>
     </tr>`;
   }).join('');
+}
+
+// Meta-only post-promo (built by build_meta_post_promo in the fetch). Two
+// non-overlapping groups: Meta buyers of the promo product, and Meta leads
+// from the promo window who didn't buy it. metaReportedLeads/Purch = Meta's
+// own pixel counts for the same studio filter, shown for reference.
+function renderMetaPostPromo(metaReportedLeads, metaReportedPurch) {
+  const wrap = document.getElementById('adsMetaPP');
+  const mpp  = CAMP && CAMP.meta_post_promo;
+  if (!wrap) return;
+  if (!mpp) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+
+  const rows = (mpp.studios || []).filter(r => isSelected(r.studio));
+  const sum  = k => rows.reduce((s, r) => s + (r[k] || 0), 0);
+  const leads = sum('leads'), buyers = sum('buyers'), leadOnly = sum('lead_only');
+  const pct = (n, d) => d > 0 ? fmtP(n / d * 100) : fmtP(0);
+  const bRev = sum('buyers_revenue'), lRev = sum('leads_revenue');
+
+  const excl = (mpp.excluded_studios || []).join(', ');
+  document.getElementById('adsMetaPPNote').textContent =
+    `Meta leads = sign-ups with source Meta Ads (same as the Open Studio dashboard), ` +
+    `${fmtDateStr(mpp.lead_date_from)} – ${fmtDateStr(mpp.lead_date_to)}` +
+    (excl ? `, excluding studios with no Meta spend (${excl})` : '') +
+    `. Leads who bought ${CAMP.product} count only as buyers. ` +
+    `Post-promo = paid purchases of other products through ${fmtDateStr(mpp.post_promo_to)}, refunds excluded.`;
+
+  document.getElementById('adsMetaPPKpis').innerHTML = [
+    {label:'Meta Leads',               val: fmtN(leads),    sub: `Meta reports ${fmtN(metaReportedLeads)}`},
+    {label:`Bought ${CAMP.product}`,   val: fmtN(buyers),   sub: `Meta reports ${fmtN(metaReportedPurch)}`},
+    {label:'Leads Only',               val: fmtN(leadOnly), sub: `${pct(leadOnly, leads)} of Meta leads · no promo purchase`},
+    {label:'Meta Post-Promo Revenue',  val: fmtM(bRev + lRev), sub: 'Buyers + leads'},
+  ].map(c =>
+    `<div class="kpi-card">
+       <div class="kpi-card-label">${c.label}</div>
+       <div class="kpi-card-val">${c.val}</div>
+       <div class="kpi-card-sub">${c.sub}</div>
+     </div>`
+  ).join('');
+
+  const group = (title, countLabel, n, conv, qual, rev) =>
+    `<div class="chart-card" style="margin-bottom:0">
+       <div class="chart-card-title">${title}</div>
+       <div class="meta-pp-row"><span>${countLabel}</span><b>${fmtN(n)}</b></div>
+       <div class="meta-pp-row"><span>Bought after promo</span><b>${fmtN(conv)} · ${pct(conv, n)}</b></div>
+       <div class="meta-pp-row"><span>Quality conversions</span><b>${fmtN(qual)} · ${pct(qual, n)}</b></div>
+       <div class="meta-pp-row"><span>Post-promo revenue</span><b>${fmtM(rev)}</b></div>
+     </div>`;
+  document.getElementById('adsMetaPPGroups').innerHTML =
+    group('Meta Buyers → Post-Promo', 'Clients', buyers, sum('buyers_converted'), sum('buyers_quality'), bRev) +
+    group('Meta Leads (no promo purchase) → Post-Promo', 'Leads', leadOnly, sum('leads_converted'), sum('leads_quality'), lRev);
+
+  const byProd = {};
+  for (const r of (mpp.products || []).filter(r => isSelected(r.studio))) {
+    const key = r.product.trim();
+    const e = byProd[key] || (byProd[key] = {product: key, category: r.category, bC: 0, bR: 0, lC: 0, lR: 0});
+    if (r.group === 'buyers') { e.bC += r.clients; e.bR += r.revenue; }
+    else                      { e.lC += r.clients; e.lR += r.revenue; }
+  }
+  const prods = Object.values(byProd).sort((a, b) => (b.bR + b.lR) - (a.bR + a.lR));
+  document.getElementById('adsMetaPPProdBody').innerHTML = prods.length
+    ? prods.map(e => `<tr>
+        <td>${e.product}</td>
+        <td>${e.category || ''}</td>
+        <td class="num">${e.bC ? fmtN(e.bC) : '—'}</td>
+        <td class="num">${e.bC ? fmtM(e.bR) : '—'}</td>
+        <td class="num">${e.lC ? fmtN(e.lC) : '—'}</td>
+        <td class="num">${e.lC ? fmtM(e.lR) : '—'}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="6" style="text-align:center;color:#8aaabb">No post-promo purchases yet</td></tr>`;
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────
