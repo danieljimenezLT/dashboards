@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-09-30",
+      "pr_number": 434,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/434",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO Summary: Last 7 Full Days goals are now fixed weekly targets",
+      "summary": "The weekly Leads and Presales goals on the Last 7 Full Days card no longer change week to week or drop to 0. They are now the total target divided by 16 weeks, or by fewer weeks when the Target C/O Date comes earlier, matching the Total to Date pace."
+    },
+    {
+      "date": "2026-09-30",
       "pr_number": 433,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/433",
       "author": "Sebastian Arango",
