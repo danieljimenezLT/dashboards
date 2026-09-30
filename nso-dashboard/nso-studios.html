@@ -618,8 +618,8 @@ const GLOSSARY={
   gbp_five_star:{title:'GBP — 5-Star Reviews',desc:'Number of 5-star reviews posted within the selected date range, across all selected studios with review data, plus the percentage they represent of total reviews in that range.'},
 
   // ── Summary tab ───────────────────────────────────────────────────────────
-  sum_leads_7d:{title:'Leads (New Accounts Created) — Last 7 Full Days',desc:'Number of new accounts created in the 7 most recent days with available data. The window ends at the latest date where data has been reported — typically 2 days before today — to ensure all sources have synced. The weekly goal is dynamic: remaining accounts needed to hit the target divided by the number of weeks left until the Target C/O Date.'},
-  sum_presales_7d:{title:'Net Presales — Last 7 Full Days',desc:'Net new recurring memberships sold in the 7 most recent days with available data, counted by purchase date. The window ends at the latest date where data has been reported — typically 2 days before today — to ensure all sources have synced. Net = new sales minus cancellations processed in the same window. The weekly goal is dynamic: remaining presales needed to hit the target divided by the number of weeks left until the Target C/O Date.'},
+  sum_leads_7d:{title:'Leads (New Accounts Created) — Last 7 Full Days',desc:'Number of new accounts created in the 7 most recent days with available data. The window ends at the latest date where data has been reported — typically 2 days before today — to ensure all sources have synced. The weekly goal is fixed: the total accounts target divided by 16 weeks, or by fewer weeks when the Target C/O Date comes before Week 16 (the same basis as the Total to Date pace).'},
+  sum_presales_7d:{title:'Net Presales — Last 7 Full Days',desc:'Net new recurring memberships sold in the 7 most recent days with available data, counted by purchase date. The window ends at the latest date where data has been reported — typically 2 days before today — to ensure all sources have synced. Net = new sales minus cancellations processed in the same window. The weekly goal is fixed: the total presales target divided by 16 weeks, or by fewer weeks when the Target C/O Date comes before Week 16 (the same basis as the Total to Date pace).'},
   sum_cvr_7d:{title:'Conversion Rate — Last 7 Full Days',desc:'Percentage of leads in the 7 most recent days with available data who also purchased a membership in that same window. The window ends at the latest date where data has been reported — typically 2 days before today. Note: this compares two independent pools — some buyers may have come in as leads before this window, so the rate reflects recent activity patterns rather than a true cohort funnel.'},
   sum_leads_total:{title:'Total Leads (New Accounts Created) to Date',desc:'Cumulative count of all new accounts created since Week 0. The benchmark marker shows where you should be at the current week if accounts were created evenly across the pre-opening period (total target ÷ total weeks × current week).'},
   sum_presales_total:{title:'Total Net Presales to Date',desc:'Cumulative net recurring memberships sold since Week 0, counted by purchase date. Net = new sales minus all cancellations to date. Pacing benchmark assumes an even distribution of the total presales target across all pre-opening weeks.'},
@@ -1251,11 +1251,12 @@ function renderSummary2(){
   const _rawTotalPresales=(_isPreLaunchSumm||_isOpened2)?Math.max(0,NSO_SALES_ROWS.filter(r=>_strip(r.studio)===_sname&&(!_opCap2||r.date<_opCap2)).reduce((s,r)=>s+(r.first_sales||0)-(r.cancellations||0),0)):null;
   const _rawTotalLeads=_isPreLaunchSumm?(RAW?.daily_detail||[]).filter(r=>_strip(r.studio)===_sname).reduce((s,r)=>s+(r.signups||0),0):null;
   const netPresales=(_isPreLaunchSumm||_isOpened2)?(_rawTotalPresales||0):(_sumCurTier?(_sumCurTier.t0||0)+(_sumCurTier.t1||0)+(_sumCurTier.t2||0)+(_sumCurTier.t3||0):Math.max(0,(cur.presales_count||0)-(cur.cancellations_count||0)));
-  const weeksLeft=Math.max(0,goalWeeks-displayCw);
-  const leadsGap=Math.max(0,annLeads-(cur.total_leads||0));
-  const presalesGap=Math.max(0,annPres-netPresales);
-  const wkLeadGoal=weeksLeft>0?Math.round(leadsGap/weeksLeft):leadsGap;
-  const wkPresaleGoal=weeksLeft>0?Math.round(presalesGap/weeksLeft):presalesGap;
+  // Fixed weekly goal on the same basis as the Total-to-Date pace: target
+  // divided by goalWeeks (16, or fewer when the C/O date lands before Week 16).
+  // It used to be "remaining gap / weeks left", which drifted week to week and
+  // hit 0 once a target was already met.
+  const wkLeadGoal=goalWeeks>0?Math.round(annLeads/goalWeeks):annLeads;
+  const wkPresaleGoal=goalWeeks>0?Math.round(annPres/goalWeeks):annPres;
   const wkGoalLabel='Goal';
   // displayCw is a week NUMBER; the weeks array starts at the first negative
   // pre-week, so filter by week number instead of slicing by array index.
