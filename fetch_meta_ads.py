@@ -250,9 +250,17 @@ def run(start_override: str | None = None, end_override: str | None = None):
     ad_account  = studios_registry.defaults()["meta_ad_account_id"]  # e.g. "act_1553887681409034"
     dedicated_accounts = studios_registry.meta_dedicated_accounts()
     dedicated_codes    = {d["code"] for d in dedicated_accounts}
-    # Studios with their own ad account are excluded from shared-account matching —
-    # their spend now lives entirely in their dedicated account (see step 3b below).
-    studios_cfg = [s for s in studios_registry.meta_studio_rows() if s.get("code") not in dedicated_codes]
+    # Studios with their own ad account get no KEYWORD matching in the shared
+    # account — their current spend lives in the dedicated account (step 3b).
+    # They stay matchable by the studio CODE in the ad set name, though: ad sets
+    # they ran in the shared account before migrating (e.g. Prestonwood's
+    # "26-TX-003-02 - Free Class - Prestonwood", Jul–Aug 2026) are still theirs.
+    # Dropping them entirely sent those ads to the keyword fallback, where
+    # "Prestonwood" matched Reston (see the 2026-10-01 attribution audit).
+    studios_cfg = [
+        s if s.get("code") not in dedicated_codes else {**s, "match": None}
+        for s in studios_registry.meta_studio_rows()
+    ]
 
     today     = date.today()
     today_iso = today.isoformat()
@@ -604,7 +612,35 @@ def run(start_override: str | None = None, end_override: str | None = None):
 
     log.info(f"  ad_meta: {len(ad_meta)} ads (thumb hits {thumb_hits}, creatives w/ no thumb {thumb_missing})")
 
-    # ── 4b. Build studio_daily: non-spend engagement, since 2026-04-01,
+    # ── 4b. Drop ACCOUNT_TOTAL stubs superseded by real ad-level rows ─────────
+    # (Runs before studio_daily is built so the stubs' leads/clicks aren't
+    # double-counted there either.)
+    # When a studio is upgraded from account-level fallback to ad-level fetch,
+    # both sets of rows coexist in ad_daily_idx (different ad_id keys) and would
+    # double-count spend. Remove any ACCOUNT_TOTAL:* row for a studio+date combo
+    # that already has at least one real ad-level row. Matches both the current
+    # "ACCOUNT_TOTAL:<code>" id and the legacy bare "ACCOUNT_TOTAL" (pre-PR #272
+    # rows still in the file — Herriman's Aug 2026 stubs were double-counting
+    # next to its ad-level rows because only the ":" form was recognized).
+    real_studio_dates = {
+        (r["date"], r["studio_code"])
+        for r in _flat(ad_daily_idx)
+        if not r["ad_id"].startswith("ACCOUNT_TOTAL")
+    }
+    stub_removed = sum(
+        1 for r in _flat(ad_daily_idx)
+        if r["ad_id"].startswith("ACCOUNT_TOTAL")
+        and (r["date"], r["studio_code"]) in real_studio_dates
+    )
+    if stub_removed:
+        log.info(f"  Removing {stub_removed} ACCOUNT_TOTAL stubs superseded by ad-level rows")
+        ad_daily_idx = {
+            k: rows for k, rows in ad_daily_idx.items()
+            if not k[1].startswith("ACCOUNT_TOTAL")
+            or (rows[0]["date"], rows[0]["studio_code"]) not in real_studio_dates
+        }
+
+    # ── 4c. Build studio_daily: non-spend engagement, since 2026-04-01,
     # never trimmed. Recomputed fresh from ad_daily_idx (this run's full
     # 90-day window) each time; existing rows outside that window are
     # carried forward untouched, so the table grows forever instead of
@@ -637,29 +673,6 @@ def run(start_override: str | None = None, end_override: str | None = None):
     studio_daily_idx.update(studio_daily_fresh)  # this run's window wins; older rows pass through
     studio_daily_out = sorted(studio_daily_idx.values(), key=lambda r: (r["date"], r["studio_code"]))
     log.info(f"  studio_daily: {len(studio_daily_out)} total (date×studio) rows, floor {STUDIO_DAILY_FLOOR}")
-
-    # ── 4c. Drop ACCOUNT_TOTAL stubs superseded by real ad-level rows ─────────
-    # When a studio is upgraded from account-level fallback to ad-level fetch,
-    # both sets of rows coexist in ad_daily_idx (different ad_id keys) and would
-    # double-count spend. Remove any ACCOUNT_TOTAL:* row for a studio+date combo
-    # that already has at least one real ad-level row.
-    real_studio_dates = {
-        (r["date"], r["studio_code"])
-        for r in _flat(ad_daily_idx)
-        if not r["ad_id"].startswith("ACCOUNT_TOTAL:")
-    }
-    stub_removed = sum(
-        1 for r in _flat(ad_daily_idx)
-        if r["ad_id"].startswith("ACCOUNT_TOTAL:")
-        and (r["date"], r["studio_code"]) in real_studio_dates
-    )
-    if stub_removed:
-        log.info(f"  Removing {stub_removed} ACCOUNT_TOTAL stubs superseded by ad-level rows")
-        ad_daily_idx = {
-            k: rows for k, rows in ad_daily_idx.items()
-            if not k[1].startswith("ACCOUNT_TOTAL:")
-            or (rows[0]["date"], rows[0]["studio_code"]) not in real_studio_dates
-        }
 
     # ── 5. Sort, trim to 90-day rolling window, and write ────────────
     ad_daily_out = sorted(
