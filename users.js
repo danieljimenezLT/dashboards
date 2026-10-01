@@ -359,6 +359,15 @@ const USERS = {
     ],
     role: 'franchisee'
   },
+  'nikki@bvrfitness.com': {
+    passwordHash: 'a19db2485e593f353475e412e77755d2f5a73ee4eceec3bbc19812896a2e0fc6',
+    name: 'Nikki Kee',
+    studios: [
+      'Charlotte - Noda',
+      'Charlotte - South End',
+    ],
+    role: 'franchisee'
+  },
 
   'mgelrud@hotmail.com': {
     passwordHash: '17b8f79636a93de2aeae965c445eb93af65c4009007f39b870c3324e7cd6b4d1',
@@ -372,14 +381,8 @@ const USERS = {
   'nmarco@marcoregion.com': {
     passwordHash: 'fb67db4c70cbf40834a15fa59d2da7c0de995a140d7e434bda0bdd318a72e9be',
     name: 'Nick Marco',
-    studios: [
-      'Middletown',
-      'Ocean Township',
-      'Old Bridge',
-      'Toms River',
-      'Wall Township',
-    ],
-    role: 'franchisee'
+    studios: null,
+    role: 'corporate'
   },
 
   'pmarcus@catalyst-hp.com': {
