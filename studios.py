@@ -69,9 +69,13 @@ def match_studios(name: str, studios: list[dict]) -> list[dict]:
                 seen.add(s["code"])
                 out.append(s)
         return out
+    # Keyword fallback matches whole words only: a plain substring check let
+    # "Reston" match "Prestonwood" (TX-003 ads landed on VA-001 — see PR #272/#279
+    # and the 2026-10-01 attribution audit).
     n_lower = n.lower()
     for s in studios:
-        if s.get("match") and s["match"].lower() in n_lower:
+        kw = (s.get("match") or "").lower()
+        if kw and re.search(r"(?<![a-z0-9])" + re.escape(kw) + r"(?![a-z0-9])", n_lower):
             return [s]
     return []
 
