@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-10-01",
+      "pr_number": 435,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/435",
+      "author": "Sebastian Arango",
+      "categories": [
+        "General"
+      ],
+      "title": "Fixed Meta spend that was wrongly moved from Prestonwood to Reston, and a Herriman double count",
+      "summary": "About $2,550 of Prestonwood's July–August Meta spend had been credited to Reston, and Herriman's August Meta spend was counted twice. Both are corrected, and the monthly check no longer confuses Prestonwood with Reston."
+    },
+    {
       "date": "2026-09-30",
       "pr_number": 434,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/434",
