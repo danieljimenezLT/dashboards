@@ -382,7 +382,7 @@ const USERS = {
     passwordHash: 'fb67db4c70cbf40834a15fa59d2da7c0de995a140d7e434bda0bdd318a72e9be',
     name: 'Nick Marco',
     studios: null,
-    role: 'corporate'
+    role: 'admin'
   },
 
   'pmarcus@catalyst-hp.com': {
