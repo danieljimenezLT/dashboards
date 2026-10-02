@@ -80,6 +80,20 @@ jobs:
             --output nso-dashboard/nso_client_history.json
         continue-on-error: true
 
+      # Opened-studio comparison page (post-opening.html): full-history daily
+      # funnel by source per opened studio, incl. the First 90 Days tab, which
+      # keeps growing after opening, hence a daily refresh.
+      - name: Refresh Post-Opening source data
+        env:
+          SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT }}
+          SNOWFLAKE_USER:      ${{ secrets.SF_USER }}
+          SNOWFLAKE_PASSWORD:  ${{ secrets.SF_TOKEN }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SNOWFLAKE_DATABASE:  ${{ secrets.SF_DATABASE }}
+          SNOWFLAKE_ROLE:      ${{ secrets.SF_ROLE }}
+        run: python nso-dashboard/scripts/fetch_post_opening_source_data.py
+        continue-on-error: true
+
       # ── META ADS + GA4 + GOOGLE ADS ────────────────────────────────────────
       # Default: 8-day lookback (MARKETING_START) so Meta's retroactive spend
       # adjustments are captured. On manual dispatch, MARKETING_START can be
@@ -189,6 +203,7 @@ jobs:
             nso-dashboard/nso_client_history.json \
             nso-dashboard/nso_other_costs.json \
             nso-dashboard/nso_pre_weeks_data.json 2>/dev/null || true
+          git add nso-dashboard/post_opening_source_data.json 2>/dev/null || true
           git add nso-dashboard/nso_media_cache.json 2>/dev/null || true
           find nso-dashboard/thumbnails -type f 2>/dev/null | grep -q . && \
             git add nso-dashboard/thumbnails/ || true

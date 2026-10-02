@@ -77,8 +77,17 @@
 .po-table-note{font-size:11px;color:#8aaabb;font-style:italic;margin:-10px 0 10px}
 .po-bd-studio td{background:#f4f9fd;font-weight:700;padding-top:10px}
 .po-bd-total td{font-weight:700;border-top:2px solid #dde8ef}
+.po-ref-row td{color:#8aaabb;font-style:italic;border-top:1px dashed #c0d4df}
 
 @media(max-width:600px){.po-kpi-grid{grid-template-columns:1fr 1fr}.po-filters{top:60px}}
+
+/* ── Tabs (Presale / Pre-Launch & Preview / First 90 Days) ── */
+.po-tabs{display:flex;gap:2px;border-bottom:2px solid #dde8ef;margin-bottom:16px;flex-wrap:wrap}
+.po-tab{font-family:'Oswald',sans-serif;font-style:italic;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.5px;padding:9px 18px;border:none;background:transparent;color:#5a7a8a;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+.po-tab:hover{color:#00A3E0}
+.po-tab.active{color:#00A3E0;border-bottom-color:#00A3E0;background:#fff}
+.po-pane{display:none}
+.po-pane.active{display:block}
 </style>
 </head>
 <body>
@@ -95,10 +104,10 @@
 
 <div class="page-header">
   <div class="page-title">Opened Studios — Week-by-Week Comparison</div>
-  <div class="page-sub" id="page-sub">Studios aligned from Week 0 (presales start) through today</div>
+  <div class="page-sub" id="page-sub">Studios aligned from Week 0 (presales start)</div>
 </div>
 
-<!-- Filters (sticky under the nav) -->
+<!-- Filters (sticky under the nav) — shared by every tab -->
 <div class="po-filters" id="po-filters">
   <div class="po-filter-row">
     <span class="ctrl-label">Studios</span>
@@ -114,66 +123,155 @@
   </div>
 </div>
 
-<div class="open-legend" id="open-legend"></div>
+<div class="po-tabs">
+  <button class="po-tab active" data-tab="presale"   onclick="setTab('presale')">Presale (W0 → Pre-Opening)</button>
+  <button class="po-tab"        data-tab="prelaunch" onclick="setTab('prelaunch')">Pre-Launch &amp; Preview</button>
+  <button class="po-tab"        data-tab="post90"    onclick="setTab('post90')">First 90 Days</button>
+</div>
 
-<!-- KPIs -->
-<p class="kpi-group-title">Through Opening Week</p>
-<div class="po-kpi-grid" id="po-kpis"></div>
+<!-- ══ TAB 1: PRESALE (Week 0 → the day before Preview Week) ════════════════ -->
+<div class="po-pane active" id="pane-presale">
+  <div class="open-legend" id="open-legend"></div>
 
-<!-- Chart -->
-<div class="chart-card">
-  <div class="chart-card-title-row">
+  <p class="kpi-group-title">Week 0 → Day Before Preview Week</p>
+  <div class="po-kpi-grid" id="po-kpis"></div>
+
+  <div class="chart-card">
     <div class="chart-card-title" id="po-chart-title">Cumulative Leads — All Studios from Week 0</div>
+    <div class="controls" style="margin-bottom:12px">
+      <span class="ctrl-label">Metric:</span>
+      <div class="metric-group" id="po-metrics"></div>
+    </div>
+    <canvas id="po-chart" height="90"></canvas>
   </div>
-  <div class="controls" style="margin-bottom:12px">
-    <span class="ctrl-label">Metric:</span>
-    <div class="metric-group" id="po-metrics"></div>
+
+  <div class="chart-card">
+    <div class="chart-card-title">Studio Summary</div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr>
+          <th>Studio</th>
+          <th class="num">Opened</th>
+          <th class="num">Presale Weeks</th>
+          <th class="num">Leads</th>
+          <th class="num">Presales</th>
+          <th class="num">Conv. Rate</th>
+          <th class="num">Peak Leads/Wk</th>
+          <th class="num">Peak Presales/Wk</th>
+          <th class="num">Spend</th>
+          <th class="num">CPL</th>
+          <th class="num">CPS</th>
+        </tr></thead>
+        <tbody id="po-summary"></tbody>
+      </table>
+    </div>
   </div>
-  <canvas id="po-chart" height="90"></canvas>
+
+  <div class="chart-card">
+    <div class="chart-card-title">Spend Breakdown</div>
+    <p class="po-table-note">The channels with their own spend, Week 0 through the day before Preview Week (last week's spend prorated by days). Not affected by the Source filter. % of Mktg = share of total marketing spend (which also includes the LeadTeam fee and other costs).</p>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr>
+          <th>Source</th>
+          <th class="num">Leads</th>
+          <th class="num">Presales</th>
+          <th class="num">Conv. Rate</th>
+          <th class="num">Spend</th>
+          <th class="num">% of Mktg</th>
+          <th class="num">CPL</th>
+          <th class="num">CPS</th>
+          <th class="num">Comm. Events</th>
+        </tr></thead>
+        <tbody id="po-breakdown"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
-<!-- Studio summary -->
-<div class="chart-card">
-  <div class="chart-card-title">Studio Summary</div>
-  <div style="overflow-x:auto">
-    <table class="data-table">
-      <thead><tr>
-        <th>Studio</th>
-        <th class="num">Opened</th>
-        <th class="num">Weeks in NSO</th>
-        <th class="num">Leads</th>
-        <th class="num">Presales</th>
-        <th class="num">Conv. Rate</th>
-        <th class="num">Peak Leads/Wk</th>
-        <th class="num">Peak Presales/Wk</th>
-        <th class="num">Spend</th>
-        <th class="num">CPL</th>
-        <th class="num">CPS</th>
-      </tr></thead>
-      <tbody id="po-summary"></tbody>
-    </table>
+<!-- ══ TAB 2: PRE-LAUNCH (negative weeks) & PREVIEW WEEK ════════════════════ -->
+<div class="po-pane" id="pane-prelaunch">
+  <div class="chart-card">
+    <div class="chart-card-title">Pre-Launch — Negative Weeks</div>
+    <p class="po-table-note">Weeks before Week 0 (early lead gen). Leads and presales follow the Source filter; spend follows the same rule as the Presale tab.</p>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr>
+          <th>Week</th>
+          <th class="num">Dates</th>
+          <th class="num">Leads</th>
+          <th class="num">Presales</th>
+          <th class="num">Conv. Rate</th>
+          <th class="num">Spend</th>
+          <th class="num">CPL</th>
+        </tr></thead>
+        <tbody id="pl-neg"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <p class="kpi-group-title" id="pv-title">Preview Week (7 days before the opening date)</p>
+  <p class="po-table-note" style="margin:0 0 10px">Spend is prorated by days from the scorecard weeks the Preview Week overlaps. Opening day is shown as a reference point only — it's counted in First 90 Days (on opening day presale memberships start billing, which isn't a new presale). Lead → First Timer compares counts in the same days (not a cohort): people who signed up earlier come in for their first class around opening, so it can exceed 100%.</p>
+  <div class="open-legend" id="pv-legend"></div>
+  <div class="po-kpi-grid" id="pv-kpis"></div>
+
+  <div class="chart-card">
+    <div class="chart-card-title" id="pv-chart-title">Leads per Day — Preview Week</div>
+    <div class="controls" style="margin-bottom:12px">
+      <span class="ctrl-label">Metric:</span>
+      <div class="metric-group" id="pv-metrics"></div>
+    </div>
+    <canvas id="pv-chart" height="80"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-card-title">Preview Week by Day</div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead id="pv-daily-head"></thead>
+        <tbody id="pv-daily"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
-<!-- Spend breakdown (replaces the Meta / Google / Grassroots detail tables) -->
-<div class="chart-card">
-  <div class="chart-card-title">Spend Breakdown</div>
-  <p class="po-table-note">The channels with their own spend, through the opening week. Not affected by the Source filter. % of Mktg = share of total marketing spend (which also includes the LeadTeam fee and other costs).</p>
-  <div style="overflow-x:auto">
-    <table class="data-table">
-      <thead><tr>
-        <th>Source</th>
-        <th class="num">Leads</th>
-        <th class="num">Presales</th>
-        <th class="num">Conv. Rate</th>
-        <th class="num">Spend</th>
-        <th class="num">% of Mktg</th>
-        <th class="num">CPL</th>
-        <th class="num">CPS</th>
-        <th class="num">Comm. Events</th>
-      </tr></thead>
-      <tbody id="po-breakdown"></tbody>
-    </table>
+<!-- ══ TAB 3: FIRST 90 DAYS AFTER OPENING ═══════════════════════════════════ -->
+<div class="po-pane" id="pane-post90">
+  <div class="open-legend" id="p90-legend"></div>
+  <p class="kpi-group-title">First 90 Days After Opening — So Far</p>
+  <p class="po-table-note" style="margin:0 0 10px">Totals cover each studio's days so far, so studios at different stages aren't directly comparable — use the / wk values or the weekly chart. New Members exclude presale holders, whose memberships activate on opening day (shown separately as Presale Activations). Conversion rates compare counts in the same days (not a cohort), so Lead → First Timer can exceed 100%.</p>
+  <div class="po-kpi-grid" id="p90-kpis"></div>
+
+  <div class="chart-card">
+    <div class="chart-card-title" id="p90-chart-title">Cumulative Leads — Weeks Since Opening</div>
+    <div class="controls" style="margin-bottom:12px">
+      <span class="ctrl-label">Metric:</span>
+      <div class="metric-group" id="p90-metrics"></div>
+    </div>
+    <canvas id="p90-chart" height="90"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-card-title">Studio Summary — First 90 Days</div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr>
+          <th>Studio</th>
+          <th class="num">Opened</th>
+          <th class="num">Days (of 90)</th>
+          <th class="num">Leads</th>
+          <th class="num">First Timers</th>
+          <th class="num">New Members</th>
+          <th class="num">Presale Activations</th>
+          <th class="num">Lead → FT</th>
+          <th class="num">FT → Member</th>
+          <th class="num">Spend</th>
+          <th class="num">CPL</th>
+          <th class="num">Cost / Member</th>
+        </tr></thead>
+        <tbody id="p90-summary"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -195,52 +293,68 @@ const EXCL_SOURCES = ['ClassPass / Platforms'];
 // Sources that carry their own spend in the scorecard weeks
 const SPEND_FIELD = { 'Meta Ads':'meta_spend', 'Google Ads':'google_spend', 'Grassroots':'grassroots_spend' };
 
+// First 90 Days spend — same rule as the Open Studio dashboard's CPR tab:
+// Meta + Google (spend-data.json) + Leadteam fee (prorated, minus any Leadteam
+// Discount) + External Agency, both adjustments from agency-spend-overrides.json.
+const LTFEE_MONTHLY = 1200;
+const DAYS_PER_MONTH = 30.4375;
+const POST_DAYS = 90;
+
 // ── State ─────────────────────────────────────────────────────────────────────
-let SC  = null;
-let RAW = null;            // post_opening_source_data.json — per-source daily leads/presales
+let SC = null, RAW = null, SPEND = null, OVERRIDES = [];
 let studioData = [];
 let active  = STUDIO_CFG.map(() => true);
 let showAvg = true;
-let metric  = 'leads_cumul';
-let chart   = null;
+let currentTab = 'presale';
+const metricByTab = { presale:'leads_cumul', prelaunch:'leads_day', post90:'leads_cumul' };
+const charts = {};
+let DATA_END = null;     // latest day with funnel data (never in the future)
 
 // ── Load ──────────────────────────────────────────────────────────────────────
+async function getJSON(url, fallback) {
+  try { const r = await fetch(url + '?_=' + Date.now()); if (!r.ok) throw 0; return await r.json(); }
+  catch(e) { return fallback; }
+}
+
 async function loadData() {
-  try {
-    const res = await fetch('nso_scorecard_data2.json?_=' + Date.now());
-    SC = await res.json();
-  } catch(e) { SC = { studios: [] }; }
-  try {
-    // Full-history (no current-year cutoff) leads/presales by source — data.json
-    // only covers the current calendar year forward, which truncates studios
-    // like Reston whose presale campaign started the year before.
-    const res2 = await fetch('post_opening_source_data.json?_=' + Date.now());
-    RAW = await res2.json();
-  } catch(e) { RAW = { daily_detail: [] }; }
+  [SC, RAW, SPEND] = await Promise.all([
+    getJSON('nso_scorecard_data2.json', { studios: [] }),
+    // Full-history (no current-year cutoff) funnel by source — data.json only
+    // covers the current calendar year, which truncates Reston's presale.
+    getJSON('post_opening_source_data.json', { daily_detail: [] }),
+    getJSON('../spend-data.json', { daily: [] }),
+  ]);
+  OVERRIDES = ((await getJSON('../agency-spend-overrides.json', { overrides: [] })).overrides || []);
+
+  const today = new Date().toISOString().slice(0,10);
+  DATA_END = (RAW.daily_detail || []).reduce((m, r) => (r.date <= today && r.date > m ? r.date : m), '');
 
   studioData = STUDIO_CFG.map(cfg => buildStudio(cfg));
   buildPills();
   buildSourceSelect('sourceMenu', 'sourceLabel', ALL_SOURCES, EXCL_SOURCES);
   renderAll();
 
-  const ts = SC.generated_at || '';
-  if (ts) {
-    const d = new Date(ts);
+  if (SC.generated_at) {
     document.getElementById('page-sub').textContent =
       'Studios aligned from Week 0 (presales start) · Data as of ' +
-      d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      new Date(SC.generated_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   }
 }
 
 // buildSourceSelect (shared/utils.js) calls this on every change
 function _applyFilters() { renderAll(); }
 
-function toggleSourceMenu() {
-  document.getElementById('sourceMenu').classList.toggle('open');
-}
+function toggleSourceMenu() { document.getElementById('sourceMenu').classList.toggle('open'); }
 document.addEventListener('click', e => {
   if (!e.target.closest('.multi-select')) document.getElementById('sourceMenu').classList.remove('open');
 });
+
+function setTab(t) {
+  currentTab = t;
+  document.querySelectorAll('.po-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+  document.querySelectorAll('.po-pane').forEach(p => p.classList.toggle('active', p.id === 'pane-' + t));
+  renderAll();
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function addDaysISO(iso, n) {
@@ -248,6 +362,7 @@ function addDaysISO(iso, n) {
   d.setUTCDate(d.getUTCDate()+n);
   return d.toISOString().slice(0,10);
 }
+function daysBetween(a, b) { return Math.round((new Date(b+'T00:00:00Z') - new Date(a+'T00:00:00Z')) / 864e5); }
 function avg(arr) {
   const v = arr.filter(x=>x!=null && !Number.isNaN(x));
   return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null;
@@ -258,93 +373,137 @@ const fmt1  = v => v==null ? '—' : v.toFixed(1);
 const fmtM  = v => v==null ? '—' : '$' + Math.round(v).toLocaleString('en-US');
 const fmtM2 = v => v==null ? '—' : '$' + v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const fmtP  = v => v==null ? '—' : v.toFixed(1) + '%';
-const ratio = (a,b) => b ? a/b : null;
-const fmtOpen = iso => iso ? new Date(iso+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+const fmtOpen  = iso => iso ? new Date(iso+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+const fmtShort = iso => iso ? new Date(iso+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—';
+const studioCell = s => `<div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:3px;border-radius:2px;background:${s.color}"></div>${s.label}</div>`;
 
-// ── Build studio data (per week, per source) ──────────────────────────────────
+// Funnel fields per source from post_opening_source_data.json rows in [from, to].
+// Presales only count before the opening date (same cap as the NSO pipeline):
+// on opening day presale memberships start billing (autopay), which shows up
+// as presale-product sales but isn't a new presale.
+function aggSrc(rows, from, to, openDate) {
+  const src = {};
+  if (!from || !to) return src;
+  for (const r of rows) {
+    if (r.date < from || r.date > to) continue;
+    const e = src[r.source] || (src[r.source] = { leads:0, sales:0, pNew:0, pCanc:0, ft:0, mNew:0, mPre:0 });
+    e.leads += r.signups || 0;
+    // Net presales (presales - cancellations), matching the NSO dashboard
+    if (!openDate || r.date < openDate) {
+      e.sales += (r.presales || 0) - (r.cancellations || 0);
+      e.pNew  += r.presales || 0;
+      e.pCanc += r.cancellations || 0;
+    }
+    e.ft    += r.first_visits || 0;
+    e.mNew  += r.members_new || 0;
+    e.mPre  += r.members_presale || 0;
+  }
+  return src;
+}
+const pick = (src, sel, k) => sum(sel.map(x => (src[x] || {})[k]));
+
+// ── Build studio data ─────────────────────────────────────────────────────────
 function buildStudio(cfg) {
   const sc = (SC.studios||[]).find(s => s.name === cfg.sc_name);
-  if (!sc) return { ...cfg, weeks:[], openIdx:-1 };
+  if (!sc) return { ...cfg, weeks:[], negWeeks:[], openIdx:-1, rows:[] };
 
   const rawWeeks = sc.weeks || [];
-  // Align week 0 across studios: some studios (e.g. Naples) have negative
-  // pre-open weeks before "Week 0" while others don't. Slice off anything
-  // before Week 0 so relIdx=0 always means Week 0 for every studio.
-  const w0Idx = rawWeeks.findIndex(w => (parseInt((w.week||'0').replace('WEEK ',''))||0) === 0);
+  const wkNum = w => parseInt(String(w.week||'').replace(/week/i,'').trim(), 10);
+  // Align week 0 across studios: slice off negative pre-weeks so index 0 is
+  // always Week 0.
+  const w0Idx = rawWeeks.findIndex(w => wkNum(w) === 0);
   const weeks = rawWeeks.slice(w0Idx >= 0 ? w0Idx : 0);
-
-  // Week 0 has no date_start (see build_scorecard_v2.py) — use the day after
-  // the previous (pre-open) week ends as its effective start, so leads/sales
-  // for Week 0 aren't double-counted with earlier weeks.
+  // Week 0 has no date_start (see build_scorecard_v2.py) — its effective start
+  // is the day after the previous (pre-open) week ends.
   const _w0PrevEnd = (w0Idx > 0) ? rawWeeks[w0Idx-1].date_end : null;
 
   // Opening week = the week containing opening_date
-  const openDate = sc.opening_date ? new Date(sc.opening_date+'T12:00:00') : null;
   let openIdx = -1;
-  if (openDate) {
-    for (let i=0;i<weeks.length;i++) {
-      const w = weeks[i];
-      if (!w.date_end) continue;
-      const end   = new Date(w.date_end+'T23:59:59');
-      const start = w.date_start ? new Date(w.date_start+'T00:00:00') : new Date(0);
-      if (openDate >= start && openDate <= end) { openIdx=i; break; }
-    }
+  if (sc.opening_date) {
+    openIdx = weeks.findIndex(w => w.date_end && sc.opening_date <= w.date_end &&
+                                   (!w.date_start || sc.opening_date >= w.date_start));
   }
 
-  const rows = (RAW.daily_detail||[]).filter(r => r.studio===cfg.sc_name);
-  const processed = weeks.map((w,i) => {
-    const from = w.date_start || (i===0 && _w0PrevEnd ? addDaysISO(_w0PrevEnd,1) : null);
-    const to   = w.date_end;
-    const src = {};
-    if (from && to) {
-      for (const r of rows) {
-        if (r.date < from || r.date > to) continue;
-        const e = src[r.source] || (src[r.source] = { leads:0, sales:0 });
-        e.leads += r.signups || 0;
-        // Net presales (presales - cancellations), matching how the rest of
-        // the NSO dashboard defines "presales" — not gross first_sales.
-        e.sales += (r.presales || 0) - (r.cancellations || 0);
-      }
-    }
-    return {
-      src,
-      meta_spend:       Number(w.meta_spend)       || 0,
-      google_spend:     Number(w.google_spend)     || 0,
-      grassroots_spend: Number(w.grassroots_spend) || 0,
-      total_spend:      Number(w.total_marketing_spend) || 0,
-      events:           Number(w.comm_events)      || 0,
-    };
+  const rows = (RAW.daily_detail||[]).filter(r => r.studio === cfg.sc_name);
+  const proc = (w, from) => ({
+    week: w.week, from, to: w.date_end,
+    src: aggSrc(rows, from, w.date_end, sc.opening_date),
+    meta_spend:       Number(w.meta_spend)       || 0,
+    google_spend:     Number(w.google_spend)     || 0,
+    grassroots_spend: Number(w.grassroots_spend) || 0,
+    total_spend:      Number(w.total_marketing_spend) || 0,
+    events:           Number(w.comm_events)      || 0,
   });
+  const processed = weeks.map((w,i) => proc(w, w.date_start || (i===0 && _w0PrevEnd ? addDaysISO(_w0PrevEnd,1) : null)));
+  const negWeeks  = (w0Idx > 0 ? rawWeeks.slice(0, w0Idx) : []).map(w => proc(w, w.date_start));
 
-  // This page compares pre-opening NSO performance only — cut off at the
-  // opening week (post-opening weeks run under the Open Studio dashboard).
-  const finalWeeks = openIdx >= 0 ? processed.slice(0, openIdx+1) : processed;
-  return { ...cfg, sc, weeks:finalWeeks, openIdx, openDate:sc.opening_date };
+  // Day split (every day counted once):
+  //   Presale tab   Week 0 → the day before Preview Week
+  //   Preview Week  the 7 days before the opening date (opening − 7 … opening − 1)
+  //   First 90 Days opening date (day 1) onward
+  // Scorecard weeks run Sun–Sat, so the last presale week is usually partial:
+  // its leads/presales come from daily rows, its spend is prorated by days.
+  const previewStart = sc.opening_date ? addDaysISO(sc.opening_date, -7) : null;
+  const previewEnd   = sc.opening_date ? addDaysISO(sc.opening_date, -1) : null;
+  const presaleEnd   = previewStart ? addDaysISO(previewStart, -1) : (processed.length ? processed[processed.length-1].to : null);
+  const presaleWeeks = [];
+  for (const w of processed) {
+    if (!presaleEnd || w.to <= presaleEnd) { presaleWeeks.push(w); continue; }
+    if (w.from && w.from <= presaleEnd) {
+      presaleWeeks.push(prorateWeek(w, w.from, presaleEnd, rows, sc.opening_date));
+    }
+    break;
+  }
+  const w0Start = processed[0] ? (processed[0].from || addDaysISO(processed[0].to, -6)) : null;
+
+  return {
+    ...cfg, sc, code: sc.code, rows,
+    weeks: presaleWeeks, allWeeks: processed, negWeeks,
+    openIdx, openDate: sc.opening_date, presaleEnd, previewStart, previewEnd, w0Start,
+  };
 }
 
-// ── Source selection → per-week series ───────────────────────────────────────
+// The [from, to] slice of a scorecard week: daily funnel rows for exactly those
+// days, spend fields prorated by the share of the week's days covered.
+const SPEND_KEYS = ['meta_spend','google_spend','grassroots_spend','total_spend','events'];
+function prorateWeek(w, from, to, rows, openDate) {
+  const weekDays = w.from ? daysBetween(w.from, w.to) + 1 : 7;
+  const f = Math.min(1, (daysBetween(from, to) + 1) / weekDays);
+  const out = { ...w, from, to, partial: true, src: aggSrc(rows, from, to, openDate) };
+  for (const k of SPEND_KEYS) out[k] = (w[k] || 0) * f;
+  return out;
+}
+
+// Spend for an arbitrary day range, prorated from the scorecard weeks it touches
+function rangeSpend(weeks, from, to, sel, mode) {
+  let total = 0;
+  for (const w of weeks) {
+    const wFrom = w.from || addDaysISO(w.to, -6);
+    const a = from > wFrom ? from : wFrom, b = to < w.to ? to : w.to;
+    if (a > b) continue;
+    total += weekSpend(w, sel, mode) * (daysBetween(a, b) + 1) / (daysBetween(wFrom, w.to) + 1);
+  }
+  return total;
+}
+
+// ── Source selection & spend rule (Presale / Pre-launch tabs) ────────────────
 function selSources() { return getSelected('sourceMenu') || ALL_SOURCES.filter(s => !EXCL_SOURCES.includes(s)); }
 
-// Spend rule: with Meta Ads, Google Ads and Grassroots all selected, spend is
-// the total marketing spend (blended — also covers the LeadTeam fee and other
-// costs, like the old Blended CPR tab). Otherwise only the selected sources'
-// own spend counts.
-function spendMode(sel) {
-  return Object.keys(SPEND_FIELD).every(s => sel.includes(s)) ? 'total' : 'channels';
-}
+// With Meta Ads, Google Ads and Grassroots all selected, spend is the total
+// marketing spend (blended — also covers the LeadTeam fee and other costs).
+// Otherwise only the selected sources' own spend counts.
+function spendMode(sel) { return Object.keys(SPEND_FIELD).every(s => sel.includes(s)) ? 'total' : 'channels'; }
 function weekSpend(w, sel, mode) {
   if (mode === 'total') return w.total_spend;
   return sum(Object.entries(SPEND_FIELD).filter(([s]) => sel.includes(s)).map(([,f]) => w[f]));
 }
 
-function seriesFor(s, sel) {
+function seriesFor(weeks, sel) {
   const mode = spendMode(sel), withEvents = sel.includes('Grassroots');
   let cl = 0, cs = 0, csp = 0, ce = 0;
-  return s.weeks.map(w => {
-    const leads = sum(sel.map(x => (w.src[x]||{}).leads));
-    const sales = sum(sel.map(x => (w.src[x]||{}).sales));
-    const spend = weekSpend(w, sel, mode);
-    const events = withEvents ? w.events : 0;
+  return weeks.map(w => {
+    const leads = pick(w.src, sel, 'leads'), sales = pick(w.src, sel, 'sales');
+    const spend = weekSpend(w, sel, mode), events = withEvents ? w.events : 0;
     cl += leads; cs += sales; csp += spend; ce += events;
     return {
       leads, sales, spend, events,
@@ -356,8 +515,8 @@ function seriesFor(s, sel) {
   });
 }
 
-function totalsFor(s, sel) {
-  const ser = seriesFor(s, sel);
+function totalsFor(weeks, sel) {
+  const ser = seriesFor(weeks, sel);
   const n = ser.length || 1;
   const leads = sum(ser.map(x=>x.leads)), sales = sum(ser.map(x=>x.sales)), spend = sum(ser.map(x=>x.spend));
   return {
@@ -369,7 +528,6 @@ function totalsFor(s, sel) {
     leadsWk: leads/n, salesWk: sales/n, spendWk: spend/n,
     peakLeads: Math.max(0, ...ser.map(x=>x.leads)),
     peakSales: Math.max(0, ...ser.map(x=>x.sales)),
-    series: ser,
   };
 }
 
@@ -391,8 +549,96 @@ function buildPills() {
   c.appendChild(a);
 }
 
-// ── Metrics ───────────────────────────────────────────────────────────────────
-const METRICS = {
+// ── Shared renderers: KPI cards, metric buttons, line chart ───────────────────
+// cards: [{label, v(t), f, sub(t)?, wk(t)?, wf?}] — one row per studio + Average
+function renderKpiCards(elId, actStudios, tot, cards) {
+  const el = document.getElementById(elId);
+  if (!actStudios.length) { el.innerHTML = '<div class="po-empty">Select at least one studio</div>'; return; }
+  el.innerHTML = cards.map(c => {
+    const rows = actStudios.map((s,i) => `<div class="po-kpi-row">
+        <span class="po-kpi-name"><span class="pill-dot" style="background:${s.color}"></span>${s.label}</span>
+        <span class="po-kpi-val">${c.f(c.v(tot[i]))}<span class="po-kpi-sub">${c.sub ? c.sub(tot[i]) : ''}</span></span>
+      </div>`).join('');
+    const avgRow = (showAvg && actStudios.length > 1) ? `<div class="po-kpi-row po-kpi-avg">
+        <span class="po-kpi-name">Average</span>
+        <span class="po-kpi-val">${c.f(avg(tot.map(c.v)))}${c.wk ? `<span class="po-kpi-sub">${c.wf(avg(tot.map(c.wk)))} / wk</span>` : ''}</span>
+      </div>` : '';
+    return `<div class="po-kpi"><div class="po-kpi-label">${c.label}</div>${rows}${avgRow}</div>`;
+  }).join('');
+}
+
+function renderMetricButtons(elId, tab, metrics, sel) {
+  const avail = Object.keys(metrics).filter(k => !metrics[k].needs || sel.includes(metrics[k].needs));
+  if (!avail.includes(metricByTab[tab])) metricByTab[tab] = avail[0];
+  document.getElementById(elId).innerHTML = avail.map(k =>
+    `<button class="metric-btn${k===metricByTab[tab]?' active':''}" onclick="metricByTab['${tab}']='${k}';renderAll()">${metrics[k].btn}</button>`
+  ).join('');
+  return metrics[metricByTab[tab]];
+}
+
+// series: one array per studio (index-aligned with studioData); labels: x axis
+function renderLineChart(canvasId, labels, series, m, titleFn) {
+  if (charts[canvasId]) charts[canvasId].destroy();
+  const datasets = studioData.map((s,i) => ({
+    label: s.label,
+    data: labels.map((_,j) => series[i][j] ? m.get(series[i][j]) : null),
+    borderColor: s.color, backgroundColor: s.fill,
+    borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, tension: 0.35,
+    fill: false, hidden: !active[i], spanGaps: false,
+  }));
+  // Average only where every active studio has that point — otherwise the line
+  // collapses onto the longest-running studio.
+  const actIdx = studioData.map((_,i)=>i).filter(i => active[i]);
+  datasets.push({
+    label: 'Average',
+    data: labels.map((_,j) => actIdx.length && actIdx.every(i => series[i][j])
+      ? avg(actIdx.map(i => m.get(series[i][j]))) : null),
+    borderColor:'#8aaabb', backgroundColor:'transparent',
+    borderWidth:1.5, borderDash:[6,4], pointRadius:0, tension:0.35, fill:false,
+    hidden: !showAvg, spanGaps:false,
+  });
+  charts[canvasId] = new Chart(document.getElementById(canvasId).getContext('2d'), {
+    type:'line', data:{labels, datasets},
+    options:{
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          label:c => c.raw!=null ? `${c.dataset.label}: ${m.fmt(c.raw)}` : null,
+          title:([c]) => titleFn(c.dataIndex),
+        }},
+      },
+      scales:{
+        x:{grid:{color:'#eef3f7'},ticks:{font:{family:'Open Sans',size:10},color:'#5a7a8a',maxTicksLimit:20}},
+        y:{grid:{color:'#eef3f7'},ticks:{font:{family:'Open Sans',size:10},color:'#5a7a8a',callback:v=>m.yFmt(v)},beginAtZero:true},
+      },
+    },
+  });
+}
+
+// ── Render (all tabs share the filters) ───────────────────────────────────────
+function renderAll() {
+  const sel = selSources();
+  const actStudios = studioData.filter((_,i)=>active[i]);
+
+  const note = document.getElementById('po-spend-note');
+  if (currentTab === 'post90') {
+    note.textContent = 'Spend = Meta + Google + Leadteam fee + adjustments (Open Studio rule) — not affected by the Source filter';
+  } else {
+    const spendSrc = Object.keys(SPEND_FIELD).filter(s => sel.includes(s));
+    note.textContent = spendMode(sel) === 'total'
+      ? 'Spend = total marketing spend (all channels, LeadTeam fee and other costs)'
+      : spendSrc.length ? `Spend = ${spendSrc.join(' + ')} spend only` : 'No spend for the selected sources';
+  }
+
+  if (currentTab === 'presale')   renderPresale(actStudios, sel);
+  if (currentTab === 'prelaunch') renderPrelaunch(actStudios, sel);
+  if (currentTab === 'post90')    renderPost90(actStudios, sel);
+}
+
+// ══ TAB 1: Presale ════════════════════════════════════════════════════════════
+const PRESALE_METRICS = {
   leads_cumul:   { btn:'Leads (cumul.)',        title:'Cumulative Leads',          get:x=>x.cumLeads,  fmt:fmtN,  yFmt:v=>Math.round(v) },
   presales_cumul:{ btn:'Presales (cumul.)',     title:'Cumulative Presales',       get:x=>x.cumSales,  fmt:fmtN,  yFmt:v=>Math.round(v) },
   leads_wk:      { btn:'Leads / Week',          title:'Leads per Week',            get:x=>x.leads,     fmt:fmtN,  yFmt:v=>Math.round(v) },
@@ -404,142 +650,30 @@ const METRICS = {
   events_cumul:  { btn:'Comm. Events (cumul.)', title:'Cumulative Community Events', get:x=>x.cumEvents, fmt:fmtN, yFmt:v=>Math.round(v), needs:'Grassroots' },
 };
 
-function renderMetricButtons(sel) {
-  const avail = Object.keys(METRICS).filter(k => !METRICS[k].needs || sel.includes(METRICS[k].needs));
-  if (!avail.includes(metric)) metric = 'leads_cumul';
-  document.getElementById('po-metrics').innerHTML = avail.map(k =>
-    `<button class="metric-btn${k===metric?' active':''}" onclick="setMetric('${k}')">${METRICS[k].btn}</button>`
-  ).join('');
-}
-function setMetric(k) { metric = k; renderAll(); }
+function renderPresale(actStudios, sel) {
+  const tot = actStudios.map(s => totalsFor(s.weeks, sel));
 
-// ── Render ────────────────────────────────────────────────────────────────────
-function renderAll() {
-  const sel = selSources();
-  const actStudios = studioData.filter((_,i)=>active[i]);
-  const tot = actStudios.map(s => totalsFor(s, sel));
-
-  // Spend-rule note next to the Source filter
-  const mode = spendMode(sel);
-  const spendSrc = Object.keys(SPEND_FIELD).filter(s => sel.includes(s));
-  document.getElementById('po-spend-note').textContent = mode === 'total'
-    ? 'Spend = total marketing spend (all channels, LeadTeam fee and other costs)'
-    : spendSrc.length ? `Spend = ${spendSrc.join(' + ')} spend only` : 'No spend for the selected sources';
-
-  // Opening legend
   document.getElementById('open-legend').innerHTML = actStudios.map(s =>
     `<div class="open-legend-item"><div class="open-dash" style="border-color:${s.color}"></div>
-      ${s.label}: opens <strong>${fmtOpen(s.openDate)}</strong> (W${s.openIdx})</div>`).join('');
+      ${s.label}: W0 → W${Math.max(0, s.weeks.length-1)}${(s.weeks[s.weeks.length-1]||{}).partial ? ' (partial)' : ''} · <strong>${fmtShort(s.w0Start)} – ${fmtOpen(s.presaleEnd)}</strong> · preview ${fmtShort(s.previewStart)} – ${fmtShort(s.previewEnd)} · opens ${fmtOpen(s.openDate)}</div>`).join('');
 
-  renderMetricButtons(sel);
-  renderKpis(actStudios, tot, sel);
-  renderChart(sel);
-  renderSummary(actStudios, tot);
-  renderBreakdown(actStudios);
-}
-
-function renderKpis(actStudios, tot, sel) {
-  const el = document.getElementById('po-kpis');
-  if (!actStudios.length) { el.innerHTML = '<div class="po-empty">Select at least one studio</div>'; return; }
-  if (!sel.length)        { el.innerHTML = '<div class="po-empty">Select at least one source</div>'; return; }
-  const cards = [
-    // wk = per-week value; the Average row shows the mean of the studios' own /wk
+  if (!sel.length) { document.getElementById('po-kpis').innerHTML = '<div class="po-empty">Select at least one source</div>'; }
+  else renderKpiCards('po-kpis', actStudios, tot, [
     { label:'Leads',      v:t=>t.leads, f:fmtN,  wk:t=>t.leadsWk, wf:fmt1, sub:t=>`${fmt1(t.leadsWk)} / wk` },
     { label:'Presales',   v:t=>t.sales, f:fmtN,  wk:t=>t.salesWk, wf:fmt1, sub:t=>`${fmt1(t.salesWk)} / wk` },
-    { label:'Conv. Rate', v:t=>t.conv,  f:fmtP,  sub:()=>'' },
+    { label:'Conv. Rate', v:t=>t.conv,  f:fmtP },
     { label:'Spend',      v:t=>t.spend, f:fmtM,  wk:t=>t.spendWk, wf:fmtM, sub:t=>`${fmtM(t.spendWk)} / wk` },
-    { label:'CPL',        v:t=>t.cpl,   f:fmtM2, sub:()=>'' },
-    { label:'CPS',        v:t=>t.cps,   f:fmtM2, sub:()=>'' },
-  ];
-  el.innerHTML = cards.map(c => {
-    const rows = actStudios.map((s,i) => `<div class="po-kpi-row">
-        <span class="po-kpi-name"><span class="pill-dot" style="background:${s.color}"></span>${s.label}</span>
-        <span class="po-kpi-val">${c.f(c.v(tot[i]))}<span class="po-kpi-sub">${c.sub(tot[i])}</span></span>
-      </div>`).join('');
-    const avgRow = (showAvg && actStudios.length > 1) ? `<div class="po-kpi-row po-kpi-avg">
-        <span class="po-kpi-name">Average</span>
-        <span class="po-kpi-val">${c.f(avg(tot.map(c.v)))}${c.wk ? `<span class="po-kpi-sub">${c.wf(avg(tot.map(c.wk)))} / wk</span>` : ''}</span>
-      </div>` : '';
-    return `<div class="po-kpi"><div class="po-kpi-label">${c.label}</div>${rows}${avgRow}</div>`;
-  }).join('');
-}
+    { label:'CPL',        v:t=>t.cpl,   f:fmtM2 },
+    { label:'CPS',        v:t=>t.cps,   f:fmtM2 },
+  ]);
 
-// Plugin: vertical opening markers
-const openingPlugin = {
-  id:'openingLines',
-  afterDraw(ch) {
-    const ctx = ch.ctx;
-    studioData.forEach((s,i) => {
-      if (!active[i] || s.openIdx < 0) return;
-      const meta = ch.getDatasetMeta(i);
-      if (!meta || !meta.data[s.openIdx]) return;
-      const x = meta.data[s.openIdx].x;
-      ctx.save();
-      ctx.strokeStyle = s.color + 'aa';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([5,4]);
-      ctx.beginPath();
-      ctx.moveTo(x, ch.chartArea.top);
-      ctx.lineTo(x, ch.chartArea.bottom);
-      ctx.stroke();
-      ctx.fillStyle = s.color + 'dd';
-      ctx.font = '600 10px Open Sans';
-      ctx.fillText('↑ opens', x+3, ch.chartArea.top+14);
-      ctx.restore();
-    });
-  }
-};
-
-function renderChart(sel) {
-  const m = METRICS[metric];
+  const m = renderMetricButtons('po-metrics', 'presale', PRESALE_METRICS, sel);
   document.getElementById('po-chart-title').textContent = `${m.title} — All Studios from Week 0`;
-  if (chart) chart.destroy();
   const max = Math.max(...studioData.map(s=>s.weeks.length), 1);
-  const labels = Array.from({length:max},(_,i)=>`W${i}`);
-  const series = studioData.map(s => seriesFor(s, sel));
+  renderLineChart('po-chart', Array.from({length:max},(_,i)=>`W${i}`),
+    studioData.map(s => seriesFor(s.weeks, sel)), m, i => `Week ${i}`);
 
-  const datasets = studioData.map((s,i) => ({
-    label: s.label,
-    data: labels.map((_,j) => series[i][j] ? m.get(series[i][j]) : null),
-    borderColor: s.color, backgroundColor: s.fill,
-    borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, tension: 0.35,
-    fill: false, hidden: !active[i], spanGaps: false,
-  }));
-  // Average only where every active studio has that week — otherwise the line
-  // collapses onto the longest-running studio once the others have opened.
-  const actIdx = studioData.map((_,i)=>i).filter(i => active[i]);
-  datasets.push({
-    label: 'Average',
-    data: labels.map((_,j) => actIdx.every(i => series[i][j])
-      ? avg(actIdx.map(i => m.get(series[i][j]))) : null),
-    borderColor:'#8aaabb', backgroundColor:'transparent',
-    borderWidth:1.5, borderDash:[6,4], pointRadius:0, tension:0.35, fill:false,
-    hidden: !showAvg, spanGaps:false,
-  });
-
-  chart = new Chart(document.getElementById('po-chart').getContext('2d'), {
-    type:'line', data:{labels, datasets}, plugins:[openingPlugin],
-    options:{
-      responsive:true,
-      interaction:{mode:'index',intersect:false},
-      plugins:{
-        legend:{display:false},
-        tooltip:{callbacks:{
-          label:c => c.raw!=null ? `${c.dataset.label}: ${m.fmt(c.raw)}` : null,
-          title:([c]) => `Week ${c.dataIndex}`,
-        }},
-      },
-      scales:{
-        x:{grid:{color:'#eef3f7'},ticks:{font:{family:'Open Sans',size:10},color:'#5a7a8a',maxTicksLimit:20}},
-        y:{grid:{color:'#eef3f7'},ticks:{font:{family:'Open Sans',size:10},color:'#5a7a8a',callback:v=>m.yFmt(v)},beginAtZero:true},
-      },
-    },
-  });
-}
-
-const studioCell = s => `<div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:3px;border-radius:2px;background:${s.color}"></div>${s.label}</div>`;
-
-function renderSummary(actStudios, tot) {
+  // Studio summary
   const best = (vals, low) => { const v = vals.filter(x=>x!=null); return v.length ? (low ? Math.min(...v) : Math.max(...v)) : null; };
   const bestSales = best(tot.map(t=>t.sales)), bestCpl = best(tot.map(t=>t.cpl), true);
   const hi = on => on ? ' style="color:#0a8a4a;font-weight:700"' : '';
@@ -548,7 +682,7 @@ function renderSummary(actStudios, tot) {
     return `<tr>
       <td>${studioCell(s)}</td>
       <td class="num">${fmtOpen(s.openDate)}</td>
-      <td class="num">${s.openIdx>=0 ? s.openIdx : '—'}</td>
+      <td class="num">${t.weeks}</td>
       <td class="num">${fmtN(t.leads)}</td>
       <td class="num"${hi(actStudios.length>1 && t.sales===bestSales)}>${fmtN(t.sales)}</td>
       <td class="num">${fmtP(t.conv)}</td>
@@ -561,7 +695,7 @@ function renderSummary(actStudios, tot) {
   }).join('') + (actStudios.length>1 ? `<tr style="font-weight:700;border-top:2px solid #dde8ef">
       <td>AVERAGE</td>
       <td class="num">—</td>
-      <td class="num">${fmtN(avg(actStudios.map(s=>s.openIdx)))}</td>
+      <td class="num">${fmtN(avg(tot.map(t=>t.weeks)))}</td>
       <td class="num">${fmtN(avg(tot.map(t=>t.leads)))}</td>
       <td class="num">${fmtN(avg(tot.map(t=>t.sales)))}</td>
       <td class="num">${fmtP(avg(tot.map(t=>t.conv)))}</td>
@@ -571,6 +705,8 @@ function renderSummary(actStudios, tot) {
       <td class="num">${fmtM2(avg(tot.map(t=>t.cpl)))}</td>
       <td class="num">${fmtM2(avg(tot.map(t=>t.cps)))}</td>
     </tr>` : '');
+
+  renderBreakdown(actStudios);
 }
 
 // Fixed per-channel view: always Meta Ads, Google Ads and Grassroots, whatever
@@ -609,6 +745,237 @@ function renderBreakdown(actStudios) {
       rows.map(r => row(r.src, r)).join('') +
       row('Total (3 channels)', tot, 'po-bd-total');
   }).join('');
+}
+
+// ══ TAB 2: Pre-Launch (negative weeks) & Preview (opening week) ═══════════════
+const PREVIEW_METRICS = {
+  leads_day:   { btn:'Leads / Day',          title:'Leads per Day',          get:x=>x.leads,    fmt:fmtN, yFmt:v=>Math.round(v) },
+  ft_day:      { btn:'First Timers / Day',   title:'First Timers per Day',   get:x=>x.ft,       fmt:fmtN, yFmt:v=>Math.round(v) },
+  sales_day:   { btn:'Net Presales / Day',   title:'Net Presales per Day',       get:x=>x.sales,    fmt:fmtN, yFmt:v=>Math.round(v) },
+  leads_cumul: { btn:'Leads (cumul.)',       title:'Cumulative Leads',       get:x=>x.cumLeads, fmt:fmtN, yFmt:v=>Math.round(v) },
+  ft_cumul:    { btn:'First Timers (cumul.)',title:'Cumulative First Timers',get:x=>x.cumFt,    fmt:fmtN, yFmt:v=>Math.round(v) },
+  sales_cumul: { btn:'Net Presales (cumul.)',title:'Cumulative Net Presales',    get:x=>x.cumSales, fmt:fmtN, yFmt:v=>Math.round(v) },
+};
+
+// Preview Week = the 7 days before the opening date (Day -7 … Day -1); an 8th
+// point for opening day is a reference only — it's counted in First 90 Days.
+function previewSeries(s, sel) {
+  if (!s.openDate) return [];
+  let cl = 0, cf = 0, cs = 0;
+  return Array.from({length:8}, (_,k) => {
+    const day = addDaysISO(s.openDate, k-7);
+    const src = aggSrc(s.rows, day, day, s.openDate);
+    const leads = pick(src, sel, 'leads'), ft = pick(src, sel, 'ft');
+    const before = day < s.openDate;                 // no presales on opening day
+    const sales = before ? pick(src, sel, 'sales') : null;
+    cl += leads; cf += ft; cs += sales || 0;
+    return { day, leads, ft, sales, pNew: before ? pick(src, sel, 'pNew') : null, pCanc: before ? pick(src, sel, 'pCanc') : null,
+             cumLeads: cl, cumFt: cf, cumSales: sales == null ? null : cs };
+  });
+}
+
+function renderPrelaunch(actStudios, sel) {
+  const mode = spendMode(sel);
+
+  // Negative weeks
+  const negEl = document.getElementById('pl-neg');
+  if (!actStudios.length) negEl.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#8aaabb">Select at least one studio</td></tr>';
+  else negEl.innerHTML = actStudios.map(s => {
+    const head = `<tr class="po-bd-studio"><td colspan="7">${studioCell(s)} <span style="font-weight:400;color:#8aaabb;margin-left:6px">${s.negWeeks.length} negative week${s.negWeeks.length===1?'':'s'}</span></td></tr>`;
+    if (!s.negWeeks.length) return head + '<tr><td colspan="7" style="color:#8aaabb">No negative weeks — lead gen started at Week 0</td></tr>';
+    const ser = seriesFor(s.negWeeks, sel);
+    const body = s.negWeeks.map((w,i) => `<tr>
+        <td>${w.week}</td>
+        <td class="num">${fmtShort(w.from)} – ${fmtShort(w.to)}</td>
+        <td class="num">${fmtN(ser[i].leads)}</td>
+        <td class="num">${fmtN(ser[i].sales)}</td>
+        <td class="num">${fmtP(ser[i].conv)}</td>
+        <td class="num">${fmtM(ser[i].spend)}</td>
+        <td class="num">${ser[i].leads ? fmtM2(ser[i].spend/ser[i].leads) : '—'}</td>
+      </tr>`).join('');
+    const t = totalsFor(s.negWeeks, sel);
+    const total = s.negWeeks.length > 1 ? `<tr class="po-bd-total">
+        <td>Total</td><td class="num">${fmtShort(s.negWeeks[0].from)} – ${fmtShort(s.negWeeks[s.negWeeks.length-1].to)}</td>
+        <td class="num">${fmtN(t.leads)}</td><td class="num">${fmtN(t.sales)}</td><td class="num">${fmtP(t.conv)}</td>
+        <td class="num">${fmtM(t.spend)}</td><td class="num">${fmtM2(t.cpl)}</td></tr>` : '';
+    return head + body + total;
+  }).join('');
+
+  // Preview Week
+  document.getElementById('pv-legend').innerHTML = actStudios.map(s =>
+    `<div class="open-legend-item"><div class="open-dash" style="border-color:${s.color}"></div>
+      ${s.label}: <strong>${fmtShort(s.previewStart)} – ${fmtOpen(s.previewEnd)}</strong> · opens ${fmtShort(s.openDate)}</div>`).join('');
+
+  const pv = actStudios.map(s => {
+    const ser = previewSeries(s, sel).slice(0, 7);      // opening day excluded from the KPIs
+    const leads = sum(ser.map(x=>x.leads)), ft = sum(ser.map(x=>x.ft)), sales = sum(ser.map(x=>x.sales));
+    const salesDays = ser.filter(x => x.sales != null).length || 1;
+    const pNew = sum(ser.map(x=>x.pNew)), pCanc = sum(ser.map(x=>x.pCanc));
+    const spend = s.previewStart ? rangeSpend(s.allWeeks, s.previewStart, s.previewEnd, sel, mode) : null;
+    return { leads, ft, sales, pNew, pCanc, spend, cpl: leads && spend!=null ? spend/leads : null,
+             leadsDay: leads/7, ftDay: ft/7, salesDay: sales/salesDays };
+  });
+  renderKpiCards('pv-kpis', actStudios, pv, [
+    { label:'Leads',        v:t=>t.leads, f:fmtN, sub:t=>`${fmt1(t.leadsDay)} / day` },
+    { label:'First Timers', v:t=>t.ft,    f:fmtN, sub:t=>`${fmt1(t.ftDay)} / day` },
+    { label:'Net Presales', v:t=>t.sales, f:fmtN, sub:t=>`+${fmtN(t.pNew)} new · −${fmtN(t.pCanc)} cancelled` },
+    { label:'Spend (prorated)', v:t=>t.spend, f:fmtM },
+    { label:'CPL',          v:t=>t.cpl,   f:fmtM2 },
+    { label:'Lead → First Timer', v:t=>t.leads ? t.ft/t.leads*100 : null, f:fmtP },
+  ]);
+
+  const m = renderMetricButtons('pv-metrics', 'prelaunch', PREVIEW_METRICS, sel);
+  document.getElementById('pv-chart-title').textContent = `${m.title} — Preview Week`;
+  const dayLabels = ['Day -7','Day -6','Day -5','Day -4','Day -3','Day -2','Day -1','Opening (ref.)'];
+  renderLineChart('pv-chart', dayLabels, studioData.map(s => previewSeries(s, sel)), m, i => dayLabels[i]);
+
+  // Daily table: one column group per studio
+  document.getElementById('pv-daily-head').innerHTML = `<tr><th>Day</th>${actStudios.map(s =>
+    `<th class="num" style="color:${s.color}">${s.label} · Leads</th><th class="num" style="color:${s.color}">First Timers</th><th class="num" style="color:${s.color}">Net Presales (new / canc.)</th>`).join('')}</tr>`;
+  const sers = actStudios.map(s => previewSeries(s, sel));
+  document.getElementById('pv-daily').innerHTML = dayLabels.map((lbl,k) => `<tr${k===7?' class="po-ref-row" title="Reference only — opening day is counted in First 90 Days"':''}>
+      <td>${lbl}</td>${sers.map(ser => ser[k]
+        ? `<td class="num" title="${fmtOpen(ser[k].day)}">${fmtN(ser[k].leads)}</td><td class="num">${fmtN(ser[k].ft)}</td><td class="num">${ser[k].sales == null ? '—' : `${fmtN(ser[k].sales)} <span style="color:#8aaabb">(+${fmtN(ser[k].pNew)} / −${fmtN(ser[k].pCanc)})</span>`}</td>`
+        : '<td class="num">—</td><td class="num">—</td><td class="num">—</td>').join('')}
+    </tr>`).join('');
+}
+
+// ══ TAB 3: First 90 Days ══════════════════════════════════════════════════════
+// Agency-sheet adjustments for one studio on one day (prorated like Open Studio)
+function overridesDaily(s, category, day) {
+  let total = 0;
+  for (const o of OVERRIDES) {
+    if (o.category !== category || day < o.start_date || day > o.end_date) continue;
+    const n = (o.studio || '').toLowerCase(), me = s.sc_name.toLowerCase();
+    if (n === me || me.endsWith(n) || me.startsWith(n)) total += (o.monthly_amount || 0) / DAYS_PER_MONTH;
+  }
+  return total;
+}
+
+// Daily rows for Day 1 (opening) … Day 90, stopping at the latest data day
+function post90Days(s, sel) {
+  if (!s.openDate || !DATA_END || s.openDate > DATA_END) return [];
+  const last = [addDaysISO(s.openDate, POST_DAYS-1), DATA_END].sort()[0];
+  const n = daysBetween(s.openDate, last) + 1;
+  const adSpend = {};
+  for (const r of (SPEND.daily || [])) {
+    if (r.studio_code === s.code && r.date >= s.openDate && r.date <= last)
+      adSpend[r.date] = (adSpend[r.date] || 0) + (r.meta_spend || 0) + (r.google_spend || 0);
+  }
+  return Array.from({length:n}, (_,k) => {
+    const day = addDaysISO(s.openDate, k);
+    const src = aggSrc(s.rows, day, day, s.openDate);
+    const lt  = Math.max(0, LTFEE_MONTHLY / DAYS_PER_MONTH - overridesDaily(s, 'leadteam_discount', day));
+    return {
+      day,
+      leads: pick(src, sel, 'leads'), ft: pick(src, sel, 'ft'),
+      mNew:  pick(src, sel, 'mNew'),  mPre: pick(src, sel, 'mPre'),
+      spend: (adSpend[day] || 0) + lt + overridesDaily(s, 'external_agency', day),
+    };
+  });
+}
+
+// Weeks since opening (Week 1 = days 1–7 …), with cumulative ratios
+function post90Weeks(days) {
+  const out = [];
+  let cl = 0, cf = 0, cm = 0, cp = 0, cs = 0;
+  for (let i = 0; i < days.length; i += 7) {
+    const chunk = days.slice(i, i+7);
+    const w = { days: chunk.length, leads: sum(chunk.map(d=>d.leads)), ft: sum(chunk.map(d=>d.ft)),
+                mNew: sum(chunk.map(d=>d.mNew)), mPre: sum(chunk.map(d=>d.mPre)), spend: sum(chunk.map(d=>d.spend)) };
+    cl += w.leads; cf += w.ft; cm += w.mNew; cp += w.mPre; cs += w.spend;
+    Object.assign(w, { cumLeads: cl, cumFt: cf, cumMNew: cm, cumMPre: cp, cumSpend: cs,
+      leadFt: cl ? cf/cl*100 : null, ftMem: cf ? cm/cf*100 : null,
+      cpl: cl ? cs/cl : null, cpm: cm ? cs/cm : null });
+    out.push(w);
+  }
+  return out;
+}
+
+const POST90_METRICS = {
+  leads_cumul: { btn:'Leads (cumul.)',        title:'Cumulative Leads',        get:x=>x.cumLeads, fmt:fmtN,  yFmt:v=>Math.round(v) },
+  ft_cumul:    { btn:'First Timers (cumul.)', title:'Cumulative First Timers', get:x=>x.cumFt,    fmt:fmtN,  yFmt:v=>Math.round(v) },
+  mem_cumul:   { btn:'New Members (cumul.)',  title:'Cumulative New Members',  get:x=>x.cumMNew,  fmt:fmtN,  yFmt:v=>Math.round(v) },
+  leads_wk:    { btn:'Leads / Week',          title:'Leads per Week',          get:x=>x.leads,    fmt:fmtN,  yFmt:v=>Math.round(v) },
+  ft_wk:       { btn:'First Timers / Week',   title:'First Timers per Week',   get:x=>x.ft,       fmt:fmtN,  yFmt:v=>Math.round(v) },
+  mem_wk:      { btn:'New Members / Week',    title:'New Members per Week',    get:x=>x.mNew,     fmt:fmtN,  yFmt:v=>Math.round(v) },
+  lead_ft:     { btn:'Lead → FT % (cumul.)',  title:'Lead → First Timer %',    get:x=>x.leadFt,   fmt:fmtP,  yFmt:v=>v.toFixed(0)+'%' },
+  ft_mem:      { btn:'FT → Member % (cumul.)',title:'First Timer → Member %',  get:x=>x.ftMem,    fmt:fmtP,  yFmt:v=>v.toFixed(0)+'%' },
+  spend_wk:    { btn:'Spend / Week',          title:'Spend per Week',          get:x=>x.spend,    fmt:fmtM,  yFmt:v=>'$'+Math.round(v) },
+  cpl:         { btn:'CPL (cumul.)',          title:'Cumulative CPL',          get:x=>x.cpl,      fmt:fmtM2, yFmt:v=>'$'+Math.round(v) },
+  cpm:         { btn:'Cost / Member (cumul.)',title:'Cumulative Cost per New Member', get:x=>x.cpm, fmt:fmtM2, yFmt:v=>'$'+Math.round(v) },
+};
+
+function renderPost90(actStudios, sel) {
+  const daysBy = actStudios.map(s => post90Days(s, sel));
+  const tot = daysBy.map(days => {
+    const n = days.length, wk = n / 7 || 1;
+    const leads = sum(days.map(d=>d.leads)), ft = sum(days.map(d=>d.ft)), mNew = sum(days.map(d=>d.mNew));
+    const mPre = sum(days.map(d=>d.mPre)), spend = sum(days.map(d=>d.spend));
+    return { days: n, leads, ft, mNew, mPre, spend,
+      leadFt: leads ? ft/leads*100 : null, ftMem: ft ? mNew/ft*100 : null,
+      cpl: leads ? spend/leads : null, cpm: mNew ? spend/mNew : null,
+      leadsWk: n ? leads/wk : null, ftWk: n ? ft/wk : null, mNewWk: n ? mNew/wk : null, spendWk: n ? spend/wk : null };
+  });
+
+  document.getElementById('p90-legend').innerHTML = actStudios.map((s,i) =>
+    `<div class="open-legend-item"><div class="open-dash" style="border-color:${s.color}"></div>
+      ${s.label}: opened <strong>${fmtOpen(s.openDate)}</strong> · day ${tot[i].days} of ${POST_DAYS}</div>`).join('');
+
+  if (!sel.length) document.getElementById('p90-kpis').innerHTML = '<div class="po-empty">Select at least one source</div>';
+  else renderKpiCards('p90-kpis', actStudios, tot, [
+    { label:'Leads',               v:t=>t.leads, f:fmtN, wk:t=>t.leadsWk, wf:fmt1, sub:t=>`${fmt1(t.leadsWk)} / wk` },
+    { label:'First Timers',        v:t=>t.ft,    f:fmtN, wk:t=>t.ftWk,    wf:fmt1, sub:t=>`${fmt1(t.ftWk)} / wk` },
+    { label:'New Members',         v:t=>t.mNew,  f:fmtN, wk:t=>t.mNewWk,  wf:fmt1, sub:t=>`${fmt1(t.mNewWk)} / wk` },
+    { label:'Presale Activations', v:t=>t.mPre,  f:fmtN },
+    { label:'Lead → First Timer',  v:t=>t.leadFt, f:fmtP },
+    { label:'First Timer → Member',v:t=>t.ftMem,  f:fmtP },
+    { label:'Spend',               v:t=>t.spend, f:fmtM, wk:t=>t.spendWk, wf:fmtM, sub:t=>`${fmtM(t.spendWk)} / wk` },
+    { label:'CPL',                 v:t=>t.cpl,   f:fmtM2 },
+    { label:'Cost / New Member',   v:t=>t.cpm,   f:fmtM2 },
+  ]);
+
+  const m = renderMetricButtons('p90-metrics', 'post90', POST90_METRICS, sel);
+  document.getElementById('p90-chart-title').textContent = `${m.title} — Weeks Since Opening`;
+  const weeksBy = studioData.map(s => post90Weeks(post90Days(s, sel)));
+  const nW = Math.ceil(POST_DAYS / 7);
+  renderLineChart('p90-chart', Array.from({length:nW},(_,i)=>`Wk ${i+1}`), weeksBy, m, i => {
+    const partial = weeksBy.filter((w,k) => active[k] && w[i] && w[i].days < 7).map(w => w[i].days);
+    return `Week ${i+1} since opening` + (partial.length ? ` (partial: ${partial.join(', ')} days)` : '');
+  });
+
+  const best = (vals, low) => { const v = vals.filter(x=>x!=null); return v.length ? (low ? Math.min(...v) : Math.max(...v)) : null; };
+  const hi = on => on ? ' style="color:#0a8a4a;font-weight:700"' : '';
+  const bestCpm = best(tot.map(t=>t.cpm), true);
+  document.getElementById('p90-summary').innerHTML = actStudios.map((s,i) => {
+    const t = tot[i];
+    return `<tr>
+      <td>${studioCell(s)}</td>
+      <td class="num">${fmtOpen(s.openDate)}</td>
+      <td class="num">${t.days}</td>
+      <td class="num">${fmtN(t.leads)}</td>
+      <td class="num">${fmtN(t.ft)}</td>
+      <td class="num">${fmtN(t.mNew)}</td>
+      <td class="num">${fmtN(t.mPre)}</td>
+      <td class="num">${fmtP(t.leadFt)}</td>
+      <td class="num">${fmtP(t.ftMem)}</td>
+      <td class="num">${fmtM(t.spend)}</td>
+      <td class="num">${fmtM2(t.cpl)}</td>
+      <td class="num"${hi(actStudios.length>1 && t.cpm!=null && t.cpm===bestCpm)}>${fmtM2(t.cpm)}</td>
+    </tr>`;
+  }).join('') + (actStudios.length>1 ? `<tr style="font-weight:700;border-top:2px solid #dde8ef">
+      <td>AVERAGE</td><td class="num">—</td>
+      <td class="num">${fmtN(avg(tot.map(t=>t.days)))}</td>
+      <td class="num">${fmtN(avg(tot.map(t=>t.leads)))}</td>
+      <td class="num">${fmtN(avg(tot.map(t=>t.ft)))}</td>
+      <td class="num">${fmtN(avg(tot.map(t=>t.mNew)))}</td>
+      <td class="num">${fmtN(avg(tot.map(t=>t.mPre)))}</td>
+      <td class="num">${fmtP(avg(tot.map(t=>t.leadFt)))}</td>
+      <td class="num">${fmtP(avg(tot.map(t=>t.ftMem)))}</td>
+      <td class="num">${fmtM(avg(tot.map(t=>t.spend)))}</td>
+      <td class="num">${fmtM2(avg(tot.map(t=>t.cpl)))}</td>
+      <td class="num">${fmtM2(avg(tot.map(t=>t.cpm)))}</td>
+    </tr>` : '');
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
