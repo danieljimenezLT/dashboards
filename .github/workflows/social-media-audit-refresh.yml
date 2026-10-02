@@ -51,7 +51,10 @@ jobs:
 
       - name: Fetch DM/comment reply times
         env:
-          META_ACCESS_TOKEN: ${{ secrets.META_TOKEN }}
+          # Separate token with instagram_manage_comments/_messages, so the
+          # shared META_TOKEN (ads + daily refreshes) never has to change.
+          # Falls back to META_TOKEN until that secret exists.
+          META_ACCESS_TOKEN: ${{ secrets.META_TOKEN_REPLIES || secrets.META_TOKEN }}
         run: |
           if [ -n "${{ github.event.inputs.month }}" ]; then
             python social-media-audit/scripts/fetch_replies_data.py --month "${{ github.event.inputs.month }}"
