@@ -22,6 +22,24 @@ Monthly-only fetch of Instagram DM and comment reply times, for the
 Business hours/days are evaluated in each studio's own local timezone
 (see business_time.py), Mon-Fri 9am-6pm, no holiday calendar.
 
+Who counts as "the studio": the Graph API's `from.id` on a comment is an
+Instagram-scoped ID (IGSID), NOT the business account's ig_id — so an
+id-only match never recognizes the studio's own replies (this scored every
+studio 0 on-time for 2026-09). Authorship is matched on username first,
+with ig_id kept as a fallback.
+
+Permissions: without instagram_manage_comments on META_ACCESS_TOKEN the API
+still returns comments and replies but strips `from`/`username` from all of
+them, so no reply can be attributed to the studio — those posts are skipped
+rather than scored as "never replied". DMs need instagram_manage_messages
+and a Page access token (the Conversations API rejects a user token with
+error #190), so one is exchanged per studio from META_ACCESS_TOKEN. The
+granted permissions are printed at the start of each run.
+
+A studio whose posts/conversations couldn't be read at all is left out of
+that month's result for that item (build_audit_data.py then treats it as
+not-yet-sourced) instead of being scored as if it had zero activity.
+
 Reuses ig_id and each post's media id (both resolved daily by
 fetch_social_insights.py) and page_id (studios.json) — makes no calls
 that duplicate that daily job.
@@ -78,15 +96,27 @@ def _parse_time(iso_str: str, tz):
 
 # ── Pure evaluation functions (no network) — unit-tested separately ────────
 
-def evaluate_comments(comments, ig_id: str, tz, month_key: str):
-    """comments: list of {id, timestamp, from:{id}, replies:{data:[...]}}
-    as returned by /{media-id}/comments?fields=id,timestamp,from,replies{...}.
+def _is_studio(author: dict, ig_id: str, username: str | None) -> bool:
+    """author: a comment/reply/message dict (has `from`, and for comments a
+    top-level `username`). Username is the reliable key — see the module
+    docstring on IGSID vs ig_id."""
+    frm = author.get("from") or {}
+    if username:
+        names = {(author.get("username") or "").lower(), (frm.get("username") or "").lower()}
+        if username.lower() in names:
+            return True
+    return bool(ig_id) and frm.get("id") == ig_id
+
+
+def evaluate_comments(comments, ig_id: str, username: str | None, tz, month_key: str):
+    """comments: list of {id, timestamp, username, from:{id,username},
+    replies:{data:[...]}} as returned by
+    /{media-id}/comments?fields=id,timestamp,username,from,replies{...}.
     Returns (total_incoming, on_time_count) for comments posted in month_key."""
     total = 0
     on_time = 0
     for c in comments:
-        from_id = (c.get("from") or {}).get("id")
-        if from_id == ig_id:
+        if _is_studio(c, ig_id, username):
             continue  # the studio's own top-level comment, not incoming
         ts = c.get("timestamp")
         if not ts:
@@ -100,23 +130,22 @@ def evaluate_comments(comments, ig_id: str, tz, month_key: str):
         replies = (c.get("replies") or {}).get("data", [])
         studio_replies = [
             _parse_time(r["timestamp"], tz) for r in replies
-            if (r.get("from") or {}).get("id") == ig_id and r.get("timestamp")
+            if _is_studio(r, ig_id, username) and r.get("timestamp")
         ]
         if studio_replies and min(studio_replies) <= deadline:
             on_time += 1
     return total, on_time
 
 
-def evaluate_conversation_messages(messages, ig_id: str, tz, month_key: str):
-    """messages: chronologically ASCENDING list of {id, created_time, from:{id}}.
+def evaluate_conversation_messages(messages, ig_id: str, username: str | None, tz, month_key: str):
+    """messages: chronologically ASCENDING list of {id, created_time, from:{id,username}}.
     Returns (total_incoming, on_time_count) for customer messages sent in
     month_key, matched to the next studio message after each, if any."""
     total = 0
     on_time = 0
     n = len(messages)
     for i, m in enumerate(messages):
-        from_id = (m.get("from") or {}).get("id")
-        if from_id == ig_id:
+        if _is_studio(m, ig_id, username):
             continue  # the studio's own message
         ts = m.get("created_time")
         if not ts:
@@ -128,7 +157,7 @@ def evaluate_conversation_messages(messages, ig_id: str, tz, month_key: str):
 
         reply_time = None
         for later in messages[i + 1:]:
-            if (later.get("from") or {}).get("id") == ig_id and later.get("created_time"):
+            if _is_studio(later, ig_id, username) and later.get("created_time"):
                 reply_time = _parse_time(later["created_time"], tz)
                 break
         if reply_time and bt.business_hours_between(msg_time, reply_time) <= DM_THRESHOLD_HOURS:
@@ -180,8 +209,42 @@ def _paginate(url, params, token, limit=10):
         page += 1
 
 
-def fetch_comment_stats(ig_id: str, posts_in_month: list, tz, month_key: str, token: str):
-    total = on_time = 0
+def fetch_studio_username(ig_id: str, token: str) -> str | None:
+    try:
+        return _get(f"{BASE}/{ig_id}", {"fields": "username"}, token).get("username")
+    except Exception as e:
+        print(f"    WARNING username for {ig_id}: {e}")
+        return None
+
+
+def fetch_page_token(page_id: str, token: str) -> str | None:
+    """The Conversations API needs a Page access token, not a user token."""
+    try:
+        return _get(f"{BASE}/{page_id}", {"fields": "access_token"}, token).get("access_token")
+    except Exception as e:
+        print(f"    WARNING page token for {page_id}: {e}")
+        return None
+
+
+def log_token_permissions(token: str):
+    """Reply detection needs instagram_manage_comments (comment authors) and
+    instagram_manage_messages (DMs) — print what the token actually has."""
+    try:
+        perms = _get(f"{BASE}/me/permissions", {}, token).get("data", [])
+    except Exception as e:
+        print(f"WARNING could not read token permissions: {e}")
+        return
+    granted = {p["permission"] for p in perms if p.get("status") == "granted"}
+    for needed in ("instagram_manage_comments", "instagram_manage_messages"):
+        print(f"Token permission {needed}: {'granted' if needed in granted else 'MISSING'}")
+
+
+def fetch_comment_stats(ig_id: str, username: str | None, posts_in_month: list, tz, month_key: str, token: str):
+    """Returns (total, on_time, posts_read, authorless) — posts_read lets the
+    caller tell "no comments" apart from "couldn't read any post"; authorless
+    means the API hid comment authors, so replies can't be attributed."""
+    total = on_time = posts_read = 0
+    authorless = False
     for post in posts_in_month:
         media_id = post.get("id")
         if not media_id:
@@ -189,19 +252,28 @@ def fetch_comment_stats(ig_id: str, posts_in_month: list, tz, month_key: str, to
         try:
             comments = list(_paginate(
                 f"{BASE}/{media_id}/comments",
-                {"fields": "id,timestamp,from,replies{id,timestamp,from}", "limit": 50},
+                {"fields": "id,timestamp,username,from,replies{id,timestamp,username,from}", "limit": 50},
                 token,
             ))
         except Exception as e:
             print(f"    WARNING comments for media {media_id}: {e}")
             continue
-        t, o = evaluate_comments(comments, ig_id, tz, month_key)
+        if any(not (c.get("from") or {}).get("id") and not c.get("username") for c in comments):
+            # The API hides comment authors when the token lacks
+            # instagram_manage_comments — every reply would look like it
+            # came from a customer, so the item can't be scored at all.
+            authorless = True
+            continue
+        posts_read += 1
+        t, o = evaluate_comments(comments, ig_id, username, tz, month_key)
         total += t
         on_time += o
-    return total, on_time
+    return total, on_time, posts_read, authorless
 
 
-def fetch_dm_stats(page_id: str, ig_id: str, tz, month_key: str, token: str):
+def fetch_dm_stats(page_id: str, ig_id: str, username: str | None, tz, month_key: str, token: str):
+    """token must be a Page access token. Returns (total, on_time), or None
+    if the conversation list couldn't be read at all."""
     total = on_time = 0
     try:
         conversations = list(_paginate(
@@ -211,7 +283,7 @@ def fetch_dm_stats(page_id: str, ig_id: str, tz, month_key: str, token: str):
         ))
     except Exception as e:
         print(f"    WARNING conversations: {e}")
-        return total, on_time
+        return None
 
     for convo in conversations:
         convo_id = convo["id"]
@@ -226,7 +298,7 @@ def fetch_dm_stats(page_id: str, ig_id: str, tz, month_key: str, token: str):
             continue
         messages = (data.get("messages") or {}).get("data", [])
         messages.reverse()  # Graph API returns newest-first; we need ascending
-        t, o = evaluate_conversation_messages(messages, ig_id, tz, month_key)
+        t, o = evaluate_conversation_messages(messages, ig_id, username, tz, month_key)
         total += t
         on_time += o
         time.sleep(0.1)  # stay well within rate limits across many conversations
@@ -245,6 +317,7 @@ def main():
     if not token:
         print("ERROR: META_ACCESS_TOKEN not set")
         sys.exit(1)
+    log_token_permissions(token)
 
     if not SOCIAL_INSIGHTS_PATH.exists():
         print(f"ERROR: {SOCIAL_INSIGHTS_PATH} not found — run fetch_social_insights.py first.")
@@ -273,20 +346,40 @@ def main():
             if p.get("date", "").startswith(target_month) and p.get("id")
         ]
 
-        print(f"\n>> {name} ({len(posts_in_month)} posts this month)")
-        c_total, c_on_time = fetch_comment_stats(ig_entry["ig_id"], posts_in_month, tz, target_month, token)
-        d_total = d_on_time = 0
+        ig_id = ig_entry["ig_id"]
+        username = ig_entry.get("username") or fetch_studio_username(ig_id, token)
+        print(f"\n>> {name} (@{username or '?'}, {len(posts_in_month)} posts this month)")
+        if not username:
+            print("    WARNING no username — falling back to id match, studio replies may be missed")
+
+        c_total, c_on_time, c_read, c_authorless = fetch_comment_stats(
+            ig_id, username, posts_in_month, tz, target_month, token)
+        dm_stats = None
         if page_id:
-            d_total, d_on_time = fetch_dm_stats(page_id, ig_entry["ig_id"], tz, target_month, token)
+            page_token = fetch_page_token(page_id, token)
+            if page_token:
+                dm_stats = fetch_dm_stats(page_id, ig_id, username, tz, target_month, page_token)
 
-        print(f"    comments: {c_on_time}/{c_total} on time  |  DMs: {d_on_time}/{d_total} on time")
-
-        out[name] = {
-            "repliesComments": classify_comments(c_total, c_on_time),
-            "repliesDMs": classify_dms(d_total, d_on_time),
-            "commentStats": {"total": c_total, "onTime": c_on_time},
-            "dmStats": {"total": d_total, "onTime": d_on_time},
-        }
+        # Items that couldn't be read at all are left out, so they fall back
+        # to build_audit_data.py's not-yet-sourced default instead of scoring.
+        month_data = {}
+        if c_authorless:
+            print("    comments: API returned comments without authors — not scored")
+        elif posts_in_month and c_read == 0:
+            print(f"    comments: none of {len(posts_in_month)} posts readable — not scored")
+        else:
+            print(f"    comments: {c_on_time}/{c_total} on time ({c_read}/{len(posts_in_month)} posts read)")
+            month_data["repliesComments"] = classify_comments(c_total, c_on_time)
+            month_data["commentStats"] = {"total": c_total, "onTime": c_on_time,
+                                          "postsRead": c_read, "postsInMonth": len(posts_in_month)}
+        if dm_stats is None:
+            print("    DMs: not readable — not scored")
+        else:
+            d_total, d_on_time = dm_stats
+            print(f"    DMs: {d_on_time}/{d_total} on time")
+            month_data["repliesDMs"] = classify_dms(d_total, d_on_time)
+            month_data["dmStats"] = {"total": d_total, "onTime": d_on_time}
+        out[name] = month_data
 
     existing = {}
     if OUTPUT_PATH.exists():
