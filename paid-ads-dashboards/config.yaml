@@ -1,4 +1,4 @@
-﻿# ---------------------------------------------------------------------
+# ---------------------------------------------------------------------
 # SWEAT440 Paid Ads Dashboard -- Campaign config
 # ---------------------------------------------------------------------
 # Como funciona:
@@ -8,7 +8,7 @@
 #     el ETL (python backend/meta_to_sheets.py). No se toca codigo.
 # ---------------------------------------------------------------------
 
-active_campaign: two_weeks_for_40_2026
+active_campaign: free_class_open_studios_2026
 
 # 'campaigns_to_track' son TODAS las campanas que el ETL va a extraer en
 # cada run, para que aparezcan en el dropdown del dashboard.
@@ -24,6 +24,7 @@ campaigns_to_track:
 # del JSON existente (cache), ahorrando tiempo y quota de API.
 # Para forzar el re-fetch de una campana completada, agregala aqui temporalmente.
 campaigns_to_refresh:
+  - free_class_open_studios_2026
   - two_weeks_for_40_2026
 
 
