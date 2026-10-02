@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-10-02",
+      "pr_number": 438,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/438",
+      "author": "Santiago Estrada",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "More accurate post counts in the Social Media Audit",
+      "summary": "Deleted posts no longer count toward a studio's monthly total, and collab posts now count, including ones another account invited the studio to."
+    },
+    {
       "date": "2026-10-01",
       "pr_number": 436,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/436",
