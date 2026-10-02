@@ -25,10 +25,15 @@ into one row per (date, studio, source). It does not touch data.json,
 nso_sales_data.json, fetch_data.py, fetch_nso_sales.py, or any other
 pipeline/dashboard's data — output goes to its own dedicated file.
 
-NOT part of any scheduled workflow — this data is meant to stay fixed once
-a studio has opened (it's pre-opening history, it doesn't change). Run this
-manually, on demand, only when a new studio needs to be added to
-post-opening.html's STUDIO_CFG:
+It also feeds post-opening.html's "First 90 Days" tab, so each row carries the
+Open Studio funnel too (first_visits / first_activations / first_sales, same
+MARKETING_REPORTS.PUBLIC.LEADS view as data.json) plus first activations split
+into members_presale (client holds a net presale purchase at that studio — they
+activate around opening) and members_new (everyone else). Because post-opening
+data keeps growing, nso_daily_refresh.yml runs this every day.
+
+Run it manually when a new studio needs to be added to post-opening.html's
+STUDIO_CFG:
 
 Usage:
   python nso-dashboard/scripts/fetch_post_opening_source_data.py
@@ -130,9 +135,10 @@ def strip_brand(name):
 
 def fetch_leads(cur, studio_names):
     like_clauses = " OR ".join(f"STUDIO_NAME ILIKE '%{s}%'" for s in studio_names)
-    print(f"Fetching full daily leads history (MARKETING_REPORTS.PUBLIC.LEADS)...")
+    print(f"Fetching full daily leads/funnel history (MARKETING_REPORTS.PUBLIC.LEADS)...")
     cur.execute(f"""
-        SELECT EVENT_DATE, STUDIO_NAME, SOURCE, SUM(SIGNUPS) AS signups
+        SELECT EVENT_DATE, STUDIO_NAME, SOURCE,
+               SUM(SIGNUPS), SUM(FIRST_VISITS), SUM(FIRST_ACTIVATIONS), SUM(FIRST_SALES)
         FROM MARKETING_REPORTS.PUBLIC.LEADS
         WHERE ({like_clauses})
         GROUP BY 1, 2, 3
@@ -141,7 +147,12 @@ def fetch_leads(cur, studio_names):
     rows = cur.fetchall()
     print(f"  {len(rows):,} rows")
     return {
-        (json_serial(r[0]), strip_brand(r[1]), r[2]): int(r[3] or 0)
+        (json_serial(r[0]), strip_brand(r[1]), r[2]): {
+            "signups":           int(r[3] or 0),
+            "first_visits":      int(r[4] or 0),
+            "first_activations": int(r[5] or 0),
+            "first_sales":       int(r[6] or 0),
+        }
         for r in rows
     }
 
@@ -218,6 +229,40 @@ def fetch_presales(cur, studio_ids):
     return rows
 
 
+def fetch_member_split(cur, studio_ids):
+    """First membership activations per (date, studio, source), split by
+    whether the client holds a net presale purchase at that studio. Uses
+    LEADS_LIST — the client-level version of the LEADS view — so source and
+    activation date match first_activations above."""
+    id_list = ",".join(str(i) for i in studio_ids)
+    print("Fetching first activations split presale vs new (LEADS_LIST)...")
+    cur.execute(f"""
+        WITH presale AS (
+            SELECT STUDIO_ID, LOWER(TRIM(EMAIL_ID)) AS email,
+                   SUM(CASE WHEN QUANTITY = 1 AND IS_RETURN = 0 THEN 1 ELSE 0 END)
+                 - SUM(CASE WHEN QUANTITY = -1 OR IS_RETURN = 1 THEN 1 ELSE 0 END) AS net
+            FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS
+            WHERE STUDIO_ID IN ({id_list})
+              AND ITEM_TYPE = 'Pricing Option'
+              AND LOWER(PRODUCT_DESCRIPTION) LIKE '%pre%sale%'
+            GROUP BY 1, 2
+        )
+        SELECT l.FIRST_MEMBERSHIP_ACTIVATION_DATE::DATE, l.STUDIO_ID, l.SOURCE,
+               COUNT_IF(p.net > 0)                   AS members_presale,
+               COUNT_IF(p.net IS NULL OR p.net <= 0) AS members_new
+        FROM MARKETING_REPORTS.PUBLIC.LEADS_LIST l
+        LEFT JOIN presale p
+               ON p.STUDIO_ID = l.STUDIO_ID AND p.email = LOWER(TRIM(l.EMAIL_ID))
+        WHERE l.STUDIO_ID IN ({id_list})
+          AND l.FIRST_MEMBERSHIP_ACTIVATION_DATE IS NOT NULL
+        GROUP BY 1, 2, 3
+        ORDER BY 1, 2, 3
+    """)
+    rows = cur.fetchall()
+    print(f"  {len(rows):,} rows")
+    return rows
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--studios", nargs="+", default=DEFAULT_STUDIOS,
@@ -242,15 +287,19 @@ def main():
 
     leads_by_key = fetch_leads(cur, args.studios)
     presale_rows = fetch_presales(cur, id_to_name.keys())
+    member_rows  = fetch_member_split(cur, id_to_name.keys())
 
     cur.close()
     conn.close()
 
-    # Merge: one row per (date, studio, source), leads from LEADS table,
-    # presales/cancellations from MART_SALES_DETAILS.
-    merged = defaultdict(lambda: {"signups": 0, "presales": 0, "cancellations": 0})
-    for key, signups in leads_by_key.items():
-        merged[key]["signups"] += signups
+    # Merge: one row per (date, studio, source) — funnel from the LEADS view,
+    # presales/cancellations from MART_SALES_DETAILS, member split from LEADS_LIST.
+    merged = defaultdict(lambda: {"signups": 0, "presales": 0, "cancellations": 0,
+                                  "first_visits": 0, "first_activations": 0, "first_sales": 0,
+                                  "members_presale": 0, "members_new": 0})
+    for key, funnel in leads_by_key.items():
+        for k, v in funnel.items():
+            merged[key][k] += v
     for studio_id, d, source, presales, cancellations in presale_rows:
         name = id_to_name.get(studio_id)
         if not name:
@@ -258,6 +307,13 @@ def main():
         key = (json_serial(d), name, source)
         merged[key]["presales"] += int(presales or 0)
         merged[key]["cancellations"] += int(cancellations or 0)
+    for d, studio_id, source, m_pre, m_new in member_rows:
+        name = id_to_name.get(studio_id)
+        if not name:
+            continue
+        key = (json_serial(d), name, source)
+        merged[key]["members_presale"] += int(m_pre or 0)
+        merged[key]["members_new"]     += int(m_new or 0)
 
     daily_detail = [
         {"date": k[0], "studio": k[1], "source": k[2], **v}
