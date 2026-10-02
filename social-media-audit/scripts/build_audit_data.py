@@ -19,6 +19,8 @@ completed calendar month):
                                              outside accounts
   - data/replies.json                     — DM/comment reply-time results
                                              (fetch_replies_data.py)
+  - data/replies_overrides.json           — manually reviewed DM/comment
+                                             scores; win over replies.json
 
 Every rubric item is sourced now. A studio missing from replies.json (e.g.
 that fetch failed for it, or hasn't run yet) falls back to a neutral
@@ -54,6 +56,7 @@ from fetch_social_insights import build_monthly_aggregates  # noqa: E402
 SOCIAL_INSIGHTS_PATH = REPO_ROOT / "nso-dashboard" / "social_insights.json"
 BRAND_OFFENSES_PATH  = AUDIT_DIR / "data" / "brand_offenses.json"
 REPLIES_PATH          = AUDIT_DIR / "data" / "replies.json"
+REPLIES_OVERRIDES_PATH = AUDIT_DIR / "data" / "replies_overrides.json"
 OUTPUT_PATH           = AUDIT_DIR / "data" / "latest.json"
 
 MONTHS_KEPT = 12  # trailing months retained per studio in the output file
@@ -200,6 +203,15 @@ def main():
             replies_by_name = json.load(f).get("studios", {})
     else:
         print(f"WARNING: {REPLIES_PATH} not found — run fetch_replies_data.py first. DM/comment replies will default to passing.")
+
+    # Manually reviewed scores win over fetched ones, so a re-run of the
+    # fetch can't undo them.
+    if REPLIES_OVERRIDES_PATH.exists():
+        with open(REPLIES_OVERRIDES_PATH, encoding="utf-8") as f:
+            overrides = json.load(f).get("studios", {})
+        for name, months in overrides.items():
+            for month, fields in months.items():
+                replies_by_name.setdefault(name, {}).setdefault(month, {}).update(fields)
 
     existing = {"studios": []}
     if OUTPUT_PATH.exists():
