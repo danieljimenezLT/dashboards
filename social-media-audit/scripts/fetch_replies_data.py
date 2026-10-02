@@ -275,22 +275,33 @@ def fetch_dm_stats(page_id: str, ig_id: str, username: str | None, tz, month_key
     """token must be a Page access token. Returns (total, on_time), or None
     if the conversation list couldn't be read at all."""
     total = on_time = 0
+    # Small pages (limit 50 trips "Please reduce the amount of data"). The
+    # list comes newest-updated first, so stop at the first conversation
+    # last touched before the target month — it can't hold any of its messages.
+    month_start = datetime.strptime(month_key + "-01", "%Y-%m-%d").replace(tzinfo=tz)
+    conversations = []
     try:
-        conversations = list(_paginate(
+        for convo in _paginate(
             f"{BASE}/{page_id}/conversations",
-            {"platform": "instagram", "fields": "id,updated_time", "limit": 50},
+            {"platform": "instagram", "fields": "id,updated_time", "limit": 10},
             token,
-        ))
+            limit=50,
+        ):
+            ts = convo.get("updated_time")
+            if ts and _parse_time(ts, tz) < month_start:
+                break
+            conversations.append(convo)
     except Exception as e:
         print(f"    WARNING conversations: {e}")
-        return None
+        if not conversations:
+            return None
 
     for convo in conversations:
         convo_id = convo["id"]
         try:
             data = _get(
                 f"{BASE}/{convo_id}",
-                {"fields": "messages.limit(100){id,created_time,from}"},
+                {"fields": "messages.limit(50){id,created_time,from}"},
                 token,
             )
         except Exception as e:
