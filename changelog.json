@@ -2,6 +2,18 @@
   "entries": [
     {
       "date": "2026-10-02",
+      "pr_number": 440,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/440",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard",
+        "OS Dashboard"
+      ],
+      "title": "Meta ads status now reflects the end of the selected date range",
+      "summary": "In the Meta tab of the Open Studio and NSO dashboards, an ad's Active/Paused status now shows whether it was running on the last day of the selected period. Ads inside a paused ad set or campaign no longer show as Active."
+    },
+    {
+      "date": "2026-10-02",
       "pr_number": 439,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/439",
       "author": "Santiago Estrada",
