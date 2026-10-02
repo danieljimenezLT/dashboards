@@ -33,6 +33,8 @@ jobs:
         run: |
           pip install requests python-dotenv
           pip install google-ads gspread google-auth
+          # fetch_agency_overrides.py reads the Marketing Spend Adjustments sheet via googleapiclient
+          pip install google-api-python-client
 
       - name: Fetch Meta Ads (Santi - account view)
         env:
