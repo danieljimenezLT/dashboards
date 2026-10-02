@@ -1,214 +1,256 @@
 {
-  "_note": "Manually reviewed reply scores (Yes=1, Sometimes=0.5, No=0). Applied over replies.json by build_audit_data.py. 2026-09 comments: manual review while the API fetch was being fixed.",
+  "_note": "Manually reviewed reply scores (Yes=1, Sometimes=0.5, No=0). Applied over replies.json by build_audit_data.py. 2026-09: comments from manual review, DMs set to Yes for everyone, while the API fetch was being fixed.",
   "studios": {
     "Austin - Highland": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Boca Raton": {
       "2026-09": {
-        "repliesComments": "No"
+        "repliesComments": "No",
+        "repliesDMs": "Yes"
       }
     },
     "Charlotte - Noda": {
       "2026-09": {
-        "repliesComments": "Sometimes"
+        "repliesComments": "Sometimes",
+        "repliesDMs": "Yes"
       }
     },
     "Miami - Coconut Grove": {
       "2026-09": {
-        "repliesComments": "No"
+        "repliesComments": "No",
+        "repliesDMs": "Yes"
       }
     },
     "Coral Gables": {
       "2026-09": {
-        "repliesComments": "No"
+        "repliesComments": "No",
+        "repliesDMs": "Yes"
       }
     },
     "Coral Springs": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Deerfield Beach": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Doral": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Eastchester": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Fort Lauderdale - Las Olas": {
       "2026-09": {
-        "repliesComments": "No"
+        "repliesComments": "No",
+        "repliesDMs": "Yes"
       }
     },
     "Madison": {
       "2026-09": {
-        "repliesComments": "No"
+        "repliesComments": "No",
+        "repliesDMs": "Yes"
       }
     },
     "Miami - Brickell": {
       "2026-09": {
-        "repliesComments": "Sometimes"
+        "repliesComments": "Sometimes",
+        "repliesDMs": "Yes"
       }
     },
     "Miami - Upper East Side": {
       "2026-09": {
-        "repliesComments": "No"
+        "repliesComments": "No",
+        "repliesDMs": "Yes"
       }
     },
     "Miami Beach": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Miami Lakes": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Miami - Midtown": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Miramar": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "NYC - Chelsea": {
       "2026-09": {
-        "repliesComments": "No"
+        "repliesComments": "No",
+        "repliesDMs": "Yes"
       }
     },
     "NYC - FiDi": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Ocean Township": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "NYC - Park Slope": {
       "2026-09": {
-        "repliesComments": "Sometimes"
+        "repliesComments": "Sometimes",
+        "repliesDMs": "Yes"
       }
     },
     "Pembroke Pines": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "South Miami": {
       "2026-09": {
-        "repliesComments": "Sometimes"
+        "repliesComments": "Sometimes",
+        "repliesDMs": "Yes"
       }
     },
     "Toms River": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Wall Township": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "West Palm Beach": {
       "2026-09": {
-        "repliesComments": "Sometimes"
+        "repliesComments": "Sometimes",
+        "repliesDMs": "Yes"
       }
     },
     "Pinecrest - Palmetto Bay": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Dallas - Prestonwood": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Reston": {
       "2026-09": {
-        "repliesComments": "Sometimes"
+        "repliesComments": "Sometimes",
+        "repliesDMs": "Yes"
       }
     },
     "Aventura": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Herriman": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Dallas - Uptown": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Orlando - Dr Phillips": {
       "2026-09": {
-        "repliesComments": "Sometimes"
+        "repliesComments": "Sometimes",
+        "repliesDMs": "Yes"
       }
     },
     "Old Bridge": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "North Miami": {
       "2026-09": {
-        "repliesComments": "Sometimes"
+        "repliesComments": "Sometimes",
+        "repliesDMs": "Yes"
       }
     },
     "Middletown": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Fort Myers": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Dunwoody": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Long Beach": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     },
     "Burlington": {
       "2026-09": {
-        "repliesComments": "No"
+        "repliesComments": "No",
+        "repliesDMs": "Yes"
       }
     },
     "OKC - Rose Creek": {
       "2026-09": {
-        "repliesComments": "Sometimes"
+        "repliesComments": "Sometimes",
+        "repliesDMs": "Yes"
       }
     },
     "Charlotte - South End": {
       "2026-09": {
-        "repliesComments": "Yes"
+        "repliesComments": "Yes",
+        "repliesDMs": "Yes"
       }
     }
   }
