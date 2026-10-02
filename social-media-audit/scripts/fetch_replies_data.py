@@ -278,34 +278,29 @@ def fetch_dm_stats(page_id: str, ig_id: str, username: str | None, tz, month_key
     # Small pages (limit 50 trips "Please reduce the amount of data"). The
     # list comes newest-updated first, so stop at the first conversation
     # last touched before the target month — it can't hold any of its messages.
-    # Meta's "Please reduce the amount of data" error isn't purely page-size
-    # driven, so a few request shapes are tried in order and the one that
-    # worked is logged.
+    # The list comes newest-updated first, so stop at the first conversation
+    # last touched before the target month — it can't hold any of its
+    # messages. Known limitation: for Pages with a large inbox Meta's
+    # endpoint times out ("Please reduce the amount of data" / "Timeout")
+    # even at tiny page sizes; those studios' DMs stay unscored. The robust
+    # fix is a messaging webhook, not polling.
     month_start = datetime.strptime(month_key + "-01", "%Y-%m-%d").replace(tzinfo=tz)
-    attempts = [
-        (page_id, {"platform": "instagram", "fields": "id,updated_time", "limit": 10}),
-        (page_id, {"platform": "instagram", "fields": "id,updated_time", "limit": 3}),
-        (page_id, {"platform": "instagram", "limit": 10}),
-        (ig_id,   {"platform": "instagram", "fields": "id,updated_time", "limit": 10}),
-    ]
-    conversations = None
-    for node, params in attempts:
-        found = []
-        try:
-            for convo in _paginate(f"{BASE}/{node}/conversations", params, token, limit=50):
-                ts = convo.get("updated_time")
-                if ts and _parse_time(ts, tz) < month_start:
-                    break
-                found.append(convo)
-        except Exception as e:
-            print(f"    WARNING conversations ({'ig' if node == ig_id else 'page'} {params}): {e}")
-            if not found:
-                continue
-        print(f"    conversations via {'ig' if node == ig_id else 'page'} {params}: {len(found)}")
-        conversations = found
-        break
-    if conversations is None:
-        return None
+    conversations = []
+    try:
+        for convo in _paginate(
+            f"{BASE}/{page_id}/conversations",
+            {"platform": "instagram", "fields": "id,updated_time", "limit": 10},
+            token,
+            limit=50,
+        ):
+            ts = convo.get("updated_time")
+            if ts and _parse_time(ts, tz) < month_start:
+                break
+            conversations.append(convo)
+    except Exception as e:
+        print(f"    WARNING conversations: {e}")
+        if not conversations:
+            return None
 
     for convo in conversations:
         convo_id = convo["id"]
