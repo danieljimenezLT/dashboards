@@ -308,6 +308,7 @@ def fetch_dm_stats(page_id: str, ig_id: str, username: str | None, tz, month_key
 def main():
     parser = argparse.ArgumentParser(description="Fetch Instagram DM/comment reply-time stats")
     parser.add_argument("--month", help="YYYY-MM (default: most recently completed calendar month)")
+    parser.add_argument("--studio", help="Only fetch this studio (exact name) — for quick token/permission checks")
     args = parser.parse_args()
 
     target_month = args.month or previous_month_key(datetime.now().date())
@@ -333,6 +334,8 @@ def main():
         if s.get("status") not in ("open", "nso"):
             continue
         name = s["name"]
+        if args.studio and name != args.studio:
+            continue
         ig_entry = ig_by_name.get(name)
         if not ig_entry or not ig_entry.get("ig_id"):
             continue
