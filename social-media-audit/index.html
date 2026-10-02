@@ -625,7 +625,7 @@ function computeScores(studio, monthKey){
   if(sStoriesCount<10) recs.push(`Post more Stories — currently averaging ${m.storiesCount}/mo vs. a goal of 20.`);
   if(sStoriesBrand<10) recs.push('Keep Stories on-brand — avoid off-brand filters, music, or third-party logos.');
   if(sDMs<10) recs.push(m.repliesDMs==='Sometimes' ? 'Reply to all DMs, not just some — aim for 100% response rate.' : 'No DM replies recorded — this needs immediate attention.');
-  if(sComments<10) recs.push(commentsTier==='Sometimes' ? 'Reply to all comments, not just some — aim for 100% within 1 business day.' : 'No on-time comment replies recorded — this needs immediate attention.');
+  if(sComments<10) recs.push(commentsTier==='Sometimes' ? 'Reply or react to all comments, not just some — aim for 100% within 1 business day.' : 'No on-time comment replies or reactions recorded — this needs immediate attention.');
   if(sGrowth!=null && sGrowth<10 && !exempt) recs.push(`Follower growth is ${fmtPctSigned(m.followerGrowthPct)}, below the goal (${growthGoalLabel}) — increase posting cadence and cross-promote in Stories.`);
   if(stage==='nso' && sNewFollowers<10 && !exempt) recs.push(`Net new followers (${m.netNewFollowers||0}) fell short of the 120+ goal for NSO studios.`);
 
