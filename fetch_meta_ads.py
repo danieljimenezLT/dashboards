@@ -340,7 +340,10 @@ def run(start_override: str | None = None, end_override: str | None = None):
     else:
         cdetails = {}
 
-    status_by_ad = {ad["id"]: ad.get("status", "UNKNOWN") for ad in all_ads if ad.get("id")}
+    # effective_status (not status): an ad switched on inside a paused ad set or
+    # campaign isn't delivering, and the dashboards should say so.
+    status_by_ad = {ad["id"]: ad.get("effective_status") or ad.get("status", "UNKNOWN")
+                    for ad in all_ads if ad.get("id")}
 
     # Collect preview_shareable_link and Ads Library URL per ad.
     # preview_shareable_link works for all ad types (including Lead Gen forms).
@@ -490,7 +493,7 @@ def run(start_override: str | None = None, end_override: str | None = None):
             cid = (ad.get("creative") or {}).get("id")
             if cid:
                 cids_per_ad[ad_id] = cid
-            status_by_ad[ad_id] = ad.get("status", "UNKNOWN")
+            status_by_ad[ad_id] = ad.get("effective_status") or ad.get("status", "UNKNOWN")
             psl = ad.get("preview_shareable_link") or ""
             if psl:
                 preview_link_by_ad[ad_id] = psl
