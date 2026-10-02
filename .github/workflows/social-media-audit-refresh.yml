@@ -20,7 +20,7 @@ on:
         required: false
         type: string
       studio:
-        description: 'Quick test: fetch reply times for just this studio (exact name, e.g. "Austin - Highland") and print them — nothing is rebuilt or committed'
+        description: 'Quick test: fetch reply times for just this studio (exact name, e.g. "Austin - Highland"; or "all") and print them — nothing is rebuilt or committed'
         required: false
         type: string
 
@@ -64,7 +64,7 @@ jobs:
         run: |
           args=()
           [ -n "$MONTH" ] && args+=(--month "$MONTH")
-          [ -n "$STUDIO" ] && args+=(--studio "$STUDIO")
+          [ -n "$STUDIO" ] && [ "$STUDIO" != "all" ] && args+=(--studio "$STUDIO")
           python social-media-audit/scripts/fetch_replies_data.py "${args[@]}"
         continue-on-error: true
 
