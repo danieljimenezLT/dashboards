@@ -285,8 +285,8 @@ const ITEM_INFO = {
     pass:'✔ All DMs are responded to within 4 business hours during the week.\n✔ Replies are friendly, informative, and follow SWEAT440 brand tone.\n✔ Any message not requiring a response (like a story reaction or emoji) is acknowledged if appropriate.',
     mistakes:'✖ Leaving DMs unread for several days\n✖ Failing to respond to story mentions or customer questions\n✖ Inconsistent or unprofessional tone in responses\n✖ Ignoring message requests from new followers or potential leads' },
   comments: { title:'Replies to Comments',
-    desc:'Studios must reply to post comments within one business day to stay engaged with the community and maintain strong visibility on Social Media.\n\nScoring: every comment replied to in time = full credit (10). Some but not all = half credit (5). None = 0.',
-    pass:'✔ Reply to all post comments within 24 business hours\n✔ Responses can be short and simple (an emoji, "Thanks!", etc.)\n✔ Like the comment in addition to replying\n✔ Maintain a positive, encouraging, and on-brand tone in replies',
+    desc:'Studios must reply or react to post comments within one business day to stay engaged with the community and maintain strong visibility on Social Media.\n\nScoring: every comment replied or reacted to in time = full credit (10). Some but not all = half credit (5). None = 0.',
+    pass:'✔ Reply or react to all post comments within 1 business day\n✔ Responses can be short and simple (an emoji, "Thanks!", a like, etc.)\n✔ Maintain a positive, encouraging, and on-brand tone in replies',
     mistakes:'✖ Letting comments go unanswered for days' },
   growth: { title:'Follower Growth',
     desc:'New metric introduced with this rubric update, replacing Follows Synergistic Businesses. Month-over-month follower growth rate, computed from the studio\'s Instagram connection.\n\nScoring depends on how long the studio has been open (based on its actual opening date, not just its NSO/Open Studio status):\nNSO (not yet open): no floor. Up to the 10% goal, credit = 0.8 × (growth ÷ 10%). At 10%+ = full credit.\nFirst 12 months after opening: below 1% growth = 0 credit. From there up to the 2% goal, credit = 0.8 × (growth ÷ 2%). At 2%+ = full credit.\n12+ months after opening: growth is no longer part of Community Management at all — DM replies and comment replies split the full 100% instead.\nLegacy-exempt studios always score full credit here.',
@@ -625,7 +625,7 @@ function computeScores(studio, monthKey){
   if(sStoriesCount<10) recs.push(`Post more Stories — currently averaging ${m.storiesCount}/mo vs. a goal of 20.`);
   if(sStoriesBrand<10) recs.push('Keep Stories on-brand — avoid off-brand filters, music, or third-party logos.');
   if(sDMs<10) recs.push(m.repliesDMs==='Sometimes' ? 'Reply to all DMs, not just some — aim for 100% response rate.' : 'No DM replies recorded — this needs immediate attention.');
-  if(sComments<10) recs.push(commentsTier==='Sometimes' ? 'Reply to all comments, not just some — aim for 100% within 1 business day.' : 'No on-time comment replies recorded — this needs immediate attention.');
+  if(sComments<10) recs.push(commentsTier==='Sometimes' ? 'Reply or react to all comments, not just some — aim for 100% within 1 business day.' : 'No on-time comment replies or reactions recorded — this needs immediate attention.');
   if(sGrowth!=null && sGrowth<10 && !exempt) recs.push(`Follower growth is ${fmtPctSigned(m.followerGrowthPct)}, below the goal (${growthGoalLabel}) — increase posting cadence and cross-promote in Stories.`);
   if(stage==='nso' && sNewFollowers<10 && !exempt) recs.push(`Net new followers (${m.netNewFollowers||0}) fell short of the 120+ goal for NSO studios.`);
 
