@@ -28,8 +28,13 @@ id-only match never recognizes the studio's own replies (this scored every
 studio 0 on-time for 2026-09). Authorship is matched on username first,
 with ig_id kept as a fallback.
 
-DMs need a Page access token (the Conversations API rejects a user token
-with error #190), so one is exchanged per studio from META_ACCESS_TOKEN.
+Permissions: without instagram_manage_comments on META_ACCESS_TOKEN the API
+still returns comments and replies but strips `from`/`username` from all of
+them, so no reply can be attributed to the studio — those posts are skipped
+rather than scored as "never replied". DMs need instagram_manage_messages
+and a Page access token (the Conversations API rejects a user token with
+error #190), so one is exchanged per studio from META_ACCESS_TOKEN. The
+granted permissions are printed at the start of each run.
 
 A studio whose posts/conversations couldn't be read at all is left out of
 that month's result for that item (build_audit_data.py then treats it as
@@ -221,25 +226,25 @@ def fetch_page_token(page_id: str, token: str) -> str | None:
         return None
 
 
-def _log_comment_shape(post, comments, ig_id, username):
-    """One line per studio describing what the API returned for its first
-    post with comments — authorship fields only, other users masked — so a
-    reply-detection miss can be diagnosed from the Actions log."""
-    def who(x):
-        frm = x.get("from") or {}
-        studio = _is_studio(x, ig_id, username)
-        return {"studio": studio, "username": x.get("username") if studio else ("other" if x.get("username") else None),
-                "from_keys": sorted(frm), "from_id_is_ig_id": frm.get("id") == ig_id}
-    sample = [{**who(c), "replies": [who(r) for r in (c.get("replies") or {}).get("data", [])]}
-              for c in comments[:5]]
-    print(f"    DEBUG media {post.get('id')} comments_count={post.get('comments')} "
-          f"returned={len(comments)} sample={json.dumps(sample)}")
+def log_token_permissions(token: str):
+    """Reply detection needs instagram_manage_comments (comment authors) and
+    instagram_manage_messages (DMs) — print what the token actually has."""
+    try:
+        perms = _get(f"{BASE}/me/permissions", {}, token).get("data", [])
+    except Exception as e:
+        print(f"WARNING could not read token permissions: {e}")
+        return
+    granted = {p["permission"] for p in perms if p.get("status") == "granted"}
+    for needed in ("instagram_manage_comments", "instagram_manage_messages"):
+        print(f"Token permission {needed}: {'granted' if needed in granted else 'MISSING'}")
 
 
 def fetch_comment_stats(ig_id: str, username: str | None, posts_in_month: list, tz, month_key: str, token: str):
-    """Returns (total, on_time, posts_read) — posts_read lets the caller tell
-    "no comments" apart from "couldn't read any post"."""
+    """Returns (total, on_time, posts_read, authorless) — posts_read lets the
+    caller tell "no comments" apart from "couldn't read any post"; authorless
+    means the API hid comment authors, so replies can't be attributed."""
     total = on_time = posts_read = 0
+    authorless = False
     for post in posts_in_month:
         media_id = post.get("id")
         if not media_id:
@@ -253,13 +258,17 @@ def fetch_comment_stats(ig_id: str, username: str | None, posts_in_month: list, 
         except Exception as e:
             print(f"    WARNING comments for media {media_id}: {e}")
             continue
+        if any(not (c.get("from") or {}).get("id") and not c.get("username") for c in comments):
+            # The API hides comment authors when the token lacks
+            # instagram_manage_comments — every reply would look like it
+            # came from a customer, so the item can't be scored at all.
+            authorless = True
+            continue
         posts_read += 1
-        if comments and posts_read == 1:
-            _log_comment_shape(post, comments, ig_id, username)
         t, o = evaluate_comments(comments, ig_id, username, tz, month_key)
         total += t
         on_time += o
-    return total, on_time, posts_read
+    return total, on_time, posts_read, authorless
 
 
 def fetch_dm_stats(page_id: str, ig_id: str, username: str | None, tz, month_key: str, token: str):
@@ -308,6 +317,7 @@ def main():
     if not token:
         print("ERROR: META_ACCESS_TOKEN not set")
         sys.exit(1)
+    log_token_permissions(token)
 
     if not SOCIAL_INSIGHTS_PATH.exists():
         print(f"ERROR: {SOCIAL_INSIGHTS_PATH} not found — run fetch_social_insights.py first.")
@@ -342,7 +352,8 @@ def main():
         if not username:
             print("    WARNING no username — falling back to id match, studio replies may be missed")
 
-        c_total, c_on_time, c_read = fetch_comment_stats(ig_id, username, posts_in_month, tz, target_month, token)
+        c_total, c_on_time, c_read, c_authorless = fetch_comment_stats(
+            ig_id, username, posts_in_month, tz, target_month, token)
         dm_stats = None
         if page_id:
             page_token = fetch_page_token(page_id, token)
@@ -352,7 +363,9 @@ def main():
         # Items that couldn't be read at all are left out, so they fall back
         # to build_audit_data.py's not-yet-sourced default instead of scoring.
         month_data = {}
-        if posts_in_month and c_read == 0:
+        if c_authorless:
+            print("    comments: API returned comments without authors — not scored")
+        elif posts_in_month and c_read == 0:
             print(f"    comments: none of {len(posts_in_month)} posts readable — not scored")
         else:
             print(f"    comments: {c_on_time}/{c_total} on time ({c_read}/{len(posts_in_month)} posts read)")
