@@ -251,7 +251,7 @@ const MOCK_FIELDS = new Set([]);
 // metrics introduced by this rubric update and have no source text.
 const ITEM_INFO = {
   totalPosts: { title:'Total # of Local Posts',
-    desc:'Studios must post consistently to stay visible and grow their community. Local posts should showcase your coaches, members, classes, events, or any other activities happening at the studio.\n\nScoring: below 50% of your goal (4 posts Open Studio, 8 NSO) = 0 credit. From 50% of goal up to goal, credit = 0.8 × (posts ÷ goal). At or above goal = full credit.',
+    desc:'Studios must post consistently to stay visible and grow their community. Local posts should showcase your coaches, members, classes, events, or any other activities happening at the studio. Collab posts count too, including ones another account invited you to.\n\nScoring: below 50% of your goal (4 posts Open Studio, 8 NSO) = 0 credit. From 50% of goal up to goal, credit = 0.8 × (posts ÷ goal). At or above goal = full credit.',
     pass:'✔ 8+ posts (Open Studio) or 16+ (NSO) = full credit\n✔ 12+ posts = extra credit (Open Studio); 20+ = extra credit (NSO)',
     mistakes:'✖ Posting fewer than the monthly minimum' },
   imgVideo: { title:'% On-Brand Image and Video',
@@ -741,7 +741,7 @@ function renderRubric(){
 
   const rows = [
     ['1. Posts &amp; Reels', '70%', '', '', r.postsReels, 'sub', null, 'postsReels'],
-    ['&nbsp;&nbsp;1.1. Total # of local posts on IG feed'+_mockFlag('posts'), '35%', m.posts, r.postsGoal, r.sPosts, 'item', null, 'totalPosts'],
+    ['&nbsp;&nbsp;1.1. Total # of local posts on IG feed'+_mockFlag('posts'), '35%', m.posts + (m.collabPosts ? ` <span style="opacity:.6;font-size:.85em">(incl. ${m.collabPosts} collab${m.collabPosts>1?'s':''})</span>` : ''), r.postsGoal, r.sPosts, 'item', null, 'totalPosts'],
     ['&nbsp;&nbsp;1.2. On-brand content (Calculated)', '35%', '', '', r.onBrandCalc, 'sub', null, 'onBrandCalc'],
     ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.1. % On-brand Image and Video'+_mockFlag('imgVideoPct'), '17%', fmtPct(m.imgVideoPct), '90%', r.sImgVideo, 'item', null, 'imgVideo'],
     ['&nbsp;&nbsp;&nbsp;&nbsp;1.2.2. % On-brand Caption'+_mockFlag('captionPct'), '5%', fmtPct(m.captionPct), '90%', r.sCaption, 'item', null, 'caption'],
