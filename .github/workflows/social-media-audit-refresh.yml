@@ -19,6 +19,10 @@ on:
         description: 'Target month as YYYY-MM (default: the most recently completed month)'
         required: false
         type: string
+      studio:
+        description: 'Quick test: fetch reply times for just this studio (exact name, e.g. "Austin - Highland") and print them — nothing is rebuilt or committed'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -55,15 +59,17 @@ jobs:
           # shared META_TOKEN (ads + daily refreshes) never has to change.
           # Falls back to META_TOKEN until that secret exists.
           META_ACCESS_TOKEN: ${{ secrets.META_TOKEN_REPLIES || secrets.META_TOKEN }}
+          MONTH: ${{ github.event.inputs.month }}
+          STUDIO: ${{ github.event.inputs.studio }}
         run: |
-          if [ -n "${{ github.event.inputs.month }}" ]; then
-            python social-media-audit/scripts/fetch_replies_data.py --month "${{ github.event.inputs.month }}"
-          else
-            python social-media-audit/scripts/fetch_replies_data.py
-          fi
+          args=()
+          [ -n "$MONTH" ] && args+=(--month "$MONTH")
+          [ -n "$STUDIO" ] && args+=(--studio "$STUDIO")
+          python social-media-audit/scripts/fetch_replies_data.py "${args[@]}"
         continue-on-error: true
 
       - name: Build social-media-audit/data/latest.json
+        if: ${{ !github.event.inputs.studio }}
         run: |
           if [ -n "${{ github.event.inputs.month }}" ]; then
             python social-media-audit/scripts/build_audit_data.py --month "${{ github.event.inputs.month }}"
@@ -72,6 +78,7 @@ jobs:
           fi
 
       - name: Commit updated data files
+        if: ${{ !github.event.inputs.studio }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
