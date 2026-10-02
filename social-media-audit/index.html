@@ -859,7 +859,6 @@ function viewStudioRubric(code){
 async function loadData(){
   const _authUser = checkAuth();
   if (!_authUser) return;
-  if (_authUser.role !== 'admin' && _authUser.role !== 'corporate') { location.replace('../home.html'); return; }
   renderAuthNav(_authUser);
   if (_authUser.role === 'admin') document.getElementById('fetchDataBtn').style.display = '';
 
@@ -879,6 +878,18 @@ async function loadData(){
     }
   } catch (e) {
     console.warn('data/latest.json unavailable, using mock data:', e);
+  }
+
+  // Everyone can open the audit, but only for the studios on their account
+  // (null = full access). Summary averages/counts then cover just those too.
+  const _allowedStudios = getAuthStudios(_authUser);
+  if (_allowedStudios) {
+    STUDIOS = STUDIOS.filter(s => _allowedStudios.includes(s.name));
+    if (!STUDIOS.length) {
+      document.querySelector('.main').innerHTML = '<div class="sm-empty-note">None of your studios are included in the Social Media Audit yet.</div>';
+      document.getElementById('ctrlInner').style.display = 'none';
+      return;
+    }
   }
 
   _curStudioCode = STUDIOS[0].code;
