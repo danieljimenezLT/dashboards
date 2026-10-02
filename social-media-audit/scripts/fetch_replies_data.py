@@ -221,6 +221,21 @@ def fetch_page_token(page_id: str, token: str) -> str | None:
         return None
 
 
+def _log_comment_shape(post, comments, ig_id, username):
+    """One line per studio describing what the API returned for its first
+    post with comments — authorship fields only, other users masked — so a
+    reply-detection miss can be diagnosed from the Actions log."""
+    def who(x):
+        frm = x.get("from") or {}
+        studio = _is_studio(x, ig_id, username)
+        return {"studio": studio, "username": x.get("username") if studio else ("other" if x.get("username") else None),
+                "from_keys": sorted(frm), "from_id_is_ig_id": frm.get("id") == ig_id}
+    sample = [{**who(c), "replies": [who(r) for r in (c.get("replies") or {}).get("data", [])]}
+              for c in comments[:5]]
+    print(f"    DEBUG media {post.get('id')} comments_count={post.get('comments')} "
+          f"returned={len(comments)} sample={json.dumps(sample)}")
+
+
 def fetch_comment_stats(ig_id: str, username: str | None, posts_in_month: list, tz, month_key: str, token: str):
     """Returns (total, on_time, posts_read) — posts_read lets the caller tell
     "no comments" apart from "couldn't read any post"."""
@@ -239,6 +254,8 @@ def fetch_comment_stats(ig_id: str, username: str | None, posts_in_month: list, 
             print(f"    WARNING comments for media {media_id}: {e}")
             continue
         posts_read += 1
+        if comments and posts_read == 1:
+            _log_comment_shape(post, comments, ig_id, username)
         t, o = evaluate_comments(comments, ig_id, username, tz, month_key)
         total += t
         on_time += o
