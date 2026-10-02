@@ -96,6 +96,11 @@ import studios as studios_registry
 
 BASE = "https://graph.facebook.com/v21.0"
 
+# How far back each run checks stored posts against the account's live media,
+# pruning ones deleted/archived since. 60 days covers the full prior month for
+# the social media audit, which builds on the 1st.
+RECONCILE_DAYS = 60
+
 # All SWEAT440 studios — ig_id is discovered at runtime via the Meta API.
 # code = short slug used as the thumbnails sub-directory name. Sourced from
 # studios.json (canonical registry); "Corporate" is a house account, not a
@@ -283,6 +288,7 @@ def fetch_instagram_insights(ig_id, studio_name, start_date, end_date, user_toke
 
     # ── 0. Current follower count (point-in-time) ──
     current_followers = None
+    username = None
     try:
         r = requests.get(f"{BASE}/{ig_id}", params={
             "fields": "id,username,followers_count,media_count",
@@ -291,6 +297,7 @@ def fetch_instagram_insights(ig_id, studio_name, start_date, end_date, user_toke
         data = r.json()
         if "error" not in data:
             current_followers = data.get("followers_count")
+            username = data.get("username")
             print(f"    Current followers: {current_followers}, media: {data.get('media_count')}")
         else:
             print(f"    WARNING IG account fields: {data['error'].get('message','')[:80]}")
@@ -420,10 +427,64 @@ def fetch_instagram_insights(ig_id, studio_name, start_date, end_date, user_toke
     except Exception as e:
         print(f"    WARNING IG media: {e}")
 
+    # ── Live-post reconciliation ──
+    # Stored posts are merged append-only (see main), so a post the studio later
+    # deleted or archived would otherwise stay counted forever — inflating the
+    # social media audit's monthly post count. Page back through the account's
+    # current media (ids/permalinks only, cheap) for RECONCILE_DAYS so main can
+    # drop stored posts in that window that no longer exist. Left as None on any
+    # error so a failed request never prunes anything.
+    #
+    # The same pass records each post's collaborators (accounts the studio
+    # invited), so build_audit_data.py can credit a collab post to every
+    # SWEAT440 studio on it — the API can't list collabs a studio was invited
+    # to by someone else, only the owner's side of it.
+    live_permalinks, live_since, live_collaborators = None, None, None
+    try:
+        reconcile_from = (datetime.now() - timedelta(days=RECONCILE_DAYS)).strftime("%Y-%m-%d")
+        found, collabs, oldest, complete = set(), {}, None, False
+        url, params = f"{BASE}/{ig_id}/media", {
+            "fields": "permalink,timestamp,collaborators{username}",
+            "limit": 100, "access_token": user_token,
+        }
+        while url:
+            data = requests.get(url, params=params).json()
+            if "error" in data:
+                print(f"    WARNING IG media reconcile: {data['error'].get('message', '')[:80]}")
+                break
+            items = data.get("data", [])
+            for media in items:
+                ts = (media.get("timestamp") or "")[:10]
+                if media.get("permalink"):
+                    found.add(media["permalink"])
+                    collabs[media["permalink"]] = [
+                        c["username"] for c in (media.get("collaborators") or {}).get("data", [])
+                        if c.get("username")
+                    ]
+                if ts:
+                    oldest = ts if oldest is None or ts < oldest else oldest
+            url, params = data.get("paging", {}).get("next"), None
+            if not url or not items or (oldest and oldest < reconcile_from):
+                complete = True
+                break
+        if complete:
+            live_permalinks, live_collaborators = found, collabs
+            # Window actually covered: back to reconcile_from, or to the oldest post
+            # on the account if it has fewer. Only dates strictly after this are
+            # pruned, so a partially covered boundary day is never touched.
+            live_since = max(oldest, reconcile_from) if oldest else reconcile_from
+            print(f"    reconcile: {len(found)} live posts since {live_since}")
+    except Exception as e:
+        print(f"    WARNING IG media reconcile: {e}")
+
     return {
+        "username": username,
         "current_followers": current_followers,
         "daily": sorted(daily_map.values(), key=lambda x: x["date"]),
         "posts": posts[:20],
+        "live_permalinks": live_permalinks,
+        "live_since": live_since,
+        "live_collaborators": live_collaborators,
     }
 
 
@@ -533,6 +594,24 @@ def main():
             if old_img.startswith("https://drive.google.com/thumbnail"):
                 merged["image_url"] = old_img
             old_posts[permalink] = merged
+
+        # Drop posts deleted/archived on Instagram since we stored them (see the
+        # reconciliation fetch in fetch_instagram_insights).
+        live = new_data.pop("live_permalinks", None)
+        live_since = new_data.pop("live_since", None)
+        live_collaborators = new_data.pop("live_collaborators", None) or {}
+        if live is not None and live_since:
+            removed = [pl for pl, p in old_posts.items()
+                       if p.get("date", "") > live_since and pl not in live]
+            for pl in removed:
+                del old_posts[pl]
+            if removed:
+                print(f"  {studio_name}: removed {len(removed)} post(s) no longer on Instagram")
+        for pl, usernames in live_collaborators.items():
+            if pl in old_posts:
+                old_posts[pl]["collaborators"] = usernames
+        if not new_data.get("username") and old.get("username"):
+            new_data["username"] = old["username"]  # keep last known on a failed fetch
         all_posts = sorted(old_posts.values(), key=lambda x: x.get("date", ""), reverse=True)
 
         # Monthly aggregates: compute once, from full accumulated data, for complete months

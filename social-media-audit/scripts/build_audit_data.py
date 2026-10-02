@@ -14,7 +14,9 @@ completed calendar month):
   - data/brand_offenses.json              — off-brand posts, and per-category
                                              penalized counts (image/video,
                                              caption, audio, stories) used to
-                                             compute % on-brand for each
+                                             compute % on-brand for each; plus
+                                             manually logged collab posts from
+                                             outside accounts
   - data/replies.json                     — DM/comment reply-time results
                                              (fetch_replies_data.py)
 
@@ -128,6 +130,28 @@ def match_studio_name(sheet_name: str, canonical_names: list[str]) -> str | None
     return None
 
 
+def shortcode(permalink: str) -> str:
+    return (permalink or "").rstrip("/").split("/")[-1]
+
+
+def build_collab_credits(ig_entries: list[dict], month_key: str) -> dict[str, set]:
+    """{studio name: shortcodes of month_key posts it was a collaborator on}.
+    Instagram shows a collab post on every collaborator's grid, but the API
+    only returns it to the owner — so walk each studio's own posts and credit
+    any other SWEAT440 studio listed in its collaborators."""
+    by_username = {e["username"].lower(): e["studio"] for e in ig_entries if e.get("username")}
+    credits = {}
+    for e in ig_entries:
+        for p in e.get("posts", []):
+            if not p.get("date", "").startswith(month_key):
+                continue
+            for u in p.get("collaborators") or []:
+                studio = by_username.get(u.lower())
+                if studio and studio != e["studio"]:
+                    credits.setdefault(studio, set()).add(shortcode(p.get("permalink")))
+    return credits
+
+
 def get_month_aggregate(ig_entry: dict, month_key: str) -> dict:
     """Returns {post_count, reach, stories_count, median_engagement_rate,
     followers} for month_key, from social_insights.json's archived monthly[]
@@ -161,10 +185,12 @@ def main():
         social_insights = json.load(f)
     ig_by_name = {s["studio"]: s for s in social_insights.get("instagram", [])}
 
-    brand_offenses = {}
+    brand_offenses, manual_collabs = {}, {}
     if BRAND_OFFENSES_PATH.exists():
         with open(BRAND_OFFENSES_PATH, encoding="utf-8") as f:
-            brand_offenses = json.load(f).get("studios", {})
+            offenses_file = json.load(f)
+        brand_offenses = offenses_file.get("studios", {})
+        manual_collabs = offenses_file.get("collabs", {})
     else:
         print(f"WARNING: {BRAND_OFFENSES_PATH} not found — run fetch_brand_offenses.py first. Off-brand posts will be empty.")
 
@@ -192,6 +218,15 @@ def main():
             offense_lookup[matched] = brand_offenses[sheet_name]
         else:
             unmatched_offense_studios.add(sheet_name)
+    collab_lookup = {}
+    for sheet_name, months in manual_collabs.items():
+        matched = match_studio_name(sheet_name, canonical_names)
+        if matched:
+            collab_lookup[matched] = months
+        else:
+            unmatched_offense_studios.add(sheet_name)
+    auto_collabs = build_collab_credits(social_insights.get("instagram", []), target_month)
+
     if unmatched_offense_studios:
         print(f"WARNING: {len(unmatched_offense_studios)} Brand Offenses studio name(s) didn't match studios.json:")
         for n in sorted(unmatched_offense_studios):
@@ -213,7 +248,15 @@ def main():
             continue
 
         agg = get_month_aggregate(ig_entry, target_month)
-        posts = agg.get("post_count") or 0
+        # Collab posts this studio was invited to: auto-detected between
+        # SWEAT440 studios, plus manually logged ones from outside accounts.
+        # Deduped by shortcode, and never double-counting a post it owns.
+        own = {shortcode(p.get("permalink")) for p in ig_entry.get("posts", [])
+               if p.get("date", "").startswith(target_month)}
+        collab_codes = set(auto_collabs.get(name, set()))
+        collab_codes |= {shortcode(c["link"]) for c in collab_lookup.get(name, {}).get(target_month, [])}
+        collab_codes -= own | {""}
+        posts = (agg.get("post_count") or 0) + len(collab_codes)
         reach = agg.get("reach") or 0
         stories_count = agg.get("stories_count") or 0
         engagement_pct = agg.get("median_engagement_rate") or 0
@@ -265,6 +308,7 @@ def main():
 
         month_data = {
             "posts": posts,
+            "collabPosts": len(collab_codes),
             "imgVideoPct": on_brand_pct(penalized_by_category["imgVideo"], posts),
             "captionPct": on_brand_pct(penalized_by_category["caption"], posts),
             "audioPct": on_brand_pct(penalized_by_category["audio"], posts),
