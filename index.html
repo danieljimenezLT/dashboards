@@ -2462,6 +2462,22 @@ async function buildMetaTab() {
     adMetrics[row.ad_id].trials      += row.trials      || 0;
   }
 
+  // Status as of the period's last day. Meta keeps no status history, so when
+  // the range ends before the latest data day the status is inferred from
+  // delivery on that day (impressions > 0 → Active, otherwise Paused). When the
+  // range reaches the latest data day, the live effective_status is used.
+  const _latestAdDay = (data.ad_daily || []).reduce((m, r) => (r.date > m ? r.date : m), '');
+  const _statusAsOf  = (toStr && _latestAdDay && toStr < _latestAdDay) ? toStr : null;
+  const _deliveredOnEnd = new Set();
+  if (_statusAsOf) {
+    for (const row of (data.ad_daily || [])) {
+      if (row.date === _statusAsOf && (row.impressions || 0) > 0) _deliveredOnEnd.add(row.ad_id);
+    }
+  }
+  const _statusTip = _statusAsOf
+    ? `Status on ${fmtDayLabel(_statusAsOf)}: based on whether the ad delivered that day`
+    : 'Current status in Meta';
+
   // Group by creative short name
   const creativeMap = {};
   for (const [ad_id, metrics] of Object.entries(adMetrics)) {
@@ -2493,7 +2509,9 @@ async function buildMetaTab() {
     g.trials      += metrics.trials;
     // Keep highest-priority status (ACTIVE wins over Paused, etc.)
     const _stPri = {ACTIVE:5, PAUSED:4, ADSET_PAUSED:3, CAMPAIGN_PAUSED:3, COMPLETED:2, ARCHIVED:1, DELETED:0};
-    const _newSt = (meta?.status || '').toUpperCase();
+    const _newSt = _statusAsOf
+      ? (_deliveredOnEnd.has(ad_id) ? 'ACTIVE' : 'PAUSED')
+      : (meta?.status || '').toUpperCase();
     if ((_stPri[_newSt] ?? -1) > (_stPri[g.status] ?? -1)) g.status = _newSt;
     if (!g.thumbnail    && meta?.thumbnail_url)  g.thumbnail    = meta.thumbnail_url;
     if (!g.full_img     && meta?.image_url)      g.full_img     = meta.image_url;
@@ -2535,7 +2553,7 @@ async function buildMetaTab() {
                         : st === 'ARCHIVED'   ? 'Archived'
                         : st === 'COMPLETED'  ? 'Completed'
                         : st || '—';
-          const statusBadge = `<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:${stColor}22;color:${stColor};letter-spacing:.3px">${stLabel}</span>`;
+          const statusBadge = `<span title="${_statusTip}" style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:${stColor}22;color:${stColor};letter-spacing:.3px">${stLabel}</span>`;
 
           const ctrStr = g.impressions > 0 ? (g.clicks/g.impressions*100).toFixed(2)+'%' : '—';
           const adCpl  = g.leads > 0 ? f$2(g.spend/g.leads) : '—';

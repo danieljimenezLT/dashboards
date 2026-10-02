@@ -3155,14 +3155,16 @@ function renderMeta(){
   h+=`</div>`;
 
   // Creative ads table — grouped by creative short name
+  const _ST_PRI={ACTIVE:5,PAUSED:4,ADSET_PAUSED:3,CAMPAIGN_PAUSED:3,COMPLETED:2,ARCHIVED:1,DELETED:0};
   const creativeMap={};
   allRows.forEach(r=>{
     const name=_metaCreativeName(r.ad_name||r.campaign_name);
     if(!name)return;
     if(!creativeMap[name]){creativeMap[name]={name,impressions:0,clicks:0,spend:0,leads:0,
       media_type:r.object_type||'Other',thumb:'',full_img:'',preview:'',campaign:r.campaign_name||'',
-      ad_name:r.ad_name||'',status:'',drive_img:'',drive_vid:''};}
+      ad_name:r.ad_name||'',status:'',drive_img:'',drive_vid:'',_ads:new Set()};}
     const g=creativeMap[name];
+    if(r.ad_name)g._ads.add(r.ad_name);
     g.impressions+=r.impressions||0;g.clicks+=r.clicks||0;
     g.spend+=r.spend||0;g.leads+=r.leads||0;
     if(!g.thumb)g.thumb=r.local_image_url||r.thumbnail_url||r.image_url||'';
@@ -3177,7 +3179,10 @@ function renderMeta(){
     if(meta&&meta.image_url)g.full_img=meta.image_url;
     if(meta&&meta.post_url)g.preview=meta.post_url;
     else if(meta&&meta.preview_link&&!g.preview)g.preview=meta.preview_link;
-    if(meta&&meta.effective_status)g.status=meta.effective_status;
+    // Live status: highest-priority effective_status across the creative's ads
+    // (ACTIVE wins), not just the first ad's — same rule as the OS dashboard.
+    for(const an of g._ads){const st=((AD_META[an]||{}).effective_status||'').toUpperCase();
+      if((_ST_PRI[st]??-1)>(_ST_PRI[g.status]??-1))g.status=st;}
     if(meta&&meta.object_type)g.media_type=meta.object_type;
     // Dedicated-account SHARE ads without image_hash are cross-posted videos, not images.
     // Re-classify so the table shows "Video" and opens the preview link on click.
@@ -3185,6 +3190,17 @@ function renderMeta(){
     if(meta&&meta.drive_image_url&&!g.drive_img)g.drive_img=meta.drive_image_url;
     if(meta&&meta.drive_video_url&&!g.drive_vid)g.drive_vid=meta.drive_video_url;
   });
+  // Status as of the period's last day. Meta keeps no status history, so when
+  // the range ends before the latest data day the status is inferred from
+  // delivery that day (impressions > 0 → Active, otherwise Paused); otherwise
+  // the live effective_status set above is kept. Same rule as the OS dashboard.
+  const _latestMetaDay=(META_RAW||[]).reduce((m,r)=>r.date>m?r.date:m,'');
+  const _statusAsOf=(to&&_latestMetaDay&&to<_latestMetaDay)?to:null;
+  if(_statusAsOf){
+    const _dl=new Set(allRows.filter(r=>r.date===_statusAsOf&&(r.impressions||0)>0).map(r=>r.ad_name));
+    Object.values(creativeMap).forEach(g=>{g.status=[...g._ads].some(a=>_dl.has(a))?'ACTIVE':'PAUSED';});
+  }
+  const _statusTip=_statusAsOf?`Status on ${fmtDayLabel(_statusAsOf)}: based on whether the ad delivered that day`:'Current status in Meta';
   const creativeRows=Object.values(creativeMap).map(g=>({
     ...g,ctr_num:g.impressions>0?g.clicks/g.impressions*100:0,
     cpl_num:g.leads>0?g.spend/g.leads:null
@@ -3291,7 +3307,7 @@ function renderMeta(){
       const isPaused=st==='PAUSED'||st==='ADSET_PAUSED'||st==='CAMPAIGN_PAUSED';
       const stColor=st==='ACTIVE'?'#00a86b':isPaused?'#f4a021':st==='DELETED'||st==='ARCHIVED'?'#e05c5c':'#8aabbf';
       const stLabel=st==='ACTIVE'?'Active':isPaused?'Paused':st==='DELETED'?'Deleted':st==='ARCHIVED'?'Archived':st==='COMPLETED'?'Completed':st||'—';
-      const statusBadge=`<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:${stColor}22;color:${stColor};letter-spacing:.3px">${stLabel}</span>`;
+      const statusBadge=`<span title="${_statusTip}" style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:${stColor}22;color:${stColor};letter-spacing:.3px">${stLabel}</span>`;
       return`<tr>
         <td style="padding:8px 6px">${thumbCell}</td>
         <td><div>${nameCell}</div><div style="font-size:11px;color:#8aabbf;margin-top:2px">${isVid?'Video':'Image'}</div></td>
