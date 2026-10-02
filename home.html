@@ -145,9 +145,6 @@ const user = checkAuth();
 if (user) {
   document.getElementById('welcomeName').textContent = user.name;
   if (user.role === 'admin') document.getElementById('adminActions').style.display = '';
-  if (user.role !== 'admin' && user.role !== 'corporate') {
-    document.getElementById('socialAuditDashCard').remove();
-  }
   if (user.role !== 'admin') {
     document.getElementById('adminReportsDashCard').remove();
   }
