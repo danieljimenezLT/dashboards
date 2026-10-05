@@ -66,13 +66,20 @@ For each post, decide:
   LOW since they're gradients.
 - `category`: the single category name above that best matches (or "none" if \
   not flagged).
+- `foundIn`: where the problem is — "caption" (the post's text), "image" \
+  (the cover image) or "both" (each shows it on its own); "none" if not \
+  flagged.
+- `reason`: ONE short plain-English sentence (about 25 words max) saying \
+  what exactly was found and which rule it breaks — reviewers read this \
+  first. Don't list categories the post passes. Empty if not flagged.
 - `why`: 1-3 sentences citing both caption and visual evidence separately \
-  (e.g. "Caption: ... Visual analysis: ...").
+  (e.g. "Caption: ... Visual analysis: ..."), only about this flag.
 - `action`: a concrete, specific next step for the reviewer (e.g. "Verify X is \
   on the approved partners list").
 
 Respond only for the single post provided. If nothing applies, set flagged=false, \
-level="low", confidence="HIGH", category="none", and explain briefly in `why` \
+level="low", confidence="HIGH", category="none", foundIn="none", reason="", \
+and explain briefly in `why` \
 why the post is clean."""
 
 FLAG_OUTPUT_SCHEMA = {
@@ -93,10 +100,12 @@ FLAG_OUTPUT_SCHEMA = {
                 "none",
             ],
         },
+        "foundIn": {"type": "string", "enum": ["caption", "image", "both", "none"]},
+        "reason": {"type": "string"},
         "why": {"type": "string"},
         "action": {"type": "string"},
     },
-    "required": ["flagged", "level", "confidence", "category", "why", "action"],
+    "required": ["flagged", "level", "confidence", "category", "foundIn", "reason", "why", "action"],
     "additionalProperties": False,
 }
 
@@ -138,6 +147,8 @@ publish (this has happened before):
           "postType": "Static" | "Carousel",
           "visualReviewed": true,
           "caption": "<the post's caption, verbatim>",
+          "foundIn": "caption" | "image" | "both",
+          "reason": "<ONE short sentence: what was found and which rule it breaks>",
           "why": "<1-3 sentences, caption + visual evidence>",
           "action": "<concrete next step for the reviewer>",
           "link": "<externalLink from the export>"
