@@ -29,6 +29,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .mv-blue{color:var(--blue)}.mv-sky{color:var(--sky)}.mv-red{color:var(--red)}.mv-amber{color:var(--amber)}.mv-green{color:var(--green)}
 .metric-sub{font-size:11px;color:var(--text-3);margin-top:4px}
 .filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
+.results-bar{display:flex;align-items:center;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;margin-bottom:1.25rem}
+.results-bar .filter-bar{margin-bottom:0}
+.status-save{display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap}
+.status-save-label{font-size:12px;font-weight:600;color:var(--text-2)}
 .filter-label{font-size:12px;color:var(--text-3);margin-right:4px}
 .filter-btn{font-size:12px;font-weight:500;padding:5px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
 .filter-btn:hover{border-color:rgba(0,0,0,.2)}
@@ -167,11 +171,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <div class="publish-row">
       <span class="publish-label" id="coverageLabel">Data reviewed: —</span>
     </div>
-    <div class="publish-row" id="statusSaveRow" style="display:none">
-      <span class="publish-label">Status changes: <span id="statusDirtyCount">0</span> unsaved</span>
-      <button class="status-btn st-ops" id="saveStatusBtn" onclick="saveStatusChanges()">Save status changes</button>
-      <span class="publish-msg" id="statusSaveMsg"></span>
-    </div>
     <div class="publish-row">
       <span class="publish-label">Step 2 · Get posts from:</span>
       <input type="date" id="downloadFrom">
@@ -204,12 +203,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <span class="publish-msg" id="dateFilterMsg"></span>
     </div>
     <div class="period-summary" id="periodSummary" style="display:none"></div>
-    <div class="filter-bar" id="filterBar" style="display:none">
-      <span class="filter-label">Show:</span>
-      <button class="filter-btn fb-all" data-f="all" onclick="setFilter('all',this)">All accounts</button>
-      <button class="filter-btn" data-f="medium" onclick="setFilter('medium',this)">MEDIUM</button>
-      <button class="filter-btn" data-f="low" onclick="setFilter('low',this)">LOW</button>
-      <button class="filter-btn" data-f="clean" onclick="setFilter('clean',this)">Clean</button>
+    <!-- Save sits beside Show: but outside #filterBar, so unsaved changes stay
+         saveable even when render() hides the filter buttons. -->
+    <div class="results-bar">
+      <div class="filter-bar" id="filterBar" style="display:none">
+        <span class="filter-label">Show:</span>
+        <button class="filter-btn fb-all" data-f="all" onclick="setFilter('all',this)">All accounts</button>
+        <button class="filter-btn" data-f="medium" onclick="setFilter('medium',this)">MEDIUM</button>
+        <button class="filter-btn" data-f="low" onclick="setFilter('low',this)">LOW</button>
+        <button class="filter-btn" data-f="clean" onclick="setFilter('clean',this)">Clean</button>
+      </div>
+      <div class="status-save" id="statusSaveRow" style="display:none">
+        <span class="publish-msg" id="statusSaveMsg"></span>
+        <span class="status-save-label">Status changes: <span id="statusDirtyCount">0</span> unsaved</span>
+        <button class="status-btn st-ops" id="saveStatusBtn" onclick="saveStatusChanges()">Save status changes</button>
+      </div>
     </div>
     <div class="studio-list" id="studioList"><div class="empty">Pick a date range above and click Apply to see posts from that period.</div></div>
   </div>
