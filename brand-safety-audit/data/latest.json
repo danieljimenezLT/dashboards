@@ -1,62 +1,392 @@
 {
-  "cycle": "2026-08",
-  "period": "August 2026",
-  "generated": "2026-08-24",
+  "cycle": "2026-10",
+  "period": "October 2026",
+  "generated": "2026-10-05",
   "coverage": {
-    "from": "2026-08-01",
-    "to": "2026-08-03"
+    "from": "2026-10-01",
+    "to": "2026-10-02"
   },
-  "source": "Buffer (manual Claude.ai review — cover images inspected via Claude in Chrome)",
-  "postsReviewed": 22,
+  "source": "Buffer (Claude.ai review — brand-safety-audit skill)",
+  "postsReviewed": 261,
   "accounts": [
     {
       "name": "Aventura",
       "handle": "sweat440aventurafl",
-      "posts": 1,
+      "posts": 11,
       "status": "flagged",
       "flags": [
         {
-          "id": "6a6e95f52155cb3411c6547f",
+          "id": "6ac00005cfd9a59298d412ad",
           "level": "medium",
           "category": "Loose brand adherence",
-          "confidence": "HIGH",
-          "date": "2026-08-01T14:00:04.000Z",
-          "postType": "Static",
+          "confidence": "MEDIUM",
+          "date": "2026-10-02T18:56:20.000Z",
+          "postType": "Story",
           "visualReviewed": true,
-          "caption": "We're taking the sweat to the courts 🔥 \n\nJoin us for Padel & Push — a FREE workout with Sweat440 at Ultra Padel Aventura. \n\nTuesday, August 4th at 6PM. \nAll levels welcome, no experience needed. \n\nRegister on Eventbrite and SweatPals!",
-          "why": "Caption: promotes a free SWEAT440 workout hosted at third-party venue Ultra Padel Aventura, with registration routed to two external platforms (Eventbrite and SweatPals) rather than SWEAT440 booking. Visual analysis: the flyer is a dark, desaturated padel-court photo with white Oswald-style type and a single #00A3E0 time chip — the SWEAT440 mark does not appear anywhere on the cover, and the dark, moody treatment runs against the bright, vivid brand look.",
-          "action": "Verify Ultra Padel Aventura is an approved venue partner and that off-platform registration via Eventbrite/SweatPals is sanctioned. Separately, ask Aventura to add the official mark and move to an on-palette treatment — a co-hosted event flyer with no SWEAT440 logo is the bigger issue here.",
-          "link": "https://www.instagram.com/p/DbYsjx1Allb/"
+          "caption": "",
+          "foundIn": "image",
+          "reason": "The flyer promotes an off-site bootcamp co-branded with Mr. Rotisserie/Mr. Caffe, with registration on SweatPals instead of SWEAT440 booking.",
+          "why": "Caption: none. Visual analysis: Repost of a collab flyer '#NEVERLATE Bootcamp + Coffee' showing the SWEAT440 logo beside the Mr. Rotisserie / Mr. Caffe logo, a Hallandale Beach venue, 'Register on SweatPals', Sunday Oct 4.",
+          "action": "Verify the Mr. Rotisserie/Mr. Caffe partnership and SweatPals registration are approved; same #NEVERLATE series as the Bulla brunch Story the same day.",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69efb8695c4c051afae67ea7/6ac00005cfd9a59298d412ad_thumbnail.jpg"
+        },
+        {
+          "id": "6abfab3a3b5912fdd8026dfa",
+          "level": "medium",
+          "category": "Loose brand adherence",
+          "confidence": "MEDIUM",
+          "date": "2026-10-02T12:45:00.000Z",
+          "postType": "Story",
+          "visualReviewed": true,
+          "caption": "FREE Workout + Brunch TOMORROW!",
+          "foundIn": "image",
+          "reason": "The flyer promotes a workout-plus-brunch at Bulla, a third-party restaurant, with sign-up on SweatPals or Eventbrite instead of SWEAT440 booking.",
+          "why": "Caption: 'FREE Workout + Brunch TOMORROW!' Visual analysis: '#NEVERLATE Brunch Club' flyer, Saturday Oct 3, 'Register on SweatPals or Eventbrite', SWEAT440 logo next to the Bulla logo, Miami address.",
+          "action": "Verify Bulla is an approved partner and that off-site events may use SweatPals/Eventbrite registration.",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69efb8695c4c051afae67ea7/6abfab3a3b5912fdd8026dfa_thumbnail.jpg"
+        },
+        {
+          "id": "6abe823e5ae85469ead946a7",
+          "level": "low",
+          "category": "Loose brand adherence",
+          "confidence": "LOW",
+          "date": "2026-10-01T15:49:36.000Z",
+          "postType": "Story",
+          "visualReviewed": true,
+          "caption": "",
+          "foundIn": "image",
+          "reason": "The reshared event lineup lists SWEAT440's HIIT workout alongside an IV therapy hydration bar, a third-party medical provider.",
+          "why": "Caption: none. Visual analysis: Reshare of @runknownclub 'Exotics & Exercise Vol. 2' lineup at The Abbey at Aventura: 'HIIT Workout by SWEAT440' next to 'Hydration Bar by Elemental IV Therapy', a Lamborghini display, and several brand vendors.",
+          "action": "Confirm the studio's participation in the Runknown event was approved and that SWEAT440 is not presented as partnering with the IV therapy provider.",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69efb8695c4c051afae67ea7/6abe823e5ae85469ead946a7_thumbnail.jpg"
         }
       ],
       "postLog": [
         {
-          "id": "6a6e95f52155cb3411c6547f",
-          "date": "2026-08-01T14:00:04.000Z",
-          "postType": "Static",
-          "caption": "We're taking the sweat to the courts 🔥 \n\nJoin us for Padel & Push — a FREE workout with Sweat440 at Ultra Padel Aventura. \n\nTuesday, August 4th at 6PM. \nAll levels welcome, no experience needed. \n\nRegister on Eventbrite and SweatPals!",
-          "link": "https://www.instagram.com/p/DbYsjx1Allb/",
+          "id": "6ac054d815fc88bd33d28b57",
+          "date": "2026-10-02T23:26:21.000Z",
+          "postType": "Video story (cover)",
+          "caption": "We’re at the @ultraclubofficial tournament! Come say hi & claim your free week!💙",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69efb8695c4c051afae67ea7/6ac054d815fc88bd33d28b57_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6ac02a78db537ef4125dd20d",
+          "date": "2026-10-02T19:24:55.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69efb8695c4c051afae67ea7/6ac02a78db537ef4125dd20d_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6ac00005cfd9a59298d412ad",
+          "date": "2026-10-02T18:56:20.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69efb8695c4c051afae67ea7/6ac00005cfd9a59298d412ad_thumbnail.jpg",
           "flagged": true,
           "level": "medium",
           "category": "Loose brand adherence"
+        },
+        {
+          "id": "6ab13d91ad9e7419dd039647",
+          "date": "2026-10-02T16:45:22.831Z",
+          "postType": "Static",
+          "caption": "Your chance to experience SWEAT440 is here! 🎉🤩 \n\nSign up with $0 down today and enjoy 7 days risk-free! 💦 Click the link in our bio to join the SWEAT440 family.",
+          "link": "https://www.instagram.com/p/Dd_8aS5jNYz/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfab3a3b5912fdd8026dfa",
+          "date": "2026-10-02T12:45:00.000Z",
+          "postType": "Story",
+          "caption": "FREE Workout + Brunch TOMORROW!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69efb8695c4c051afae67ea7/6abfab3a3b5912fdd8026dfa_thumbnail.jpg",
+          "flagged": true,
+          "level": "medium",
+          "category": "Loose brand adherence"
+        },
+        {
+          "id": "6abf2bece6d24779552f0206",
+          "date": "2026-10-02T02:19:32.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69efb8695c4c051afae67ea7/6abf2bece6d24779552f0206_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf887f3c943f806d0d9e4a",
+          "date": "2026-10-02T02:18:53.000Z",
+          "postType": "Static",
+          "caption": "ONE FREE YEAR. 🎉💙\n\nCongratulations to Monica Jaramillo, our SWEAT440 Aventura referral giveaway winner! 🥳 You just won a FREE YEAR of SWEAT440!\n\nThank you to everyone who participated and helped us spread the word. We can’t wait to see you all in the studio! 💪",
+          "link": "https://www.instagram.com/p/Dd-ZI8GIZtP/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf018238e87cff688cf879",
+          "date": "2026-10-01T22:04:01.000Z",
+          "postType": "Video story (cover)",
+          "caption": "MOVED TO NEXT THURSDAY DUE TO RAIN! ☔️",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69efb8695c4c051afae67ea7/6abf018238e87cff688cf879_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe823e5ae85469ead946a7",
+          "date": "2026-10-01T15:49:36.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69efb8695c4c051afae67ea7/6abe823e5ae85469ead946a7_thumbnail.jpg",
+          "flagged": true,
+          "level": "low",
+          "category": "Loose brand adherence"
+        },
+        {
+          "id": "6abe823e5ae85469ead946a9",
+          "date": "2026-10-01T15:49:16.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69efb8695c4c051afae67ea7/6abe823e5ae85469ead946a9_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe57d1f0ef6b3127a72224",
+          "date": "2026-10-01T12:47:48.000Z",
+          "postType": "Video story (cover)",
+          "caption": "TONIGHT! 6:30PM",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69efb8695c4c051afae67ea7/6abe57d1f0ef6b3127a72224_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
         }
       ]
     },
     {
       "name": "Boca Raton",
       "handle": "sweat440boca",
-      "posts": 0,
+      "posts": 6,
       "status": "clean",
       "flags": [],
-      "postLog": []
+      "postLog": [
+        {
+          "id": "6ac04fe7c4db7d4d779e86f9",
+          "date": "2026-10-02T23:50:44.000Z",
+          "postType": "Story",
+          "caption": "SEE YOU BRIGHT AND EALRY ☀️☀️☀️☀️☀️☀️",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68005f2c2799bb0a2395d839/6ac04fe7c4db7d4d779e86f9_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfd01cdbdb121bcaf68612",
+          "date": "2026-10-02T15:33:54.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68005f2c2799bb0a2395d839/6abfd01cdbdb121bcaf68612_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abed16538e87cff6886fa64",
+          "date": "2026-10-01T18:56:22.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68005f2c2799bb0a2395d839/6abed16538e87cff6886fa64_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe7c921e411e5cdc55fa2e",
+          "date": "2026-10-01T15:29:38.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68005f2c2799bb0a2395d839/6abe7c921e411e5cdc55fa2e_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe5175684826d8ba15a614",
+          "date": "2026-10-01T11:11:07.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68005f2c2799bb0a2395d839/6abe5175684826d8ba15a614_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe5175684826d8ba15a612",
+          "date": "2026-10-01T11:10:58.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68005f2c2799bb0a2395d839/6abe5175684826d8ba15a612_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
     },
     {
       "name": "Brickell",
       "handle": "sweat440brickell",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
+      "posts": 12,
+      "status": "flagged",
+      "flags": [
+        {
+          "id": "6abec3d7b5024b428f0ab119",
+          "level": "low",
+          "category": "Loose brand adherence",
+          "confidence": "LOW",
+          "date": "2026-10-01T19:15:17.000Z",
+          "postType": "Story",
+          "visualReviewed": true,
+          "caption": "",
+          "foundIn": "image",
+          "reason": "The Story is an apparently accidental phone screenshot of the iOS Control Center, off-brand content showing personal device details.",
+          "why": "Caption: none. Visual analysis: Image shows an iPhone Control Center ('Person-al' focus, 'Living Room Apple TV', 12% battery) with no studio content.",
+          "action": "Check with the Brickell team whether this was posted by mistake and remind them to review Stories before posting.",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392b403b0f09002f9a7e25/6abec3d7b5024b428f0ab119_thumbnail.jpg"
+        }
+      ],
+      "postLog": [
+        {
+          "id": "6abfed3e6b4606be9c3b65cf",
+          "date": "2026-10-02T14:55:25.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392b403b0f09002f9a7e25/6abfed3e6b4606be9c3b65cf_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfc2cb42c01b9483932402",
+          "date": "2026-10-02T13:17:35.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392b403b0f09002f9a7e25/6abfc2cb42c01b9483932402_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf985a0da718abc91e9824",
+          "date": "2026-10-02T10:55:03.000Z",
+          "postType": "Story",
+          "caption": "@makeawishsfla  FRIDAY IS HERE!  Let’s get that upper-body workout in before we kick off the weekend! Arms first, beach, pool, brunch… and then we’ll figure out what we actually have energy for!\n\nWe’re also kicking off our Make-A-Wish Southern Florida fundraiser! Purchase a class and donate to a great cause. Let’s be honest, we’re spending money anyway. It’s Miami! Might as well make some of it count!\n\nCome sweat, do some good, and start your weekend RIGHT! See you at SWEAT4",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392b403b0f09002f9a7e25/6abf985a0da718abc91e9824_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeee449e283b29ce32a296",
+          "date": "2026-10-01T21:00:28.000Z",
+          "postType": "Story",
+          "caption": "What is UP with this weather?! But if you made it to SWEAT440 today, you’re built different!\n\nLook who was SO happy to take a picture with @ashleycolemaneastcobb_ _… right after finishing her workout and making a beeline for the exit! No time for small talk, Ashley! She came, she conquered, she OUT!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392b403b0f09002f9a7e25/6abeee449e283b29ce32a296_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeee449e283b29ce32a299",
+          "date": "2026-10-01T20:52:41.000Z",
+          "postType": "Story",
+          "caption": "Terry did NOT ask for this! Coach Ashley said, “POSE!” and Terry understood the assignment! 💃📸 Giving us full-on Madonna vibes! At SWEAT440, you come for the workout but leave with a photoshoot you never signed up for!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392b403b0f09002f9a7e25/6abeee449e283b29ce32a299_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abec3d7b5024b428f0ab115",
+          "date": "2026-10-01T19:42:26.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392b403b0f09002f9a7e25/6abec3d7b5024b428f0ab115_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abec3d7b5024b428f0ab10e",
+          "date": "2026-10-01T19:41:40.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392b403b0f09002f9a7e25/6abec3d7b5024b428f0ab10e_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abec3d7b5024b428f0ab119",
+          "date": "2026-10-01T19:15:17.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392b403b0f09002f9a7e25/6abec3d7b5024b428f0ab119_thumbnail.jpg",
+          "flagged": true,
+          "level": "low",
+          "category": "Loose brand adherence"
+        },
+        {
+          "id": "6abec3d7b5024b428f0ab111",
+          "date": "2026-10-01T19:13:36.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392b403b0f09002f9a7e25/6abec3d7b5024b428f0ab111_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abec3d7b5024b428f0ab117",
+          "date": "2026-10-01T19:11:49.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392b403b0f09002f9a7e25/6abec3d7b5024b428f0ab117_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe43d7b41bd53f9ea77a93",
+          "date": "2026-10-01T08:27:16.000Z",
+          "postType": "Story",
+          "caption": "🚨 440 CLASSES, ROSA! 🚨 \nAt this point, she practically owns the studio! Rosa isn’t just a member, she’s part of the furniture! Congratulations on 440! Here’s to 440 more!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392b403b0f09002f9a7e25/6abe43d7b41bd53f9ea77a93_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe1966a9294bb9986cc4da",
+          "date": "2026-10-01T08:10:23.000Z",
+          "postType": "Story",
+          "caption": "250 CLASSES! \n\nCongratulations, Irene! 🔥 You’ve earned your spot on THE BOARD and officially become SWEAT440 BRICKELL FAMOUS! \n\nNext stop: 500!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392b403b0f09002f9a7e25/6abe1966a9294bb9986cc4da_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
     },
     {
       "name": "Burlington",
@@ -69,18 +399,106 @@
     {
       "name": "Charlotte - South End",
       "handle": "sweat440charlottesouthend",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
+      "posts": 2,
+      "status": "flagged",
+      "flags": [
+        {
+          "id": "6abe75aac9fe3144aac7cda8",
+          "level": "low",
+          "category": "Logo misuse",
+          "confidence": "LOW",
+          "date": "2026-10-01T15:00:14.000Z",
+          "postType": "Static",
+          "visualReviewed": true,
+          "caption": "SWEAT440 is officially part of the South End neighborhood! 💙🔥\n\nYou can find us right along the Rail Trail, nestled between our neighbors @jetsetsouthendclt and @peachystudio .\n\nWe’re so excited to officially be part of the South End community. More details coming soon… 👀",
+          "foundIn": "image",
+          "reason": "The photo shows the property directory sign rendering the SWEAT440 logo in white on an orange panel, a non-approved color treatment.",
+          "why": "Caption: neighborhood welcome post naming @jetsetsouthendclt and @peachystudio. Visual analysis: Linea directory sign lists 'SWEAT 440' with the shield mark on an orange plaque in landlord signage styling.",
+          "action": "Confirm whether landlord signage in photos is acceptable; if not, swap the cover for an image of the studio's own signage.",
+          "link": "https://www.instagram.com/p/Dd9LKJ_uSkd/"
+        }
+      ],
+      "postLog": [
+        {
+          "id": "6abe8056ef366d7f380a22bc",
+          "date": "2026-10-01T15:00:32.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a7c9930b2d9d57743641383/6abe8056ef366d7f380a22bc_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe75aac9fe3144aac7cda8",
+          "date": "2026-10-01T15:00:14.000Z",
+          "postType": "Static",
+          "caption": "SWEAT440 is officially part of the South End neighborhood! 💙🔥\n\nYou can find us right along the Rail Trail, nestled between our neighbors @jetsetsouthendclt and @peachystudio .\n\nWe’re so excited to officially be part of the South End community. More details coming soon… 👀",
+          "link": "https://www.instagram.com/p/Dd9LKJ_uSkd/",
+          "flagged": true,
+          "level": "low",
+          "category": "Logo misuse"
+        }
+      ]
     },
     {
       "name": "Chelsea",
       "handle": "sweat440chelsea",
-      "posts": 0,
+      "posts": 5,
       "status": "clean",
       "flags": [],
-      "postLog": []
+      "postLog": [
+        {
+          "id": "6abfedb7e34d907978ce771d",
+          "date": "2026-10-02T16:30:57.000Z",
+          "postType": "Story",
+          "caption": "You got this!! Keep Crushing it 💪💥🔥 👏🏼👏🏼👏🏼",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8ce0/6abfedb7e34d907978ce771d_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfc34c42c01b9483933c3e",
+          "date": "2026-10-02T14:02:38.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8ce0/6abfc34c42c01b9483933c3e_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfc34c42c01b9483933c40",
+          "date": "2026-10-02T14:02:30.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8ce0/6abfc34c42c01b9483933c40_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe9a0d76b22f7c61818b4c",
+          "date": "2026-10-01T14:41:09.000Z",
+          "postType": "Story",
+          "caption": "💥💥💥",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8ce0/6abe9a0d76b22f7c61818b4c_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe9a0d76b22f7c61818b4e",
+          "date": "2026-10-01T14:40:16.000Z",
+          "postType": "Story",
+          "caption": "🔥🔥🔥",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8ce0/6abe9a0d76b22f7c61818b4e_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
     },
     {
       "name": "Coconut Grove",
@@ -93,24 +511,85 @@
     {
       "name": "Coral Gables",
       "handle": "sweat440gables",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
-    },
-    {
-      "name": "Coral Springs",
-      "handle": "sweat440coralsprings",
-      "posts": 1,
+      "posts": 5,
       "status": "clean",
       "flags": [],
       "postLog": [
         {
-          "id": "6a70ead310454f237e06ff4f",
-          "date": "2026-08-03T17:45:03.000Z",
-          "postType": "Static",
+          "id": "6ac01772e34d907978d37a7a",
+          "date": "2026-10-02T20:13:19.000Z",
+          "postType": "Story",
           "caption": "",
-          "link": "https://www.instagram.com/p/DbliGthxqQo/",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8cb3/6ac01772e34d907978d37a7a_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abff89d18eac88596564690",
+          "date": "2026-10-02T18:26:06.000Z",
+          "postType": "Static",
+          "caption": "We are so proud to celebrate our October Member of the Month, Yasmin! Yasmin has always been incredibly consistent and dedicated to her fitness journey, but we admire her commitment even more as she prepares to welcome her baby! She joined SWEAT440 because she wanted to find a workout routine she could truly stick with, and the convenience of having a class every 10 minutes has made it easy to fit fitness into her busy schedule. She has set an amazing goal of reaching 1,000 classes before giving birth, and we’ll be cheering her on every step of the way. Yasmin, we are so proud of you and everything you’ve accomplished! We can’t wait to watch you hit that incredible 1,000-class milestone and, of course, meet your little one 🫶🏼✨",
+          "link": "https://www.instagram.com/p/DeAH3hboej7/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf982f02ae9a1229a3d640",
+          "date": "2026-10-02T10:57:22.000Z",
+          "postType": "Video story (cover)",
+          "caption": "Friday morning energy 😂",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8cb3/6abf982f02ae9a1229a3d640_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeee3dd7aaa6eb91ff5116",
+          "date": "2026-10-01T21:43:27.000Z",
+          "postType": "Video story (cover)",
+          "caption": "@THECATMANTRA",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8cb3/6abeee3dd7aaa6eb91ff5116_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe6efb0d3d205e61645136",
+          "date": "2026-10-01T13:59:35.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8cb3/6abe6efb0d3d205e61645136_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
+    },
+    {
+      "name": "Coral Springs",
+      "handle": "sweat440coralsprings",
+      "posts": 2,
+      "status": "clean",
+      "flags": [],
+      "postLog": [
+        {
+          "id": "6abeee0c7109cfd2a72b94b5",
+          "date": "2026-10-01T22:05:09.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392ba23b0f09002f9e6a89/6abeee0c7109cfd2a72b94b5_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abec39c38e87cff68851530",
+          "date": "2026-10-01T18:58:54.000Z",
+          "postType": "Story",
+          "caption": "🔥💙",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392ba23b0f09002f9e6a89/6abec39c38e87cff68851530_thumbnail.jpg",
           "flagged": false,
           "level": null,
           "category": null
@@ -120,24 +599,195 @@
     {
       "name": "Dallas - Uptown",
       "handle": "sweat440dallasuptown",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
-    },
-    {
-      "name": "Deerfield Beach",
-      "handle": "sweat440deerfield",
       "posts": 1,
       "status": "clean",
       "flags": [],
       "postLog": [
         {
-          "id": "6a711dbdef9baa45af8aad0c",
-          "date": "2026-08-03T22:56:03.000Z",
-          "postType": "Carousel",
+          "id": "6abed698fa6dbc4073cc6f46",
+          "date": "2026-10-01T19:33:33.000Z",
+          "postType": "Video story (cover)",
+          "caption": "We’re getting so close UPTOWN",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69d57dc9031bfa423cdd39e5/6abed698fa6dbc4073cc6f46_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
+    },
+    {
+      "name": "Deerfield Beach",
+      "handle": "sweat440deerfield",
+      "posts": 17,
+      "status": "clean",
+      "flags": [],
+      "postLog": [
+        {
+          "id": "6ac018a6d4a494e9097623dd",
+          "date": "2026-10-02T19:01:25.000Z",
+          "postType": "Video story (cover)",
           "caption": "",
-          "link": "https://www.instagram.com/p/DbmHKTWEZNr/",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6ac018a6d4a494e9097623dd_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfee381f886de868ba0ba3",
+          "date": "2026-10-02T16:50:37.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6abfee381f886de868ba0ba3_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfee381f886de868ba0ba7",
+          "date": "2026-10-02T15:50:19.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6abfee381f886de868ba0ba7_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfee381f886de868ba0bb7",
+          "date": "2026-10-02T15:47:25.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6abfee381f886de868ba0bb7_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfee381f886de868ba0baa",
+          "date": "2026-10-02T15:47:16.000Z",
+          "postType": "Video story (cover)",
+          "caption": "You don’t want to miss it",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6abfee381f886de868ba0baa_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfee381f886de868ba0bac",
+          "date": "2026-10-02T15:46:38.000Z",
+          "postType": "Video story (cover)",
+          "caption": "FRIDAY 🔥🔥🔥🔥🔥",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6abfee381f886de868ba0bac_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfee381f886de868ba0bb1",
+          "date": "2026-10-02T15:37:00.000Z",
+          "postType": "Video story (cover)",
+          "caption": "SO GOOD",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6abfee381f886de868ba0bb1_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfee381f886de868ba0bae",
+          "date": "2026-10-02T15:36:17.000Z",
+          "postType": "Video story (cover)",
+          "caption": "EXTRA MILE!!!!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6abfee381f886de868ba0bae_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfee381f886de868ba0ba1",
+          "date": "2026-10-02T15:28:33.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6abfee381f886de868ba0ba1_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfee381f886de868ba0ba5",
+          "date": "2026-10-02T15:28:15.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6abfee381f886de868ba0ba5_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeef63e6d2477955276be7",
+          "date": "2026-10-01T23:04:07.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6abeef63e6d2477955276be7_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeef63e6d2477955276be3",
+          "date": "2026-10-01T22:55:48.000Z",
+          "postType": "Story",
+          "caption": "WAY TO \nWORK!!!!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6abeef63e6d2477955276be3_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeef63e6d2477955276bde",
+          "date": "2026-10-01T21:25:44.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6abeef63e6d2477955276bde_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeef63e6d2477955276be5",
+          "date": "2026-10-01T21:01:15.000Z",
+          "postType": "Story",
+          "caption": "Let’s go \nJESSICA!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6abeef63e6d2477955276be5_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeef63e6d2477955276be1",
+          "date": "2026-10-01T21:00:32.000Z",
+          "postType": "Story",
+          "caption": "HAPPY BIRTHDAY RICHARD @kt.kakes  @rafaaavalos",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6abeef63e6d2477955276be1_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abdf03580485dc78148ea7a",
+          "date": "2026-10-01T03:00:41.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6abdf03580485dc78148ea7a_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abdf03580485dc78148ea78",
+          "date": "2026-10-01T03:00:10.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c7e/6abdf03580485dc78148ea78_thumbnail.jpg",
           "flagged": false,
           "level": null,
           "category": null
@@ -147,24 +797,171 @@
     {
       "name": "Doral",
       "handle": "sweat440doral",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
-    },
-    {
-      "name": "Dunwoody",
-      "handle": "sweat440dunwoody",
-      "posts": 1,
+      "posts": 6,
       "status": "clean",
       "flags": [],
       "postLog": [
         {
-          "id": "6a70a6dc6d1e06a1b72ba9bb",
-          "date": "2026-08-02T19:59:50.000Z",
-          "postType": "Carousel",
+          "id": "6ac06b8816f1baab00090332",
+          "date": "2026-10-02T23:54:37.000Z",
+          "postType": "Story",
           "caption": "",
-          "link": "https://www.instagram.com/p/DbjOMzflhkQ/",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392d203b0f09002fad128b/6ac06b8816f1baab00090332_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6ac06b8816f1baab00090336",
+          "date": "2026-10-02T23:54:33.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392d203b0f09002fad128b/6ac06b8816f1baab00090336_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf17c2272057fc139cb348",
+          "date": "2026-10-02T02:06:04.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392d203b0f09002fad128b/6abf17c2272057fc139cb348_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf17c2272057fc139cb342",
+          "date": "2026-10-02T02:05:59.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392d203b0f09002fad128b/6abf17c2272057fc139cb342_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf17c2272057fc139cb346",
+          "date": "2026-10-02T02:05:50.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392d203b0f09002fad128b/6abf17c2272057fc139cb346_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abdc3720969cae80823de74",
+          "date": "2026-10-01T00:32:56.000Z",
+          "postType": "Video story (cover)",
+          "caption": "LET’S GO!!!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392d203b0f09002fad128b/6abdc3720969cae80823de74_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
+    },
+    {
+      "name": "Dunwoody",
+      "handle": "sweat440dunwoody",
+      "posts": 8,
+      "status": "flagged",
+      "flags": [
+        {
+          "id": "6abeacdaf5ecd28eb225d61d",
+          "level": "medium",
+          "category": "Loose brand adherence",
+          "confidence": "MEDIUM",
+          "date": "2026-10-01T17:40:35.000Z",
+          "postType": "Video story (cover)",
+          "visualReviewed": true,
+          "caption": "@viomedspadunwoody  Check them out at Wellness in the Park tomorrow💆‍♀️⚡️💆‍♂️",
+          "foundIn": "both",
+          "reason": "The Story promotes VIO Med Spa, a third-party medical aesthetics provider, as part of the studio's Wellness in the Park event.",
+          "why": "Caption: '@viomedspadunwoody Check them out at Wellness in the Park tomorrow'. Visual analysis: Cover frame only. The frame shows the same text with the @viomedspadunwoody tag.",
+          "action": "Verify documented approval for VIO Med Spa as an event partner; if none, remove the Story and the med spa from event promotion.",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a33fe6938b5579345ac3157/6abeacdaf5ecd28eb225d61d_thumbnail.jpg"
+        }
+      ],
+      "postLog": [
+        {
+          "id": "6ac0003c8feb074e290d98be",
+          "date": "2026-10-02T17:54:59.000Z",
+          "postType": "Video story (cover)",
+          "caption": "WHOA!! \nCongrats🎉Guys\nHard work and dedication go a long way",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a33fe6938b5579345ac3157/6ac0003c8feb074e290d98be_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfd5d7d89411416ce9495e",
+          "date": "2026-10-02T15:49:02.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a33fe6938b5579345ac3157/6abfd5d7d89411416ce9495e_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfd5d7d89411416ce94961",
+          "date": "2026-10-02T15:41:33.000Z",
+          "postType": "Video story (cover)",
+          "caption": "RSVP Link is in our bio💫",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a33fe6938b5579345ac3157/6abfd5d7d89411416ce94961_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeacdaf5ecd28eb225d61d",
+          "date": "2026-10-01T17:40:35.000Z",
+          "postType": "Video story (cover)",
+          "caption": "@viomedspadunwoody  Check them out at Wellness in the Park tomorrow💆‍♀️⚡️💆‍♂️",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a33fe6938b5579345ac3157/6abeacdaf5ecd28eb225d61d_thumbnail.jpg",
+          "flagged": true,
+          "level": "medium",
+          "category": "Loose brand adherence"
+        },
+        {
+          "id": "6abeacdaf5ecd28eb225d621",
+          "date": "2026-10-01T16:02:11.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a33fe6938b5579345ac3157/6abeacdaf5ecd28eb225d621_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe8274db442ee635c5b508",
+          "date": "2026-10-01T15:41:05.000Z",
+          "postType": "Video story (cover)",
+          "caption": "Ooooh more healthy nutritional options in Dunwoody🥗😍 Amazing treats to share with us tomorrow at \nWellness in the Park!🤤",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a33fe6938b5579345ac3157/6abe8274db442ee635c5b508_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe8274db442ee635c5b506",
+          "date": "2026-10-01T15:24:59.000Z",
+          "postType": "Video story (cover)",
+          "caption": "Do you need movement? \nAre you in need sisterhood?\n@girlswhowalk_dunwoody  is the answer🤩💙 They’re coming out tomorrow evening and we’re so excited!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a33fe6938b5579345ac3157/6abe8274db442ee635c5b506_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe580af0ef6b3127a728b1",
+          "date": "2026-10-01T11:27:02.000Z",
+          "postType": "Video story (cover)",
+          "caption": "…come see us at Starbucks in the Village of Dunwoody",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a33fe6938b5579345ac3157/6abe580af0ef6b3127a728b1_thumbnail.jpg",
           "flagged": false,
           "level": null,
           "category": null
@@ -179,31 +976,31 @@
       "flags": [],
       "postLog": [
         {
-          "id": "6a6f7a5fff0f90915e8b4691",
-          "date": "2026-08-02T17:09:21.000Z",
-          "postType": "Static",
+          "id": "6abffbc31f886de868bc0135",
+          "date": "2026-10-02T16:01:05.000Z",
+          "postType": "Video story (cover)",
           "caption": "",
-          "link": "https://www.instagram.com/p/Dbi6TRTpNmS/",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6865a743acfb098c6929f5cb/6abffbc31f886de868bc0135_thumbnail.jpg",
           "flagged": false,
           "level": null,
           "category": null
         },
         {
-          "id": "6a6e49f32621d2891dc2130c",
-          "date": "2026-08-01T19:30:24.000Z",
-          "postType": "Carousel",
+          "id": "6abfd14ea804627210267d63",
+          "date": "2026-10-02T13:27:49.000Z",
+          "postType": "Story",
           "caption": "",
-          "link": "https://www.instagram.com/p/DbgmCViFL9V/",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6865a743acfb098c6929f5cb/6abfd14ea804627210267d63_thumbnail.jpg",
           "flagged": false,
           "level": null,
           "category": null
         },
         {
-          "id": "6a6e41793cd32b54972a001e",
-          "date": "2026-08-01T18:26:49.000Z",
-          "postType": "Static",
+          "id": "6abfd14ea804627210267d65",
+          "date": "2026-10-02T12:52:42.000Z",
+          "postType": "Story",
           "caption": "",
-          "link": "https://www.instagram.com/p/DbgegpppBaQ/",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6865a743acfb098c6929f5cb/6abfd14ea804627210267d65_thumbnail.jpg",
           "flagged": false,
           "level": null,
           "category": null
@@ -213,24 +1010,16 @@
     {
       "name": "FiDi",
       "handle": "sweat440fidi",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
-    },
-    {
-      "name": "Fort Myers",
-      "handle": "sweat440fortmyers",
       "posts": 1,
       "status": "clean",
       "flags": [],
       "postLog": [
         {
-          "id": "6a6e78eb8519e1cb87f565c9",
-          "date": "2026-08-01T22:06:35.000Z",
-          "postType": "Carousel",
+          "id": "6ac042b78ec3565d320f4b41",
+          "date": "2026-10-02T20:47:31.000Z",
+          "postType": "Story",
           "caption": "",
-          "link": "https://www.instagram.com/p/Dbg36ONgXG2/",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/654a51b47a6cf4d23fe20502/6ac042b78ec3565d320f4b41_thumbnail.jpg",
           "flagged": false,
           "level": null,
           "category": null
@@ -238,26 +1027,498 @@
       ]
     },
     {
-      "name": "Herriman",
-      "handle": "sweat440herriman",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
+      "name": "Fort Myers",
+      "handle": "sweat440fortmyers",
+      "posts": 18,
+      "status": "flagged",
+      "flags": [
+        {
+          "id": "6ac02aa215fc88bd33cd39ab",
+          "level": "medium",
+          "category": "Active alcohol consumption",
+          "confidence": "MEDIUM",
+          "date": "2026-10-02T20:54:44.000Z",
+          "postType": "Video story (cover)",
+          "visualReviewed": true,
+          "caption": "@backyardsocialfl",
+          "foundIn": "image",
+          "reason": "The 'Sweatchella' flyer advertises a free mimosa with a $25 ticketed workout at Backyard Social, sold through Eventbrite.",
+          "why": "Caption: '@backyardsocialfl'. Visual analysis: Cover frame only. Flyer reads 'LIVE DJ | FREE MIMOSA | KILLER WORKOUT', 'Tickets $25', 'Complimentary mimosa', 'Get your tickets now! Eventbrite.com'; co-branded with Backyard Social. Same event promoted in several Fort Myers Stories.",
+          "action": "Confirm alcohol in event promotion is allowed; verify the Backyard Social partnership and Eventbrite ticketing are approved.",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6ac02aa215fc88bd33cd39ab_thumbnail.jpg"
+        },
+        {
+          "id": "6abf01b6d7aaa6eb9102000a",
+          "level": "low",
+          "category": "Active alcohol consumption",
+          "confidence": "LOW",
+          "date": "2026-10-01T23:17:05.000Z",
+          "postType": "Story",
+          "visualReviewed": true,
+          "caption": "",
+          "foundIn": "image",
+          "reason": "At the Millennial Brewing event, a planking participant is fed a drink from a small cup; it may be beer.",
+          "why": "Caption: none. Visual analysis: Reshare from @findinghannahdailyy: a woman holds a small clear cup to a planking man's mouth at the brewery's Oktoberfest stage where the studio ran a plank challenge.",
+          "action": "Check what the drink is; if alcohol, remove the Story.",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abf01b6d7aaa6eb9102000a_thumbnail.jpg"
+        },
+        {
+          "id": "6abf01b6d7aaa6eb91020000",
+          "level": "medium",
+          "category": "Active alcohol consumption",
+          "confidence": "MEDIUM",
+          "date": "2026-10-01T22:25:19.000Z",
+          "postType": "Video story (cover)",
+          "visualReviewed": true,
+          "caption": "",
+          "foundIn": "image",
+          "reason": "The studio's challenge board at Millennial Brewing offers 'FREE BEER' for trying a free week at SWEAT440.",
+          "why": "Caption: none. Visual analysis: Cover frame only. Handwritten whiteboard: 'Challenge! Can you plank longer than your friend? ... Try a free week @ SWEAT440 → FREE BEER', at the brewery's Oktoberfest stage. Related Stories (@millennialbrewing tag, plank challenge) show the same setup.",
+          "action": "Confirm beer may be used as a sign-up incentive and that the Millennial Brewing partnership is approved; ask the studio to drop the beer offer if not.",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abf01b6d7aaa6eb91020000_thumbnail.jpg"
+        },
+        {
+          "id": "6abeacdd5316dbb8e811e128",
+          "level": "medium",
+          "category": "Loose brand adherence",
+          "confidence": "MEDIUM",
+          "date": "2026-10-01T18:37:32.000Z",
+          "postType": "Video story (cover)",
+          "visualReviewed": true,
+          "caption": "Tickets are selling fast!🚨",
+          "foundIn": "image",
+          "reason": "The flyer sells tickets for a co-branded SWEAT440 x Alico workout at The Book Cafe, a third-party venue.",
+          "why": "Caption: 'Tickets are selling fast!' Visual analysis: Cover frame only. 'SWEAT, SIP & READ', Saturday Oct 10 at The Book Cafe, SWEAT440 | ALICO co-branding, tickets including cafe drinks and a 'blind date with a book'. Another Story ('They are almost gone!!') pushes the same tickets.",
+          "action": "Verify the Alico and Book Cafe partnership and the external ticketing are approved.",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abeacdd5316dbb8e811e128_thumbnail.jpg"
+        },
+        {
+          "id": "6abe580e75975d1018fb8f81",
+          "level": "low",
+          "category": "Active alcohol consumption",
+          "confidence": "LOW",
+          "date": "2026-10-01T12:32:22.000Z",
+          "postType": "Video story (cover)",
+          "visualReviewed": true,
+          "caption": "",
+          "foundIn": "image",
+          "reason": "The studio reshared a video from Casa Blanca, a tequila bar, whose cover shows only the bar's logo.",
+          "why": "Caption: none. Visual analysis: Cover frame only. Black frame with the 'Casa Blanca Modern Mexican Tequila Bar' logo from @casablancamexicanrestaurant; the rest of the video can't be seen. Another Story shows the run club gathering at Casablanca.",
+          "action": "Watch the full reshared video and check whether it shows drinking.",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abe580e75975d1018fb8f81_thumbnail.jpg"
+        }
+      ],
+      "postLog": [
+        {
+          "id": "6ac02aa215fc88bd33cd39ab",
+          "date": "2026-10-02T20:54:44.000Z",
+          "postType": "Video story (cover)",
+          "caption": "@backyardsocialfl",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6ac02aa215fc88bd33cd39ab_thumbnail.jpg",
+          "flagged": true,
+          "level": "medium",
+          "category": "Active alcohol consumption"
+        },
+        {
+          "id": "6ac0003ebb49ca475be91e5e",
+          "date": "2026-10-02T16:21:38.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6ac0003ebb49ca475be91e5e_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfab6b3b5912fdd80278fc",
+          "date": "2026-10-02T11:31:04.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abfab6b3b5912fdd80278fc_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf2c1d7109cfd2a73363ac",
+          "date": "2026-10-02T02:26:57.000Z",
+          "postType": "Video story (cover)",
+          "caption": "And of course, we LOVE having the furbabies with us too! 🐶🐾💙",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abf2c1d7109cfd2a73363ac_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf2c1d7109cfd2a73363bb",
+          "date": "2026-10-02T02:21:02.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abf2c1d7109cfd2a73363bb_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf2c1d7109cfd2a73363af",
+          "date": "2026-10-02T01:02:43.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abf2c1d7109cfd2a73363af_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf01b6d7aaa6eb9102000a",
+          "date": "2026-10-01T23:17:05.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abf01b6d7aaa6eb9102000a_thumbnail.jpg",
+          "flagged": true,
+          "level": "low",
+          "category": "Active alcohol consumption"
+        },
+        {
+          "id": "6abf01b6d7aaa6eb9102000f",
+          "date": "2026-10-01T23:14:09.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abf01b6d7aaa6eb9102000f_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf01b6d7aaa6eb9101fffd",
+          "date": "2026-10-01T22:26:25.000Z",
+          "postType": "Story",
+          "caption": "See you guys there!! 🏃‍♀️ 🏃 💨",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abf01b6d7aaa6eb9101fffd_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf01b6d7aaa6eb91020006",
+          "date": "2026-10-01T22:26:03.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abf01b6d7aaa6eb91020006_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf01b6d7aaa6eb91020000",
+          "date": "2026-10-01T22:25:19.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abf01b6d7aaa6eb91020000_thumbnail.jpg",
+          "flagged": true,
+          "level": "medium",
+          "category": "Active alcohol consumption"
+        },
+        {
+          "id": "6abf01b6d7aaa6eb91020003",
+          "date": "2026-10-01T22:24:29.000Z",
+          "postType": "Story",
+          "caption": "Are you ready for a challenge?\n @millennialbrewing",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abf01b6d7aaa6eb91020003_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeacdd5316dbb8e811e124",
+          "date": "2026-10-01T18:39:18.000Z",
+          "postType": "Video story (cover)",
+          "caption": "They are almost gone!!\n🚨🚨🚨",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abeacdd5316dbb8e811e124_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeacdd5316dbb8e811e128",
+          "date": "2026-10-01T18:37:32.000Z",
+          "postType": "Video story (cover)",
+          "caption": "Tickets are selling fast!🚨",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abeacdd5316dbb8e811e128_thumbnail.jpg",
+          "flagged": true,
+          "level": "medium",
+          "category": "Loose brand adherence"
+        },
+        {
+          "id": "6abeacdd5316dbb8e811e11c",
+          "date": "2026-10-01T18:22:24.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abeacdd5316dbb8e811e11c_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeacdd5316dbb8e811e122",
+          "date": "2026-10-01T18:20:03.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abeacdd5316dbb8e811e122_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeacdd5316dbb8e811e11e",
+          "date": "2026-10-01T16:01:42.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abeacdd5316dbb8e811e11e_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe580e75975d1018fb8f81",
+          "date": "2026-10-01T12:32:22.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a2c455b38b55793458ba0bc/6abe580e75975d1018fb8f81_thumbnail.jpg",
+          "flagged": true,
+          "level": "low",
+          "category": "Active alcohol consumption"
+        }
+      ]
     },
     {
-      "name": "Las Olas",
-      "handle": "sweat440lasolas",
-      "posts": 1,
+      "name": "Herriman",
+      "handle": "sweat440herriman",
+      "posts": 16,
       "status": "clean",
       "flags": [],
       "postLog": [
         {
-          "id": "6a710b7a620e96106afc24b6",
-          "date": "2026-08-03T12:07:04.000Z",
-          "postType": "Static",
+          "id": "6ac00009838e77872d5b9a8f",
+          "date": "2026-10-02T17:31:37.000Z",
+          "postType": "Story",
           "caption": "",
-          "link": "https://www.instagram.com/p/Dbk8sqBuMVF/",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69a1b99d4be271803d73fefe/6ac00009838e77872d5b9a8f_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf01837109cfd2a72e2638",
+          "date": "2026-10-01T23:18:13.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69a1b99d4be271803d73fefe/6abf01837109cfd2a72e2638_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf01837109cfd2a72e2640",
+          "date": "2026-10-01T23:14:36.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69a1b99d4be271803d73fefe/6abf01837109cfd2a72e2640_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abed7144aa8047e8c924ec9",
+          "date": "2026-10-01T21:44:14.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69a1b99d4be271803d73fefe/6abed7144aa8047e8c924ec9_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abed7144aa8047e8c924ec2",
+          "date": "2026-10-01T19:30:27.000Z",
+          "postType": "Video story (cover)",
+          "caption": "First class reviews 👀\nPrepping for HYROX",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69a1b99d4be271803d73fefe/6abed7144aa8047e8c924ec2_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abed7144aa8047e8c924ec7",
+          "date": "2026-10-01T19:27:43.000Z",
+          "postType": "Video story (cover)",
+          "caption": "First class reviews 👀",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69a1b99d4be271803d73fefe/6abed7144aa8047e8c924ec7_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abed7144aa8047e8c924ece",
+          "date": "2026-10-01T19:21:44.000Z",
+          "postType": "Video story (cover)",
+          "caption": "First class reviews 👀",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69a1b99d4be271803d73fefe/6abed7144aa8047e8c924ece_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abed7144aa8047e8c924ed1",
+          "date": "2026-10-01T19:16:18.000Z",
+          "postType": "Video story (cover)",
+          "caption": "First class reviews 👀",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69a1b99d4be271803d73fefe/6abed7144aa8047e8c924ed1_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abed7144aa8047e8c924ec5",
+          "date": "2026-10-01T19:12:12.000Z",
+          "postType": "Video story (cover)",
+          "caption": "First class reviews 👀",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69a1b99d4be271803d73fefe/6abed7144aa8047e8c924ec5_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abed7144aa8047e8c924ed4",
+          "date": "2026-10-01T19:06:54.000Z",
+          "postType": "Video story (cover)",
+          "caption": "First class reviews 👀",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69a1b99d4be271803d73fefe/6abed7144aa8047e8c924ed4_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe8238ef366d7f380a6780",
+          "date": "2026-10-01T15:52:41.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69a1b99d4be271803d73fefe/6abe8238ef366d7f380a6780_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe8238ef366d7f380a6782",
+          "date": "2026-10-01T15:51:50.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69a1b99d4be271803d73fefe/6abe8238ef366d7f380a6782_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe8238ef366d7f380a6788",
+          "date": "2026-10-01T15:51:39.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69a1b99d4be271803d73fefe/6abe8238ef366d7f380a6788_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe8238ef366d7f380a6784",
+          "date": "2026-10-01T13:21:07.000Z",
+          "postType": "Video story (cover)",
+          "caption": "Early classes were bumping! Thanks for bringing the energy!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69a1b99d4be271803d73fefe/6abe8238ef366d7f380a6784_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe8238ef366d7f380a678f",
+          "date": "2026-10-01T13:20:12.000Z",
+          "postType": "Story",
+          "caption": "Day 1 🎉\nWe’re ready for you 🙌🏼",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69a1b99d4be271803d73fefe/6abe8238ef366d7f380a678f_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe8238ef366d7f380a6786",
+          "date": "2026-10-01T13:17:27.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69a1b99d4be271803d73fefe/6abe8238ef366d7f380a6786_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
+    },
+    {
+      "name": "Las Olas",
+      "handle": "sweat440lasolas",
+      "posts": 4,
+      "status": "flagged",
+      "flags": [
+        {
+          "id": "6ac02aa37184a4c5924b6de6",
+          "level": "medium",
+          "category": "Active alcohol consumption",
+          "confidence": "MEDIUM",
+          "date": "2026-10-02T19:09:24.000Z",
+          "postType": "Story",
+          "visualReviewed": true,
+          "caption": "Show up around 6:00 o clock",
+          "foundIn": "image",
+          "reason": "The flyer for the studio's anniversary at Batch Local Kitchen offers 'first drink on us' to members, using a free drink as the draw.",
+          "why": "Caption: 'Show up around 6:00 o clock'. Visual analysis: 'Country Crush' flyer, BATCH x SWEAT440 2-year anniversary, live music and line dancing, 'First drink on us for SWEAT440 members, RSVP to claim your drink'.",
+          "action": "Confirm whether free-drink offers are allowed and whether the drink is alcoholic; verify the Batch Local Kitchen partnership.",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/66684e487839e9e879c69b53/6ac02aa37184a4c5924b6de6_thumbnail.jpg"
+        }
+      ],
+      "postLog": [
+        {
+          "id": "6ac02aa37184a4c5924b6de6",
+          "date": "2026-10-02T19:09:24.000Z",
+          "postType": "Story",
+          "caption": "Show up around 6:00 o clock",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/66684e487839e9e879c69b53/6ac02aa37184a4c5924b6de6_thumbnail.jpg",
+          "flagged": true,
+          "level": "medium",
+          "category": "Active alcohol consumption"
+        },
+        {
+          "id": "6ac0003ccfd9a59298d41a90",
+          "date": "2026-10-02T17:27:09.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/66684e487839e9e879c69b53/6ac0003ccfd9a59298d41a90_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf2c1ae976adea89f4d9ff",
+          "date": "2026-10-02T01:52:44.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/66684e487839e9e879c69b53/6abf2c1ae976adea89f4d9ff_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe580c2a2ff0064c6cb790",
+          "date": "2026-10-01T11:07:53.000Z",
+          "postType": "Video story (cover)",
+          "caption": "Good morning Thursday!!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/66684e487839e9e879c69b53/6abe580c2a2ff0064c6cb790_thumbnail.jpg",
           "flagged": false,
           "level": null,
           "category": null
@@ -267,89 +1528,315 @@
     {
       "name": "Long Beach NY",
       "handle": "sweat440longbeachny",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
-    },
-    {
-      "name": "Miami Lakes",
-      "handle": "sweat440miamilakes",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
-    },
-    {
-      "name": "Middletown",
-      "handle": "sweat440middletown",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
-    },
-    {
-      "name": "Midtown Miami",
-      "handle": "sweat440midtownmiami",
-      "posts": 1,
+      "posts": 4,
       "status": "flagged",
       "flags": [
         {
-          "id": "6a6e6529fa2b70e30eb9817d",
+          "id": "6abef0f085e23a8b61c103ad",
           "level": "medium",
-          "category": "Loose brand adherence",
+          "category": "Active alcohol consumption",
           "confidence": "HIGH",
-          "date": "2026-08-01T14:44:48.000Z",
+          "date": "2026-10-01T20:23:45.000Z",
           "postType": "Static",
           "visualReviewed": true,
-          "caption": "We're at The Refreshery today!\n\nStop by our SWEAT440 table to learn more about the studio, enjoy some snacks, enter our raffles, and check out a few surprises. 🔥\n\nSWEAT440 Midtown members also receive 10% off products at The Refreshery when they show their active membership.\n\nCome say hi—we'd love to see you! 💪\n\n#SWEAT440 #SWEAT440Midtown #NeverLate #TheRefreshery #MemberPerks SupportLocal MiamiFitness",
-          "why": "Caption: promotes a SWEAT440 table at third-party venue The Refreshery and announces a standing member benefit — 10% off products for active members — which is an ongoing cross-promotional arrangement, not a one-off appearance. Visual analysis: the graphic is an explicit co-branded lockup, SWEAT440 with the shield next to The Refreshery's circular logo separated by a vertical divider, over brand blue; the SWEAT440 mark itself is unmodified, so Category 5 is clean.",
-          "action": "Verify The Refreshery is on the approved partners list and that the 10% discount arrangement has documented approval. Confirm partner-lockup treatments are an approved usage of the mark.",
-          "link": "https://www.instagram.com/p/DbgFGRsq2WN/"
+          "caption": "🍻 WE’RE SOCIALIZING! 🍻\n\nCome hang with us! Everyone is welcome at our very first SWEAT440 Social on Friday, 10/16 from 5–7 PM at Bright Eye Beer Co. 🎉\n\n🍕 FREE pizza\n🍺 FREE drink ticket for Founding Members\n🫶🏼 Bring your friends, family & kids!\n🎟️ Not a member yet? When you make a reservation for our free trial week, you’ll get a drink ticket too!\n\nCome meet the SWEAT440 community, bring your people & kick off the weekend with us! 💪🏼\n\nRSVP FREE — we’d love to see you there! Link in bio 🔗\n\n#sweat440longbeachny #lbny #longbeachny #community #explorerpage",
+          "foundIn": "caption",
+          "reason": "The caption promotes a social at Bright Eye Beer Co. with beer emojis and free drink tickets for members and trial sign-ups.",
+          "why": "Caption: '🍻 WE'RE SOCIALIZING! 🍻 ... at Bright Eye Beer Co. ... 🍺 FREE drink ticket for Founding Members ... you'll get a drink ticket too!' Visual analysis: beach group photo with the Bright Eye Beer Co. logo; no drinking shown.",
+          "action": "Ask the studio to remove the beer emojis and drink-ticket language, or confirm this event format is approved.",
+          "link": "https://www.instagram.com/p/Dd9we9thAPq/"
         }
       ],
       "postLog": [
         {
-          "id": "6a6e6529fa2b70e30eb9817d",
-          "date": "2026-08-01T14:44:48.000Z",
+          "id": "6abed71238e87cff6887d5c2",
+          "date": "2026-10-01T20:24:47.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a3d7c8d5ab6d2f106707848/6abed71238e87cff6887d5c2_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abef0f085e23a8b61c103ad",
+          "date": "2026-10-01T20:23:45.000Z",
           "postType": "Static",
-          "caption": "We're at The Refreshery today!\n\nStop by our SWEAT440 table to learn more about the studio, enjoy some snacks, enter our raffles, and check out a few surprises. 🔥\n\nSWEAT440 Midtown members also receive 10% off products at The Refreshery when they show their active membership.\n\nCome say hi—we'd love to see you! 💪\n\n#SWEAT440 #SWEAT440Midtown #NeverLate #TheRefreshery #MemberPerks SupportLocal MiamiFitness",
-          "link": "https://www.instagram.com/p/DbgFGRsq2WN/",
+          "caption": "🍻 WE’RE SOCIALIZING! 🍻\n\nCome hang with us! Everyone is welcome at our very first SWEAT440 Social on Friday, 10/16 from 5–7 PM at Bright Eye Beer Co. 🎉\n\n🍕 FREE pizza\n🍺 FREE drink ticket for Founding Members\n🫶🏼 Bring your friends, family & kids!\n🎟️ Not a member yet? When you make a reservation for our free trial week, you’ll get a drink ticket too!\n\nCome meet the SWEAT440 community, bring your people & kick off the weekend with us! 💪🏼\n\nRSVP FREE — we’d love to see you there! Link in bio 🔗\n\n#sweat440longbeachny #lbny #longbeachny #community #explorerpage",
+          "link": "https://www.instagram.com/p/Dd9we9thAPq/",
           "flagged": true,
           "level": "medium",
-          "category": "Loose brand adherence"
+          "category": "Active alcohol consumption"
+        },
+        {
+          "id": "6abeaca8ad356ca2baafa4e1",
+          "date": "2026-10-01T16:32:34.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a3d7c8d5ab6d2f106707848/6abeaca8ad356ca2baafa4e1_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe8234990c23a55505d210",
+          "date": "2026-10-01T13:55:31.000Z",
+          "postType": "Story",
+          "caption": "📍177 E Park Ave. Next to Chipotle!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a3d7c8d5ab6d2f106707848/6abe8234990c23a55505d210_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
         }
       ]
     },
     {
-      "name": "Miramar",
-      "handle": "sweat440miramar",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
-    },
-    {
-      "name": "Naples - Mercato",
-      "handle": "sweat440naplesmercato",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
-    },
-    {
-      "name": "NoDa Charlotte",
-      "handle": "sweat440noda",
-      "posts": 1,
+      "name": "Miami Lakes",
+      "handle": "sweat440miamilakes",
+      "posts": 3,
       "status": "clean",
       "flags": [],
       "postLog": [
         {
-          "id": "6a6e5e63f68469930dc3ace9",
-          "date": "2026-08-01T20:59:17.000Z",
-          "postType": "Carousel",
+          "id": "6abfee5b6b4606be9c3b8de8",
+          "date": "2026-10-02T16:18:49.000Z",
+          "postType": "Story",
           "caption": "",
-          "link": "https://www.instagram.com/p/DbgwNSAnDJL/",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c34/6abfee5b6b4606be9c3b8de8_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfee5b6b4606be9c3b8de5",
+          "date": "2026-10-02T16:13:34.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c34/6abfee5b6b4606be9c3b8de5_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfee5b6b4606be9c3b8de3",
+          "date": "2026-10-02T16:13:29.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c34/6abfee5b6b4606be9c3b8de3_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
+    },
+    {
+      "name": "Middletown",
+      "handle": "sweat440middletown",
+      "posts": 2,
+      "status": "clean",
+      "flags": [],
+      "postLog": [
+        {
+          "id": "6abfab64d0d31fcdbf0aa514",
+          "date": "2026-10-02T11:38:29.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a1de417c687a22dd44d053f/6abfab64d0d31fcdbf0aa514_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfab64d0d31fcdbf0aa512",
+          "date": "2026-10-02T11:37:18.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a1de417c687a22dd44d053f/6abfab64d0d31fcdbf0aa512_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
+    },
+    {
+      "name": "Midtown Miami",
+      "handle": "sweat440midtownmiami",
+      "posts": 0,
+      "status": "clean",
+      "flags": [],
+      "postLog": []
+    },
+    {
+      "name": "Miramar",
+      "handle": "sweat440miramar",
+      "posts": 2,
+      "status": "clean",
+      "flags": [],
+      "postLog": [
+        {
+          "id": "6abe720a1ce03c44c051cab1",
+          "date": "2026-10-01T12:00:32.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6596d383c3b752215ae84719/6abe720a1ce03c44c051cab1_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe720a1ce03c44c051cab4",
+          "date": "2026-10-01T11:59:27.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6596d383c3b752215ae84719/6abe720a1ce03c44c051cab4_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
+    },
+    {
+      "name": "Naples - Mercato",
+      "handle": "sweat440naplesmercato",
+      "posts": 6,
+      "status": "clean",
+      "flags": [],
+      "postLog": [
+        {
+          "id": "6abff7c5e34d907978cfd315",
+          "date": "2026-10-02T16:10:00.000Z",
+          "postType": "Video story (cover)",
+          "caption": "@psicologabaviera ⚡️ @fit.af.after45 ⚡️",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69824b1531b76c40ca27198e/6abff7c5e34d907978cfd315_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfcd58d89411416ce828b3",
+          "date": "2026-10-02T14:52:44.000Z",
+          "postType": "Video story (cover)",
+          "caption": "@puregreennorthnaples ☘️ @naplesbestdotnet",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69824b1531b76c40ca27198e/6abfcd58d89411416ce828b3_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfa2ed814721cc7d93718c",
+          "date": "2026-10-02T11:39:04.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69824b1531b76c40ca27198e/6abfa2ed814721cc7d93718c_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abef93bf4a15d6a17eae2d2",
+          "date": "2026-10-02T00:00:30.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69824b1531b76c40ca27198e/6abef93bf4a15d6a17eae2d2_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abef93bf4a15d6a17eae2d4",
+          "date": "2026-10-01T23:54:40.000Z",
+          "postType": "Story",
+          "caption": "Energy is contagious 🔥⚡️ @khazell \n@kelsseyyyy",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69824b1531b76c40ca27198e/6abef93bf4a15d6a17eae2d4_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe79f2fe836613d624a031",
+          "date": "2026-10-01T12:29:41.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69824b1531b76c40ca27198e/6abe79f2fe836613d624a031_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
+    },
+    {
+      "name": "NoDa Charlotte",
+      "handle": "sweat440noda",
+      "posts": 7,
+      "status": "clean",
+      "flags": [],
+      "postLog": [
+        {
+          "id": "6ac04252db537ef412606bb3",
+          "date": "2026-10-02T22:10:21.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c88/6ac04252db537ef412606bb3_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6ac04252db537ef412606baf",
+          "date": "2026-10-02T22:10:12.000Z",
+          "postType": "Story",
+          "caption": "Who’s running with us tomorrow morning??\nNikki will be running!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c88/6ac04252db537ef412606baf_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6ac04252db537ef412606bb1",
+          "date": "2026-10-02T21:45:39.000Z",
+          "postType": "Story",
+          "caption": "Cooler mornings call for morning runs together  Run club tomorrow 8:30AM!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c88/6ac04252db537ef412606bb1_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf1916f4a15d6a17eed400",
+          "date": "2026-10-01T23:39:42.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c88/6abf1916f4a15d6a17eed400_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abed925d9782c30d4539ba5",
+          "date": "2026-10-01T21:42:01.000Z",
+          "postType": "Carousel",
+          "caption": "Huge shoutout to Rhi for hitting 250 classes! 🔥💪 next stop the 440 club!",
+          "link": "https://www.instagram.com/p/Dd95lozFCN3/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abec43ce6d2477955221b47",
+          "date": "2026-10-01T18:04:51.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c88/6abec43ce6d2477955221b47_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe99d65d551bea893a26a8",
+          "date": "2026-10-01T15:00:48.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c88/6abe99d65d551bea893a26a8_thumbnail.jpg",
           "flagged": false,
           "level": null,
           "category": null
@@ -359,131 +1846,433 @@
     {
       "name": "North Miami",
       "handle": "sweat440north.miami",
-      "posts": 0,
+      "posts": 4,
       "status": "clean",
       "flags": [],
-      "postLog": []
+      "postLog": [
+        {
+          "id": "6ac054d415fc88bd33d28a1a",
+          "date": "2026-10-02T23:14:03.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a01f7b7090476fb990aa1a4/6ac054d415fc88bd33d28a1a_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6ac054d415fc88bd33d28a18",
+          "date": "2026-10-02T23:13:53.000Z",
+          "postType": "Video story (cover)",
+          "caption": "TACO POP UP at Taco Rico North Miami see you there 2pm 🎉",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a01f7b7090476fb990aa1a4/6ac054d415fc88bd33d28a18_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeaca2b64ab8ce8c59b9a1",
+          "date": "2026-10-01T17:25:48.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a01f7b7090476fb990aa1a4/6abeaca2b64ab8ce8c59b9a1_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf98f732738a80278e6d28",
+          "date": "2026-10-01T17:25:01.000Z",
+          "postType": "Static",
+          "caption": "TACO POP UP THIS SATURDAY 🌮 stop by tacorico_nmb for some fun activities including Raffles & Giveaways! 🎉 \n\nWe’ll see you there at 2PM 🙌",
+          "link": "https://www.instagram.com/p/Dd9bdd-xYt1/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
     },
     {
       "name": "Ocean Township",
       "handle": "sweat440oceantownship",
-      "posts": 1,
-      "status": "flagged",
-      "flags": [
-        {
-          "id": "6a70c18efdbcf535e22a69ac",
-          "level": "low",
-          "category": "Overly sexualized content",
-          "confidence": "LOW",
-          "date": "2026-08-03T14:57:53.000Z",
-          "postType": "Carousel",
-          "visualReviewed": true,
-          "caption": "Milestones aren't just about numbers. They're about showing up when it's hard, choosing consistency over excuses, and becoming a little stronger every single day.\n\nThis week we're celebrating every member who hit a new milestone. Whether it's your first class, your 100th, a new PR, or simply walking through our doors when you didn't feel like it,you earned it. We're incredibly proud of you.\n\nWe also want to give a huge shoutout to our own Manager Meg, who stepped on the NPC bikini stage this past weekend alongside her husband. After months of balancing work, family, coaching, and relentless dedication, they both brought home placements in their divisions. 🎉💪\n\nAt SWEAT440, we believe in practicing what we preach. Our coaches and managers aren't just telling you to trust the process…they're living it.\n\nCongratulations to every member and every milestone, big or small. Keep showing up. The best is still ahead. ❤️🔥",
-          "why": "Caption: celebrates member milestones and also shouts out Manager Meg competing on the NPC bikini stage — physique-competition posing in a competition suit sits outside the athletic-bodies-and-gym-wear norm the framework treats as standard, though the reference alone is not a violation. Visual analysis: the cover is a member holding an official Ocean Township 440 Sweat Club shield in the studio, fully clean; any stage photos would sit on interior carousel slides not reachable from the cover.",
-          "action": "Open the carousel and review interior slides for competition-stage imagery. If stage photos are present, judge against the fitness-norms line; if the post is milestone photos only and the NPC mention is text, dismiss.",
-          "link": "https://www.instagram.com/p/DblQcHkkTD_/"
-        }
-      ],
+      "posts": 4,
+      "status": "clean",
+      "flags": [],
       "postLog": [
         {
-          "id": "6a70c18efdbcf535e22a69ac",
-          "date": "2026-08-03T14:57:53.000Z",
-          "postType": "Carousel",
-          "caption": "Milestones aren't just about numbers. They're about showing up when it's hard, choosing consistency over excuses, and becoming a little stronger every single day.\n\nThis week we're celebrating every member who hit a new milestone. Whether it's your first class, your 100th, a new PR, or simply walking through our doors when you didn't feel like it,you earned it. We're incredibly proud of you.\n\nWe also want to give a huge shoutout to our own Manager Meg, who stepped on the NPC bikini stage this past weekend alongside her husband. After months of balancing work, family, coaching, and relentless dedication, they both brought home placements in their divisions. 🎉💪\n\nAt SWEAT440, we believe in practicing what we preach. Our coaches and managers aren't just telling you to trust the process…they're living it.\n\nCongratulations to every member and every milestone, big or small. Keep showing up. The best is still ahead. ❤️🔥",
-          "link": "https://www.instagram.com/p/DblQcHkkTD_/",
-          "flagged": true,
-          "level": "low",
-          "category": "Overly sexualized content"
+          "id": "6abfed72bb49ca475be68b33",
+          "date": "2026-10-02T15:37:47.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/655d0c147a6cf4d23ffdc750/6abfed72bb49ca475be68b33_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abec417d7aaa6eb91fa6763",
+          "date": "2026-10-01T18:56:05.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/655d0c147a6cf4d23ffdc750/6abec417d7aaa6eb91fa6763_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe6f429780d70e7a01cf1a",
+          "date": "2026-10-01T11:35:15.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/655d0c147a6cf4d23ffdc750/6abe6f429780d70e7a01cf1a_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe19a8f49b998e07f2caad",
+          "date": "2026-10-01T06:38:14.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/655d0c147a6cf4d23ffdc750/6abe19a8f49b998e07f2caad_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
         }
       ]
     },
     {
       "name": "OKC - Rose Creek",
       "handle": "sweat440okcrosecreek",
-      "posts": 0,
+      "posts": 1,
       "status": "clean",
       "flags": [],
-      "postLog": []
+      "postLog": [
+        {
+          "id": "6abf4ddd7b1a94a7a8bfd32a",
+          "date": "2026-10-01T20:59:38.000Z",
+          "postType": "Static",
+          "caption": "Hi SWEAT440 family! This Saturday from 1pm-4pm we will have a table set up at @puregreenok ❤️ Come out and talk with us to learn more about SWEAT440 and try some amazing smoothies! We will also be running some raffles for gift cards and doing a challenge to win some prizes💪",
+          "link": "https://www.instagram.com/p/Dd90JSOJeRt/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
     },
     {
       "name": "Old Bridge",
       "handle": "sweat440oldbridge",
-      "posts": 1,
+      "posts": 9,
       "status": "flagged",
       "flags": [
         {
-          "id": "6a6e3fe8e5fee1a81f582421",
+          "id": "6ac0003dcfd9a59298d41b7f",
           "level": "medium",
           "category": "Loose brand adherence",
-          "confidence": "HIGH",
-          "date": "2026-08-01T18:47:53.000Z",
-          "postType": "Carousel",
+          "confidence": "MEDIUM",
+          "date": "2026-10-02T16:12:51.000Z",
+          "postType": "Story",
           "visualReviewed": true,
-          "caption": "SWEAT440 Old Bridge x Alliance Orthopedics: Building a Healthier Community Together\n\nAt SWEAT440 Old Bridge, our mission has always been bigger than fitness—it's about building a healthier, stronger community. That's why we're excited to partner with Alliance Orthopedics, one of New Jersey's leading providers of orthopedic care, sports medicine, rehabilitation, and recovery.\n\nAlliance Orthopedics offers a comprehensive approach to health and wellness, bringing together orthopedic specialists, sports medicine physicians, physical therapy, occupational therapy, chiropractic care, pain management, recovery and rehabilitation, spine care, joint and extremity care, foot and ankle specialists, shockwave therapy, and more—all under one roof. Their team is dedicated to helping people recover from injuries, relieve pain, restore mobility, and return to doing what they love. (Alliance Orthopedics)\n\nThrough this collaboration, our community will have access to expert recovery resources that complement the high-energy workouts at SWEAT440. Whether you're recovering from an injury, preventing future injuries, improving mobility, or simply striving to live a healthier lifestyle, Alliance Orthopedics is committed to supporting your journey every step of the way.\n\nTogether, SWEAT440 and Alliance Orthopedics are creating more than workouts—we're creating a community built on fitness, health, recovery, education, and long-term wellness. We can't wait to bring exciting events, recovery experiences, and wellness initiatives to the Old Bridge community.\n\nTrain hard. Recover smarter. Live healthier. Together.",
-          "why": "Caption: announces a formal partnership with Alliance Orthopedics, a third-party medical provider — orthopedic specialists, sports medicine physicians, physical therapy, chiropractic care, pain management and spine care are all named — which is the exact scenario Category 6 calls out. The copy also contains a stray source artifact, a parenthetical \"(Alliance Orthopedics)\" mid-paragraph, suggesting text lifted from an external source without editing. Visual analysis: cover frame is a coach speaking to camera in an official SWEAT440 quarter-zip with the mark unmodified; no co-branded artwork on the cover, so Category 5 is clean.",
-          "action": "Confirm the Alliance Orthopedics partnership has documented franchise approval before anything further publishes — medical-provider tie-ins carry liability and scope-of-practice exposure beyond normal partnerships. Also ask Old Bridge to clean the stray \"(Alliance Orthopedics)\" citation artifact from the live caption.",
-          "link": "https://www.instagram.com/p/DbghK52CRsr/"
+          "caption": "",
+          "foundIn": "image",
+          "reason": "The 'Sweat Camp' flyer hosts a free SWEAT440 pop-up workout at Retro Fitness in Matawan, a competing gym.",
+          "why": "Caption: none. Visual analysis: Old Bridge flyer 'SWEAT CAMP, free pop-up workout', Sunday Oct 11, 'Where: Retro Fitness Matawan, 419 Highway 34', with a push to lock in founding rates.",
+          "action": "Confirm the Retro Fitness venue arrangement was approved, given it is a competitor.",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a3d7cec5ab6d2f106707b58/6ac0003dcfd9a59298d41b7f_thumbnail.jpg"
         }
       ],
       "postLog": [
         {
-          "id": "6a6e3fe8e5fee1a81f582421",
-          "date": "2026-08-01T18:47:53.000Z",
-          "postType": "Carousel",
-          "caption": "SWEAT440 Old Bridge x Alliance Orthopedics: Building a Healthier Community Together\n\nAt SWEAT440 Old Bridge, our mission has always been bigger than fitness—it's about building a healthier, stronger community. That's why we're excited to partner with Alliance Orthopedics, one of New Jersey's leading providers of orthopedic care, sports medicine, rehabilitation, and recovery.\n\nAlliance Orthopedics offers a comprehensive approach to health and wellness, bringing together orthopedic specialists, sports medicine physicians, physical therapy, occupational therapy, chiropractic care, pain management, recovery and rehabilitation, spine care, joint and extremity care, foot and ankle specialists, shockwave therapy, and more—all under one roof. Their team is dedicated to helping people recover from injuries, relieve pain, restore mobility, and return to doing what they love. (Alliance Orthopedics)\n\nThrough this collaboration, our community will have access to expert recovery resources that complement the high-energy workouts at SWEAT440. Whether you're recovering from an injury, preventing future injuries, improving mobility, or simply striving to live a healthier lifestyle, Alliance Orthopedics is committed to supporting your journey every step of the way.\n\nTogether, SWEAT440 and Alliance Orthopedics are creating more than workouts—we're creating a community built on fitness, health, recovery, education, and long-term wellness. We can't wait to bring exciting events, recovery experiences, and wellness initiatives to the Old Bridge community.\n\nTrain hard. Recover smarter. Live healthier. Together.",
-          "link": "https://www.instagram.com/p/DbghK52CRsr/",
+          "id": "6ac0003ecfd9a59298d41b81",
+          "date": "2026-10-02T16:15:19.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a3d7cec5ab6d2f106707b58/6ac0003ecfd9a59298d41b81_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6ac0003dcfd9a59298d41b7f",
+          "date": "2026-10-02T16:12:51.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a3d7cec5ab6d2f106707b58/6ac0003dcfd9a59298d41b7f_thumbnail.jpg",
           "flagged": true,
           "level": "medium",
           "category": "Loose brand adherence"
+        },
+        {
+          "id": "6abeacdd1a284b25b89f8e8a",
+          "date": "2026-10-01T17:55:00.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a3d7cec5ab6d2f106707b58/6abeacdd1a284b25b89f8e8a_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeacdd1a284b25b89f8e8c",
+          "date": "2026-10-01T17:44:08.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a3d7cec5ab6d2f106707b58/6abeacdd1a284b25b89f8e8c_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeacdd1a284b25b89f8e8e",
+          "date": "2026-10-01T17:04:07.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a3d7cec5ab6d2f106707b58/6abeacdd1a284b25b89f8e8e_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeacdd1a284b25b89f8e86",
+          "date": "2026-10-01T16:57:08.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a3d7cec5ab6d2f106707b58/6abeacdd1a284b25b89f8e86_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeacdd1a284b25b89f8e88",
+          "date": "2026-10-01T16:35:44.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a3d7cec5ab6d2f106707b58/6abeacdd1a284b25b89f8e88_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe8276ef366d7f380a71fe",
+          "date": "2026-10-01T15:54:25.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a3d7cec5ab6d2f106707b58/6abe8276ef366d7f380a71fe_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe8276ef366d7f380a7200",
+          "date": "2026-10-01T15:12:42.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6a3d7cec5ab6d2f106707b58/6abe8276ef366d7f380a7200_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
         }
       ]
     },
     {
       "name": "Orlando - Dr Phillips",
       "handle": "sweat440orlandodrphillips",
-      "posts": 1,
+      "posts": 14,
       "status": "flagged",
       "flags": [
         {
-          "id": "6a6e62eaef2e8120b322ad92",
-          "level": "low",
+          "id": "6abe08e5d3a5b798443d1416",
+          "level": "medium",
           "category": "Loose brand adherence",
-          "confidence": "LOW",
-          "date": "2026-08-01T02:23:50.000Z",
+          "confidence": "MEDIUM",
+          "date": "2026-10-01T03:33:28.000Z",
           "postType": "Static",
           "visualReviewed": true,
-          "caption": "Swing By the Studio This Sunday!!!",
-          "why": "Visual analysis: the flyer renders the studio name as \"SWEAT 440 DR PHILLIPS\" with a space between SWEAT and 440, in the #00FFC2 accent green rather than standard treatment; brand guidelines specify the name as SWEAT440, all caps, no spaces. The official horizontal lockup at the top of the flyer is correct and unmodified, and all colors used are in-palette. Caption: \"Swing By the Studio This Sunday!!!\" — seven words, no studio name, no date, no address, all of which live only in the image.",
-          "action": "Quick glance to confirm or dismiss — the mark itself is correct, so this is a wordmark-formatting question, not logo misuse. If SWEAT440 enforces the no-space rule on typeset studio names, flag to Dr Phillips for future assets.",
-          "link": "https://www.instagram.com/p/DbewjS-NcJW/"
+          "caption": "SWEAT440 x Fabletics is happening again! 💥\n\nSaturday, October 3\n9–10 AM EDT\n4200 Conroy Rd, Orlando, FL 32839, USA\n\nJoin us at Fabletics (The Mall at Millenia) on Saturday, October 3rd at 9:00 AM for an exciting morning of fitness, fun, and shopping!\n\nWe are bringing you a high-energy strength and endurance workout designed for every body. Expect athletic intervals, bodyweight movements, and an incredible community vibe.\n\nWhat to bring: A mat, water, and your best energy.\n\nAll fitness levels welcome. See you on the mat! 🙌\n\n🛍️ 25% OFF in-store discounts",
+          "foundIn": "both",
+          "reason": "The post promotes a co-branded SWEAT440 x Fabletics workout at the Fabletics store, an external brand partnership.",
+          "why": "Caption: 'SWEAT440 x Fabletics is happening again! ... Join us at Fabletics (The Mall at Millenia)'. Visual analysis: flyer with the SWEAT440 and Fabletics logos side by side, 'Fitness, Fun, and Shopping', Oct 3. A Story reshares the same flyer with a Register Here link.",
+          "action": "Verify Fabletics is on the approved partners list.",
+          "link": "https://www.instagram.com/p/Dd79AontTPL/"
         }
       ],
       "postLog": [
         {
-          "id": "6a6e62eaef2e8120b322ad92",
-          "date": "2026-08-01T02:23:50.000Z",
+          "id": "6ac02a3377384405b32c9270",
+          "date": "2026-10-02T21:42:53.000Z",
+          "postType": "Video story (cover)",
+          "caption": "Welcome to the family!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69d57d59031bfa423cdd38be/6ac02a3377384405b32c9270_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6ac02a3377384405b32c926e",
+          "date": "2026-10-02T19:19:26.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69d57d59031bfa423cdd38be/6ac02a3377384405b32c926e_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6ac02a3377384405b32c9273",
+          "date": "2026-10-02T19:17:07.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69d57d59031bfa423cdd38be/6ac02a3377384405b32c9273_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfaaecdbdb121bcaf245db",
+          "date": "2026-10-02T11:11:10.000Z",
+          "postType": "Story",
+          "caption": "Reserve your free week and get a coffee on us! ☕💙",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69d57d59031bfa423cdd38be/6abfaaecdbdb121bcaf245db_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf2b9bfa6dbc4073d6e81f",
+          "date": "2026-10-02T01:30:04.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69d57d59031bfa423cdd38be/6abf2b9bfa6dbc4073d6e81f_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abed6be4aa8047e8c923706",
+          "date": "2026-10-01T19:08:51.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69d57d59031bfa423cdd38be/6abed6be4aa8047e8c923706_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeac511a284b25b89f6f16",
+          "date": "2026-10-01T16:52:00.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69d57d59031bfa423cdd38be/6abeac511a284b25b89f6f16_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe57552a2ff0064c6c9706",
+          "date": "2026-10-01T11:55:25.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69d57d59031bfa423cdd38be/6abe57552a2ff0064c6c9706_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe08e5d3a5b798443d1416",
+          "date": "2026-10-01T03:33:28.000Z",
           "postType": "Static",
-          "caption": "Swing By the Studio This Sunday!!!",
-          "link": "https://www.instagram.com/p/DbewjS-NcJW/",
+          "caption": "SWEAT440 x Fabletics is happening again! 💥\n\nSaturday, October 3\n9–10 AM EDT\n4200 Conroy Rd, Orlando, FL 32839, USA\n\nJoin us at Fabletics (The Mall at Millenia) on Saturday, October 3rd at 9:00 AM for an exciting morning of fitness, fun, and shopping!\n\nWe are bringing you a high-energy strength and endurance workout designed for every body. Expect athletic intervals, bodyweight movements, and an incredible community vibe.\n\nWhat to bring: A mat, water, and your best energy.\n\nAll fitness levels welcome. See you on the mat! 🙌\n\n🛍️ 25% OFF in-store discounts",
+          "link": "https://www.instagram.com/p/Dd79AontTPL/",
           "flagged": true,
-          "level": "low",
+          "level": "medium",
           "category": "Loose brand adherence"
+        },
+        {
+          "id": "6abe08e5d3a5b798443d140f",
+          "date": "2026-10-01T03:26:34.000Z",
+          "postType": "Static",
+          "caption": "Join us for a day of movement, wellness, and community benefiting the @poshrocktennisfoundation. Funds raised will support programs for children with autism, creating more opportunities through tennis and fitness.\n\nOne event. One community. One purpose. Come move with us and help make a difference.",
+          "link": "https://www.instagram.com/p/Dd78N_KN6HC/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe08e5d3a5b798443d1429",
+          "date": "2026-10-01T02:57:04.000Z",
+          "postType": "Static",
+          "caption": "Food trucks + your future fitness crew! 🌮💪💙\n\nSWEAT440 Dr. Phillips will be at VEER Apartments for Food Truck Night! Stop by, meet our team, and reserve your FREE 7-day trial week! 🎉\n\nGrab a bite and come say hi! We’d love to meet you!",
+          "link": "https://www.instagram.com/p/Dd74181NMoj/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe08e5d3a5b798443d140c",
+          "date": "2026-10-01T02:35:38.000Z",
+          "postType": "Static",
+          "caption": "Join us at Le Café de Paris this Friday, October 2nd, from 11 AM–1 PM. \n\n☕ Get a FREE coffee when you reserve your FREE 7-day trial week with SWEAT440 Dr. Phillips! 💙💪",
+          "link": "https://www.instagram.com/p/Dd72ZCoNGRf/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe08e5d3a5b798443d1418",
+          "date": "2026-10-01T02:30:09.000Z",
+          "postType": "Static",
+          "caption": "Bainbridge The Grand residents, we’re coming to YOU! 💙💪\n\nMeet SWEAT440 Dr. Phillips at your fitness center this Thursday, October 1st, from 4–6 PM for an exclusive resident pop-up!\n\nDiscover our 40-minute, strength-based workouts with classes starting every 10 minutes, and reserve your FREE 7-day trial week! 🎉\n\nStop by, say hi, and let’s talk about your fitness goals!",
+          "link": "https://www.instagram.com/p/Dd71wyNNaxO/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abdada6bccb83f77994ab2a",
+          "date": "2026-10-01T00:34:50.000Z",
+          "postType": "Video story (cover)",
+          "caption": "*first WEEK completely FREE!!!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/69d57d59031bfa423cdd38be/6abdada6bccb83f77994ab2a_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
         }
       ]
     },
     {
       "name": "Park Slope",
       "handle": "sweat440parkslope",
-      "posts": 1,
+      "posts": 3,
       "status": "clean",
       "flags": [],
       "postLog": [
         {
-          "id": "6a6d4d9b388b5f07c8aba076",
-          "date": "2026-08-01T01:23:23.000Z",
+          "id": "6abea8241a284b25b89ed20f",
+          "date": "2026-10-01T17:47:14.000Z",
+          "postType": "Story",
+          "caption": "Congrats 🎊🍾🎈",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68757183459a7d1cfb795515/6abea8241a284b25b89ed20f_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abea8241a284b25b89ed211",
+          "date": "2026-10-01T17:46:56.000Z",
+          "postType": "Story",
+          "caption": "🔥🔥🔥🔥🔥",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68757183459a7d1cfb795515/6abea8241a284b25b89ed211_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf9aa7cc8ef953534c2830",
+          "date": "2026-10-01T17:45:59.000Z",
           "postType": "Carousel",
-          "caption": "",
-          "link": "https://www.instagram.com/p/DbepozkFLm8/",
+          "caption": "Big congratulations to Rachael Wyant for hitting 100 class milestone! It’s a pleasure having you be apart of our growing community and you killed that 100 class workout💪🏿. Many more milestones to come!",
+          "link": "https://www.instagram.com/p/Dd9ek_gFIJX/",
           "flagged": false,
           "level": null,
           "category": null
@@ -493,26 +2282,336 @@
     {
       "name": "Pembroke Pines",
       "handle": "sweat440pembrokepines",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
+      "posts": 4,
+      "status": "flagged",
+      "flags": [
+        {
+          "id": "6abef31b4eaa7f2c1614bfa9",
+          "level": "low",
+          "category": "Loose brand adherence",
+          "confidence": "LOW",
+          "date": "2026-10-01T16:08:04.000Z",
+          "postType": "Static",
+          "visualReviewed": true,
+          "caption": "🍰✨ PIXIE POPS POP-UP! ✨🍰\n\nWe’re bringing a little sweetness to the studio this Saturday! 😍\n\nStop by and grab some delicious cake pops from 9 AM–12 PM — because you definitely deserve a treat after your workout! 💪🏼🍭\n\n📍 SWEAT440\n⏰ Saturday | 9 AM–12 PM",
+          "foundIn": "both",
+          "reason": "The post announces an in-studio cake pop pop-up co-branded with Pixie Pops, an external vendor inside the studio.",
+          "why": "Caption: 'PIXIE POPS POP-UP! ... grab some delicious cake pops ... 📍 SWEAT440'. Visual analysis: flyer with the SWEAT440 logo beside the Pixie Pops logo, Saturday Oct 3, 9 AM–12 PM.",
+          "action": "Confirm in-studio vendor pop-ups like Pixie Pops are approved.",
+          "link": "https://www.instagram.com/p/Dd9THjxpviw/"
+        }
+      ],
+      "postLog": [
+        {
+          "id": "6abeca60b5024b428f0b7b04",
+          "date": "2026-10-01T20:40:48.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/666b25557839e9e87956e554/6abeca60b5024b428f0b7b04_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abef31b4eaa7f2c1614bfa9",
+          "date": "2026-10-01T16:08:04.000Z",
+          "postType": "Static",
+          "caption": "🍰✨ PIXIE POPS POP-UP! ✨🍰\n\nWe’re bringing a little sweetness to the studio this Saturday! 😍\n\nStop by and grab some delicious cake pops from 9 AM–12 PM — because you definitely deserve a treat after your workout! 💪🏼🍭\n\n📍 SWEAT440\n⏰ Saturday | 9 AM–12 PM",
+          "link": "https://www.instagram.com/p/Dd9THjxpviw/",
+          "flagged": true,
+          "level": "low",
+          "category": "Loose brand adherence"
+        },
+        {
+          "id": "6abe9ff2e52c174dfcf2246e",
+          "date": "2026-10-01T16:05:21.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/666b25557839e9e87956e554/6abe9ff2e52c174dfcf2246e_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe75479af76dc43dbaa789",
+          "date": "2026-10-01T12:01:05.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/666b25557839e9e87956e554/6abe75479af76dc43dbaa789_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
     },
     {
       "name": "Pinecrest",
       "handle": "sweat440pinecrest",
-      "posts": 0,
+      "posts": 14,
       "status": "clean",
       "flags": [],
-      "postLog": []
+      "postLog": [
+        {
+          "id": "6ac02aa20d43805cd4a483d9",
+          "date": "2026-10-02T21:42:40.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9c0b669affb4c9830806/6ac02aa20d43805cd4a483d9_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6ac02aa20d43805cd4a483db",
+          "date": "2026-10-02T21:30:01.000Z",
+          "postType": "Story",
+          "caption": "Our 4 PM crew casually becoming professional models 😍📸",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9c0b669affb4c9830806/6ac02aa20d43805cd4a483db_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6ac02aa20d43805cd4a483dd",
+          "date": "2026-10-02T19:49:35.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9c0b669affb4c9830806/6ac02aa20d43805cd4a483dd_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf01b5e6d247795529e529",
+          "date": "2026-10-02T00:39:20.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9c0b669affb4c9830806/6abf01b5e6d247795529e529_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf01b5e6d247795529e52f",
+          "date": "2026-10-02T00:38:50.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9c0b669affb4c9830806/6abf01b5e6d247795529e52f_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf01b5e6d247795529e52b",
+          "date": "2026-10-01T22:23:07.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9c0b669affb4c9830806/6abf01b5e6d247795529e52b_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abed7564aa8047e8c925868",
+          "date": "2026-10-01T21:41:07.000Z",
+          "postType": "Video story (cover)",
+          "caption": "Rain or shine, we show up. Lower Body Day! 🔥",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9c0b669affb4c9830806/6abed7564aa8047e8c925868_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeacddf5ecd28eb225d6b7",
+          "date": "2026-10-01T16:23:17.000Z",
+          "postType": "Story",
+          "caption": "Congratulations Ashley!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9c0b669affb4c9830806/6abeacddf5ecd28eb225d6b7_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeacddf5ecd28eb225d6be",
+          "date": "2026-10-01T16:21:11.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9c0b669affb4c9830806/6abeacddf5ecd28eb225d6be_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe88924aca97c53d67168f",
+          "date": "2026-10-01T16:18:24.000Z",
+          "postType": "Carousel",
+          "caption": "✨ 250 CLASSES, ASHLEY! ✨\n\nToday we’re celebrating an incredible milestone and an even more incredible woman. \n\nAshley @ashley_ashnicole is a nurse, a mom of three, and proof of what happens when you set a goal and truly commit to it.💪\n\nShe shows up, puts in the work, and yes… she’s even known to take two classes back-to-back! 🔥 Watching her physical transformation, her strength, and her confidence grow has been so inspiring.\n\nAshley, we’re so proud to stand beside you on this journey. Keep getting stronger, keep challenging yourself, and keep showing your kids, and all of us, what dedication looks like.\n\n250 down, and so much more ahead. 💙\nWe’re so lucky to have you as part of our SWEAT440 Pinecrest family!",
+          "link": "https://www.instagram.com/p/Dd9Ujb6lPXn/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe8278b7cfcc008e94bfd4",
+          "date": "2026-10-01T14:32:57.000Z",
+          "postType": "Story",
+          "caption": "See you there this Sunday ☀️ The Farmers Market is back!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9c0b669affb4c9830806/6abe8278b7cfcc008e94bfd4_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe75ad459a221c08b1f44b",
+          "date": "2026-10-01T14:28:49.000Z",
+          "postType": "Static",
+          "caption": "This Sunday, October 4th, from 10 AM–3 PM, the Palmetto Bay Farmers Market @palmettobayfarmersmarket is back for the season! 🌿\n\nWe can’t wait to be there, connect with our community, support local businesses, and enjoy a beautiful Sunday together. \n\nCome by and say hi to the SWEAT440 Pinecrest team!",
+          "link": "https://www.instagram.com/p/Dd9H5WVO1Kx/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe8278b7cfcc008e94bfd9",
+          "date": "2026-10-01T14:13:42.000Z",
+          "postType": "Video story (cover)",
+          "caption": "So excited to host this private class today ✨",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9c0b669affb4c9830806/6abe8278b7cfcc008e94bfd9_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe8278b7cfcc008e94bfd6",
+          "date": "2026-10-01T14:08:42.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9c0b669affb4c9830806/6abe8278b7cfcc008e94bfd6_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
     },
     {
       "name": "Prestonwood",
       "handle": "sweat440prestonwood",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
+      "posts": 8,
+      "status": "flagged",
+      "flags": [
+        {
+          "id": "6abed74d9e283b29ce30350f",
+          "level": "medium",
+          "category": "Loose brand adherence",
+          "confidence": "MEDIUM",
+          "date": "2026-10-01T21:32:00.000Z",
+          "postType": "Story",
+          "visualReviewed": true,
+          "caption": "This Saturday!!",
+          "foundIn": "image",
+          "reason": "The flyer promotes an in-studio raffle co-branded with Catalystt, an external apparel brand.",
+          "why": "Caption: 'This Saturday!!' Visual analysis: 'SWEAT440 | Prestonwood x Catalystt Raffle Giveaway' showing Catalystt leggings, top, headband and socks; attend class to enter. Another Story ('Catalystt @ SWEAT440 Prestonwood, Sat Oct 3') promotes the same event.",
+          "action": "Verify Catalystt is an approved partner for in-studio events.",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9b30669affb4c9830651/6abed74d9e283b29ce30350f_thumbnail.jpg"
+        },
+        {
+          "id": "6abed74d9e283b29ce303514",
+          "level": "low",
+          "category": "Active alcohol consumption",
+          "confidence": "LOW",
+          "date": "2026-10-01T19:08:38.000Z",
+          "postType": "Story",
+          "visualReviewed": true,
+          "caption": "",
+          "foundIn": "image",
+          "reason": "The reshared member Story calls the workout 'our version of Happy Hour' with a champagne-toast emoji.",
+          "why": "Caption: none. Visual analysis: Reshare from @yolandabankswellness: two members in the studio with the text 'Our version of Happy Hour! ✨🥂' and a 'crotch sweat' joke tagging @sweat440prestonwood. No alcohol shown.",
+          "action": "Confirm whether happy-hour language with a toast emoji is acceptable in a member reshare; dismiss if so.",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9b30669affb4c9830651/6abed74d9e283b29ce303514_thumbnail.jpg"
+        }
+      ],
+      "postLog": [
+        {
+          "id": "6abfd5d90d2eb82375431a08",
+          "date": "2026-10-02T14:18:46.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9b30669affb4c9830651/6abfd5d90d2eb82375431a08_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfd5d90d2eb82375431a0d",
+          "date": "2026-10-02T14:03:23.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9b30669affb4c9830651/6abfd5d90d2eb82375431a0d_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abee43644d1b529d978b5fe",
+          "date": "2026-10-01T22:23:32.000Z",
+          "postType": "Static",
+          "caption": "There’s always something worth celebrating. 💙\n\nA birthday. A new milestone. 25, 50, 100 classes — every one counts.\n\nWe’re proud to celebrate the moments that make our SWEAT440 Prestonwood community stronger. 🎉\n\nKeep showing up. We’ll celebrate the wins with you.\n\n#SWEAT440 #SWEAT440Prestonwood #NeverLateAlwaysStrong #FitnessCommunity",
+          "link": "https://www.instagram.com/p/Dd9-O_lBPO7/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abed74d9e283b29ce30350f",
+          "date": "2026-10-01T21:32:00.000Z",
+          "postType": "Story",
+          "caption": "This Saturday!!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9b30669affb4c9830651/6abed74d9e283b29ce30350f_thumbnail.jpg",
+          "flagged": true,
+          "level": "medium",
+          "category": "Loose brand adherence"
+        },
+        {
+          "id": "6abed74d9e283b29ce30350d",
+          "date": "2026-10-01T20:53:04.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9b30669affb4c9830651/6abed74d9e283b29ce30350d_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abed74d9e283b29ce303512",
+          "date": "2026-10-01T20:51:58.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9b30669affb4c9830651/6abed74d9e283b29ce303512_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abed74d9e283b29ce303514",
+          "date": "2026-10-01T19:08:38.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9b30669affb4c9830651/6abed74d9e283b29ce303514_thumbnail.jpg",
+          "flagged": true,
+          "level": "low",
+          "category": "Active alcohol consumption"
+        },
+        {
+          "id": "6abe8274db442ee635c5b532",
+          "date": "2026-10-01T14:25:28.000Z",
+          "postType": "Video story (cover)",
+          "caption": "This Saturday in Studio!!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9b30669affb4c9830651/6abe8274db442ee635c5b532_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
     },
     {
       "name": "Reston",
@@ -522,11 +2621,11 @@
       "flags": [],
       "postLog": [
         {
-          "id": "6a6e9129fe2b8990323fac5e",
-          "date": "2026-08-01T17:43:44.000Z",
-          "postType": "Static",
+          "id": "6abffcb26b4606be9c3d5f18",
+          "date": "2026-10-02T17:51:53.000Z",
+          "postType": "Video story (cover)",
           "caption": "",
-          "link": "https://www.instagram.com/p/DbgZUYzxfWW/",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/68fa9c73669affb4c983092d/6abffcb26b4606be9c3d5f18_thumbnail.jpg",
           "flagged": false,
           "level": null,
           "category": null
@@ -536,40 +2635,96 @@
     {
       "name": "South Beach",
       "handle": "sweat440sobe",
-      "posts": 2,
-      "status": "flagged",
-      "flags": [
-        {
-          "id": "6a6f5657842e3c91f03e3657",
-          "level": "low",
-          "category": "Loose brand adherence",
-          "confidence": "HIGH",
-          "date": "2026-08-02T10:41:19.000Z",
-          "postType": "Static",
-          "visualReviewed": true,
-          "caption": "Meet the Team at SWEAT440 Miami Beach \nBehind every great workout is an even greater coach.\nAt SWEAT440, our team is here to support you every step of your fitness journey. From your very first class to every milestone you achieve, you'll always have a certified and highly trained coach by your side.\nOur coaches are experts in the SWEAT440 training system, ensuring every workout is safe, effective, and motivating. Whether your goal is to build strength, lose weight, improve endurance, or simply feel your best—we're here to help you succeed.\nTrain with confidence  Be coached by professionals.\nJoin a community that cares. @chaseme_ @royseweewalt  @_theesignaturek @aoscaralvarez \nMeet the team. Meet your biggest supporters.\n#SWEAT440 #MeetTheTeam #CertifiedCoaches #TrainWithConfidence #MiamiBeach FitnessCommunity StrongerTogether ResultsDriven",
-          "why": "Visual analysis: the published graphic still carries the unreplaced template placeholder \"NAME\" in black above every one of the six coach cards, with the real names printed beneath — an unfinished template went live on a public account. Caption: otherwise on-brand coach-credential copy, though it tags four coaches while the graphic shows six, and three hashtags are malformed (missing # on FitnessCommunity, StrongerTogether, ResultsDriven). The SWEAT440 lockup and colors are correct, so Category 5 is clean.",
-          "action": "Ask South Beach to replace the asset with the placeholder text removed — this is a production QA miss rather than a policy breach, but it is live and visible. Also reconcile the four tagged coaches against the six shown.",
-          "link": "https://www.instagram.com/p/DbiOB8_RCPQ/"
-        }
-      ],
+      "posts": 9,
+      "status": "clean",
+      "flags": [],
       "postLog": [
         {
-          "id": "6a6f5657842e3c91f03e3657",
-          "date": "2026-08-02T10:41:19.000Z",
-          "postType": "Static",
-          "caption": "Meet the Team at SWEAT440 Miami Beach \nBehind every great workout is an even greater coach.\nAt SWEAT440, our team is here to support you every step of your fitness journey. From your very first class to every milestone you achieve, you'll always have a certified and highly trained coach by your side.\nOur coaches are experts in the SWEAT440 training system, ensuring every workout is safe, effective, and motivating. Whether your goal is to build strength, lose weight, improve endurance, or simply feel your best—we're here to help you succeed.\nTrain with confidence  Be coached by professionals.\nJoin a community that cares. @chaseme_ @royseweewalt  @_theesignaturek @aoscaralvarez \nMeet the team. Meet your biggest supporters.\n#SWEAT440 #MeetTheTeam #CertifiedCoaches #TrainWithConfidence #MiamiBeach FitnessCommunity StrongerTogether ResultsDriven",
-          "link": "https://www.instagram.com/p/DbiOB8_RCPQ/",
-          "flagged": true,
-          "level": "low",
-          "category": "Loose brand adherence"
+          "id": "6ac0184ecfd9a59298d6b4ec",
+          "date": "2026-10-02T18:50:13.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8cc4/6ac0184ecfd9a59298d6b4ec_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
         },
         {
-          "id": "6a6dcd953cd32b549726f85e",
-          "date": "2026-08-01T10:28:48.000Z",
-          "postType": "Static",
+          "id": "6ac0184ecfd9a59298d6b4f0",
+          "date": "2026-10-02T18:49:47.000Z",
+          "postType": "Story",
           "caption": "",
-          "link": "https://www.instagram.com/p/Dbfn2Uux8-U/",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8cc4/6ac0184ecfd9a59298d6b4f0_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6ac0184ecfd9a59298d6b4f3",
+          "date": "2026-10-02T18:49:23.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8cc4/6ac0184ecfd9a59298d6b4f3_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf81d950ff6d76fff18b75",
+          "date": "2026-10-02T09:45:35.000Z",
+          "postType": "Static",
+          "caption": "PATRICK EDWARDS\nWith a background in Exercise Science, NASM certification, and HYROX certification, Patrick brings knowledge, energy, and determination to the SWEAT440 community. Outside the studio, he enjoys football, basketball, mud runs, and snowboarding. His philosophy is simple and powerful: “Don’t ever quit!”\nEDUARDO NUNEZ @ufaedu_ \nASFA and ACE certified, Eduardo brings experience, energy, and a strong commitment to the SWEAT440 community. His passion for fitness, training, and connecting with people is reflected in everything he does. Whether inside the studio or out in the community, he believes progress comes from consistency and always moving forward.\nHis philosophy: “Keep moving. Keep growing.” #hittworkout #coachesofthemonth #fitnessmotivation #workout",
+          "link": "https://www.instagram.com/p/Dd_MM7cRX1u/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfc3a78363a704e83b0e2a",
+          "date": "2026-10-02T09:42:46.000Z",
+          "postType": "Static",
+          "caption": "Congratulations @ma.soledad.acuna our SWEAT440 member of the month At 63, after being diagnosed with osteoporosis, she realized that strength and resistance training needed to become an important part of her life. Having never trained this way before, joining SWEAT440 in May was a big step toward becoming stronger and healthier.\nWhat keeps her motivated is the variety of the workouts—every class is different, dynamic, and challenging. She especially values the genuine care and support she receives when exercises need to be adapted to her needs, along with the incredible energy from Eduardo and coaches Roy, Patrick, and Oscar.\nToday, SWEAT440 means more than just working out. She leaves each class feeling stronger physically and emotionally, and most importantly, feels she is in the right place with the right people by her side. #memberofthemonth #hiit #fitnessmotivation",
+          "link": "https://www.instagram.com/p/Dd_L2MhRhSa/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf990464f5231a9319ce45",
+          "date": "2026-10-02T09:31:15.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8cc4/6abf990464f5231a9319ce45_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf990464f5231a9319ce42",
+          "date": "2026-10-02T09:30:46.000Z",
+          "postType": "Story",
+          "caption": "@ma.soledad.acuna",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8cc4/6abf990464f5231a9319ce42_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf1960e6d24779552c7a5c",
+          "date": "2026-10-02T00:23:11.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8cc4/6abf1960e6d24779552c7a5c_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf1960e6d24779552c7a5a",
+          "date": "2026-10-02T00:22:44.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8cc4/6abf1960e6d24779552c7a5a_thumbnail.jpg",
           "flagged": false,
           "level": null,
           "category": null
@@ -579,24 +2734,235 @@
     {
       "name": "South Miami",
       "handle": "sweat440southmiami",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
-    },
-    {
-      "name": "SWEAT440 (Corporate)",
-      "handle": "sweat440",
-      "posts": 1,
+      "posts": 6,
       "status": "clean",
       "flags": [],
       "postLog": [
         {
-          "id": "6a6cd95e78f19adb0605d9d8",
-          "date": "2026-08-01T15:02:12.517Z",
-          "postType": "Carousel",
+          "id": "6ac0416b0d43805cd4a70246",
+          "date": "2026-10-02T21:54:12.000Z",
+          "postType": "Story",
           "caption": "",
-          "link": "https://www.instagram.com/p/DbgHQ9kE4NG/",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c27/6ac0416b0d43805cd4a70246_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6ac016f8d0d09079e34c0ee3",
+          "date": "2026-10-02T19:03:42.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c27/6ac016f8d0d09079e34c0ee3_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6ac016f8d0d09079e34c0ee5",
+          "date": "2026-10-02T19:03:12.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c27/6ac016f8d0d09079e34c0ee5_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeedc4d7aaa6eb91ff3f16",
+          "date": "2026-10-01T22:49:39.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c27/6abeedc4d7aaa6eb91ff3f16_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abed43a813e136ba2123120",
+          "date": "2026-10-01T21:08:02.000Z",
+          "postType": "Carousel",
+          "caption": "HUGE MILESTONE TODAY 🤩 @thefrancescabarry \n\n1,000 CLASSES. 🎉 And Fran just made history as the FIRST EVER member at our studio to hit 1,000 classes! 🏆\n\nWhat makes this milestone even more special? She’s shown up through multiple pregnancies, postpartum seasons, and everything in between, and today, at 8 months pregnant, she’s STILL here showing up. 🥹❤️\n\nFran, your consistency, dedication, and commitment to yourself inspire all of us more than you know. You are truly a huge part of what makes our community so special.\n\n1,000 classes down… and still showing up.\nWe are SO proud of you! 🤩👏\n\nHere’s to the next milestone! 🥂",
+          "link": "https://www.instagram.com/p/Dd91szTlh5M/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe98ecb041e8f71da315e8",
+          "date": "2026-10-01T17:25:22.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c27/6abe98ecb041e8f71da315e8_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
+    },
+    {
+      "name": "SWEAT440 (Corporate)",
+      "handle": "sweat440",
+      "posts": 16,
+      "status": "clean",
+      "flags": [],
+      "postLog": [
+        {
+          "id": "6ac019121f886de868bf498e",
+          "date": "2026-10-02T19:52:58.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392bc93b0f09002f9fe03a/6ac019121f886de868bf498e_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6ac019121f886de868bf4989",
+          "date": "2026-10-02T19:28:03.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392bc93b0f09002f9fe03a/6ac019121f886de868bf4989_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6ac019121f886de868bf498b",
+          "date": "2026-10-02T18:51:57.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392bc93b0f09002f9fe03a/6ac019121f886de868bf498b_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfeea84af10c6244e332f3",
+          "date": "2026-10-02T15:30:12.000Z",
+          "postType": "Story",
+          "caption": "👉🏻 @cortaditocoffeehouse",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392bc93b0f09002f9fe03a/6abfeea84af10c6244e332f3_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfc448cd76168275f745dd",
+          "date": "2026-10-02T14:39:44.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392bc93b0f09002f9fe03a/6abfc448cd76168275f745dd_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfc448cd76168275f745d7",
+          "date": "2026-10-02T14:38:54.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392bc93b0f09002f9fe03a/6abfc448cd76168275f745d7_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfc448cd76168275f745d5",
+          "date": "2026-10-02T14:35:39.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392bc93b0f09002f9fe03a/6abfc448cd76168275f745d5_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfc448cd76168275f745d3",
+          "date": "2026-10-02T14:29:22.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392bc93b0f09002f9fe03a/6abfc448cd76168275f745d3_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abeefd3179cab775c1647ae",
+          "date": "2026-10-01T23:19:04.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392bc93b0f09002f9fe03a/6abeefd3179cab775c1647ae_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abfef67d7843bd39ba75c26",
+          "date": "2026-10-01T23:18:04.000Z",
+          "postType": "Carousel",
+          "caption": "Five shields earned. Hundreds of sessions logged. And not a single minute wasted planning any of them.\n\nThe system is built. You just show up. ⚡️\n\n#SWEAT440",
+          "link": "https://www.instagram.com/p/Dd-ElNODWGT/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abec56d9e283b29ce2dd644",
+          "date": "2026-10-01T20:04:40.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392bc93b0f09002f9fe03a/6abec56d9e283b29ce2dd644_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abec56d9e283b29ce2dd642",
+          "date": "2026-10-01T17:48:57.000Z",
+          "postType": "Video story (cover)",
+          "caption": "#neverlate",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392bc93b0f09002f9fe03a/6abec56d9e283b29ce2dd642_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe9aff489566566b9c98a7",
+          "date": "2026-10-01T17:11:32.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392bc93b0f09002f9fe03a/6abe9aff489566566b9c98a7_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe9aff489566566b9c98aa",
+          "date": "2026-10-01T14:51:40.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392bc93b0f09002f9fe03a/6abe9aff489566566b9c98aa_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe9aff489566566b9c98a5",
+          "date": "2026-10-01T14:41:43.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392bc93b0f09002f9fe03a/6abe9aff489566566b9c98a5_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe70739f3481192b828c6a",
+          "date": "2026-10-01T14:33:49.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392bc93b0f09002f9fe03a/6abe70739f3481192b828c6a_thumbnail.jpg",
           "flagged": false,
           "level": null,
           "category": null
@@ -606,16 +2972,46 @@
     {
       "name": "Toms River",
       "handle": "sweat440tomsriver",
-      "posts": 1,
+      "posts": 4,
       "status": "clean",
       "flags": [],
       "postLog": [
         {
-          "id": "6a6df11dc0b32086ad6576bc",
-          "date": "2026-08-01T12:30:05.000Z",
+          "id": "6abee4f669a1a1310766108d",
+          "date": "2026-10-01T22:15:08.000Z",
           "postType": "Static",
+          "caption": "OCTOBER MEMBER OF THE MONTH 💥 \n.\nMeet Catherine! One of our newer members, she always has a huge smile and positive energy first thing in the morning! We asked her a few questions about her time with us so far, and here’s what she said:\n\n“When I first came to SWEAT440, I had been searching for a gym that truly felt like home. I wanted to feel welcomed, supported, and confident that I could safely challenge myself despite my back, neck, and shoulder issues. After struggling to find the right fit, I started wondering if I would ever feel like myself again—strong, healthy, and happy in my own body.  Everything changed when I found SWEAT440. From the very beginning, Brianna and the coaching team made me feel like I belonged. They listened to my limitations, gave me modifications when I needed them, and still found ways to challenge me. They saw what I was capable of, even when I didn’t see it in myself.  A few weeks ago, I realized just how much had changed. My coaches began encouraging me to lift heavier and push myself further because they knew I was ready. Their belief in me helped me believe in myself.  Fourteen weeks later, I’m stronger, healthier, happier, and more confident. I actually look forward to waking up at 4:20 a.m. to work out with coaches I now consider friends. But the biggest change extends far beyond the gym: I believe in myself and what I’m capable of.  I feel like myself again.”\n\nHuge congratulations to @saraandjacksmom",
+          "link": "https://www.instagram.com/p/DdrdRSRuq57/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe70599780d70e7a01f4c2",
+          "date": "2026-10-01T13:59:31.000Z",
+          "postType": "Story",
+          "caption": "If these are yours please come and claim them!!! We will be throwing them out by the end of the week!",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392c0c3b0f09002fa24a51/6abe70599780d70e7a01f4c2_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe70599780d70e7a01f4c6",
+          "date": "2026-10-01T13:36:20.000Z",
+          "postType": "Story",
           "caption": "",
-          "link": "https://www.instagram.com/p/DbOGcZ_ucrt/",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392c0c3b0f09002fa24a51/6abe70599780d70e7a01f4c6_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe70599780d70e7a01f4c4",
+          "date": "2026-10-01T13:36:14.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65392c0c3b0f09002fa24a51/6abe70599780d70e7a01f4c4_thumbnail.jpg",
           "flagged": false,
           "level": null,
           "category": null
@@ -625,64 +3021,46 @@
     {
       "name": "Upper East Side",
       "handle": "sweat440uppereastside",
-      "posts": 0,
+      "posts": 4,
       "status": "clean",
       "flags": [],
-      "postLog": []
-    },
-    {
-      "name": "Wall Township",
-      "handle": "sweat440wallnj",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
-    },
-    {
-      "name": "West Palm Beach",
-      "handle": "sweat440westpalmbeach",
-      "posts": 0,
-      "status": "clean",
-      "flags": [],
-      "postLog": []
-    },
-    {
-      "name": "Austin - Highland",
-      "handle": "sweat440highland",
-      "posts": 2,
-      "status": "flagged",
-      "flags": [
-        {
-          "id": "6a70db0be931739100c86269",
-          "level": "medium",
-          "category": "Political or religious messaging",
-          "confidence": "MEDIUM",
-          "date": "2026-08-03T17:33:40.000Z",
-          "postType": "Carousel",
-          "visualReviewed": true,
-          "caption": "August is PACKED 📅🔥\n\nFrom piercings & jewelry to wellness, BINGO, giving back, and Worship & Sweat, there's a lot happening at SWEAT440 this month!\n\nSave the dates, bring a friend & we'll see you there 💪",
-          "why": "Caption: lists August programming that includes \"Worship & Sweat\" alongside piercings & jewelry, wellness, BINGO and giving back — studio-hosted worship programming goes beyond the cultural-holiday acknowledgment the framework treats as acceptable. Visual analysis: the cover is only the title card (SWEAT440 lockup, \"THIS MONTH / UPCOMING EVENTS / AUGUST 2026\" over a studio photo, mark correct and on-palette); the actual event listings sit on interior carousel slides that a cover-only review cannot reach.",
-          "action": "Review the interior carousel slides for how Worship & Sweat is presented, and confirm whether franchise policy permits studio-hosted religious programming. Note a second, separate issue in the same post: the piercings & jewelry event implies an external vendor operating in-studio — verify that vendor is approved.",
-          "link": "https://www.instagram.com/p/DbliRIrlnay/"
-        }
-      ],
       "postLog": [
         {
-          "id": "6a70db0be931739100c86269",
-          "date": "2026-08-03T17:33:40.000Z",
-          "postType": "Carousel",
-          "caption": "August is PACKED 📅🔥\n\nFrom piercings & jewelry to wellness, BINGO, giving back, and Worship & Sweat, there's a lot happening at SWEAT440 this month!\n\nSave the dates, bring a friend & we'll see you there 💪",
-          "link": "https://www.instagram.com/p/DbliRIrlnay/",
-          "flagged": true,
-          "level": "medium",
-          "category": "Political or religious messaging"
+          "id": "6ac016f1838e77872d5de832",
+          "date": "2026-10-02T20:34:47.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c93/6ac016f1838e77872d5de832_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
         },
         {
-          "id": "6a6e18fae3d20ce11623af78",
-          "date": "2026-08-01T15:34:52.000Z",
-          "postType": "Static",
-          "caption": "",
-          "link": "https://www.instagram.com/p/DbgLDkvnHPY/",
+          "id": "6abf97ac0da718abc91e7cbe",
+          "date": "2026-10-02T10:19:59.000Z",
+          "postType": "Video story (cover)",
+          "caption": "My girl \n@chrisstyy13 \nwith",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c93/6abf97ac0da718abc91e7cbe_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abf97ac0da718abc91e7cbc",
+          "date": "2026-10-02T10:16:44.000Z",
+          "postType": "Video story (cover)",
+          "caption": "@tarabenmeleh  Congrats on \n100 classes",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c93/6abf97ac0da718abc91e7cbc_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe98e2e931ea58da12b0e4",
+          "date": "2026-10-01T16:10:15.000Z",
+          "postType": "Video story (cover)",
+          "caption": "Send us a DM if one of these bottles belongs to you 👀😅",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/65411a93f8d09f1c5e0a8c93/6abe98e2e931ea58da12b0e4_thumbnail.jpg",
           "flagged": false,
           "level": null,
           "category": null
@@ -690,12 +3068,221 @@
       ]
     },
     {
-      "name": "Zilker",
-      "handle": "sweat440zilker",
-      "posts": 0,
+      "name": "Wall Township",
+      "handle": "sweat440wallnj",
+      "posts": 3,
       "status": "clean",
       "flags": [],
-      "postLog": []
+      "postLog": [
+        {
+          "id": "6abffffde34d907978d0f189",
+          "date": "2026-10-02T17:47:34.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/686c2b33111211c55767c82a/6abffffde34d907978d0f189_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abffffde34d907978d0f18b",
+          "date": "2026-10-02T17:47:29.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/686c2b33111211c55767c82a/6abffffde34d907978d0f18b_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe823bff85b90ed6f7c866",
+          "date": "2026-10-01T14:56:13.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/686c2b33111211c55767c82a/6abe823bff85b90ed6f7c866_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
+    },
+    {
+      "name": "West Palm Beach",
+      "handle": "sweat440westpalmbeach",
+      "posts": 2,
+      "status": "clean",
+      "flags": [],
+      "postLog": [
+        {
+          "id": "6abed198e6d247795523fcef",
+          "date": "2026-10-01T18:53:38.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/6834d4ce9c617476ae72466a/6abed198e6d247795523fcef_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe52ac3dfc47a1a6b7383a",
+          "date": "2026-10-01T12:20:29.000Z",
+          "postType": "Carousel",
+          "caption": "100 CLASSES STRONG! 💪🔥\n\nShoutout to Sydney for hitting 100 classes! Rain or shine, whether here or in Boca, she always makes the time to show up and put in the work! Your consistency and dedication are what it’s all about. Keep crushing those goals, Sydney!",
+          "link": "https://www.instagram.com/p/Dd85U31oFzW/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
+    },
+    {
+      "name": "Austin - Highland",
+      "handle": "sweat440highland",
+      "posts": 14,
+      "status": "clean",
+      "flags": [],
+      "postLog": [
+        {
+          "id": "6ac019bf6b4606be9c409d0b",
+          "date": "2026-10-02T18:57:48.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/664be217b9b04b20032686ba/6ac019bf6b4606be9c409d0b_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abef0a4d7aaa6eb91ffa549",
+          "date": "2026-10-01T22:00:52.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/664be217b9b04b20032686ba/6abef0a4d7aaa6eb91ffa549_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abef0a4d7aaa6eb91ffa53f",
+          "date": "2026-10-01T21:50:17.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/664be217b9b04b20032686ba/6abef0a4d7aaa6eb91ffa53f_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe9bd53e7782c83e167efa",
+          "date": "2026-10-01T16:17:37.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/664be217b9b04b20032686ba/6abe9bd53e7782c83e167efa_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe8f21fcfc67854e8d3c2b",
+          "date": "2026-10-01T16:07:52.000Z",
+          "postType": "Carousel",
+          "caption": "Have you met Coach Carlos?\n\nOne of the new faces around Highland, Carlos was born in Mexico and raised right here in Austin. \n\nHis own fitness journey showed him how much confidence and discipline can come from training—and now he loves helping others experience the same.\n\nHis coaching style? Supportive, encouraging, and focused on helping you get stronger one workout at a time.\n\n🏋️ Favorite workout: Strength training + endurance challenges\n\n🎾 Outside the studio: Tennis, soccer, biking, and time with his niece and nephew\n\n🍗 Favorite food: Wings, of course\n\n⚡ Fun fact: He has enough energy drinks in his fridge to open a convenience store\n\nHis advice: Don’t focus on being perfect. Focus on doing your best.\n\nCatch Coach Carlos at Highland and say what’s up!",
+          "link": "https://www.instagram.com/p/Dd9TWT-FtJu/",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe71246197913861804d16",
+          "date": "2026-10-01T14:01:24.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/664be217b9b04b20032686ba/6abe71246197913861804d16_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe71246197913861804d20",
+          "date": "2026-10-01T14:01:20.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/664be217b9b04b20032686ba/6abe71246197913861804d20_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe71246197913861804d23",
+          "date": "2026-10-01T14:00:11.000Z",
+          "postType": "Video story (cover)",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/664be217b9b04b20032686ba/6abe71246197913861804d23_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe71246197913861804d1a",
+          "date": "2026-10-01T12:37:23.000Z",
+          "postType": "Story",
+          "caption": "40 minutes.\n\nHigh energy. \n\nStrength training. Are you ready?",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/664be217b9b04b20032686ba/6abe71246197913861804d1a_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe71246197913861804d27",
+          "date": "2026-10-01T12:34:05.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/664be217b9b04b20032686ba/6abe71246197913861804d27_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe71246197913861804d1e",
+          "date": "2026-10-01T12:32:30.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/664be217b9b04b20032686ba/6abe71246197913861804d1e_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe71246197913861804d1c",
+          "date": "2026-10-01T12:31:27.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/664be217b9b04b20032686ba/6abe71246197913861804d1c_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe71246197913861804d18",
+          "date": "2026-10-01T12:30:30.000Z",
+          "postType": "Story",
+          "caption": "",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/664be217b9b04b20032686ba/6abe71246197913861804d18_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        },
+        {
+          "id": "6abe71246197913861804d25",
+          "date": "2026-10-01T12:29:40.000Z",
+          "postType": "Video story (cover)",
+          "caption": "High energy loading…",
+          "link": "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/651eb8e1f9dfd3e786474267/664be217b9b04b20032686ba/6abe71246197913861804d25_thumbnail.jpg",
+          "flagged": false,
+          "level": null,
+          "category": null
+        }
+      ]
     }
   ]
 }
