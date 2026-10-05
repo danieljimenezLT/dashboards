@@ -3734,6 +3734,64 @@ function _ga4Sum(rows){
 
 // ── Client History ────────────────────────────────────────────────────────────
 let _chSort={col:'date',asc:false};
+// 'transactions' = one row per sale / cancel (original view)
+// 'members'      = one row per membership: join date + cancel date, for churn
+let _chView='transactions';
+let _chMemSort={col:'join_date',asc:false};
+
+// View toggle shown in both views' controls bar
+function _chViewToggle(){
+  const b=(v,label)=>`<button onclick="_chView='${v}';renderClientHistory()" style="padding:5px 14px;border-radius:4px;border:2px solid ${_chView===v?'#00A3E0':'#2a4a5a'};background:${_chView===v?'#00A3E0':'transparent'};color:${_chView===v?'#fff':'#8aaabb'};font-family:Oswald,sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;cursor:pointer;letter-spacing:.5px">${label}</button>`;
+  return `<span style="font-family:Oswald,sans-serif;font-style:italic;font-weight:600;font-size:12px;text-transform:uppercase;color:#5a7a8a">View</span>`+
+    b('transactions','Transactions')+b('members','Members (Join & Cancel)');
+}
+
+// Pair each cancellation with the membership it cancels. One account (email)
+// can hold several memberships (bought for other people), so every sale is its
+// own membership; a cancel closes the account's most recent still-open
+// membership at that studio on or before the cancel date, preferring the same
+// product. Cancels with no earlier sale in the data become "join unknown" rows.
+function _chBuildMembers(records){
+  const byAcct={};
+  for(const r of records){
+    const k=r.studio+'|'+String(r.email||r.client_name||'').toLowerCase().trim();
+    (byAcct[k]=byAcct[k]||[]).push(r);
+  }
+  const out=[];
+  const dayMs=864e5;
+  for(const recs of Object.values(byAcct)){
+    recs.sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||'')));
+    const open=[];
+    for(const r of recs){
+      if(r.type==='sale'){
+        const m={client_name:r.client_name,email:r.email,phone:r.phone,studio:r.studio,source:r.source,
+                 product:r.product,join_date:r.date,join_time:r.time,platform:r.platform,sold_by:r.sold_by,
+                 amount:r.amount,cancel_date:null,days_to_cancel:null,status:'Active'};
+        out.push(m);open.push(m);
+      } else {
+        const cands=open.filter(m=>m.join_date<=r.date);
+        const pickFrom=cands.filter(m=>m.product===r.product);
+        const m=(pickFrom.length?pickFrom:cands).slice(-1)[0];
+        if(m){
+          m.cancel_date=r.date;m.status='Cancelled';
+          m.days_to_cancel=Math.round((new Date(r.date+'T00:00:00Z')-new Date(m.join_date+'T00:00:00Z'))/dayMs);
+          open.splice(open.indexOf(m),1);
+        } else {
+          out.push({client_name:r.client_name,email:r.email,phone:r.phone,studio:r.studio,source:r.source,
+                    product:r.product,join_date:null,join_time:null,platform:r.platform,sold_by:r.sold_by,
+                    amount:null,cancel_date:r.date,days_to_cancel:null,status:'Cancelled',join_unknown:true});
+        }
+      }
+    }
+  }
+  return out;
+}
+
+function chMemSortBy(col){
+  if(_chMemSort.col===col)_chMemSort.asc=!_chMemSort.asc;
+  else{_chMemSort.col=col;_chMemSort.asc=!/date/.test(col);}
+  renderClientHistory();
+}
 
 function renderClientHistory(){
   const el=document.getElementById('ch-content');
@@ -3761,6 +3819,8 @@ function renderClientHistory(){
   const _chOpenCap=_nsoOpenedCap();
   const _chEffCap=_chOpenCap?(_chCap<_chOpenCap.capDate?_chCap:_chOpenCap.capDate):_chCap;
   records=records.filter(r=>r.date<=_chEffCap);
+
+  if(_chView==='members'){el.innerHTML=_chMembersHtml(records,_chOpenCap,_chEffCap);return;}
 
   // Date filter
   const from=document.getElementById('fFrom').value||'';
@@ -3817,6 +3877,7 @@ function renderClientHistory(){
   h+=`<div class="data-thru-label" style="font-size:11px;color:#8aaabb;margin-bottom:8px">Data until ${_chCapFmt}</div>`;
   // Controls bar
   h+=`<div class="chart-card" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:0">`;
+  h+=_chViewToggle();
   h+=`<span style="font-family:Oswald,sans-serif;font-style:italic;font-weight:600;font-size:12px;text-transform:uppercase;color:#5a7a8a">Type</span>`;
   h+=`<select id="chTypeFilter" onchange="renderClientHistory()" style="background:#1a2a35;color:#e0eef5;border:1px solid #2a4a5a;border-radius:4px;padding:4px 8px;font-size:13px">
         <option value="all">All</option>
@@ -3929,6 +3990,110 @@ function renderClientHistory(){
   el.innerHTML=h;
 }
 
+function _chMembersHtml(records,_chOpenCap,_chEffCap){
+  let mem=_chBuildMembers(records);
+
+  // Date filter = JOIN date (cohort): "joined in August" keeps the ones who
+  // cancelled in September, which is what churn needs. Cancels with an unknown
+  // join date are kept only when no date range is set.
+  const from=document.getElementById('fFrom').value||'';
+  const to  =document.getElementById('fTo').value  ||'';
+  if(from||to)mem=mem.filter(m=>m.join_date&&(!from||m.join_date>=from)&&(!to||m.join_date<=to));
+
+  const selSrc=_getSel('sourceMenu');
+  if(selSrc.length)mem=mem.filter(m=>selSrc.includes(m.source||''));
+
+  // Accounts holding 2+ memberships in view (same idea as Multiple Memberships)
+  const acctN={};
+  mem.filter(m=>!m.join_unknown).forEach(m=>{if(m.email)acctN[m.email]=(acctN[m.email]||0)+1;});
+  const multiAccts=new Set(Object.keys(acctN).filter(e=>acctN[e]>1));
+  if(_chDupOnly)mem=mem.filter(m=>multiAccts.has(m.email));
+
+  const joined=mem.filter(m=>!m.join_unknown);
+  const cancelled=joined.filter(m=>m.status==='Cancelled');
+  const active=joined.length-cancelled.length;
+  const churn=joined.length?cancelled.length/joined.length*100:null;
+  const avgDays=cancelled.length?cancelled.reduce((s,m)=>s+m.days_to_cancel,0)/cancelled.length:null;
+  const unknown=mem.filter(m=>m.join_unknown).length;
+
+  const {col,asc}=_chMemSort;
+  mem.sort((a,b)=>{
+    let av=a[col]??'',bv=b[col]??'';
+    if(col==='amount'||col==='days_to_cancel'){av=av===''?-1:+av;bv=bv===''?-1:+bv;}
+    else{av=String(av).toLowerCase();bv=String(bv).toLowerCase();}
+    return av<bv?(asc?-1:1):av>bv?(asc?1:-1):0;
+  });
+
+  const th=(label,c,num)=>{const arrow=_chMemSort.col===c?(_chMemSort.asc?' ▲':' ▼'):'';
+    return `<th${num?' class="num"':''} style="cursor:pointer;white-space:nowrap" onclick="chMemSortBy('${c}')">${label}${arrow}</th>`;};
+  const capFmt=new Date(_chEffCap+'T00:00:00Z').toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric',timeZone:'UTC'});
+  const pct=v=>v==null?'—':v.toFixed(1)+'%';
+
+  let h='';
+  if(_chOpenCap){_applyPresaleDates(_chOpenCap);h+=_openedCapBanner(_chOpenCap,'daily');}
+  h+=`<div class="data-thru-label" style="font-size:11px;color:#8aaabb;margin-bottom:8px">Data until ${capFmt} · date range filters by join date</div>`;
+  h+=`<div class="chart-card" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:0">`;
+  h+=_chViewToggle();
+  h+=`<button onclick="_chDupOnly=!_chDupOnly;renderClientHistory()" style="padding:5px 14px;border-radius:4px;border:2px solid ${_chDupOnly?'#f4a021':'#2a4a5a'};background:${_chDupOnly?'#f4a021':'transparent'};color:${_chDupOnly?'#000':'#8aaabb'};font-family:Oswald,sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;cursor:pointer;letter-spacing:.5px">Multiple Memberships Only${multiAccts.size?' ('+multiAccts.size+')':''}</button>`;
+  h+=`<div style="margin-left:auto;display:flex;gap:8px"><button onclick="chExportCSV()" style="background:#00A3E0;color:#000;border:none;border-radius:4px;padding:6px 14px;font-family:Oswald,sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;cursor:pointer">Export CSV</button></div>`;
+  h+=`</div>`;
+
+  // Churn KPIs
+  const card=(label,val,sub,color)=>`<div class="kpi-card"><div class="kpi-card-label">${label}</div><div class="kpi-card-val"${color?` style="color:${color}"`:''}>${val}</div>${sub?`<div style="font-size:10px;color:#8aaabb;margin-top:2px">${sub}</div>`:''}</div>`;
+  h+=`<div class="kpi-grid" style="margin:16px 0;grid-template-columns:repeat(5,1fr)">`;
+  h+=card('Joined',joined.length.toLocaleString(),'memberships sold');
+  h+=card('Cancelled',cancelled.length.toLocaleString(),'of those memberships','#ff6b6b');
+  h+=card('Still Active',active.toLocaleString(),'');
+  h+=card('Churn %',pct(churn),'cancelled ÷ joined','#ff6b6b');
+  h+=card('Avg Days to Cancel',avgDays==null?'—':avgDays.toFixed(1),'join → cancel');
+  h+=`</div>`;
+  if(unknown)h+=`<div style="font-size:11px;color:#8aaabb;margin:-8px 0 12px">${unknown} cancellation${unknown>1?'s':''} without an earlier sale in the data (join date unknown) — listed below, not counted in churn.</div>`;
+
+  // Churn by join month
+  const byMonth={};
+  joined.forEach(m=>{const k=m.join_date.slice(0,7);const e=byMonth[k]||(byMonth[k]={j:0,c:0,d:0});e.j++;if(m.status==='Cancelled'){e.c++;e.d+=m.days_to_cancel;}});
+  const months=Object.keys(byMonth).sort();
+  if(months.length){
+    h+=`<div class="chart-card" style="margin-bottom:0"><div class="chart-card-title">Churn by Join Month</div><div style="overflow-x:auto"><table class="data-table"><thead><tr>
+      <th>Join Month</th><th class="num">Joined</th><th class="num">Cancelled</th><th class="num">Still Active</th><th class="num">Churn %</th><th class="num">Avg Days to Cancel</th></tr></thead><tbody>`;
+    for(const k of months){
+      const e=byMonth[k];
+      const lbl=new Date(k+'-01T00:00:00Z').toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'});
+      h+=`<tr><td>${lbl}</td><td class="num">${e.j}</td><td class="num" style="color:#ff6b6b">${e.c}</td><td class="num">${e.j-e.c}</td><td class="num">${pct(e.j?e.c/e.j*100:null)}</td><td class="num">${e.c?(e.d/e.c).toFixed(1):'—'}</td></tr>`;
+    }
+    h+=`<tr style="font-weight:700;border-top:2px solid #dde8ef"><td>Total</td><td class="num">${joined.length}</td><td class="num" style="color:#ff6b6b">${cancelled.length}</td><td class="num">${active}</td><td class="num">${pct(churn)}</td><td class="num">${avgDays==null?'—':avgDays.toFixed(1)}</td></tr>`;
+    h+=`</tbody></table></div></div>`;
+  }
+
+  // Members table
+  h+=`<div class="chart-card"><div style="font-size:11px;color:#8aaabb;margin-bottom:8px">${mem.length} membership${mem.length!==1?'s':''} shown${_chDupOnly?' — accounts with multiple memberships':''}</div>`;
+  h+=`<div style="overflow-x:auto"><table class="data-table" id="chTable"><thead><tr>`;
+  h+=th('Name','client_name')+th('Email','email')+th('Phone','phone')+th('Studio','studio')+th('Source','source')+th('Product','product')+
+     th('Join Date','join_date',1)+th('Cancel Date','cancel_date',1)+th('Days to Cancel','days_to_cancel',1)+th('Status','status')+
+     th('Platform','platform')+th('Amount','amount',1);
+  h+=`</tr></thead><tbody>`;
+  if(!mem.length){
+    h+=`<tr><td colspan="12" style="text-align:center;color:#8aaabb;padding:24px">No memberships match the current filters.</td></tr>`;
+  } else for(const m of mem){
+    const isMulti=multiAccts.has(m.email);
+    const badge=isMulti?` <span style="font-size:9px;background:rgba(244,160,33,.2);color:#f4a021;border-radius:3px;padding:1px 4px;margin-left:3px" title="${acctN[m.email]} memberships on this account">×${acctN[m.email]}</span>`:'';
+    const st=m.status==='Cancelled'?'<span style="color:#ff6b6b;font-weight:600">Cancelled</span>':'<span style="color:#0a8a4a;font-weight:600">Active</span>';
+    const amt=m.amount>0?`$${m.amount.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`:'—';
+    h+=`<tr${isMulti?' style="background:rgba(244,160,33,.04)"':''}>`;
+    h+=`<td>${m.client_name||'—'}</td>`;
+    h+=`<td><a href="mailto:${m.email}" style="color:${isMulti?'#f4a021':'#00A3E0'};text-decoration:none">${m.email||'—'}</a>${badge}</td>`;
+    h+=`<td>${m.phone||'—'}</td><td>${m.studio||'—'}</td><td>${m.source||'N/A'}</td><td>${m.product||'—'}</td>`;
+    h+=`<td class="num">${m.join_date||'<span style="color:#8aaabb">unknown</span>'}</td>`;
+    h+=`<td class="num" style="color:${m.cancel_date?'#ff6b6b':'inherit'}">${m.cancel_date||'—'}</td>`;
+    h+=`<td class="num">${m.days_to_cancel==null?'—':m.days_to_cancel}</td>`;
+    h+=`<td>${st}</td><td>${m.platform||'—'}</td><td class="num">${amt}</td></tr>`;
+  }
+  h+=`</tbody></table></div></div>`;
+
+  window._chMembers=mem;
+  return h;
+}
+
 function chSortBy(col){
   if(_chSort.col===col)_chSort.asc=!_chSort.asc;
   else{_chSort.col=col;_chSort.asc=col==='date'?false:true;}
@@ -3936,6 +4101,16 @@ function chSortBy(col){
 }
 
 function chExportCSV(){
+  if(_chView==='members'){
+    const hdr=['Name','Email','Phone','Studio','Source','Product','Join Date','Cancel Date','Days to Cancel','Status','Platform','Sold By','Amount'];
+    const rows=(window._chMembers||[]).map(m=>[
+      m.client_name,m.email,m.phone,m.studio,m.source||'N/A',m.product,m.join_date||'unknown',m.cancel_date||'',m.days_to_cancel??'',m.status,m.platform,m.sold_by,m.amount??''
+    ].map(v=>{const s=String(v??'').replace(/"/g,'""');return /[",\n]/.test(s)?`"${s}"`:s;}).join(','));
+    const blob=new Blob([[hdr.join(','),...rows].join('\n')],{type:'text/csv'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download=`client_memberships_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+    return;
+  }
   const recs=window._chRecords||[];
   const hdr=['Name','Email','Phone','Studio','Source','Product','Date','Time','Platform','Sold By','Amount','Type'];
   const rows=recs.map(r=>[
