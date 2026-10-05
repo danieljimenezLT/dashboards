@@ -19,7 +19,8 @@ truth for this framework, not a reconstruction. If that tab's copy changes,
 update eval_prompt.py to match.
 
 Reels (video + audio) are explicitly out of scope here — see "Current scope"
-in README.md. This script only evaluates Static and Carousel-cover posts;
+in README.md. This script evaluates Static and Carousel-cover feed posts and
+Stories (Buffer's permanent S3 image; cover frame only for video Stories);
 Instagram Reels are detected via `metadata.type == "reel"` and skipped. Note
 category 2 below (explicit lyrics in audio) requires an audio track this
 pipeline never has access to — see the note in EVAL_PROMPT.
@@ -108,12 +109,12 @@ def analyze(posts, start_date, end_date):
         for post in channel_posts:
             post_type, asset = post_type_and_asset(post)
             if asset is None:
-                continue  # skipped Reel/video/no-image post — Phase 2
+                continue  # Reel or no-image post — video review not built yet
             total_reviewed += 1
             verdict = evaluate_post(post, asset)
             post_date = post.get("sentAt") or post.get("dueAt", "")
             caption = post.get("text", "")
-            link = post.get("externalLink", "")
+            link = asset["link"]
             if verdict["flagged"]:
                 flags.append(
                     {

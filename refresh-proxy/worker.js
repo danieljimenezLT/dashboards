@@ -809,19 +809,43 @@ async function pullBufferPosts(env, channelIds, startDate, endDate) {
   );
 }
 
-// Allow-list, not block-list: only metadata.type === "post" (a permanent
-// Instagram feed post) is evaluated. Reels AND Stories both slip through a
-// Reel-only exclusion — Stories have an image asset and no caption but are
-// gone in 24h, so any permalink is dead by the time a weekly review happens.
+// Buffer keeps a permanent copy of every synced Story (and every video's
+// cover frame) at this fixed S3 path — it outlives the Story itself, whose
+// instagram.com/stories/... link is dead after 24h. Assets carry it as
+// `thumbnail`; the path is rebuilt here only as a fallback.
+function bufferBackfillUrl(post) {
+  return `https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/${BUFFER_ORG_ID}/${post.channelId}/${post.id}_thumbnail.jpg`;
+}
+
+// Allow-list, not block-list. Returns { postType, imageUrl, link } for what
+// the audit reviews, or null to skip:
+//   - feed post  → "Static" / "Carousel" (cover image), link = Instagram
+//   - Story      → "Story" (full image) or "Video story (cover)" (cover frame
+//                  only — the video file expires in 1-2 days), image AND
+//                  link = Buffer's permanent S3 copy
+//   - Reel / anything else → skipped (video review isn't built yet)
 function postTypeAndAsset(post) {
-  const metadata = post.metadata || {};
-  if (metadata.type !== 'post') return [null, null];
+  const type = (post.metadata || {}).type;
+  const assets = post.assets || [];
 
-  const imageAssets = (post.assets || []).filter((a) => (a.mimeType || '').startsWith('image/'));
-  if (!imageAssets.length) return [null, null];
+  if (type === 'post') {
+    const imageAssets = assets.filter((a) => (a.mimeType || '').startsWith('image/'));
+    if (!imageAssets.length) return null;
+    return {
+      postType: imageAssets.length > 1 ? 'Carousel' : 'Static',
+      imageUrl: imageAssets[0].source,
+      link: post.externalLink || '',
+    };
+  }
 
-  const postType = imageAssets.length > 1 ? 'Carousel' : 'Static';
-  return [postType, imageAssets[0]];
+  if (type === 'story' && assets.length) {
+    const asset = assets[0];
+    const url = asset.thumbnail || bufferBackfillUrl(post);
+    const isVideo = asset.type === 'video' || (asset.mimeType || '').startsWith('video/');
+    return { postType: isVideo ? 'Video story (cover)' : 'Story', imageUrl: url, link: url };
+  }
+
+  return null;
 }
 
 // `startDate`/`endDate` are the plain "YYYY-MM-DD" strings the request was
@@ -842,15 +866,15 @@ function buildBrandAuditExport(posts, startDate, endDate, unavailable) {
     const channelPosts = byChannel[channelId] || [];
     const postsForReview = [];
     for (const post of channelPosts) {
-      const [postType, asset] = postTypeAndAsset(post);
-      if (!asset) { skipped++; continue; }
+      const item = postTypeAndAsset(post);
+      if (!item) { skipped++; continue; }
       postsForReview.push({
         id: String(post.id),
         date: post.sentAt || post.dueAt || '',
-        postType,
+        postType: item.postType,
         caption: post.text || '',
-        imageUrl: asset.source,
-        link: post.externalLink || '',
+        imageUrl: item.imageUrl,
+        link: item.link,
       });
     }
     accounts.push({
@@ -866,7 +890,7 @@ function buildBrandAuditExport(posts, startDate, endDate, unavailable) {
     period: coverageEnd.toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }),
     generated: new Date().toISOString().slice(0, 10),
     coverage: { from: startDate, to: endDate },
-    note: `${skipped} Reel(s)/Story post(s) excluded — video and 24h-ephemeral content aren't in scope yet.`
+    note: `${skipped} Reel(s) excluded — video review isn't built yet.`
       + (unavailable.length ? ` Not in Buffer anymore (skipped): ${unavailable.join(', ')}.` : ''),
     skipped,
     unavailableChannels: unavailable,
