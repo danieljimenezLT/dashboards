@@ -151,7 +151,7 @@
       <table class="data-table">
         <thead><tr>
           <th>Studio</th>
-          <th class="num">Opened</th>
+          <th class="num">Opening</th>
           <th class="num">Presale Weeks</th>
           <th class="num">Leads</th>
           <th class="num">Presales</th>
@@ -197,7 +197,8 @@
     <div style="overflow-x:auto">
       <table class="data-table">
         <thead><tr>
-          <th>Week</th>
+          <th>Studio</th>
+          <th class="num">Negative Weeks</th>
           <th class="num">Dates</th>
           <th class="num">Leads</th>
           <th class="num">Presales</th>
@@ -257,7 +258,7 @@
       <table class="data-table">
         <thead><tr>
           <th>Studio</th>
-          <th class="num">Opened</th>
+          <th class="num">Opening</th>
           <th class="num">Days (of 90)</th>
           <th class="num">Leads</th>
           <th class="num">First Timers</th>
@@ -284,7 +285,16 @@
 const STUDIO_CFG = [
   { sc_name:'Naples - Mercato', label:'Naples – Mercato', color:'#00A3E0', fill:'rgba(0,163,224,.1)' },
   { sc_name:'Reston',           label:'Reston',           color:'#8a9a00', fill:'rgba(138,154,0,.1)'  },
+  // Herriman's scorecard opening_date (Oct 1) is really its preview start:
+  // preview classes Oct 1–9, presale billing Oct 9, grand opening Oct 10.
+  { sc_name:'Herriman',         label:'Herriman',         color:'#F28C28', fill:'rgba(242,140,40,.1)',
+    opening:'2026-10-10', previewStart:'2026-10-01', billDate:'2026-10-09' },
 ];
+// Optional per-studio overrides (otherwise the scorecard's opening_date is used):
+//   opening      — grand opening = Day 1 of First 90 Days
+//   previewStart — first day of Preview Week (default: opening − 7)
+//   billDate     — presale memberships' first charge; presales count until the
+//                  day before it (default: the opening date)
 
 // Same source list, grouping and default as the NSO dashboard's Source filter
 const ALL_SOURCES = ['Meta Ads','Google Ads','Local Listings','Social Media Organic','Website (unattributed)','Word of Mouth','SWEAT440 App','MindBody App','ClassPass / Platforms','Grassroots','Business Mode / App','Public API','Print Ads / Signs','Internet / AI Search','Other','N/A'];
@@ -308,7 +318,7 @@ let showAvg = true;
 let currentTab = 'presale';
 const metricByTab = { presale:'leads_cumul', prelaunch:'leads_day', post90:'leads_cumul' };
 const charts = {};
-let DATA_END = null;     // latest day with funnel data (never in the future)
+let DATA_END = null;     // last complete day of funnel data (see loadData)
 
 // ── Load ──────────────────────────────────────────────────────────────────────
 async function getJSON(url, fallback) {
@@ -326,8 +336,10 @@ async function loadData() {
   ]);
   OVERRIDES = ((await getJSON('../agency-spend-overrides.json', { overrides: [] })).overrides || []);
 
-  const today = new Date().toISOString().slice(0,10);
-  DATA_END = (RAW.daily_detail || []).reduce((m, r) => (r.date <= today && r.date > m ? r.date : m), '');
+  // Leads/first visits land in Snowflake with a ~2-day lag, so the last two
+  // days are incomplete — same cut as the NSO dashboard's "Last 7 Full Days".
+  const twoDaysAgo = addDaysISO(new Date().toISOString().slice(0,10), -2);
+  DATA_END = (RAW.daily_detail || []).reduce((m, r) => (r.date <= twoDaysAgo && r.date > m ? r.date : m), '');
 
   studioData = STUDIO_CFG.map(cfg => buildStudio(cfg));
   buildPills();
@@ -418,16 +430,18 @@ function buildStudio(cfg) {
   const _w0PrevEnd = (w0Idx > 0) ? rawWeeks[w0Idx-1].date_end : null;
 
   // Opening week = the week containing opening_date
+  const openDate   = cfg.opening || sc.opening_date;
+  const presaleCap = cfg.billDate || openDate;     // presales count before this day
   let openIdx = -1;
-  if (sc.opening_date) {
-    openIdx = weeks.findIndex(w => w.date_end && sc.opening_date <= w.date_end &&
-                                   (!w.date_start || sc.opening_date >= w.date_start));
+  if (openDate) {
+    openIdx = weeks.findIndex(w => w.date_end && openDate <= w.date_end &&
+                                   (!w.date_start || openDate >= w.date_start));
   }
 
   const rows = (RAW.daily_detail||[]).filter(r => r.studio === cfg.sc_name);
   const proc = (w, from) => ({
     week: w.week, from, to: w.date_end,
-    src: aggSrc(rows, from, w.date_end, sc.opening_date),
+    src: aggSrc(rows, from, w.date_end, presaleCap),
     meta_spend:       Number(w.meta_spend)       || 0,
     google_spend:     Number(w.google_spend)     || 0,
     grassroots_spend: Number(w.grassroots_spend) || 0,
@@ -443,14 +457,14 @@ function buildStudio(cfg) {
   //   First 90 Days opening date (day 1) onward
   // Scorecard weeks run Sun–Sat, so the last presale week is usually partial:
   // its leads/presales come from daily rows, its spend is prorated by days.
-  const previewStart = sc.opening_date ? addDaysISO(sc.opening_date, -7) : null;
-  const previewEnd   = sc.opening_date ? addDaysISO(sc.opening_date, -1) : null;
+  const previewStart = cfg.previewStart || (openDate ? addDaysISO(openDate, -7) : null);
+  const previewEnd   = openDate ? addDaysISO(openDate, -1) : null;
   const presaleEnd   = previewStart ? addDaysISO(previewStart, -1) : (processed.length ? processed[processed.length-1].to : null);
   const presaleWeeks = [];
   for (const w of processed) {
     if (!presaleEnd || w.to <= presaleEnd) { presaleWeeks.push(w); continue; }
     if (w.from && w.from <= presaleEnd) {
-      presaleWeeks.push(prorateWeek(w, w.from, presaleEnd, rows, sc.opening_date));
+      presaleWeeks.push(prorateWeek(w, w.from, presaleEnd, rows, presaleCap));
     }
     break;
   }
@@ -459,7 +473,7 @@ function buildStudio(cfg) {
   return {
     ...cfg, sc, code: sc.code, rows,
     weeks: presaleWeeks, allWeeks: processed, negWeeks,
-    openIdx, openDate: sc.opening_date, presaleEnd, previewStart, previewEnd, w0Start,
+    openIdx, openDate, presaleCap, presaleEnd, previewStart, previewEnd, w0Start,
   };
 }
 
@@ -586,13 +600,14 @@ function renderLineChart(canvasId, labels, series, m, titleFn) {
     borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, tension: 0.35,
     fill: false, hidden: !active[i], spanGaps: false,
   }));
-  // Average only where every active studio has that point — otherwise the line
-  // collapses onto the longest-running studio.
+  // Average of the active studios that have data at each point — it keeps going
+  // after shorter studios end (the tooltip says how many it averages), and stops
+  // once only one studio is left, where it would just repeat that studio's line.
   const actIdx = studioData.map((_,i)=>i).filter(i => active[i]);
+  const avgN = labels.map((_,j) => actIdx.filter(i => series[i][j] && m.get(series[i][j]) != null).length);
   datasets.push({
-    label: 'Average',
-    data: labels.map((_,j) => actIdx.length && actIdx.every(i => series[i][j])
-      ? avg(actIdx.map(i => m.get(series[i][j]))) : null),
+    label: 'Average', _avgN: avgN, _avgOf: actIdx.length,
+    data: labels.map((_,j) => avgN[j] >= 2 ? avg(actIdx.filter(i => series[i][j]).map(i => m.get(series[i][j]))) : null),
     borderColor:'#8aaabb', backgroundColor:'transparent',
     borderWidth:1.5, borderDash:[6,4], pointRadius:0, tension:0.35, fill:false,
     hidden: !showAvg, spanGaps:false,
@@ -605,7 +620,9 @@ function renderLineChart(canvasId, labels, series, m, titleFn) {
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{
-          label:c => c.raw!=null ? `${c.dataset.label}: ${m.fmt(c.raw)}` : null,
+          label:c => c.raw==null ? null
+            : c.dataset._avgN ? `Average (${c.dataset._avgN[c.dataIndex]} of ${c.dataset._avgOf} studios): ${m.fmt(c.raw)}`
+            : `${c.dataset.label}: ${m.fmt(c.raw)}`,
           title:([c]) => titleFn(c.dataIndex),
         }},
       },
@@ -757,16 +774,22 @@ const PREVIEW_METRICS = {
   sales_cumul: { btn:'Net Presales (cumul.)',title:'Cumulative Net Presales',    get:x=>x.cumSales, fmt:fmtN, yFmt:v=>Math.round(v) },
 };
 
-// Preview Week = the 7 days before the opening date (Day -7 … Day -1); an 8th
-// point for opening day is a reference only — it's counted in First 90 Days.
-function previewSeries(s, sel) {
+// Preview Week = previewStart … the day before opening (7 days by default;
+// Herriman's is 9). Series are right-aligned on the opening so every studio's
+// Day -1 lines up: index j is Day -(nBefore - j), and the last point is opening
+// day — a reference only, counted in First 90 Days. Days before the studio's
+// preview, or past the last complete data day, are null.
+function previewLen(s) { return s.previewStart && s.openDate ? daysBetween(s.previewStart, s.openDate) : 0; }
+
+function previewSeries(s, sel, nBefore) {
   if (!s.openDate) return [];
   let cl = 0, cf = 0, cs = 0;
-  return Array.from({length:8}, (_,k) => {
-    const day = addDaysISO(s.openDate, k-7);
-    const src = aggSrc(s.rows, day, day, s.openDate);
+  return Array.from({length: nBefore + 1}, (_, j) => {
+    const day = addDaysISO(s.openDate, j - nBefore);
+    if (day < s.previewStart || !DATA_END || day > DATA_END) return null;
+    const src = aggSrc(s.rows, day, day, s.presaleCap);
     const leads = pick(src, sel, 'leads'), ft = pick(src, sel, 'ft');
-    const before = day < s.openDate;                 // no presales on opening day
+    const before = day < s.presaleCap;               // presale billing isn't a new presale
     const sales = before ? pick(src, sel, 'sales') : null;
     cl += leads; cf += ft; cs += sales || 0;
     return { day, leads, ft, sales, pNew: before ? pick(src, sel, 'pNew') : null, pCanc: before ? pick(src, sel, 'pCanc') : null,
@@ -777,43 +800,57 @@ function previewSeries(s, sel) {
 function renderPrelaunch(actStudios, sel) {
   const mode = spendMode(sel);
 
-  // Negative weeks
+  // Negative weeks — one summary row per studio
   const negEl = document.getElementById('pl-neg');
-  if (!actStudios.length) negEl.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#8aaabb">Select at least one studio</td></tr>';
-  else negEl.innerHTML = actStudios.map(s => {
-    const head = `<tr class="po-bd-studio"><td colspan="7">${studioCell(s)} <span style="font-weight:400;color:#8aaabb;margin-left:6px">${s.negWeeks.length} negative week${s.negWeeks.length===1?'':'s'}</span></td></tr>`;
-    if (!s.negWeeks.length) return head + '<tr><td colspan="7" style="color:#8aaabb">No negative weeks — lead gen started at Week 0</td></tr>';
-    const ser = seriesFor(s.negWeeks, sel);
-    const body = s.negWeeks.map((w,i) => `<tr>
-        <td>${w.week}</td>
-        <td class="num">${fmtShort(w.from)} – ${fmtShort(w.to)}</td>
-        <td class="num">${fmtN(ser[i].leads)}</td>
-        <td class="num">${fmtN(ser[i].sales)}</td>
-        <td class="num">${fmtP(ser[i].conv)}</td>
-        <td class="num">${fmtM(ser[i].spend)}</td>
-        <td class="num">${ser[i].leads ? fmtM2(ser[i].spend/ser[i].leads) : '—'}</td>
-      </tr>`).join('');
-    const t = totalsFor(s.negWeeks, sel);
-    const total = s.negWeeks.length > 1 ? `<tr class="po-bd-total">
-        <td>Total</td><td class="num">${fmtShort(s.negWeeks[0].from)} – ${fmtShort(s.negWeeks[s.negWeeks.length-1].to)}</td>
-        <td class="num">${fmtN(t.leads)}</td><td class="num">${fmtN(t.sales)}</td><td class="num">${fmtP(t.conv)}</td>
-        <td class="num">${fmtM(t.spend)}</td><td class="num">${fmtM2(t.cpl)}</td></tr>` : '';
-    return head + body + total;
-  }).join('');
+  if (!actStudios.length) { negEl.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#8aaabb">Select at least one studio</td></tr>'; }
+  else {
+    const negTot = actStudios.map(s => s.negWeeks.length ? totalsFor(s.negWeeks, sel) : null);
+    negEl.innerHTML = actStudios.map((s,i) => {
+      const t = negTot[i], n = s.negWeeks.length;
+      if (!t) return `<tr><td>${studioCell(s)}</td><td class="num">0</td>
+        <td class="num" colspan="6" style="color:#8aaabb;text-align:left">No negative weeks — lead gen started at Week 0</td></tr>`;
+      return `<tr>
+        <td>${studioCell(s)}</td>
+        <td class="num">${n}</td>
+        <td class="num">${fmtShort(s.negWeeks[0].from)} – ${fmtOpen(s.negWeeks[n-1].to)}</td>
+        <td class="num">${fmtN(t.leads)}</td>
+        <td class="num">${fmtN(t.sales)}</td>
+        <td class="num">${fmtP(t.conv)}</td>
+        <td class="num">${fmtM(t.spend)}</td>
+        <td class="num">${fmtM2(t.cpl)}</td>
+      </tr>`;
+    }).join('') + (negTot.filter(Boolean).length > 1 ? `<tr style="font-weight:700;border-top:2px solid #dde8ef">
+        <td>AVERAGE <span style="font-weight:400;color:#8aaabb">(studios with negative weeks)</span></td>
+        <td class="num">${fmt1(avg(actStudios.map(s => s.negWeeks.length || null)))}</td>
+        <td class="num">—</td>
+        <td class="num">${fmtN(avg(negTot.map(t => t && t.leads)))}</td>
+        <td class="num">${fmtN(avg(negTot.map(t => t && t.sales)))}</td>
+        <td class="num">${fmtP(avg(negTot.map(t => t && t.conv)))}</td>
+        <td class="num">${fmtM(avg(negTot.map(t => t && t.spend)))}</td>
+        <td class="num">${fmtM2(avg(negTot.map(t => t && t.cpl)))}</td>
+      </tr>` : '');
+  }
 
   // Preview Week
-  document.getElementById('pv-legend').innerHTML = actStudios.map(s =>
-    `<div class="open-legend-item"><div class="open-dash" style="border-color:${s.color}"></div>
-      ${s.label}: <strong>${fmtShort(s.previewStart)} – ${fmtOpen(s.previewEnd)}</strong> · opens ${fmtShort(s.openDate)}</div>`).join('');
+  const nBefore = Math.max(7, ...studioData.map(previewLen));
+  document.getElementById('pv-legend').innerHTML = actStudios.map(s => {
+    const inProgress = DATA_END && s.previewEnd > DATA_END;
+    const extra = s.presaleCap !== s.openDate ? ` · bill date ${fmtShort(s.presaleCap)}` : '';
+    return `<div class="open-legend-item"><div class="open-dash" style="border-color:${s.color}"></div>
+      ${s.label}: <strong>${fmtShort(s.previewStart)} – ${fmtOpen(s.previewEnd)}</strong> (${previewLen(s)} days)${extra} · opens ${fmtShort(s.openDate)}${inProgress ? ` · <em>in progress, data through ${fmtShort(DATA_END)}</em>` : ''}</div>`;
+  }).join('');
 
   const pv = actStudios.map(s => {
-    const ser = previewSeries(s, sel).slice(0, 7);      // opening day excluded from the KPIs
+    const ser = previewSeries(s, sel, nBefore).slice(0, nBefore).filter(Boolean);   // opening day excluded
+    const n = ser.length;
+    if (!n) return { leads:null, ft:null, sales:null, pNew:null, pCanc:null, spend:null, cpl:null, leadsDay:null, ftDay:null, salesDay:null };
     const leads = sum(ser.map(x=>x.leads)), ft = sum(ser.map(x=>x.ft)), sales = sum(ser.map(x=>x.sales));
     const salesDays = ser.filter(x => x.sales != null).length || 1;
     const pNew = sum(ser.map(x=>x.pNew)), pCanc = sum(ser.map(x=>x.pCanc));
-    const spend = s.previewStart ? rangeSpend(s.allWeeks, s.previewStart, s.previewEnd, sel, mode) : null;
-    return { leads, ft, sales, pNew, pCanc, spend, cpl: leads && spend!=null ? spend/leads : null,
-             leadsDay: leads/7, ftDay: ft/7, salesDay: sales/salesDays };
+    const spendEnd = [s.previewEnd, DATA_END].sort()[0];
+    const spend = rangeSpend(s.allWeeks, s.previewStart, spendEnd, sel, mode);
+    return { leads, ft, sales, pNew, pCanc, spend, cpl: leads ? spend/leads : null,
+             leadsDay: leads/n, ftDay: ft/n, salesDay: sales/salesDays };
   });
   renderKpiCards('pv-kpis', actStudios, pv, [
     { label:'Leads',        v:t=>t.leads, f:fmtN, sub:t=>`${fmt1(t.leadsDay)} / day` },
@@ -826,14 +863,14 @@ function renderPrelaunch(actStudios, sel) {
 
   const m = renderMetricButtons('pv-metrics', 'prelaunch', PREVIEW_METRICS, sel);
   document.getElementById('pv-chart-title').textContent = `${m.title} — Preview Week`;
-  const dayLabels = ['Day -7','Day -6','Day -5','Day -4','Day -3','Day -2','Day -1','Opening (ref.)'];
-  renderLineChart('pv-chart', dayLabels, studioData.map(s => previewSeries(s, sel)), m, i => dayLabels[i]);
+  const dayLabels = Array.from({length: nBefore}, (_, j) => `Day -${nBefore - j}`).concat('Opening (ref.)');
+  renderLineChart('pv-chart', dayLabels, studioData.map(s => previewSeries(s, sel, nBefore)), m, i => dayLabels[i]);
 
   // Daily table: one column group per studio
   document.getElementById('pv-daily-head').innerHTML = `<tr><th>Day</th>${actStudios.map(s =>
     `<th class="num" style="color:${s.color}">${s.label} · Leads</th><th class="num" style="color:${s.color}">First Timers</th><th class="num" style="color:${s.color}">Net Presales (new / canc.)</th>`).join('')}</tr>`;
-  const sers = actStudios.map(s => previewSeries(s, sel));
-  document.getElementById('pv-daily').innerHTML = dayLabels.map((lbl,k) => `<tr${k===7?' class="po-ref-row" title="Reference only — opening day is counted in First 90 Days"':''}>
+  const sers = actStudios.map(s => previewSeries(s, sel, nBefore));
+  document.getElementById('pv-daily').innerHTML = dayLabels.map((lbl,k) => `<tr${k===nBefore?' class="po-ref-row" title="Reference only — opening day is counted in First 90 Days"':''}>
       <td>${lbl}</td>${sers.map(ser => ser[k]
         ? `<td class="num" title="${fmtOpen(ser[k].day)}">${fmtN(ser[k].leads)}</td><td class="num">${fmtN(ser[k].ft)}</td><td class="num">${ser[k].sales == null ? '—' : `${fmtN(ser[k].sales)} <span style="color:#8aaabb">(+${fmtN(ser[k].pNew)} / −${fmtN(ser[k].pCanc)})</span>`}</td>`
         : '<td class="num">—</td><td class="num">—</td><td class="num">—</td>').join('')}
@@ -910,6 +947,8 @@ function renderPost90(actStudios, sel) {
   const daysBy = actStudios.map(s => post90Days(s, sel));
   const tot = daysBy.map(days => {
     const n = days.length, wk = n / 7 || 1;
+    if (!n) return { days: 0, leads:null, ft:null, mNew:null, mPre:null, spend:null, leadFt:null, ftMem:null,
+                     cpl:null, cpm:null, leadsWk:null, ftWk:null, mNewWk:null, spendWk:null };
     const leads = sum(days.map(d=>d.leads)), ft = sum(days.map(d=>d.ft)), mNew = sum(days.map(d=>d.mNew));
     const mPre = sum(days.map(d=>d.mPre)), spend = sum(days.map(d=>d.spend));
     return { days: n, leads, ft, mNew, mPre, spend,
@@ -920,7 +959,7 @@ function renderPost90(actStudios, sel) {
 
   document.getElementById('p90-legend').innerHTML = actStudios.map((s,i) =>
     `<div class="open-legend-item"><div class="open-dash" style="border-color:${s.color}"></div>
-      ${s.label}: opened <strong>${fmtOpen(s.openDate)}</strong> · day ${tot[i].days} of ${POST_DAYS}</div>`).join('');
+      ${s.label}: ${tot[i].days ? `opened <strong>${fmtOpen(s.openDate)}</strong> · day ${tot[i].days} of ${POST_DAYS}` : `opens <strong>${fmtOpen(s.openDate)}</strong> · not open yet`}</div>`).join('');
 
   if (!sel.length) document.getElementById('p90-kpis').innerHTML = '<div class="po-empty">Select at least one source</div>';
   else renderKpiCards('p90-kpis', actStudios, tot, [
@@ -952,7 +991,7 @@ function renderPost90(actStudios, sel) {
     return `<tr>
       <td>${studioCell(s)}</td>
       <td class="num">${fmtOpen(s.openDate)}</td>
-      <td class="num">${t.days}</td>
+      <td class="num">${t.days || 'Not open yet'}</td>
       <td class="num">${fmtN(t.leads)}</td>
       <td class="num">${fmtN(t.ft)}</td>
       <td class="num">${fmtN(t.mNew)}</td>
@@ -965,7 +1004,7 @@ function renderPost90(actStudios, sel) {
     </tr>`;
   }).join('') + (actStudios.length>1 ? `<tr style="font-weight:700;border-top:2px solid #dde8ef">
       <td>AVERAGE</td><td class="num">—</td>
-      <td class="num">${fmtN(avg(tot.map(t=>t.days)))}</td>
+      <td class="num">${fmtN(avg(tot.map(t=>t.days || null)))}</td>
       <td class="num">${fmtN(avg(tot.map(t=>t.leads)))}</td>
       <td class="num">${fmtN(avg(tot.map(t=>t.ft)))}</td>
       <td class="num">${fmtN(avg(tot.map(t=>t.mNew)))}</td>

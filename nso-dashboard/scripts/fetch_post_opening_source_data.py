@@ -62,7 +62,7 @@ import snowflake.connector
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 import studios as studios_registry
 
-DEFAULT_STUDIOS = ["Naples - Mercato", "Reston"]
+DEFAULT_STUDIOS = ["Naples - Mercato", "Reston", "Herriman"]
 OUTPUT_PATH = Path(__file__).parent.parent / "post_opening_source_data.json"
 
 # Same source-attribution CASE used by fetch_nso_sales.py, kept in sync so
