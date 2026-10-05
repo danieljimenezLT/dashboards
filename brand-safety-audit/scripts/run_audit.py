@@ -125,6 +125,8 @@ def analyze(posts, start_date, end_date):
                         "postType": post_type,
                         "visualReviewed": True,
                         "caption": caption,
+                        "foundIn": verdict["foundIn"],
+                        "reason": verdict["reason"],
                         "why": verdict["why"],
                         "action": verdict["action"],
                         "link": link,

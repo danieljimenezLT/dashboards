@@ -79,6 +79,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .flag-why{font-size:12px;color:var(--text-2);line-height:1.5;margin-bottom:6px}
 .flag-action-text{font-size:12px;color:var(--text-3);display:flex;gap:4px;margin-bottom:8px}
 .flag-action-text::before{content:'→';flex-shrink:0}
+.flag-explain{margin:8px 0 2px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px}
+.flag-explain-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.found-in{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:2px 8px;border-radius:4px;background:var(--blue-pale);color:var(--blue-dark)}
+.flag-reason{font-size:13px;font-weight:500;color:var(--text);line-height:1.5;margin-bottom:6px}
+.flag-explain .flag-action-text{margin-bottom:0}
+.flag-details{margin-top:6px}
+.flag-details summary{font-size:11px;font-weight:500;color:var(--blue-dark);cursor:pointer}
+.flag-details .flag-why{margin:6px 0 0}
 .ig-link{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--blue-dark);background:var(--blue-pale);padding:4px 10px;border-radius:6px;text-decoration:none;transition:background .15s;margin-right:8px}
 .ig-link:hover{background:#b3e3f7}
 .ig-link svg{width:10px;height:10px}
@@ -162,7 +170,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
         <div class="prompt-box"><code id="auditPrompt">Run the brand safety audit on this file using the skill sweat440-brand-safety-audit</code><button class="status-btn st-ops" onclick="copyPrompt(this)">Copy prompt</button></div>
         Claude reads each post's caption, opens its cover image in Chrome to look at it, and gives you back an audit .json file to download. Large ranges take a while. If the chat stops midway, ask Claude to continue, and it picks up where it left off.</div></li>
       <li><div><strong>Publish the result.</strong> In <em>Publish Claude's result</em>, choose the audit file Claude gave you and click <em>Publish</em>. It's saved for everyone and the <em>Data reviewed</em> date moves forward.</div></li>
-      <li><div><strong>Review the flags.</strong> Pick a date range under <em>Filter by post date</em> and click <em>Apply</em>. Open each flagged post on Instagram and click its status to move it from <em>Pending review</em> to <em>Reported to Ops</em> or <em>Cleared</em>. Then click <em>Save status changes</em> so everyone sees it. The period summary under the date filter counts accounts, clean accounts and flags for that period.</div></li>
+      <li><div><strong>Review the flags.</strong> Pick a date range under <em>Filter by post date</em> and click <em>Apply</em>. Each flag says where the problem was found (caption or image) and why it was flagged, with a suggested action. Open each flagged post on Instagram and click its status to move it from <em>Pending review</em> to <em>Reported to Ops</em> or <em>Cleared</em>. Then click <em>Save status changes</em> so everyone sees it. The period summary under the date filter counts accounts, clean accounts and flags for that period.</div></li>
     </ol>
     <div class="howto-note">Flags are a triage queue, not a verdict. A person decides on every flagged post. See the <em>Evaluation Criteria</em> tab for what each category covers.</div>
   </details>
@@ -297,7 +305,7 @@ Only Static and Carousel feed posts are in it. Reels and Stories were already ex
 6. When every post has a valid verdict, build the file:
    `python scripts/assemble_audit.py <export.json> verdicts.jsonl <from>_to_<to>-audit.json`
    This copies the captions, dates, links and `coverage` from the export verbatim, in exactly the format the dashboard needs.
-7. Give the user the audit file to download. Also give a short summary: posts reviewed, flags by level, and a one-line list of each flag (account, category, level).
+7. Give the user the audit file to download. Also give a short summary: posts reviewed, flags by level, and a one-line list of each flag (account, level, found in, reason).
 
 If you can't run code, write the final JSON yourself in the format under "Output format (fallback)".
 
@@ -336,19 +344,26 @@ For each post, decide:
 - `level`: `high`, `medium` or `low`, per the severity definitions above.
 - `confidence`: `HIGH`, `MEDIUM` or `LOW`. This is how sure you are, given the caption and visual evidence. Category 5 (logo misuse) is usually HIGH because it's binary. Categories 3 and 6 are often MEDIUM or LOW because they're gradients.
 - `category`: the single category name above that fits best, with the exact text.
-- `why`: 1-3 sentences citing the caption and the visual evidence separately, for example "Caption: ... Visual analysis: ...".
+- `foundIn`: where the problem is. Use `caption` for the post's text, `image` for the cover image, or `both` when each one shows the problem on its own.
+- `reason`: ONE short sentence, at most about 25 words, in plain English. It's what reviewers read first on the dashboard. Say what exactly you found and which rule it breaks. For example:
+  - `The flyer types the name as "SWEAT 440" with a space; the brand name is always SWEAT440.`
+  - `The caption announces a partnership with a third-party orthopedic clinic, and medical providers need documented approval.`
+  Don't list the categories the post passes, and don't repeat the category name.
+- `why`: 1-3 sentences of supporting detail, citing the caption and the visual evidence separately, for example "Caption: ... Visual analysis: ...". Only describe what's relevant to this flag.
 - `action`: a concrete, specific next step for the reviewer, for example "Verify X is on the approved partners list".
+
+If a post has more than one problem, flag it under the most serious one. Mention the others in `why` and `action`.
 
 ## Verdict format
 
 One JSON object per line in `verdicts.jsonl`:
 
 ```json
-{"id": "6a6e95f52155cb3411c6547f", "flagged": true, "level": "medium", "category": "Loose brand adherence", "confidence": "HIGH", "why": "Caption: ... Visual analysis: ...", "action": "Verify ...", "visualReviewed": true}
+{"id": "6a6e95f52155cb3411c6547f", "flagged": true, "level": "medium", "category": "Loose brand adherence", "confidence": "HIGH", "foundIn": "caption", "reason": "The caption promotes a workout at a third-party venue with sign-up on Eventbrite instead of SWEAT440 booking.", "why": "Caption: ... Visual analysis: ...", "action": "Verify ...", "visualReviewed": true}
 {"id": "6a6e62eaef2e8120b322ad93", "flagged": false, "visualReviewed": true}
 ```
 
-`id` must be the post's `id` from the export. If you write a second line for the same `id`, it replaces the first one.
+`id` must be the post's `id` from the export. If you write a second line for the same `id`, it replaces the first one. Flagged posts need `foundIn` and `reason`, and the script rejects a flag without them.
 
 ## Output format (fallback)
 
@@ -363,7 +378,8 @@ Use this only if you can't run the script. Write one JSON object with this shape
   "accounts": [{
     "name": "...", "handle": "...", "posts": 0, "status": "flagged | clean",
     "flags": [{"id": "", "level": "", "category": "", "confidence": "", "date": "", "postType": "",
-               "visualReviewed": true, "caption": "", "why": "", "action": "", "link": ""}],
+               "visualReviewed": true, "caption": "", "foundIn": "caption | image | both", "reason": "",
+               "why": "", "action": "", "link": ""}],
     "postLog": [{"id": "", "date": "", "postType": "", "caption": "", "link": "",
                  "flagged": false, "level": null, "category": null}]
   }]
@@ -386,7 +402,8 @@ Usage:
 
 <verdicts.jsonl> has one JSON object per line (a .json array also works):
   {"id": "...", "flagged": true, "level": "medium", "category": "Loose brand adherence",
-   "confidence": "HIGH", "why": "...", "action": "...", "visualReviewed": true}
+   "confidence": "HIGH", "foundIn": "caption", "reason": "...", "why": "...", "action": "...",
+   "visualReviewed": true}
 Clean posts only need: {"id": "...", "flagged": false, "visualReviewed": true}
 
 Caption, date, post type and link are copied verbatim from the export, and
@@ -408,6 +425,7 @@ CATEGORIES = {
 }
 LEVELS = {"high", "medium", "low"}
 CONFIDENCES = {"HIGH", "MEDIUM", "LOW"}
+FOUND_IN = {"caption", "image", "both"}
 
 
 def load_verdicts(path):
@@ -432,8 +450,10 @@ def validate(verdict):
         return f'"category" must be one of {sorted(CATEGORIES)}'
     if verdict.get("confidence") not in CONFIDENCES:
         return f'"confidence" must be one of {sorted(CONFIDENCES)}'
-    if not verdict.get("why") or not verdict.get("action"):
-        return 'flagged posts need "why" and "action"'
+    if verdict.get("foundIn") not in FOUND_IN:
+        return f'"foundIn" must be one of {sorted(FOUND_IN)}'
+    if not verdict.get("reason") or not verdict.get("why") or not verdict.get("action"):
+        return 'flagged posts need "reason", "why" and "action"'
     return None
 
 
@@ -493,6 +513,8 @@ def main():
                         "postType": p["postType"],
                         "visualReviewed": bool(v.get("visualReviewed", True)),
                         "caption": p["caption"],
+                        "foundIn": v["foundIn"],
+                        "reason": v["reason"],
                         "why": v["why"],
                         "action": v["action"],
                         "link": p["link"],
@@ -629,6 +651,25 @@ function topLevel(a){
   return"low";
 }
 
+function esc(t){return String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+const FOUND_IN_LABEL={caption:"Caption",image:"Image",both:"Caption + image"};
+
+// Why a post was flagged: where (caption / image) and a one-line reason,
+// then the suggested action, with the longer "why" evidence folded under
+// Details. Flags published before foundIn/reason existed only have "why",
+// so it's shown directly in that case.
+function flagExplainHtml(f){
+  const top=(f.foundIn&&FOUND_IN_LABEL[f.foundIn]?'<span class="found-in">Found in: '+FOUND_IN_LABEL[f.foundIn]+'</span>':"")
+    +(f.confidence?'<span class="flag-conf">'+esc(f.confidence)+' confidence</span>':"");
+  return '<div class="flag-explain">'
+    +(top?'<div class="flag-explain-top">'+top+'</div>':"")
+    +(f.reason?'<div class="flag-reason">'+esc(f.reason)+'</div>':(f.why?'<div class="flag-why">'+esc(f.why)+'</div>':""))
+    +(f.action?'<div class="flag-action-text">'+esc(f.action)+'</div>':"")
+    +(f.reason&&f.why?'<details class="flag-details" onclick="event.stopPropagation()"><summary>Details</summary><div class="flag-why">'+esc(f.why)+'</div></details>':"")
+  +'</div>';
+}
+
 function render(){
   const filterBar=document.getElementById("filterBar");
   // dateFilterActive must be checked BEFORE !AUDIT — the date-filtered view
@@ -663,15 +704,13 @@ function render(){
           +'<div class="flag-body">'
             +'<div class="flag-top">'
               +'<span class="flag-cat">'+f.category+'</span>'
-              +'<span class="flag-conf">· '+f.confidence+' confidence</span>'
               +'<span class="flag-conf">· '+f.date+'</span>'
               +'<span class="post-type">'+f.postType+'</span>'
               +(f.visualReviewed?'<span class="post-type pt-visual">✓ Visual reviewed</span>':"")
             +'</div>'
             +'<div class="flag-caption">&ldquo;'+f.caption+'&rdquo;</div>'
-            +'<div class="flag-why">'+f.why+'</div>'
-            +'<div class="flag-action-text">'+f.action+'</div>'
-            +'<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">'
+            +flagExplainHtml(f)
+            +'<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:8px">'
               +'<a class="ig-link" href="'+f.link+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+IG_ICON+' View post on Instagram</a>'
               +'<button class="status-btn '+STATUS_CLASS[st]+'" onclick="event.stopPropagation();cycleStatus(\''+f.id+'\')" title="Click to change status">'+STATUS_LABEL[st]+'</button>'
               +(stDate?'<span class="status-meta">updated '+stDate+'</span>':"")
@@ -718,10 +757,16 @@ async function collectAllHistoricalPosts(){
       HISTORY_CYCLES.push({label,coverage:data.coverage||null,handles:(data.accounts||[]).map(a=>a.handle)});
       for(const a of(data.accounts||[])){
         if(Array.isArray(a.postLog)){
-          for(const p of a.postLog)out.push(Object.assign({accountName:a.name,accountHandle:a.handle,cycle:label},p));
+          // postLog has no explanation fields — pull them from the matching flag.
+          const flagById=Object.fromEntries((a.flags||[]).map(f=>[f.id,f]));
+          for(const p of a.postLog){
+            const f=p.flagged&&flagById[p.id];
+            const explain=f?{confidence:f.confidence,foundIn:f.foundIn,reason:f.reason,why:f.why,action:f.action}:{};
+            out.push(Object.assign({accountName:a.name,accountHandle:a.handle,cycle:label},p,explain));
+          }
         }else{
           for(const f of(a.flags||[])){
-            out.push({accountName:a.name,accountHandle:a.handle,cycle:label,id:f.id,date:f.date,postType:f.postType,caption:f.caption,link:f.link,flagged:true,level:f.level,category:f.category,legacy:true});
+            out.push({accountName:a.name,accountHandle:a.handle,cycle:label,id:f.id,date:f.date,postType:f.postType,caption:f.caption,link:f.link,flagged:true,level:f.level,category:f.category,confidence:f.confidence,foundIn:f.foundIn,reason:f.reason,why:f.why,action:f.action,legacy:true});
           }
         }
       }
@@ -823,7 +868,7 @@ function renderDateFilteredList(){
           +(p.link?'<a class="ig-link" href="'+p.link+'" target="_blank" rel="noopener">'+IG_ICON+' View</a>':"")
         +'</div>'
       +'</div>'
-      +(p.caption||statusRow?'<div class="detail-panel" style="display:block">'+(p.caption?'<div class="flag-caption">&ldquo;'+p.caption+'&rdquo;</div>':"")+statusRow+'</div>':"")
+      +(p.caption||statusRow?'<div class="detail-panel" style="display:block">'+(p.caption?'<div class="flag-caption">&ldquo;'+p.caption+'&rdquo;</div>':"")+(p.flagged?flagExplainHtml(p):"")+statusRow+'</div>':"")
     +'</div>';
   }).join("");
 }
