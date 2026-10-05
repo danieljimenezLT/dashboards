@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-10-05",
+      "pr_number": 448,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/448",
+      "author": "Sebastian Arango",
+      "categories": [
+        "Brand Audit"
+      ],
+      "title": "Brand Audit flags now explain where the problem is and why",
+      "summary": "Each flagged post now shows whether the issue is in the caption or the image, a short reason it was flagged and a suggested next step; the guide includes a ready-made prompt for Claude, and Save status changes sits beside the filters."
+    },
+    {
       "date": "2026-10-02",
       "pr_number": 446,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/446",
