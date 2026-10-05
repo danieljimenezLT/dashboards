@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-10-05",
+      "pr_number": 452,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/452",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "NSO Client History: new Members view with join and cancel dates and churn",
+      "summary": "Client History has a new Members (Join & Cancel) view that shows each membership once, with its join date and cancellation date, plus churn percentage, average days to cancel, and churn by join month."
+    },
+    {
+      "date": "2026-10-05",
       "pr_number": 450,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/450",
       "author": "Sebastian Arango",
