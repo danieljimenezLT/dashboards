@@ -11,6 +11,7 @@
       "code": "TX-002",
       "state": "TX",
       "status": "open",
+      "agency": "FFM",
       "excluded_default": false,
       "meta": {
         "match": "Highland",
@@ -36,6 +37,7 @@
       "code": "TX-001",
       "state": "TX",
       "status": "closed",
+      "agency": null,
       "excluded_default": true,
       "meta": {
         "match": "Zilker",
@@ -58,6 +60,7 @@
       "code": "FL-018",
       "state": "FL",
       "status": "nso",
+      "agency": "LT",
       "excluded_default": true,
       "meta": {
         "page_id": "1047698415096383"
@@ -83,6 +86,7 @@
       "code": "FL-016",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Boca",
@@ -107,6 +111,7 @@
       "code": "MA-001",
       "state": "MA",
       "status": "nso",
+      "agency": "JL",
       "excluded_default": true,
       "meta": {
         "page_id": "1222433990955477"
@@ -128,6 +133,7 @@
       "code": "NC-001",
       "state": "NC",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Charlotte",
@@ -150,6 +156,7 @@
       "code": "NC-002",
       "state": "NC",
       "status": "nso",
+      "agency": "LT",
       "excluded_default": true,
       "meta": {
         "page_id": "1302876979566754"
@@ -172,6 +179,7 @@
       "code": "FL-003",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Coral Gables",
@@ -196,6 +204,7 @@
       "code": "FL-008",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Coral Springs",
@@ -218,6 +227,7 @@
       "code": "TX-003",
       "state": "TX",
       "status": "open",
+      "agency": "FFM",
       "excluded_default": false,
       "meta": {
         "match": "Prestonwood",
@@ -243,6 +253,7 @@
       "code": "TX-004",
       "state": "TX",
       "status": "nso",
+      "agency": "FFM",
       "excluded_default": true,
       "meta": {
         "page_id": "1013504171849728",
@@ -267,6 +278,7 @@
       "code": "FL-006",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Deerfield",
@@ -289,6 +301,7 @@
       "code": "FL-004",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Doral",
@@ -313,6 +326,7 @@
       "code": "GA-001",
       "state": "GA",
       "status": "nso",
+      "agency": "LT",
       "excluded_default": true,
       "meta": {
         "page_id": "1119194191285831"
@@ -334,6 +348,7 @@
       "code": "NY-004",
       "state": "NY",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Eastchester",
@@ -356,6 +371,7 @@
       "code": "FL-013",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Las Olas",
@@ -380,6 +396,7 @@
       "code": "FL-022",
       "state": "FL",
       "status": "nso",
+      "agency": "FFM",
       "excluded_default": true,
       "meta": {
         "page_id": "1218885824631723",
@@ -402,6 +419,7 @@
       "code": "UT-001",
       "state": "UT",
       "status": "nso",
+      "agency": "FFM",
       "excluded_default": true,
       "meta": {
         "page_id": "1016504601542354",
@@ -431,6 +449,7 @@
       "code": null,
       "state": "AL",
       "status": "nso",
+      "agency": null,
       "excluded_default": true,
       "meta": {},
       "google_ads": {
@@ -447,6 +466,7 @@
       "code": "NY-005",
       "state": "NY",
       "status": "nso",
+      "agency": "LT",
       "excluded_default": true,
       "meta": {
         "instagram_account_id": "17841411727425800",
@@ -470,6 +490,7 @@
       "code": null,
       "state": "AL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "page_id": "111726744769276"
@@ -491,6 +512,7 @@
       "code": "FL-002",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Brickell",
@@ -515,6 +537,7 @@
       "code": "FL-011",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Coconut Grove",
@@ -537,6 +560,7 @@
       "code": "FL-010",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Midtown",
@@ -559,6 +583,7 @@
       "code": "FL-007",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Upper East",
@@ -581,6 +606,7 @@
       "code": "FL-001",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Miami Beach",
@@ -605,6 +631,7 @@
       "code": "FL-005",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Miami Lakes",
@@ -627,6 +654,7 @@
       "code": "NJ-005",
       "state": "NJ",
       "status": "nso",
+      "agency": "JL",
       "excluded_default": true,
       "meta": {
         "page_id": "1138263712703066"
@@ -648,6 +676,7 @@
       "code": "FL-012",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Miramar",
@@ -670,6 +699,7 @@
       "code": "TN-001",
       "state": "TN",
       "status": "nso",
+      "agency": null,
       "excluded_default": true,
       "meta": {
         "match": "Music Row"
@@ -688,6 +718,7 @@
       "code": "NY-002",
       "state": "NY",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Chelsea",
@@ -710,6 +741,7 @@
       "code": null,
       "state": "NY",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "page_id": "149250091597748"
@@ -731,6 +763,7 @@
       "code": "NY-003",
       "state": "NY",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Park Slope",
@@ -753,6 +786,7 @@
       "code": "FL-019",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "nso_track": true,
       "excluded_default": false,
       "meta": {
@@ -781,6 +815,7 @@
       "code": null,
       "state": null,
       "status": "closed",
+      "agency": null,
       "excluded_default": true,
       "meta": {},
       "google_ads": {
@@ -800,6 +835,7 @@
       "code": "FL-021",
       "state": "FL",
       "status": "nso",
+      "agency": "LT",
       "excluded_default": true,
       "meta": {
         "page_id": "1145229115329264"
@@ -823,6 +859,7 @@
       "code": "OK-001",
       "state": "OK",
       "status": "nso",
+      "agency": "FFM",
       "excluded_default": true,
       "meta": {
         "page_id": "1216719724848272",
@@ -848,6 +885,7 @@
       "code": "NJ-002",
       "state": "NJ",
       "status": "open",
+      "agency": "JL",
       "excluded_default": false,
       "meta": {
         "match": "Ocean Township",
@@ -870,6 +908,7 @@
       "code": "NJ-004",
       "state": "NJ",
       "status": "nso",
+      "agency": "JL",
       "excluded_default": true,
       "meta": {
         "page_id": "1094938857031042",
@@ -894,6 +933,7 @@
       "code": "FL-020",
       "state": "FL",
       "status": "nso",
+      "agency": "FFM",
       "excluded_default": true,
       "meta": {
         "page_id": "986634234541338",
@@ -922,6 +962,7 @@
       "code": "FL-014",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Pembroke",
@@ -946,6 +987,7 @@
       "code": "FL-017",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "Pinecrest",
@@ -970,6 +1012,7 @@
       "code": "VA-001",
       "state": "VA",
       "status": "open",
+      "agency": "LT",
       "nso_track": true,
       "excluded_default": false,
       "meta": {
@@ -999,6 +1042,7 @@
       "code": "FL-009",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "South Miami",
@@ -1021,6 +1065,7 @@
       "code": "NJ-001",
       "state": "NJ",
       "status": "open",
+      "agency": "JL",
       "excluded_default": false,
       "meta": {
         "match": "Toms River",
@@ -1043,6 +1088,7 @@
       "code": "NJ-003",
       "state": "NJ",
       "status": "open",
+      "agency": "JL",
       "excluded_default": false,
       "meta": {
         "match": "Wall",
@@ -1065,6 +1111,7 @@
       "code": "FL-015",
       "state": "FL",
       "status": "open",
+      "agency": "LT",
       "excluded_default": false,
       "meta": {
         "match": "West Palm",
