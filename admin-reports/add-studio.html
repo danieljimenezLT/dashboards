@@ -145,6 +145,18 @@ input::placeholder,textarea::placeholder{color:#b0c4cc}
       </div>
     </div>
 
+    <div class="row">
+      <div class="form-group">
+        <label for="f_agency">Ads agency <span class="opt">(used by the Agency Comparison report)</span></label>
+        <select id="f_agency">
+          <option value="">— Not assigned —</option>
+          <option value="LT">LT</option>
+          <option value="FFM">FFM</option>
+          <option value="JL">JL</option>
+        </select>
+      </div>
+    </div>
+
     <div class="checkbox-row">
       <input type="checkbox" id="f_excluded" checked/>
       <label class="cb-label" for="f_excluded">
@@ -361,6 +373,7 @@ function loadExistingStudio() {
   document.getElementById('f_code').value            = s.code || '';
   document.getElementById('f_code').dataset.userEdited = 'true';
   document.getElementById('f_status').value          = s.status || 'nso';
+  document.getElementById('f_agency').value          = s.agency || '';
   document.getElementById('f_excluded').checked      = !!s.excluded_default;
   document.getElementById('f_nso_track').checked     = !!s.nso_track;
   document.getElementById('nsoTrackRow').style.display = s.status === 'open' ? '' : 'none';
@@ -420,6 +433,7 @@ async function handleSubmit(e) {
     name, state,
     code:             document.getElementById('f_code').value.trim().toUpperCase() || null,
     status:           document.getElementById('f_status').value,
+    agency:           document.getElementById('f_agency').value || null,
     excluded_default: document.getElementById('f_excluded').checked,
     nso_track:        document.getElementById('f_nso_track').checked || undefined,
     snowflake_id:     document.getElementById('f_snowflake_id').value.trim() || null,

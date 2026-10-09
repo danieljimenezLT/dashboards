@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SWEAT440 — Agency Comparison</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet"/>
+<link rel="icon" href="../favicon.jpg"/>
+<link rel="stylesheet" href="../shared/style.css"/>
+<style>
+  .seg{display:inline-flex;border:0.5px solid #c0d4df;border-radius:6px;overflow:hidden}
+  .seg button{background:#fff;border:none;border-right:0.5px solid #c0d4df;padding:5px 12px;font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:#5a7a8a;cursor:pointer}
+  .seg button:last-child{border-right:none}
+  .seg button.active{background:#00A3E0;color:#fff}
+  .seg button:focus-visible{outline:2px solid #0084B5;outline-offset:-2px}
+  .ag-note{font-size:12px;color:#5a7a8a;margin:-10px 0 16px;line-height:1.5;max-width:900px}
+  .ag-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-family:'Oswald',sans-serif;font-style:italic;font-size:11px;font-weight:600;letter-spacing:.5px;color:#fff}
+  .st-badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;background:#eef3f7;color:#5a7a8a}
+  .st-badge.nso{background:#fff4e5;color:#b25e00}
+
+  /* Agency scorecard */
+  .sc-wrap{overflow-x:auto}
+  .sc-table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+  .sc-table th,.sc-table td{padding:7px 12px;border-bottom:0.5px solid #eef3f7;text-align:right;white-space:nowrap}
+  .sc-table th:first-child,.sc-table td:first-child{text-align:left;white-space:normal;min-width:190px}
+  .sc-table thead th{font-family:'Oswald',sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#1a1a2e;border-bottom:2px solid var(--agc,#dde8ef);vertical-align:bottom}
+  .sc-table thead th small{display:block;font-family:'Open Sans',sans-serif;font-style:normal;font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:#5a7a8a;margin-top:2px}
+  .sc-table td{color:#1a1a2e;font-weight:600}
+  .sc-table td.ref,.sc-table th.ref{color:#5a7a8a;font-weight:400;background:#fafcfd}
+  .sc-table tr.sec td{background:#f3f8fb;font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:#0084B5;text-align:left;padding-top:10px}
+  .sc-table tr.sub td{font-weight:400;color:#5a7a8a;font-size:11px}
+  .sc-table td .best{display:inline-block;padding:1px 6px;margin:-1px -6px;border-radius:4px;background:#e3f6ec;color:#1b7a43}
+  .sc-table td.lbl{font-weight:400;color:#1a1a2e}
+  .sc-table td.lbl .hint{display:block;font-size:10px;color:#8aa3b0;margin-top:1px}
+  .sc-table td.na{color:#b8c8d2;font-weight:400}
+
+  .chart-box{position:relative;height:260px}
+  .legend-row{display:flex;gap:14px;flex-wrap:wrap;margin:-8px 0 12px;font-size:11px;color:#5a7a8a}
+  .legend-row span{display:inline-flex;align-items:center;gap:6px}
+  .legend-row i{width:10px;height:10px;border-radius:2px;display:inline-block}
+
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  #studioMenu .ms-st-header{font-size:13px;color:#1a1a2e}
+  #studioMenu .ms-ag-header{padding-left:24px}
+  #studioMenu .ms-ag-header .ag-badge{font-size:10px;padding:1px 7px}
+  #studioMenu .ms-ag-item{padding-left:40px}
+  .chip{border:1px solid #c0d4df;background:#fff;border-radius:14px;padding:3px 11px;font-size:11px;font-weight:600;color:#5a7a8a;cursor:pointer}
+  .chip.active{background:#1a1a2e;border-color:#1a1a2e;color:#fff}
+  .tbl-scroll{overflow-x:auto}
+  #studioTable td,#studioTable th{white-space:nowrap}
+  #studioTable td.num{font-variant-numeric:tabular-nums}
+  #studioTable td.dim{color:#b8c8d2;font-weight:400}
+  .empty-msg{padding:24px;text-align:center;color:#5a7a8a;font-size:13px}
+  @media (max-width:768px){ .chart-box{height:220px} }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="../home.html"><img src="../logo.png" alt="SWEAT440"/></a>
+  <div class="nav-tabs">
+    <a class="nav-tab active" href="staging-reports.html" style="text-decoration:none">← Staging Reports</a>
+  </div>
+</nav>
+
+<div class="controls-bar">
+  <button class="controls-toggle" id="ctrlToggle" onclick="toggleControls()">Filters ▾</button>
+  <div class="controls-inner" id="ctrlInner">
+    <span class="ctrl-label">Dates</span>
+    <div class="ctrl-date">
+      <input type="date" id="fFrom" onchange="applyFilters()"/>
+      <span style="font-size:12px;color:#5a7a8a">→</span>
+      <input type="date" id="fTo" onchange="applyFilters()"/>
+    </div>
+    <div class="ctrl-sep"></div>
+    <span class="ctrl-label">Studios</span>
+    <div class="seg" id="statusSeg" role="group" aria-label="Studio status">
+      <button type="button" data-v="all" class="active">All</button>
+      <button type="button" data-v="open">Open</button>
+      <button type="button" data-v="nso">NSO</button>
+    </div>
+    <div class="multi-select" id="studioDropdown">
+      <button class="ms-trigger" onclick="toggleDropdown('studio')">
+        <span id="studioLabel">All</span><span class="ms-arrow">▾</span>
+      </button>
+      <div class="ms-menu" id="studioMenu"></div>
+    </div>
+    <div class="ctrl-sep"></div>
+    <span class="ctrl-label">Sources</span>
+    <div class="multi-select" id="sourceDropdown">
+      <button class="ms-trigger" onclick="toggleDropdown('source')">
+        <span id="sourceLabel">All Sources</span><span class="ms-arrow">▾</span>
+      </button>
+      <div class="ms-menu" id="sourceMenu"></div>
+    </div>
+    <div class="ctrl-sep"></div>
+    <span class="ctrl-label">Volumes</span>
+    <div class="seg" id="viewSeg" role="group" aria-label="Volume view">
+      <button type="button" data-v="avg" class="active">Avg per studio</button>
+      <button type="button" data-v="total">Totals</button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="chart-card">
+    <div class="chart-card-title-row">
+      <div class="chart-card-title">Agency Scorecard</div>
+    </div>
+    <p class="ag-note" id="scNote"></p>
+    <div class="sc-wrap"><table class="sc-table" id="scTable"></table></div>
+  </div>
+
+  <div class="two-col">
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-card-title" id="chFunnelTitle">Funnel — avg per studio</div>
+      <div class="legend-row" id="lg1"></div>
+      <div class="chart-box"><canvas id="chFunnel"></canvas></div>
+    </div>
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-card-title">Conversion rates</div>
+      <div class="legend-row" id="lg2"></div>
+      <div class="chart-box"><canvas id="chConv"></canvas></div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-card-title">Cost per lead</div>
+      <div class="legend-row" id="lg3"></div>
+      <div class="chart-box"><canvas id="chCpl"></canvas></div>
+    </div>
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-card-title">Cost per member</div>
+      <div class="legend-row" id="lg4"></div>
+      <div class="chart-box"><canvas id="chCpm"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-card-title-row">
+      <div class="chart-card-title">By Studio</div>
+      <div class="chips" id="agChips"></div>
+      <button class="download-btn" onclick="downloadStudioCSV()">⬇ Download CSV</button>
+    </div>
+    <div class="tbl-scroll"><table class="data-table" id="studioTable"></table></div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="../users.js"></script>
+<script src="../shared/auth.js"></script>
+<script src="../shared/utils.js"></script>
+<script>
+// ── Agency Comparison (admin-only, staging) ─────────────────────────────────
+// Agencies come from studios.json → studio.agency (LT / FFM / JL). For now the
+// CURRENT agency is applied to the whole date range — studios that switched
+// agencies have no start dates yet.
+const AGENCIES  = ['LT', 'FFM', 'JL'];
+const AG_COLOR  = { LT:'#00A3E0', FFM:'#F28C28', JL:'#8E44EC', ALL:'#5a7a8a' };
+const PAID_SRC  = { 'Meta Ads':'meta', 'Google Ads':'google' };
+const DEFAULT_FROM = '2026-09-01', DEFAULT_TO = '2026-09-30';
+const EXCL_SOURCES = ['ClassPass / Platforms', 'Grassroots'];
+
+let RAW = null, SPEND = null, META = null, GADS = null, REG = null;
+let STUDIOS = [];                 // [{name, code, status, agency}] with an agency, not closed
+let statusMode = 'all', viewMode = 'avg', tableAgency = 'ALL';
+let _charts = {}, _tableRows = [], _sort = { key:'spend', dir:-1 };
+
+function toggleControls() { document.getElementById('ctrlInner').classList.toggle('open'); }
+
+async function getJSON(path) {
+  try { const r = await fetch(path + '?_=' + Date.now()); return r.ok ? await r.json() : null; }
+  catch (e) { console.warn(path + ' unavailable:', e); return null; }
+}
+
+async function loadData() {
+  const _authUser = checkAuth();
+  if (!_authUser) return;
+  if (_authUser.role !== 'admin') { location.replace('../home.html'); return; }
+  renderAuthNav(_authUser);
+
+  [RAW, SPEND, META, GADS] = await Promise.all([
+    getJSON('../data.json'), getJSON('../spend-data.json'),
+    getJSON('../meta-ads-data.json'), getJSON('../google-ads-data.json'),
+  ]);
+  REG = await loadStudiosRegistry('../');
+  RAW = RAW || { daily_detail: [], sources: [] };
+
+  STUDIOS = (REG.studios || [])
+    .filter(s => s.agency && s.status !== 'closed')
+    .map(s => ({ name: s.name, code: s.code, status: s.status === 'nso' ? 'nso' : 'open', agency: s.agency }));
+
+  document.getElementById('fFrom').value = DEFAULT_FROM;
+  document.getElementById('fTo').value   = DEFAULT_TO;
+
+  setupStudioSelect();
+  renderStudioSelect();
+  const sources = (RAW.sources || []).slice();
+  if (typeof buildSourceSelect === 'function') buildSourceSelect('sourceMenu', 'sourceLabel', sources, EXCL_SOURCES);
+  else buildMultiSelect('sourceMenu', 'sourceLabel', sources, EXCL_SOURCES);
+
+  for (const [segId, setter] of [['statusSeg', v => { statusMode = v; renderStudioSelect(); }], ['viewSeg', v => viewMode = v]]) {
+    document.querySelectorAll(`#${segId} button`).forEach(b => b.addEventListener('click', () => {
+      document.querySelectorAll(`#${segId} button`).forEach(x => x.classList.toggle('active', x === b));
+      setter(b.dataset.v); applyFilters();
+    }));
+  }
+  document.getElementById('agChips').innerHTML = ['ALL', ...AGENCIES].map(a =>
+    `<button type="button" class="chip${a === 'ALL' ? ' active' : ''}" data-a="${a}">${a === 'ALL' ? 'All agencies' : a}</button>`).join('');
+  document.querySelectorAll('#agChips .chip').forEach(c => c.addEventListener('click', () => {
+    tableAgency = c.dataset.a;
+    document.querySelectorAll('#agChips .chip').forEach(x => x.classList.toggle('active', x === c));
+    renderStudioTable();
+  }));
+
+  applyFilters();
+}
+
+// Studio filter: one section per status shown (All → Open then NSO; Open or NSO
+// → just that one), each grouped by agency. Section and agency headers have a
+// checkbox and an "Only" button, like each studio. Unchecked studios are kept
+// in _unchecked so switching status doesn't reset the selection.
+const _unchecked = new Set();
+const ST_LABEL = { open: 'Open Studios', nso: 'NSO' };
+
+function renderStudioSelect() {
+  const menu = document.getElementById('studioMenu');
+  const safe = n => 'ms_studio_' + n.replace(/[^a-z0-9]/gi, '_');
+  const only = attrs => `<button type="button" class="ms-only-btn" ${attrs}>Only</button>`;
+  const statuses = statusMode === 'all' ? ['open', 'nso'] : [statusMode];
+  let h = `<div class="ms-item ms-select-all"><input type="checkbox" id="studioMenu_all"> <label for="studioMenu_all" style="cursor:pointer">Select all</label></div>`;
+  for (const st of statuses) {
+    const inSt = STUDIOS.filter(x => x.status === st);
+    if (!inSt.length) continue;
+    h += `<div class="ms-divider"></div>`;
+    if (statuses.length > 1)
+      h += `<div class="ms-cat-header ms-st-header"><input type="checkbox" id="studioMenu_st_${st}" data-grp="st" data-st="${st}"> <label for="studioMenu_st_${st}" style="cursor:pointer;flex:1">${ST_LABEL[st]} (${inSt.length})</label>${only(`data-only-st="${st}"`)}</div>`;
+    for (const a of AGENCIES) {
+      const list = inSt.filter(x => x.agency === a).sort((x, y) => x.name.localeCompare(y.name));
+      if (!list.length) continue;
+      const id = `studioMenu_ag_${st}_${a}`;
+      h += `<div class="ms-cat-header ms-ag-header"><input type="checkbox" id="${id}" data-grp="ag" data-st="${st}" data-ag="${a}"> <label for="${id}" style="cursor:pointer;flex:1"><span class="ag-badge" style="background:${AG_COLOR[a]}">${a}</span> <span style="color:#5a7a8a">${list.length}</span></label>${only(`data-only-st="${st}" data-only-ag="${a}"`)}</div>`;
+      h += list.map(x => `<div class="ms-item ms-ag-item"><input type="checkbox" id="${safe(x.name)}" value="${x.name}" data-st="${st}" data-ag="${a}"${_unchecked.has(x.name) ? '' : ' checked'}> <label for="${safe(x.name)}" style="cursor:pointer">${x.name}</label>${only(`data-only="${x.name}"`)}</div>`).join('');
+    }
+  }
+  menu.innerHTML = h;
+  syncStudioSelect();
+}
+
+function _studioBoxes() { return [...document.querySelectorAll('#studioMenu input[value]')]; }
+
+function syncStudioSelect() {
+  const all = _studioBoxes(), on = all.filter(c => c.checked);
+  for (const c of all) c.checked ? _unchecked.delete(c.value) : _unchecked.add(c.value);
+  const setTri = (el, boxes) => {
+    const n = boxes.filter(c => c.checked).length;
+    el.checked = boxes.length > 0 && n === boxes.length; el.indeterminate = n > 0 && n < boxes.length;
+  };
+  document.querySelectorAll('#studioMenu input[data-grp]').forEach(hd =>
+    setTri(hd, all.filter(c => c.dataset.st === hd.dataset.st && (hd.dataset.grp === 'st' || c.dataset.ag === hd.dataset.ag))));
+  setTri(document.getElementById('studioMenu_all'), all);
+
+  // Label: "All", or the agencies (per status when both are shown) that are fully selected.
+  let label;
+  if (on.length === all.length) label = 'All';
+  else if (!on.length) label = 'None selected';
+  else {
+    const multi = statusMode === 'all';
+    const full = [], partial = [];
+    for (const a of AGENCIES) {
+      const stFull = [];
+      for (const st of ['open', 'nso']) {
+        const g = all.filter(c => c.dataset.ag === a && c.dataset.st === st), n = g.filter(c => c.checked).length;
+        if (!g.length || !n) continue;
+        if (n < g.length) partial.push(a); else stFull.push(st);
+      }
+      const shown = all.filter(c => c.dataset.ag === a).map(c => c.dataset.st);
+      const sts = [...new Set(shown)];
+      if (stFull.length && stFull.length === sts.length) full.push(a);
+      else stFull.forEach(st => full.push(`${a} ${st === 'nso' ? 'NSO' : 'Open'}`));
+    }
+    label = !partial.length && full.length ? full.join(' + ') + (multi ? '' : ' only')
+          : on.length <= 2 ? on.map(c => c.value).join(', ') : on.length + ' selected';
+  }
+  document.getElementById('studioLabel').textContent = label;
+}
+
+function setupStudioSelect() {
+  const menu = document.getElementById('studioMenu');
+  menu.addEventListener('change', e => {
+    const t = e.target;
+    if (t.id === 'studioMenu_all') _studioBoxes().forEach(c => c.checked = t.checked);
+    else if (t.dataset.grp) _studioBoxes().forEach(c => {
+      if (c.dataset.st === t.dataset.st && (t.dataset.grp === 'st' || c.dataset.ag === t.dataset.ag)) c.checked = t.checked;
+    });
+    syncStudioSelect(); applyFilters();
+  });
+  menu.addEventListener('click', e => {
+    const b = e.target.closest('.ms-only-btn');
+    if (!b) return;
+    e.stopPropagation();
+    const d = b.dataset;
+    _studioBoxes().forEach(c => c.checked = d.only ? c.value === d.only
+      : c.dataset.st === d.onlySt && (!d.onlyAg || c.dataset.ag === d.onlyAg));
+    syncStudioSelect(); applyFilters();
+  });
+}
+
+// ── Aggregation ─────────────────────────────────────────────────────────────
+function emptyAgg() {
+  return { spend:0, metaSpend:0, googleSpend:0,
+           leads:0, ft:0, mem:0,
+           paidLeads:0, paidFt:0, paidMem:0,
+           mLeadsSf:0, mFtSf:0, mMemSf:0, gLeadsSf:0, gFtSf:0, gMemSf:0,
+           mImp:0, mClk:0, mLeads:0, gImp:0, gClk:0, gConv:0, gCalls:0 };
+}
+function addAgg(a, b) { for (const k in a) a[k] += b[k] || 0; return a; }
+
+// One row per studio in the selected window.
+function perStudio(from, to, srcSel) {
+  const byName = {}, codeToName = {};
+  for (const s of STUDIOS) { byName[s.name] = Object.assign(emptyAgg(), s); if (s.code) codeToName[s.code] = s.name; }
+  const inRange = d => d >= from && d <= to;
+  const srcSet = new Set(srcSel);
+
+  for (const r of RAW.daily_detail || []) {
+    const o = byName[r.studio];
+    if (!o || !inRange(r.date)) continue;
+    const L = r.signups || 0, F = r.first_visits || 0, M = r.first_activations || 0;
+    if (srcSet.has(r.source)) { o.leads += L; o.ft += F; o.mem += M; }
+    const p = PAID_SRC[r.source];
+    if (p) {
+      o.paidLeads += L; o.paidFt += F; o.paidMem += M;
+      if (p === 'meta') { o.mLeadsSf += L; o.mFtSf += F; o.mMemSf += M; }
+      else              { o.gLeadsSf += L; o.gFtSf += F; o.gMemSf += M; }
+    }
+  }
+  for (const r of (SPEND && SPEND.daily) || []) {
+    const o = byName[codeToName[r.studio_code]];
+    if (!o || !inRange(r.date)) continue;
+    o.metaSpend += r.meta_spend || 0; o.googleSpend += r.google_spend || 0;
+  }
+  for (const r of (META && META.studio_daily) || []) {
+    const o = byName[codeToName[r.studio_code]];
+    if (!o || !inRange(r.date)) continue;
+    o.mImp += r.impressions || 0; o.mClk += r.clicks || 0; o.mLeads += r.leads || 0;
+  }
+  for (const r of (GADS && GADS.daily) || []) {
+    const o = byName[r.studio];
+    if (!o || !inRange(r.date)) continue;
+    o.gImp += r.impressions || 0; o.gClk += r.clicks || 0; o.gConv += r.leads || 0; o.gCalls += r.calls || 0;
+  }
+  return Object.values(byName).map(o => {
+    o.spend = o.metaSpend + o.googleSpend;
+    o.active = o.spend > 0;          // only studios the agency actually ran ads for
+    return o;
+  });
+}
+
+// Columns of the scorecard for the current status mode.
+function buildColumns(rows) {
+  const cols = [];
+  const mk = (key, label, sub, color, filt, ref) => {
+    const studios = rows.filter(filt);
+    if (!studios.length && !ref) return;      // agency filtered out → no column
+    const active = studios.filter(s => s.active);
+    const agg = active.reduce(addAgg, emptyAgg());
+    agg.n = active.length; agg.nAll = studios.length;
+    agg.nMeta = active.filter(s => s.metaSpend > 0).length;
+    agg.nGoogle = active.filter(s => s.googleSpend > 0).length;
+    cols.push({ key, label, sub, color, agg, ref: !!ref });
+  };
+  const stOk = s => statusMode === 'all' || s.status === statusMode;
+  const stSub = { all: null, open: 'Open', nso: 'NSO' }[statusMode];
+  for (const a of AGENCIES) mk(a, a, stSub, AG_COLOR[a], s => s.agency === a && stOk(s));
+  mk('ALL', 'All agencies', stSub, AG_COLOR.ALL, stOk, true);
+  return cols;
+}
+
+// ── Formatting ──────────────────────────────────────────────────────────────
+const fmtUSD  = v => v == null || !isFinite(v) ? null : '$' + (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString('en-US') : v.toFixed(2));
+const fmtUSD0 = v => v == null || !isFinite(v) ? null : '$' + Math.round(v).toLocaleString('en-US');
+const fmtInt  = v => v == null || !isFinite(v) ? null : (Math.abs(v) < 100 && v % 1 ? v.toFixed(1) : Math.round(v).toLocaleString('en-US'));
+const fmtPct  = v => v == null || !isFinite(v) ? null : (v * 100).toFixed(1) + '%';
+const div     = (a, b) => b ? a / b : null;
+
+// Scorecard rows. vol: volume metric (divided by the column's studio count in
+// "Avg per studio" mode, using nKey as the denominator); better: which
+// direction wins the row's highlight.
+const SC_ROWS = [
+  { sec: 'Studios' },
+  { label: 'Studios with ad spend', hint: 'studios with no Meta / Google spend in the period are left out', f: a => a.n, fmt: v => v, raw: true, sub: a => a.nAll > a.n ? `of ${a.nAll}` : '' },
+
+  { sec: 'Media spend', hint: 'Meta + Google ad spend only — no agency or Leadteam fees' },
+  { label: 'Ad spend', f: a => a.spend, fmt: fmtUSD0, vol: 'n' },
+  { label: 'Meta spend', f: a => a.metaSpend, fmt: fmtUSD0, vol: 'n' },
+  { label: 'Google spend', f: a => a.googleSpend, fmt: fmtUSD0, vol: 'n' },
+  { label: 'Meta share of spend', f: a => div(a.metaSpend, a.spend), fmt: fmtPct },
+
+  { sec: 'Funnel — selected sources' },
+  { label: 'Leads', f: a => a.leads, fmt: fmtInt, vol: 'n', better: 'high' },
+  { label: 'First Timers', f: a => a.ft, fmt: fmtInt, vol: 'n', better: 'high' },
+  { label: 'Members', f: a => a.mem, fmt: fmtInt, vol: 'n', better: 'high' },
+  { label: 'Lead → First Timer', f: a => div(a.ft, a.leads), fmt: fmtPct, better: 'high' },
+  { label: 'First Timer → Member', f: a => div(a.mem, a.ft), fmt: fmtPct, better: 'high' },
+  { label: 'Lead → Member', f: a => div(a.mem, a.leads), fmt: fmtPct, better: 'high' },
+  { label: 'Blended cost per lead', hint: 'ad spend ÷ leads', f: a => div(a.spend, a.leads), fmt: fmtUSD, better: 'low' },
+  { label: 'Blended cost per member', hint: 'ad spend ÷ members', f: a => div(a.spend, a.mem), fmt: fmtUSD, better: 'low' },
+
+  { sec: 'Paid funnel', hint: 'source = Meta Ads or Google Ads (ignores the Sources filter)' },
+  { label: 'Paid leads', f: a => a.paidLeads, fmt: fmtInt, vol: 'n', better: 'high' },
+  { label: 'Paid First Timers', f: a => a.paidFt, fmt: fmtInt, vol: 'n', better: 'high' },
+  { label: 'Paid members', f: a => a.paidMem, fmt: fmtInt, vol: 'n', better: 'high' },
+  { label: 'Paid lead → member', f: a => div(a.paidMem, a.paidLeads), fmt: fmtPct, better: 'high' },
+  { label: 'Paid cost per lead', f: a => div(a.spend, a.paidLeads), fmt: fmtUSD, better: 'low' },
+  { label: 'Paid cost per First Timer', f: a => div(a.spend, a.paidFt), fmt: fmtUSD, better: 'low' },
+  { label: 'Paid cost per member', f: a => div(a.spend, a.paidMem), fmt: fmtUSD, better: 'low' },
+
+  { sec: 'Meta Ads' },
+  { label: 'Studios with Meta spend', f: a => a.nMeta, fmt: v => v, raw: true },
+  { label: 'Spend', f: a => a.metaSpend, fmt: fmtUSD0, vol: 'nMeta' },
+  { label: 'Impressions', f: a => a.mImp, fmt: fmtInt, vol: 'nMeta' },
+  { label: 'Clicks', f: a => a.mClk, fmt: fmtInt, vol: 'nMeta' },
+  { label: 'CTR', f: a => div(a.mClk, a.mImp), fmt: fmtPct, better: 'high' },
+  { label: 'CPM', f: a => div(a.metaSpend * 1000, a.mImp), fmt: fmtUSD, better: 'low' },
+  { label: 'CPC', f: a => div(a.metaSpend, a.mClk), fmt: fmtUSD, better: 'low' },
+  { label: 'Leads reported by Meta', f: a => a.mLeads, fmt: fmtInt, vol: 'nMeta', better: 'high' },
+  { label: 'CPL (Meta-reported)', f: a => div(a.metaSpend, a.mLeads), fmt: fmtUSD, better: 'low' },
+  { label: 'Leads (source = Meta Ads)', hint: 'MindBody / Snowflake', f: a => a.mLeadsSf, fmt: fmtInt, vol: 'nMeta', better: 'high' },
+  { label: 'CPL (source = Meta Ads)', f: a => div(a.metaSpend, a.mLeadsSf), fmt: fmtUSD, better: 'low' },
+  { label: 'Members (source = Meta Ads)', f: a => a.mMemSf, fmt: fmtInt, vol: 'nMeta', better: 'high' },
+  { label: 'Cost per member (Meta)', f: a => div(a.metaSpend, a.mMemSf), fmt: fmtUSD, better: 'low' },
+
+  { sec: 'Google Ads' },
+  { label: 'Studios with Google spend', f: a => a.nGoogle, fmt: v => v, raw: true },
+  { label: 'Spend', f: a => a.googleSpend, fmt: fmtUSD0, vol: 'nGoogle' },
+  { label: 'Impressions', f: a => a.gImp, fmt: fmtInt, vol: 'nGoogle' },
+  { label: 'Clicks', f: a => a.gClk, fmt: fmtInt, vol: 'nGoogle' },
+  { label: 'CTR', f: a => div(a.gClk, a.gImp), fmt: fmtPct, better: 'high' },
+  { label: 'CPC', f: a => div(a.googleSpend, a.gClk), fmt: fmtUSD, better: 'low' },
+  { label: 'Conversions reported by Google', f: a => a.gConv, fmt: fmtInt, vol: 'nGoogle', better: 'high' },
+  { label: 'Calls', f: a => a.gCalls, fmt: fmtInt, vol: 'nGoogle' },
+  { label: 'Cost per conversion (Google-reported)', f: a => div(a.googleSpend, a.gConv), fmt: fmtUSD, better: 'low' },
+  { label: 'Leads (source = Google Ads)', hint: 'MindBody / Snowflake', f: a => a.gLeadsSf, fmt: fmtInt, vol: 'nGoogle', better: 'high' },
+  { label: 'CPL (source = Google Ads)', f: a => div(a.googleSpend, a.gLeadsSf), fmt: fmtUSD, better: 'low' },
+  { label: 'Members (source = Google Ads)', f: a => a.gMemSf, fmt: fmtInt, vol: 'nGoogle', better: 'high' },
+  { label: 'Cost per member (Google)', f: a => div(a.googleSpend, a.gMemSf), fmt: fmtUSD, better: 'low' },
+];
+
+function cellValue(row, agg) {
+  const v = row.f(agg);
+  if (v == null) return null;
+  if (row.vol && viewMode === 'avg') return agg[row.vol] ? v / agg[row.vol] : null;
+  return v;
+}
+
+// ── Render ──────────────────────────────────────────────────────────────────
+function applyFilters() {
+  if (!RAW) return;
+  let from = document.getElementById('fFrom').value || DEFAULT_FROM;
+  let to   = document.getElementById('fTo').value   || DEFAULT_TO;
+  if (from > to) [from, to] = [to, from];
+
+  const studioSel = new Set(getSelected('studioMenu') || []);
+  const srcSel = getSelected('sourceMenu') || [];
+  const rows = perStudio(from, to, srcSel).filter(s => studioSel.has(s.name));
+  const cols = buildColumns(rows);
+
+  _tableRows = rows.filter(s => statusMode === 'all' || s.status === statusMode);
+  renderScorecard(cols, from, to);
+  renderCharts(cols);
+  renderStudioTable();
+}
+
+function renderScorecard(cols, from, to) {
+  const lastFunnel = (RAW.daily_detail || []).reduce((m, r) => r.date > m ? r.date : m, '');
+  const notes = [
+    `${fmtDayLabel(from)} – ${fmtDayLabel(to)}, ${to.slice(0, 4)}.`,
+    viewMode === 'avg'
+      ? 'Volumes are averages per studio with ad spend (Meta / Google rows: per studio with spend on that platform); rates and costs are pooled across the agency\'s studios.'
+      : 'Volumes are totals; rates and costs are pooled across the agency\'s studios.',
+    'Each studio is counted under its current agency for the whole period.',
+    'Green = best agency on that row.',
+  ];
+  if (lastFunnel && to > lastFunnel) notes.push(`Funnel data runs through ${fmtDayLabel(lastFunnel)}.`);
+  const noAds = _tableRows.filter(s => !s.active).map(s => s.name).sort();
+  if (noAds.length) notes.push(`No ad spend in the period (left out): ${noAds.join(', ')}.`);
+  document.getElementById('scNote').textContent = notes.join(' ');
+
+  const head = `<thead><tr><th>Metric</th>${cols.map(c =>
+    `<th class="${c.ref ? 'ref' : ''}" style="--agc:${c.color}">${c.label}${c.sub ? `<small>${c.sub}</small>` : ''}</th>`).join('')}</tr></thead>`;
+
+  const nCols = cols.length + 1;
+  const body = SC_ROWS.map(row => {
+    if (row.sec) return `<tr class="sec"><td colspan="${nCols}">${row.sec}${row.hint ? ` <span style="text-transform:none;font-style:normal;font-family:'Open Sans',sans-serif;font-weight:400;color:#5a7a8a;letter-spacing:0">— ${row.hint}</span>` : ''}</td></tr>`;
+    const vals = cols.map(c => cellValue(row, c.agg));
+    // Best value across the agency columns.
+    const best = {};
+    if (row.better) {
+      const groups = {};
+      vals.forEach((v, i) => {
+        if (cols[i].ref || v == null || !isFinite(v) || (v === 0 && row.better === 'low')) return;
+        (groups[''] ||= []).push(v);
+      });
+      for (const [g, ok] of Object.entries(groups))
+        if (ok.length > 1 && Math.max(...ok) !== Math.min(...ok)) best[g] =row.better === 'high' ? Math.max(...ok) : Math.min(...ok);
+    }
+    const tds = vals.map((v, i) => {
+      const s = v == null ? null : row.fmt(v);
+      if (s == null) return `<td class="na${cols[i].ref ? ' ref' : ''}">—</td>`;
+      const sub = row.sub ? row.sub(cols[i].agg) : '';
+      const b = best[''];
+      const inner = b != null && v === b && !cols[i].ref ?`<span class="best">${s}</span>` : s;
+      return `<td class="${cols[i].ref ? 'ref' : ''}">${inner}${sub ? ` <span style="font-weight:400;color:#8aa3b0">${sub}</span>` : ''}</td>`;
+    }).join('');
+    const label = row.label + (row.vol && viewMode === 'avg' ? ' <span style="color:#8aa3b0">/ studio</span>' : '');
+    return `<tr><td class="lbl">${label}${row.hint ? `<span class="hint">${row.hint}</span>` : ''}</td>${tds}</tr>`;
+  }).join('');
+  document.getElementById('scTable').innerHTML = head + '<tbody>' + body + '</tbody>';
+}
+
+function hexA(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`;
+}
+
+function renderCharts(cols) {
+  const series = cols.filter(c => !c.ref && c.agg.n > 0);
+  const color = c => c.color;
+  const name  = c => c.label;
+  const legend = series.map(c => `<span><i style="background:${color(c)}"></i>${name(c)} (${c.agg.n})</span>`).join('');
+  ['lg1', 'lg2', 'lg3', 'lg4'].forEach(id => document.getElementById(id).innerHTML = legend);
+  document.getElementById('chFunnelTitle').textContent = viewMode === 'avg' ? 'Funnel — avg per studio' : 'Funnel — totals';
+
+  const per = (c, v) => viewMode === 'avg' ? div(v, c.agg.n) : v;
+  draw('chFunnel', ['Leads', 'First Timers', 'Members', 'Paid leads', 'Paid members'], series.map(c => ({
+    label: name(c), backgroundColor: color(c),
+    data: [c.agg.leads, c.agg.ft, c.agg.mem, c.agg.paidLeads, c.agg.paidMem].map(v => per(c, v)),
+  })), v => Math.round(v).toLocaleString('en-US'));
+
+  draw('chConv', ['Lead → FT', 'FT → Member', 'Lead → Member', 'Paid lead → member'], series.map(c => ({
+    label: name(c), backgroundColor: color(c),
+    data: [div(c.agg.ft, c.agg.leads), div(c.agg.mem, c.agg.ft), div(c.agg.mem, c.agg.leads), div(c.agg.paidMem, c.agg.paidLeads)]
+      .map(v => v == null ? null : v * 100),
+  })), v => v.toFixed(0) + '%', v => v.toFixed(1) + '%');
+
+  draw('chCpl', ['Blended', 'Paid', 'Meta (source)', 'Google (source)', 'Meta-reported'], series.map(c => ({
+    label: name(c), backgroundColor: color(c),
+    data: [div(c.agg.spend, c.agg.leads), div(c.agg.spend, c.agg.paidLeads), div(c.agg.metaSpend, c.agg.mLeadsSf),
+           div(c.agg.googleSpend, c.agg.gLeadsSf), div(c.agg.metaSpend, c.agg.mLeads)],
+  })), v => '$' + Math.round(v), v => '$' + v.toFixed(2));
+
+  draw('chCpm', ['Blended', 'Paid', 'Meta (source)', 'Google (source)'], series.map(c => ({
+    label: name(c), backgroundColor: color(c),
+    data: [div(c.agg.spend, c.agg.mem), div(c.agg.spend, c.agg.paidMem), div(c.agg.metaSpend, c.agg.mMemSf),
+           div(c.agg.googleSpend, c.agg.gMemSf)],
+  })), v => '$' + Math.round(v), v => '$' + Math.round(v).toLocaleString('en-US'));
+}
+
+function draw(id, labels, datasets, tick, tip) {
+  if (_charts[id]) _charts[id].destroy();
+  datasets.forEach(d => { d.borderRadius = 3; d.maxBarThickness = 28; });
+  _charts[id] = new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ctx.raw == null ? `${ctx.dataset.label}: —` : `${ctx.dataset.label}: ${(tip || tick)(ctx.raw)}` } },
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#5a7a8a' } },
+        y: { beginAtZero: true, grid: { color: '#eef3f7' }, ticks: { font: { size: 10 }, color: '#5a7a8a', callback: tick } },
+      },
+    },
+  });
+}
+
+// ── Per-studio table ────────────────────────────────────────────────────────
+const TBL_COLS = [
+  { key: 'name',      label: 'Studio',          get: s => s.name, txt: true,
+    html: s => s.name + (s.active ? '' : ' <span class="st-badge" title="No Meta / Google spend in the period — left out of the scorecard">no ads</span>') },
+  { key: 'agency',    label: 'Agency',          get: s => s.agency, txt: true,
+    html: s => `<span class="ag-badge" style="background:${AG_COLOR[s.agency]}">${s.agency}</span>` },
+  { key: 'status',    label: 'Status',          get: s => s.status, txt: true,
+    html: s => `<span class="st-badge ${s.status}">${s.status === 'nso' ? 'NSO' : 'Open'}</span>` },
+  { key: 'spend',     label: 'Ad spend',        get: s => s.spend, fmt: fmtUSD0 },
+  { key: 'metaSpend', label: 'Meta',            get: s => s.metaSpend, fmt: fmtUSD0 },
+  { key: 'googleSpend', label: 'Google',        get: s => s.googleSpend, fmt: fmtUSD0 },
+  { key: 'leads',     label: 'Leads',           get: s => s.leads, fmt: fmtInt },
+  { key: 'ft',        label: 'First Timers',    get: s => s.ft, fmt: fmtInt },
+  { key: 'mem',       label: 'Members',         get: s => s.mem, fmt: fmtInt },
+  { key: 'lft',       label: 'Lead→FT',         get: s => div(s.ft, s.leads), fmt: fmtPct },
+  { key: 'ftm',       label: 'FT→Mem',          get: s => div(s.mem, s.ft), fmt: fmtPct },
+  { key: 'paidLeads', label: 'Paid leads',      get: s => s.paidLeads, fmt: fmtInt },
+  { key: 'paidMem',   label: 'Paid members',    get: s => s.paidMem, fmt: fmtInt },
+  { key: 'pcpl',      label: 'Paid CPL',        get: s => div(s.spend, s.paidLeads), fmt: fmtUSD },
+  { key: 'pcpm',      label: 'Paid cost / member', get: s => div(s.spend, s.paidMem), fmt: fmtUSD0 },
+  { key: 'mctr',      label: 'Meta CTR',        get: s => div(s.mClk, s.mImp), fmt: fmtPct },
+  { key: 'mcpl',      label: 'Meta CPL (source)', get: s => div(s.metaSpend, s.mLeadsSf), fmt: fmtUSD },
+  { key: 'gctr',      label: 'Google CTR',      get: s => div(s.gClk, s.gImp), fmt: fmtPct },
+  { key: 'gcpl',      label: 'Google CPL (source)', get: s => div(s.googleSpend, s.gLeadsSf), fmt: fmtUSD },
+];
+
+function renderStudioTable() {
+  const rows = _tableRows.filter(s => tableAgency === 'ALL' || s.agency === tableAgency);
+  const col = TBL_COLS.find(c => c.key === _sort.key) || TBL_COLS[3];
+  rows.sort((a, b) => {
+    const va = col.get(a), vb = col.get(b);
+    if (col.txt) return String(va).localeCompare(String(vb)) * _sort.dir;
+    if (va == null && vb == null) return 0;
+    if (va == null) return 1; if (vb == null) return -1;
+    return (va - vb) * _sort.dir;
+  });
+  const head = `<thead><tr>${TBL_COLS.map(c =>
+    `<th class="sortable${c.txt ? '' : ' num'}" data-k="${c.key}">${c.label}${c.key === _sort.key ? (_sort.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead>`;
+  const body = rows.length ? rows.map(s => `<tr>${TBL_COLS.map(c => {
+    if (c.html) return `<td>${c.html(s)}</td>`;
+    if (c.txt) return `<td>${c.get(s)}</td>`;
+    const v = c.get(s), t = v == null ? null : c.fmt(v);
+    return `<td class="num${t == null || v === 0 ? ' dim' : ''}">${t == null ? '—' : t}</td>`;
+  }).join('')}</tr>`).join('')
+    : `<tr class="no-hover"><td colspan="${TBL_COLS.length}"><div class="empty-msg">No studios match these filters.</div></td></tr>`;
+  const t = document.getElementById('studioTable');
+  t.innerHTML = head + '<tbody>' + body + '</tbody>';
+  t.querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => {
+    const k = th.dataset.k;
+    const c = TBL_COLS.find(x => x.key === k);
+    _sort = { key: k, dir: _sort.key === k ? -_sort.dir : (c.txt ? 1 : -1) };
+    renderStudioTable();
+  }));
+}
+
+function downloadStudioCSV() {
+  const rows = _tableRows.filter(s => tableAgency === 'ALL' || s.agency === tableAgency);
+  const esc = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v);
+  const lines = [TBL_COLS.map(c => esc(c.label)).join(',')];
+  for (const s of rows) lines.push(TBL_COLS.map(c => {
+    const v = c.get(s);
+    if (v == null) return '';
+    return esc(c.txt ? v : (Math.round(v * 10000) / 10000));
+  }).join(','));
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `agency-comparison_${document.getElementById('fFrom').value}_${document.getElementById('fTo').value}.csv`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+loadData();
+</script>
+</body>
+</html>
