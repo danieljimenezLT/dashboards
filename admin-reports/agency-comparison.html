@@ -40,10 +40,9 @@
   .legend-row i{width:10px;height:10px;border-radius:2px;display:inline-block}
 
   .chips{display:flex;gap:6px;flex-wrap:wrap}
-  #studioMenu .ms-st-header{font-size:13px;color:#1a1a2e}
-  #studioMenu .ms-ag-header{padding-left:24px}
+  #studioMenu .ms-ag-header{padding-left:14px}
   #studioMenu .ms-ag-header .ag-badge{font-size:10px;padding:1px 7px}
-  #studioMenu .ms-ag-item{padding-left:40px}
+  #studioMenu .ms-ag-item{padding-left:30px}
   .chip{border:1px solid #c0d4df;background:#fff;border-radius:14px;padding:3px 11px;font-size:11px;font-weight:600;color:#5a7a8a;cursor:pointer}
   .chip.active{background:#1a1a2e;border-color:#1a1a2e;color:#fff}
   .tbl-scroll{overflow-x:auto}
@@ -75,8 +74,7 @@
     <div class="ctrl-sep"></div>
     <span class="ctrl-label">Studios</span>
     <div class="seg" id="statusSeg" role="group" aria-label="Studio status">
-      <button type="button" data-v="all" class="active">All</button>
-      <button type="button" data-v="open">Open</button>
+      <button type="button" data-v="open" class="active">Open</button>
       <button type="button" data-v="nso">NSO</button>
     </div>
     <div class="multi-select" id="studioDropdown">
@@ -165,7 +163,7 @@ const EXCL_SOURCES = ['ClassPass / Platforms', 'Grassroots'];
 
 let RAW = null, SPEND = null, META = null, GADS = null, REG = null;
 let STUDIOS = [];                 // [{name, code, status, agency}] with an agency, not closed
-let statusMode = 'all', viewMode = 'avg', tableAgency = 'ALL';
+let statusMode = 'open', viewMode = 'avg', tableAgency = 'ALL';
 let _charts = {}, _tableRows = [], _sort = { key:'spend', dir:-1 };
 
 function toggleControls() { document.getElementById('ctrlInner').classList.toggle('open'); }
@@ -218,25 +216,20 @@ async function loadData() {
   applyFilters();
 }
 
-// Studio filter: one section per status shown (All → Open then NSO; Open or NSO
-// → just that one), each grouped by agency. Section and agency headers have a
-// checkbox and an "Only" button, like each studio. Unchecked studios are kept
-// in _unchecked so switching status doesn't reset the selection.
+// Studio filter: the studios of the selected status (Open or NSO), grouped by
+// agency. Agency headers have a checkbox and an "Only" button, like each
+// studio. Unchecked studios are kept in _unchecked so switching status doesn't
+// reset the selection.
 const _unchecked = new Set();
-const ST_LABEL = { open: 'Open Studios', nso: 'NSO' };
 
 function renderStudioSelect() {
   const menu = document.getElementById('studioMenu');
   const safe = n => 'ms_studio_' + n.replace(/[^a-z0-9]/gi, '_');
   const only = attrs => `<button type="button" class="ms-only-btn" ${attrs}>Only</button>`;
-  const statuses = statusMode === 'all' ? ['open', 'nso'] : [statusMode];
-  let h = `<div class="ms-item ms-select-all"><input type="checkbox" id="studioMenu_all"> <label for="studioMenu_all" style="cursor:pointer">Select all</label></div>`;
-  for (const st of statuses) {
-    const inSt = STUDIOS.filter(x => x.status === st);
-    if (!inSt.length) continue;
-    h += `<div class="ms-divider"></div>`;
-    if (statuses.length > 1)
-      h += `<div class="ms-cat-header ms-st-header"><input type="checkbox" id="studioMenu_st_${st}" data-grp="st" data-st="${st}"> <label for="studioMenu_st_${st}" style="cursor:pointer;flex:1">${ST_LABEL[st]} (${inSt.length})</label>${only(`data-only-st="${st}"`)}</div>`;
+  const st = statusMode;
+  const inSt = STUDIOS.filter(x => x.status === st);
+  let h = `<div class="ms-item ms-select-all"><input type="checkbox" id="studioMenu_all"> <label for="studioMenu_all" style="cursor:pointer">Select all</label></div><div class="ms-divider"></div>`;
+  {
     for (const a of AGENCIES) {
       const list = inSt.filter(x => x.agency === a).sort((x, y) => x.name.localeCompare(y.name));
       if (!list.length) continue;
@@ -259,29 +252,21 @@ function syncStudioSelect() {
     el.checked = boxes.length > 0 && n === boxes.length; el.indeterminate = n > 0 && n < boxes.length;
   };
   document.querySelectorAll('#studioMenu input[data-grp]').forEach(hd =>
-    setTri(hd, all.filter(c => c.dataset.st === hd.dataset.st && (hd.dataset.grp === 'st' || c.dataset.ag === hd.dataset.ag))));
+    setTri(hd, all.filter(c => c.dataset.ag === hd.dataset.ag)));
   setTri(document.getElementById('studioMenu_all'), all);
 
-  // Label: "All", or the agencies (per status when both are shown) that are fully selected.
+  // Label: "All", the fully selected agencies ("LT + FFM only"), or a count.
   let label;
   if (on.length === all.length) label = 'All';
   else if (!on.length) label = 'None selected';
   else {
-    const multi = statusMode === 'all';
     const full = [], partial = [];
     for (const a of AGENCIES) {
-      const stFull = [];
-      for (const st of ['open', 'nso']) {
-        const g = all.filter(c => c.dataset.ag === a && c.dataset.st === st), n = g.filter(c => c.checked).length;
-        if (!g.length || !n) continue;
-        if (n < g.length) partial.push(a); else stFull.push(st);
-      }
-      const shown = all.filter(c => c.dataset.ag === a).map(c => c.dataset.st);
-      const sts = [...new Set(shown)];
-      if (stFull.length && stFull.length === sts.length) full.push(a);
-      else stFull.forEach(st => full.push(`${a} ${st === 'nso' ? 'NSO' : 'Open'}`));
+      const g = all.filter(c => c.dataset.ag === a), n = g.filter(c => c.checked).length;
+      if (!n) continue;
+      (n === g.length ? full : partial).push(a);
     }
-    label = !partial.length && full.length ? full.join(' + ') + (multi ? '' : ' only')
+    label = !partial.length && full.length ? full.join(' + ') + ' only'
           : on.length <= 2 ? on.map(c => c.value).join(', ') : on.length + ' selected';
   }
   document.getElementById('studioLabel').textContent = label;
@@ -292,9 +277,7 @@ function setupStudioSelect() {
   menu.addEventListener('change', e => {
     const t = e.target;
     if (t.id === 'studioMenu_all') _studioBoxes().forEach(c => c.checked = t.checked);
-    else if (t.dataset.grp) _studioBoxes().forEach(c => {
-      if (c.dataset.st === t.dataset.st && (t.dataset.grp === 'st' || c.dataset.ag === t.dataset.ag)) c.checked = t.checked;
-    });
+    else if (t.dataset.grp) _studioBoxes().forEach(c => { if (c.dataset.ag === t.dataset.ag) c.checked = t.checked; });
     syncStudioSelect(); applyFilters();
   });
   menu.addEventListener('click', e => {
@@ -372,8 +355,8 @@ function buildColumns(rows) {
     agg.nGoogle = active.filter(s => s.googleSpend > 0).length;
     cols.push({ key, label, sub, color, agg, ref: !!ref });
   };
-  const stOk = s => statusMode === 'all' || s.status === statusMode;
-  const stSub = { all: null, open: 'Open', nso: 'NSO' }[statusMode];
+  const stOk = s => s.status === statusMode;
+  const stSub = statusMode === 'nso' ? 'NSO' : 'Open';
   for (const a of AGENCIES) mk(a, a, stSub, AG_COLOR[a], s => s.agency === a && stOk(s));
   mk('ALL', 'All agencies', stSub, AG_COLOR.ALL, stOk, true);
   return cols;
@@ -468,7 +451,7 @@ function applyFilters() {
   const rows = perStudio(from, to, srcSel).filter(s => studioSel.has(s.name));
   const cols = buildColumns(rows);
 
-  _tableRows = rows.filter(s => statusMode === 'all' || s.status === statusMode);
+  _tableRows = rows.filter(s => s.status === statusMode);
   renderScorecard(cols, from, to);
   renderCharts(cols);
   renderStudioTable();
