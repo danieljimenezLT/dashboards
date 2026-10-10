@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-10-09T17:06:35.090002+00:00",
-  "window_start": "2026-10-02",
-  "window_end": "2026-10-08",
-  "window_label": "Oct 02 – Oct 08, 2026",
+  "generated_at": "2026-10-10T15:58:45.967926+00:00",
+  "window_start": "2026-10-03",
+  "window_end": "2026-10-09",
+  "window_label": "Oct 03 – Oct 09, 2026",
   "campaigns": {
     "win_a_free_month_apr2026": {
       "display_name": "Win a Free Month",
@@ -1176,23 +1176,23 @@
       "display_name": "Free Class - Open Studios",
       "period_label": "Apr 15, 2026 onwards",
       "totals": {
-        "impressions": 3573857.0,
-        "clicks": 50020.0,
-        "reach": 1396807.0,
+        "impressions": 3590269.0,
+        "clicks": 50309.0,
+        "reach": 1404854.0,
         "leads": 1136.0,
         "purchases": 137.0,
-        "trials": 535.0,
-        "spend": 119644.2,
+        "trials": 537.0,
+        "spend": 120290.88,
         "ctr": 1.4,
-        "cpm": 33.48,
-        "cpl": 105.32
+        "cpm": 33.5,
+        "cpl": 105.89
       },
       "most_recent_date": null,
       "high_count": 0,
-      "medium_count": 522,
-      "alerts_count": 522,
+      "medium_count": 523,
+      "alerts_count": 523,
       "opportunities_count": 0,
-      "findings_count": 658,
+      "findings_count": 659,
       "findings": [
         {
           "type": "low_impressions",
@@ -2401,6 +2401,19 @@
           "leads": 0,
           "headline": "Only 0 impressions in the last 7 days",
           "detail": "Ad has $71 in historical spend but barely showed this week (0 impressions).",
+          "recommendation": "Check budget exhaustion, bid strategy, audience size, or ad approval status."
+        },
+        {
+          "type": "low_impressions",
+          "severity": "medium",
+          "ad_id": "120243104919530249",
+          "ad_name": "26-FL-002-01 Video6 Hyrox",
+          "studio_code": "FL-002",
+          "spend": 0,
+          "impressions": 0,
+          "leads": 0,
+          "headline": "Only 0 impressions in the last 7 days",
+          "detail": "Ad has $39 in historical spend but barely showed this week (0 impressions).",
           "recommendation": "Check budget exhaustion, bid strategy, audience size, or ad approval status."
         },
         {
