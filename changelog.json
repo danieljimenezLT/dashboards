@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-10-13",
+      "pr_number": 457,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/457",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Opened Studios dashboard fixes after review",
+      "summary": "Herriman's presale activations now show in First 90 Days, the page waits for complete data before showing a day, it now requires an admin login, and averages skip studios open less than a week."
+    },
+    {
+      "date": "2026-10-13",
       "pr_number": 456,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/456",
       "author": "Sebastian Arango",
