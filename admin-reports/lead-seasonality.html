@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SWEAT440 — Lead Seasonality &amp; Growth</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet"/>
+<link rel="icon" href="../favicon.jpg"/>
+<link rel="stylesheet" href="../shared/style.css"/>
+<style>
+  .seg{display:inline-flex;border:0.5px solid #c0d4df;border-radius:6px;overflow:hidden;flex-wrap:wrap}
+  .seg button{background:#fff;border:none;border-right:0.5px solid #c0d4df;padding:5px 12px;font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:#5a7a8a;cursor:pointer}
+  .seg button:last-child{border-right:none}
+  .seg button.active{background:#00A3E0;color:#fff}
+  .seg button:focus-visible{outline:2px solid #0084B5;outline-offset:-2px}
+  .ls-select{font-family:'Open Sans',sans-serif;font-size:12px;padding:5px 8px;border:0.5px solid #c0d4df;border-radius:6px;background:#fff;color:#1a1a2e;max-width:240px}
+  .ls-select:focus-visible{outline:2px solid #0084B5;outline-offset:1px}
+  .ls-head{margin-bottom:18px}
+  .ls-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:24px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#1a1a2e}
+  .ls-take{font-size:13px;color:#1a1a2e;line-height:1.6;margin-top:6px;max-width:900px}
+  .ls-take b{font-weight:600}
+  .ls-take .pos{color:#0a8a4a} .ls-take .neg{color:#d32f2f}
+  .ls-note{font-size:12px;color:#5a7a8a;margin:-8px 0 14px;line-height:1.5;max-width:900px}
+  .ls-sec{font-family:'Oswald',sans-serif;font-style:italic;font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#0084B5;margin:26px 0 12px}
+  .two-col>*{min-width:0}
+  .chart-box{position:relative;height:280px}
+  .chart-box.short{height:240px}
+  .legend-row{display:flex;gap:14px;flex-wrap:wrap;margin:-6px 0 12px;font-size:11px;color:#5a7a8a}
+  .legend-row span{display:inline-flex;align-items:center;gap:6px}
+  .legend-row i{width:10px;height:10px;border-radius:2px;display:inline-block}
+  .legend-row i.ln{height:3px;width:16px;border-radius:2px}
+  .legend-row i.dash{height:0;width:16px;border-top:2px dashed #8aa3b0;background:none;border-radius:0}
+  .kpi-sub{font-size:11px;color:#5a7a8a;margin-top:5px;line-height:1.4}
+  .kpi-range{font-size:15px;color:#5a7a8a;font-weight:600}
+  .heat-wrap{overflow-x:auto}
+  .heat{border-collapse:separate;border-spacing:2px;font-size:11px;font-variant-numeric:tabular-nums;width:100%}
+  .heat th{font-family:'Oswald',sans-serif;font-style:italic;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:#5a7a8a;padding:2px 4px;text-align:center}
+  .heat th:first-child{text-align:left}
+  .heat td{text-align:center;padding:5px 2px;border-radius:4px;color:#1a1a2e;min-width:30px}
+  .heat td:first-child{text-align:left;white-space:nowrap;padding-right:10px;color:#1a1a2e;font-weight:600;background:none;min-width:0}
+  .heat tr.dim td{opacity:.35}
+  .heat tr.sel td:first-child{color:#00A3E0}
+  .tbl-scroll{overflow-x:auto;max-height:560px;overflow-y:auto}
+  #studioTable th{position:sticky;top:0;background:#fff;z-index:1;cursor:pointer;user-select:none}
+  #studioTable td,#studioTable th{white-space:nowrap}
+  #studioTable td.num{font-variant-numeric:tabular-nums}
+  #studioTable tr.sel td{background:#e6f6fd}
+  #studioTable td.pos{color:#0a8a4a;font-weight:600} #studioTable td.neg{color:#d32f2f;font-weight:600}
+  .cellbar{position:relative;height:9px;width:140px}
+  .cellbar i{position:absolute;top:0;height:9px;border-radius:3px}
+  .cellbar s{position:absolute;top:-3px;bottom:-3px;width:1px;background:#c0d4df}
+  .empty-msg{padding:20px;text-align:center;color:#5a7a8a;font-size:12px}
+  .method p{font-size:12px;color:#5a7a8a;line-height:1.6;margin-bottom:8px;max-width:960px}
+  .method p:last-child{margin-bottom:0}
+  .st-badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;background:#eef3f7;color:#5a7a8a;margin-left:6px}
+  @media (max-width:768px){ .chart-box{height:230px} .cellbar{width:80px} }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="../home.html"><img src="../logo.png" alt="SWEAT440"/></a>
+  <div class="nav-tabs">
+    <a class="nav-tab active" href="staging-reports.html" style="text-decoration:none">← Staging Reports</a>
+  </div>
+</nav>
+
+<div class="controls-bar">
+  <button class="controls-toggle" id="ctrlToggle" onclick="toggleControls()">Filters ▾</button>
+  <div class="controls-inner" id="ctrlInner">
+    <span class="ctrl-label">Studio</span>
+    <select class="ls-select" id="studioSel" aria-label="Studio"></select>
+    <div class="ctrl-sep"></div>
+    <span class="ctrl-label">Lead sources</span>
+    <div class="seg" id="scenSeg" role="group" aria-label="Lead sources">
+      <button type="button" data-v="All sources">All sources</button>
+      <button type="button" data-v="Excl. ClassPass" class="active">Excl. ClassPass</button>
+      <button type="button" data-v="Excl. ClassPass + Grassroots">Excl. ClassPass + Grassroots</button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="ls-head">
+    <div class="ls-title" id="pageTitle">Lead Seasonality &amp; Growth</div>
+    <p class="ls-take" id="takeaway"></p>
+  </div>
+
+  <div class="kpi-grid" id="kpis"></div>
+
+  <div class="chart-card">
+    <div class="chart-card-title">Monthly leads by studio stage</div>
+    <p class="ls-note">Leads per month, split by whether the studio was established, in its first 3 months after opening, or in presale. From Dec 2025 the numbers come from MBO, deduplicated to one lead per person.</p>
+    <div class="legend-row"><span><i style="background:#00A3E0"></i>Established</span><span><i style="background:#DDFF00;border:0.5px solid #b8c900"></i>First 3 months</span><span><i style="background:#99DAF3"></i>Presale</span></div>
+    <div class="chart-box"><canvas id="chStage"></canvas></div>
+  </div>
+
+  <div class="ls-sec">Seasonality</div>
+  <div class="two-col">
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-card-title">Seasonality index</div>
+      <p class="ls-note" id="seasonNote">Leads in each month ÷ the studio's monthly average (1.00 = average month). Established studios with full years in 2023–24; 2025 and 2026 so far are scaled to the same average for those months.</p>
+      <div class="legend-row" id="seasonLegend"></div>
+      <div class="chart-box"><canvas id="chSeason"></canvas></div>
+    </div>
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-card-title">Seasonality by studio</div>
+      <p class="ls-note">Same index per studio, from its full established years in 2023–24. Red is a weak month, blue a strong one.</p>
+      <div class="heat-wrap"><table class="heat" id="heat"></table></div>
+    </div>
+  </div>
+
+  <div class="ls-sec">Growth</div>
+  <div class="two-col">
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-card-title" id="yoyTitle">Same-store year over year, Jan–Sep</div>
+      <p class="ls-note">Only months where the studio was established in both years. 2026 "best case" assumes every duplicate MBO record was ClassPass.</p>
+      <div class="chart-box short"><canvas id="chYoy"></canvas></div>
+    </div>
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-card-title" id="totTitle">Leads Jan–Sep by year</div>
+      <p class="ls-note" id="totNote">All studios including new and presale. 2026 is MBO first-time leads, deduplicated.</p>
+      <div class="chart-box short"><canvas id="chTot"></canvas></div>
+    </div>
+  </div>
+
+  <div class="ls-sec">Studio age</div>
+  <div class="two-col">
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-card-title">Leads by studio age</div>
+      <p class="ls-note">Each step compares a studio's leads with the same calendar month a year earlier, pooled across studios by age, then chained (year 1 = 100). Hollow points rest on fewer than 5 studios.</p>
+      <div class="legend-row" id="ageLegend"></div>
+      <div class="chart-box short"><canvas id="chAge"></canvas></div>
+    </div>
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-card-title">First two years after opening</div>
+      <p class="ls-note">Studios opened since mid-2023, each indexed to its months 3–8 after opening (= 100). Before 0 is presale; months 0–2 are the first 3 months.</p>
+      <div class="legend-row" id="lifeLegend"></div>
+      <div class="chart-box short"><canvas id="chLife"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-card" style="margin-top:20px">
+    <div class="chart-card-title-row">
+      <div class="chart-card-title">Year over year by studio</div>
+      <div class="seg" id="cmpSeg" role="group" aria-label="Comparison">
+        <button type="button" data-v="2026 vs 2025" class="active">2026 vs 2025</button>
+        <button type="button" data-v="2025 vs 2024">2025 vs 2024</button>
+        <button type="button" data-v="2024 vs 2023">2024 vs 2023</button>
+      </div>
+      <button class="download-btn" onclick="downloadCSV()">⬇ Download CSV</button>
+    </div>
+    <p class="ls-note">Jan–Sep, months established in both years. 2026 studio figures spread the MBO deduplication evenly across studios, so treat them as estimates.</p>
+    <div class="tbl-scroll"><table class="data-table" id="studioTable"></table></div>
+  </div>
+
+  <div class="chart-card method">
+    <div class="chart-card-title">How this was built</div>
+    <p>Jan 2023 – Nov 2025 uses Marianatek lead counts, treated as the real numbers (one lead per person per brand). Dec 2025 onward uses MBO via Snowflake, scaled each month to Snowflake's first-time unique leads, because MBO repeats lead records for people it already knows and for each studio they sign up at. The ~5% of Marianatek leads that never reached Snowflake is a migration loss of old records only, so no uplift is applied to MBO months.</p>
+    <p>Opening dates come from the studio Master sheet. Presale months and the first 3 months after opening are left out of seasonality, same-store growth and the cohort. Zilker and Capitol View opening dates are estimated from their lead ramp, and both are left out of 2026 comparisons because they closed. Miramar and Ocean Township had large lead volumes long before their listed opening dates and are left out of the cohort charts. Austin - Highland in Snowflake also carried Zilker's leads; those are removed.</p>
+    <p>ClassPass only became a lead source in Marianatek in 2024 and is a much bigger share of MBO records, so "Excl. ClassPass" is the most like-for-like view across years. MBO's split of duplicate records by source is unknown, which is why 2026 shows a range. The cohort uses Marianatek months only; its later age steps rest on few studios and also carry calendar-year effects.</p>
+    <p id="genNote"></p>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="../users.js"></script>
+<script src="../shared/auth.js"></script>
+<script src="../shared/utils.js"></script>
+<script>
+// ── Lead Seasonality & Growth (admin-only, staging) ─────────────────────────
+// Static snapshot in lead-seasonality-data.json (built from the Marianatek
+// export + Snowflake data.json + deduplicated unique-lead counts).
+const C = { blue:'#00A3E0', deep:'#0084B5', light:'#99DAF3', pale:'#D2EFFF', yellow:'#DDFF00', ink:'#1a1a2e', muted:'#8aa3b0', grid:'#eef3f7', red:'#d32f2f', green:'#0a8a4a' };
+const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const COL = { 'All sources':'all', 'Excl. ClassPass':'ex_cp', 'Excl. ClassPass + Grassroots':'ex_cp_gr' };
+let D = null, scen = 'Excl. ClassPass', studio = '', cmp = '2026 vs 2025';
+let _charts = {}, _sort = { key:'yoy', dir:1 }, _tableRows = [];
+
+const fmtN = v => Math.round(v).toLocaleString();
+const fmtP = (v, d = 1) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v * 100).toFixed(d) + '%';
+const has = v => v !== null && v !== undefined && v !== '';
+const cls = v => v > 0 ? 'pos' : v < 0 ? 'neg' : 'neu';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+
+function toggleControls() { document.getElementById('ctrlInner').classList.toggle('open'); }
+
+Chart.defaults.font.family = "'Open Sans', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#5a7a8a';
+
+function chart(id, cfg) {
+  if (_charts[id]) _charts[id].destroy();
+  _charts[id] = new Chart(document.getElementById(id), cfg);
+}
+const baseScales = (yFmt, extra = {}) => ({
+  x: { grid: { display: false }, ticks: { autoSkip: true, maxRotation: 0 } },
+  y: { grid: { color: C.grid }, border: { display: false }, ticks: { callback: yFmt }, ...extra },
+});
+
+async function loadData() {
+  const user = checkAuth();
+  if (!user) return;
+  if (user.role !== 'admin') { location.replace('../home.html'); return; }
+  renderAuthNav(user);
+  try {
+    const r = await fetch('lead-seasonality-data.json?_=' + Date.now());
+    D = await r.json();
+  } catch (e) {
+    document.querySelector('.main').innerHTML = '<div class="empty-msg">Could not load the report data. Refresh the page to try again.</div>';
+    return;
+  }
+  document.getElementById('genNote').textContent = 'Data snapshot: ' + D.generated_at + '. This report does not refresh automatically.';
+  buildStudioSelect();
+  document.querySelectorAll('#scenSeg button').forEach(b => b.onclick = () => {
+    scen = b.dataset.v;
+    document.querySelectorAll('#scenSeg button').forEach(x => x.classList.toggle('active', x === b));
+    render();
+  });
+  document.querySelectorAll('#cmpSeg button').forEach(b => b.onclick = () => {
+    cmp = b.dataset.v;
+    document.querySelectorAll('#cmpSeg button').forEach(x => x.classList.toggle('active', x === b));
+    renderTable();
+  });
+  render();
+}
+
+function buildStudioSelect() {
+  const sel = document.getElementById('studioSel');
+  const groups = { open:'Open studios', nso:'Presale (NSO)', closed:'Closed' };
+  let h = '<option value="">All studios</option>';
+  for (const g of ['open', 'nso', 'closed']) {
+    const list = D.studios.filter(s => s.status === g);
+    if (!list.length) continue;
+    h += `<optgroup label="${groups[g]}">` + list.map(s => `<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('') + '</optgroup>';
+  }
+  sel.innerHTML = h;
+  sel.onchange = () => { studio = sel.value; render(); };
+}
+
+function render() {
+  renderHeader(); renderStage(); renderSeason(); renderHeat(); renderYoy(); renderTotals(); renderAge(); renderLife(); renderTable();
+}
+
+// ── helpers over the snapshot ──
+function janSepByYear() {               // leads Jan–Sep per year for the selected studio (any stage)
+  const col = COL[scen], out = {};
+  D.monthly_by_studio.forEach(r => {
+    if (r.studio !== studio || +r.month.slice(5) > 9) return;
+    const y = +r.month.slice(0, 4); out[y] = (out[y] || 0) + r[col];
+  });
+  return out;
+}
+function yoyRow(comparison) {
+  if (!studio) return D.yoy_same_store.find(r => r.comparison === comparison && r.scenario === scen);
+  return D.yoy_by_studio.find(r => r.studio === studio && r.comparison === comparison && r.scenario === scen);
+}
+function studioInfo() { return D.studios.find(s => s.name === studio); }
+
+// ── header + KPIs ──
+function renderHeader() {
+  const s26 = yoyRow('2026 vs 2025'), s25 = yoyRow('2025 vs 2024');
+  const label = studio || 'All studios';
+  document.getElementById('pageTitle').textContent = studio ? studio + ' — Leads' : 'Lead Seasonality & Growth';
+  const scenTxt = scen === 'All sources' ? 'all sources' : scen.replace('Excl.', 'excluding');
+  let take = '';
+  if (s26) {
+    take = `Same-store leads for <b>${esc(label)}</b>, Jan–Sep 2026 vs 2025, ${esc(scenTxt)}: <b class="${cls(s26.yoy)}">${fmtP(s26.yoy)}</b>`;
+    if (has(s26.yoy_upper)) take += ` (best case <b class="${cls(s26.yoy_upper)}">${fmtP(s26.yoy_upper)}</b>)`;
+    take += '.';
+  } else if (studio) {
+    const si = studioInfo();
+    take = `<b>${esc(studio)}</b> has no established months in both 2025 and 2026` + (si && si.opened ? ` (opened ${esc(si.opened)})` : si && si.status === 'nso' ? ' (still in presale)' : '') + ', so there is no same-store comparison.';
+  }
+  if (!studio) {
+    const co = D.company_totals.slice().sort((a, b) => a.year - b.year), c26 = co.find(r => r.year === 2026), c25 = co.find(r => r.year === 2025);
+    if (c26 && c25) take += ` Company leads grew <b class="${cls(c26.leads_jan_sep / c25.leads_jan_sep - 1)}">${fmtP(c26.leads_jan_sep / c25.leads_jan_sep - 1)}</b>, almost all from new studios. Studios lose leads as they age.`;
+  }
+  document.getElementById('takeaway').innerHTML = take;
+
+  // KPI 1 — leads Jan–Sep 2026
+  let v26, v25, k1sub;
+  if (!studio) {
+    v26 = (D.company_totals.find(r => r.year === 2026) || {}).leads_jan_sep;
+    v25 = (D.company_totals.find(r => r.year === 2025) || {}).leads_jan_sep;
+    k1sub = 'All studios, all sources';
+  } else {
+    const t = janSepByYear(); v26 = t[2026]; v25 = t[2025]; k1sub = 'This studio, any stage';
+  }
+  const d1 = has(v26) && v25 ? v26 / v25 - 1 : null;
+  const k1 = `<div class="kpi-card"><div class="kpi-card-label">Leads · Jan–Sep 2026</div><div class="kpi-card-val">${has(v26) ? fmtN(v26) : '—'}</div>`
+    + (d1 !== null ? `<div class="kpi-card-delta ${cls(d1)}">${d1 >= 0 ? '&#9650;' : '&#9660;'} ${Math.abs(d1 * 100).toFixed(1)}% vs Jan–Sep 2025</div>` : '')
+    + `<div class="kpi-sub">${k1sub}</div></div>`;
+  const yoyCard = (lbl, r, sub) => `<div class="kpi-card"><div class="kpi-card-label">${lbl}</div><div class="kpi-card-val">${r ? `<span class="${cls(r.yoy)}" style="color:${r.yoy < 0 ? C.red : C.green}">${fmtP(r.yoy)}</span>` : '—'}`
+    + (r && has(r.yoy_upper) ? ` <span class="kpi-range">to ${fmtP(r.yoy_upper)}</span>` : '') + `</div><div class="kpi-sub">${sub(r)}</div></div>`;
+  const k2 = yoyCard('Same-store · 2026 vs 2025', s26, r => r ? (studio ? `${r.months} established months` : `${r.studios} established studios`) + ', Jan–Sep' : 'No comparable months');
+  const k3 = yoyCard('Same-store · 2025 vs 2024', s25, r => r ? (studio ? `${r.months} established months` : `${r.studios} established studios`) + ', Marianatek' : 'No comparable months');
+  // KPI 4 — network year-3 index, or studio age
+  let k4;
+  if (!studio) {
+    const a3 = D.cohort_age.find(r => r.scenario === scen && r.age_year === 3);
+    k4 = `<div class="kpi-card"><div class="kpi-card-label">Year-3 leads vs year 1</div><div class="kpi-card-val">${a3 ? Math.round(a3.index) : '—'}</div><div class="kpi-sub">Average studio, year 1 = 100</div></div>`;
+  } else {
+    const si = studioInfo();
+    let age = '—', sub = si && si.status === 'nso' ? 'Not open yet' : 'Opening date not available';
+    if (si && si.opened) {
+      const o = new Date(si.opened + 'T00:00:00Z'), ref = new Date('2026-09-30T00:00:00Z');
+      const yrs = (ref - o) / (365.25 * 864e5);
+      age = yrs >= 0 ? yrs.toFixed(1) + ' yrs' : 'Presale';
+      sub = 'Opened ' + si.opened + (si.opened_source === 'inferred' ? ' (estimated)' : '') + (si.status === 'closed' ? ' · closed' : '');
+    }
+    k4 = `<div class="kpi-card"><div class="kpi-card-label">Studio age · Sep 2026</div><div class="kpi-card-val">${age}</div><div class="kpi-sub">${esc(sub)}</div></div>`;
+  }
+  document.getElementById('kpis').innerHTML = k1 + k2 + k3 + k4;
+}
+
+// ── monthly by stage ──
+function renderStage() {
+  const col = COL[scen], PH = ['Established', 'First 3 months', 'Presale'], by = {};
+  D.monthly_by_studio.forEach(r => {
+    if (studio && r.studio !== studio) return;
+    by[r.month] = by[r.month] || { Established:0, 'First 3 months':0, Presale:0 };
+    by[r.month][r.phase] += r[col];
+  });
+  const months = [];
+  for (let y = 2023; y <= 2026; y++) for (let m = 1; m <= 12; m++) { const k = `${y}-${String(m).padStart(2, '0')}`; if (k <= '2026-09') months.push(k); }
+  const colors = { Established:C.blue, 'First 3 months':C.yellow, Presale:C.light };
+  chart('chStage', {
+    type: 'bar',
+    data: { labels: months.map(m => MN[+m.slice(5) - 1] + " '" + m.slice(2, 4)),
+      datasets: PH.map(p => ({ label: p, data: months.map(m => by[m] ? Math.round(by[m][p]) : 0), backgroundColor: colors[p], borderColor: p === 'First 3 months' ? '#b8c900' : colors[p], borderWidth: p === 'First 3 months' ? 0.5 : 0, borderRadius: 2, stack: 's' })) },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false },
+        tooltip: { mode: 'index', intersect: false, callbacks: { footer: items => 'Total: ' + fmtN(items.reduce((a, i) => a + i.parsed.y, 0)) } } },
+      scales: { x: { stacked: true, grid: { display: false }, ticks: { autoSkip: true, maxTicksLimit: 12, maxRotation: 0 } },
+        y: { stacked: true, grid: { color: C.grid }, border: { display: false }, ticks: { callback: v => v.toLocaleString() } } } },
+    plugins: [{ id: 'mbo', afterDraw(c) {
+      const i = months.indexOf('2025-12'); if (i < 0) return;
+      const x = c.scales.x.getPixelForValue(i) - c.scales.x.width / months.length / 2, { top, bottom } = c.chartArea, ctx = c.ctx;
+      ctx.save(); ctx.strokeStyle = C.muted; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke();
+      ctx.setLineDash([]); ctx.fillStyle = C.muted; ctx.font = "italic 600 11px 'Oswald', sans-serif"; ctx.fillText('MBO', x + 4, top + 10); ctx.restore();
+    } }],
+  });
+}
+
+// ── seasonality ──
+function renderSeason() {
+  const rows = D.seasonality.filter(r => r.scenario === scen).sort((a, b) => a.month_num - b.month_num);
+  const ds = [
+    { label: '2023–24', data: rows.map(r => r.index), borderColor: C.blue, backgroundColor: C.blue, borderWidth: 2.5, pointRadius: 3, tension: 0 },
+    { label: '2025', data: rows.map(r => has(r.check_2025) ? r.check_2025 : null), borderColor: C.muted, backgroundColor: C.muted, borderDash: [5, 4], borderWidth: 1.5, pointRadius: 0, tension: 0 },
+    { label: '2026 so far', data: rows.map(r => has(r.check_2026) ? r.check_2026 : null), borderColor: C.ink, backgroundColor: C.ink, borderWidth: 2, pointRadius: 2.5, tension: 0 },
+  ];
+  let legend = '<span><i class="ln" style="background:#00A3E0"></i>2023–24, all studios</span><span><i class="dash"></i>2025</span><span><i class="ln" style="background:#1a1a2e"></i>2026 so far</span>';
+  if (studio) {
+    const sr = D.seasonality_by_studio.filter(r => r.studio === studio && r.scenario === scen).sort((a, b) => a.month_num - b.month_num);
+    if (sr.length) {
+      ds.unshift({ label: studio, data: sr.map(r => r.index), borderColor: '#F28C28', backgroundColor: '#F28C28', borderWidth: 2.5, pointRadius: 3, tension: 0 });
+      legend = `<span><i class="ln" style="background:#F28C28"></i>${esc(studio)}</span>` + legend;
+    } else legend = `<span style="color:#b25e00">${esc(studio)} has no full established year in 2023–24</span>` + legend;
+  }
+  document.getElementById('seasonLegend').innerHTML = legend;
+  chart('chSeason', {
+    type: 'line', data: { labels: MN, datasets: ds },
+    options: { maintainAspectRatio: false, spanGaps: false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: i => i.parsed.y === null ? null : `${i.dataset.label}: ${i.parsed.y.toFixed(2)}` } } },
+      scales: baseScales(v => v.toFixed(1)) },
+    plugins: [refLine(1)],
+  });
+}
+function refLine(v) {
+  return { id: 'ref' + v, beforeDatasetsDraw(c) {
+    const y = c.scales.y.getPixelForValue(v), { left, right } = c.chartArea, ctx = c.ctx;
+    if (y < c.chartArea.top || y > c.chartArea.bottom) return;
+    ctx.save(); ctx.strokeStyle = '#c0d4df'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke(); ctx.restore();
+  } };
+}
+
+function heatColor(v) {
+  const lerp = (a, b, t) => Math.round(a + (b - a) * t);
+  if (v < 1) { const t = Math.max(0, Math.min(1, (1 - v) / 0.4)); return `rgb(${lerp(255, 236, t)},${lerp(255, 120, t)},${lerp(255, 120, t)})`; }
+  const t = Math.max(0, Math.min(1, (v - 1) / 0.4)); return `rgb(${lerp(255, 0, t)},${lerp(255, 163, t)},${lerp(255, 224, t)})`;
+}
+function renderHeat() {
+  const rows = D.seasonality_by_studio.filter(r => r.scenario === scen);
+  const studios = [...new Set(rows.map(r => r.studio))].sort();
+  let h = '<thead><tr><th>Studio</th>' + MN.map(m => `<th>${m}</th>`).join('') + '</tr></thead><tbody>';
+  studios.forEach(s => {
+    const v = rows.filter(r => r.studio === s).sort((a, b) => a.month_num - b.month_num);
+    const trc = studio ? (s === studio ? 'sel' : 'dim') : '';
+    h += `<tr class="${trc}"><td>${esc(s)}</td>` + v.map(r => `<td style="background:${heatColor(r.index)};color:${r.index >= 1.3 ? '#fff' : '#1a1a2e'}" title="${esc(s)} · ${r.month}: ${r.index.toFixed(2)}">${r.index.toFixed(2)}</td>`).join('') + '</tr>';
+  });
+  document.getElementById('heat').innerHTML = h + '</tbody>';
+}
+
+// ── growth ──
+function renderYoy() {
+  const comps = ['2024 vs 2023', '2025 vs 2024', '2026 vs 2025'];
+  const rows = comps.map(c => yoyRow(c));
+  document.getElementById('yoyTitle').textContent = (studio ? studio + ' — ' : '') + 'Same-store year over year, Jan–Sep';
+  chart('chYoy', {
+    type: 'bar',
+    data: { labels: comps, datasets: [
+      { label: 'YoY', data: rows.map(r => r ? r.yoy * 100 : null), backgroundColor: rows.map(r => r && r.yoy < 0 ? C.red : C.blue), borderRadius: 4, maxBarThickness: 46 },
+      { label: 'Best case', data: rows.map(r => r && has(r.yoy_upper) ? r.yoy_upper * 100 : null), backgroundColor: rows.map(r => r && has(r.yoy_upper) && r.yoy_upper < 0 ? 'rgba(211,47,47,.35)' : 'rgba(0,163,224,.35)'), borderRadius: 4, maxBarThickness: 46 },
+    ] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: i => i.parsed.y === null ? null : `${i.dataset.label}: ${fmtP(i.parsed.y / 100)}`,
+          afterBody: items => { const r = rows[items[0].dataIndex]; return r ? `${fmtN(r.prior)} → ${fmtN(r.current)}` : ''; } } } },
+      scales: baseScales(v => (v > 0 ? '+' : '') + v + '%') },
+    plugins: [refLine(0)],
+  });
+}
+function renderTotals() {
+  let years = [2023, 2024, 2025, 2026], vals;
+  if (!studio) {
+    vals = years.map(y => (D.company_totals.find(r => r.year === y) || {}).leads_jan_sep || 0);
+    document.getElementById('totTitle').textContent = 'Company leads, Jan–Sep';
+    document.getElementById('totNote').textContent = 'All studios including new and presale, all sources. 2026 is MBO first-time leads, deduplicated.';
+  } else {
+    const t = janSepByYear(); vals = years.map(y => Math.round(t[y] || 0));
+    document.getElementById('totTitle').textContent = studio + ' — leads Jan–Sep';
+    document.getElementById('totNote').textContent = 'All months of this studio, including presale and the first 3 months, for the selected lead sources.';
+  }
+  chart('chTot', {
+    type: 'bar',
+    data: { labels: years.map(String), datasets: [{ data: vals, backgroundColor: years.map(y => y === 2026 ? C.blue : C.light), borderRadius: 4, maxBarThickness: 46 }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: i => { const p = vals[i.dataIndex - 1]; return fmtN(i.parsed.y) + (p ? ` (${fmtP(i.parsed.y / p - 1)} vs ${years[i.dataIndex - 1]})` : ''); } } } },
+      scales: baseScales(v => v.toLocaleString()) },
+  });
+}
+
+// ── studio age ──
+function renderAge() {
+  const rows = D.cohort_age.filter(r => r.scenario === scen).sort((a, b) => a.age_year - b.age_year);
+  const labels = rows.map(r => 'Year ' + r.age_year);
+  const ds = [{ label: 'All studios', data: rows.map(r => r.index), borderColor: C.blue, borderWidth: 2.5, tension: 0,
+    pointRadius: 4.5, pointBorderWidth: 2, pointBorderColor: C.blue, pointBackgroundColor: rows.map(r => !has(r.studios) || r.studios >= 5 ? C.blue : '#fff'),
+    segment: { borderDash: ctx => { const r = rows[ctx.p1DataIndex]; return r && has(r.studios) && r.studios < 5 ? [5, 4] : undefined; } } }];
+  let legend = '<span><i class="ln" style="background:#00A3E0"></i>All studios</span>';
+  if (studio) {
+    const steps = D.cohort_by_studio.filter(r => r.studio === studio && r.scenario === scen).sort((a, b) => a.age_year - b.age_year);
+    if (steps.length) {
+      const y0 = steps[0].age_year - 1, base = rows.find(r => r.age_year === y0);
+      let idx = base ? base.index : 100; const pts = rows.map(() => null);
+      const at = y => rows.findIndex(r => r.age_year === y);
+      if (at(y0) >= 0) pts[at(y0)] = idx;
+      steps.forEach(s => { idx = idx * (1 + s.step); if (at(s.age_year) >= 0) pts[at(s.age_year)] = Math.round(idx * 10) / 10; });
+      ds.push({ label: studio, data: pts, borderColor: '#F28C28', backgroundColor: '#F28C28', borderWidth: 2.5, pointRadius: 3.5, tension: 0, spanGaps: true });
+      legend += `<span><i class="ln" style="background:#F28C28"></i>${esc(studio)} (its own steps, started on the average line)</span>`;
+    } else legend += `<span style="color:#b25e00">${esc(studio)}: no year-over-year pairs in 2023–25</span>`;
+  }
+  document.getElementById('ageLegend').innerHTML = legend;
+  chart('chAge', {
+    type: 'line', data: { labels, datasets: ds },
+    options: { maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: { callbacks: {
+        label: i => i.parsed.y === null ? null : `${i.dataset.label}: ${Math.round(i.parsed.y)}`,
+        afterBody: items => { const r = rows[items[0].dataIndex]; return r && has(r.step) ? `Average step ${fmtP(r.step)} · ${r.studios} studios` : 'Baseline'; } } } },
+      scales: baseScales(v => v) },
+    plugins: [refLine(100)],
+  });
+}
+function renderLife() {
+  const rows = D.lifecycle.filter(r => r.scenario === scen).sort((a, b) => a.months_since_open - b.months_since_open);
+  const t = rows.map(r => r.months_since_open);
+  const labels = t.map(m => m === 0 ? 'Open' : (m > 0 ? '+' : '') + m);
+  const ds = [{ label: 'Average', data: rows.map(r => r.index), borderColor: C.blue, borderWidth: 2.5, pointRadius: 2, tension: 0 }];
+  let legend = '<span><i class="ln" style="background:#00A3E0"></i>Average of studios opened since mid-2023</span>';
+  if (studio) {
+    const sr = D.lifecycle_by_studio.filter(r => r.studio === studio && r.scenario === scen);
+    if (sr.length) {
+      const m = new Map(sr.map(r => [r.months_since_open, r.index]));
+      ds.push({ label: studio, data: t.map(x => m.has(x) ? m.get(x) : null), borderColor: '#F28C28', borderWidth: 2.5, pointRadius: 2, tension: 0 });
+      legend += `<span><i class="ln" style="background:#F28C28"></i>${esc(studio)}</span>`;
+    } else legend += `<span style="color:#b25e00">${esc(studio)} did not open in this window</span>`;
+  }
+  document.getElementById('lifeLegend').innerHTML = legend;
+  chart('chLife', {
+    type: 'line', data: { labels, datasets: ds },
+    options: { maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: { callbacks: {
+        title: items => { const m = t[items[0].dataIndex]; return m === 0 ? 'Opening month' : `${m > 0 ? '+' : ''}${m} months`; },
+        label: i => i.parsed.y === null ? null : `${i.dataset.label}: ${Math.round(i.parsed.y)}`,
+        afterBody: items => `${rows[items[0].dataIndex].studios} studios in average` } } },
+      scales: baseScales(v => v, { beginAtZero: true }) },
+    plugins: [refLine(100), { id: 'bands', beforeDatasetsDraw(c) {
+      const { top, bottom } = c.chartArea, x = c.scales.x, ctx = c.ctx, step = (x.getPixelForValue(1) - x.getPixelForValue(0)) / 2;
+      const i0 = t.indexOf(0), i3 = t.indexOf(3);
+      if (i0 < 0) return;
+      ctx.save();
+      ctx.fillStyle = 'rgba(153,218,243,.18)'; ctx.fillRect(c.chartArea.left, top, x.getPixelForValue(i0) - step - c.chartArea.left, bottom - top);
+      ctx.fillStyle = 'rgba(221,255,0,.22)'; ctx.fillRect(x.getPixelForValue(i0) - step, top, (i3 >= 0 ? x.getPixelForValue(i3) - step : x.getPixelForValue(i0) + 5 * step) - (x.getPixelForValue(i0) - step), bottom - top);
+      ctx.fillStyle = '#5a7a8a'; ctx.font = "italic 600 11px 'Oswald', sans-serif";
+      ctx.fillText('PRESALE', c.chartArea.left + 6, top + 12); ctx.fillText('FIRST 3', x.getPixelForValue(i0) - step + 4, top + 12);
+      ctx.restore();
+    } }],
+  });
+}
+
+// ── table ──
+const TCOLS = [
+  { key:'studio', label:'Studio' }, { key:'opened', label:'Opened' }, { key:'prior', label:'Prior year', num:true },
+  { key:'current', label:'This year', num:true }, { key:'yoy', label:'YoY', num:true }, { key:'yoy_upper', label:'Best case', num:true },
+  { key:'months', label:'Months', num:true }, { key:'bar', label:'' },
+];
+function renderTable() {
+  _tableRows = D.yoy_by_studio.filter(r => r.scenario === scen && r.comparison === cmp);
+  const k = _sort.key, d = _sort.dir;
+  _tableRows.sort((a, b) => { const x = a[k], y = b[k]; if (!has(x)) return 1; if (!has(y)) return -1; return (typeof x === 'string' ? x.localeCompare(y) : x - y) * d; });
+  const ext = Math.max(0.4, ..._tableRows.map(r => Math.abs(r.yoy || 0)));
+  const sx = v => 50 + Math.max(-1, Math.min(1, v / ext)) * 50;
+  const showU = cmp === '2026 vs 2025' && scen !== 'All sources';
+  let h = '<thead><tr>' + TCOLS.filter(c => c.key !== 'yoy_upper' || showU).map(c => `<th class="${c.num ? 'num' : ''}" data-k="${c.key}" ${c.key === k ? `aria-sort="${d > 0 ? 'ascending' : 'descending'}"` : ''}>${c.label}${c.key === k ? (d > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('') + '</tr></thead><tbody>';
+  if (!_tableRows.length) h += '<tr><td colspan="8" class="empty-msg">No studios with comparable months.</td></tr>';
+  _tableRows.forEach(r => {
+    const bl = Math.min(sx(0), sx(r.yoy)), bw = Math.abs(sx(r.yoy) - sx(0));
+    h += `<tr class="${r.studio === studio ? 'sel' : ''}"><td>${esc(r.studio)}</td><td>${r.opened ? esc(r.opened) : ''}</td>`
+      + `<td class="num">${fmtN(r.prior)}</td><td class="num">${fmtN(r.current)}</td><td class="num ${cls(r.yoy)}">${has(r.yoy) ? fmtP(r.yoy) : ''}</td>`
+      + (showU ? `<td class="num">${has(r.yoy_upper) ? fmtP(r.yoy_upper) : ''}</td>` : '')
+      + `<td class="num">${r.months}</td><td><div class="cellbar"><i style="left:${bl}%;width:${bw}%;background:${r.yoy < 0 ? C.red : C.blue}"></i><s style="left:50%"></s></div></td></tr>`;
+  });
+  const t = document.getElementById('studioTable');
+  t.innerHTML = h + '</tbody>';
+  t.querySelectorAll('th[data-k]').forEach(th => th.onclick = () => {
+    const key = th.dataset.k; if (key === 'bar') return;
+    _sort = { key, dir: _sort.key === key ? -_sort.dir : (key === 'studio' || key === 'opened' ? 1 : -1) };
+    renderTable();
+  });
+  const sel = t.querySelector('tr.sel'), box = t.parentElement;
+  if (sel) box.scrollTop = Math.max(0, sel.offsetTop - box.clientHeight / 2);
+}
+function downloadCSV() {
+  const head = ['Studio', 'Opened', 'Comparison', 'Lead sources', 'Prior year', 'This year', 'YoY', 'Best case', 'Months'];
+  const lines = [head.join(',')].concat(_tableRows.map(r => [r.studio, r.opened || '', r.comparison, r.scenario, r.prior, r.current,
+    has(r.yoy) ? r.yoy.toFixed(4) : '', has(r.yoy_upper) ? r.yoy_upper.toFixed(4) : '', r.months].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')));
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv' }));
+  a.download = `lead-yoy-by-studio-${cmp.replace(/ /g, '')}.csv`; a.click();
+}
+
+loadData();
+</script>
+</body>
+</html>
