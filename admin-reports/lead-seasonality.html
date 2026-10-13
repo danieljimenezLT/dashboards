@@ -96,6 +96,13 @@
     <div class="chart-box"><canvas id="chStage"></canvas></div>
   </div>
 
+  <div class="chart-card">
+    <div class="chart-card-title" id="avgTitle">Average monthly leads per established studio</div>
+    <p class="ls-note" id="avgNote">Leads per month ÷ number of established studios that month (presale and first 3 months left out), one line per year. The studio mix changes as studios open and close.</p>
+    <div class="legend-row" id="avgLegend"></div>
+    <div class="chart-box"><canvas id="chAvg"></canvas></div>
+  </div>
+
   <div class="ls-sec">Seasonality</div>
   <div class="two-col">
     <div class="chart-card" style="margin-bottom:0">
@@ -241,7 +248,7 @@ function buildStudioSelect() {
 }
 
 function render() {
-  renderHeader(); renderStage(); renderSeason(); renderHeat(); renderYoy(); renderTotals(); renderAge(); renderLife(); renderTable();
+  renderHeader(); renderStage(); renderAvg(); renderSeason(); renderHeat(); renderYoy(); renderTotals(); renderAge(); renderLife(); renderTable();
 }
 
 // ── helpers over the snapshot ──
@@ -341,6 +348,33 @@ function renderStage() {
       ctx.save(); ctx.strokeStyle = C.muted; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke();
       ctx.setLineDash([]); ctx.fillStyle = C.muted; ctx.font = "italic 600 11px 'Oswald', sans-serif"; ctx.fillText('MBO', x + 4, top + 10); ctx.restore();
     } }],
+  });
+}
+
+// ── average leads per established studio, by calendar month and year ──
+function renderAvg() {
+  const col = COL[scen], sum = {}, cnt = {};
+  D.monthly_by_studio.forEach(r => {
+    if (r.phase !== 'Established' || (studio && r.studio !== studio)) return;
+    sum[r.month] = (sum[r.month] || 0) + r[col];
+    cnt[r.month] = (cnt[r.month] || 0) + 1;
+  });
+  const years = [2023, 2024, 2025, 2026], colors = { 2023:'#c0d4df', 2024:C.light, 2025:C.blue, 2026:C.ink };
+  const ds = years.map(y => ({
+    label: String(y), borderColor: colors[y], backgroundColor: colors[y], borderWidth: y >= 2025 ? 2.5 : 2, pointRadius: y === 2026 ? 3 : 2, tension: 0,
+    data: MN.map((_, i) => { const m = `${y}-${String(i + 1).padStart(2, '0')}`; return cnt[m] ? Math.round(sum[m] / cnt[m]) : null; }),
+  }));
+  document.getElementById('avgTitle').textContent = studio ? `${studio} — monthly leads while established` : 'Average monthly leads per established studio';
+  document.getElementById('avgNote').textContent = studio
+    ? "This studio's leads per month, one line per year, counting only months after its first 3 months."
+    : 'Leads per month ÷ number of established studios that month (presale and first 3 months left out), one line per year. The studio mix changes as studios open and close.';
+  document.getElementById('avgLegend').innerHTML = years.map(y => `<span><i class="ln" style="background:${colors[y]}"></i>${y}${y === 2026 ? ' (MBO, deduplicated)' : ''}</span>`).join('');
+  chart('chAvg', {
+    type: 'line', data: { labels: MN, datasets: ds },
+    options: { maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: { callbacks: {
+        label: i => { if (i.parsed.y === null) return null; const m = `${i.dataset.label}-${String(i.dataIndex + 1).padStart(2, '0')}`; return `${i.dataset.label}: ${fmtN(i.parsed.y)}` + (studio ? '' : ` (${cnt[m]} studios)`); } } } },
+      scales: baseScales(v => v.toLocaleString(), { beginAtZero: true }) },
   });
 }
 
