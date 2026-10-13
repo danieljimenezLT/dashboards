@@ -90,7 +90,7 @@ CAMPAIGNS = [
         "product":       "2 Weeks for $40",
         "date_from":     "2026-08-25",
         "date_to":       "2026-09-07",
-        "post_promo_to": "2026-09-28",
+        "post_promo_to": "2026-10-07",
         # Same ~25-studio allowlist fetch_2weeks_data.py used — this promo
         # ran at open studios only, not NSO/presale locations (e.g. Naples -
         # Mercato sold the same-named product during its own presale, but
