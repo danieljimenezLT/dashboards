@@ -418,9 +418,10 @@
       "name": "Herriman",
       "code": "UT-001",
       "state": "UT",
-      "status": "nso",
+      "status": "open",
+      "nso_track": true,
       "agency": "FFM",
-      "excluded_default": true,
+      "excluded_default": false,
       "meta": {
         "page_id": "1016504601542354",
         "ad_account_id": "act_28850449604546812"

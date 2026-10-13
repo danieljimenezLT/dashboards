@@ -296,7 +296,9 @@ function buildSourceSelect(menuId, labelId, items, defaultExcluded) {
   updateLabel(menuId, labelId, items);
 }
 
-function buildMultiSelect(menuId, labelId, items, defaultExcluded) {
+// recentlyOpened (optional): studios pulled out of Open Studios into their own
+// "Recently Opened" category. Callers decide whether they start checked.
+function buildMultiSelect(menuId, labelId, items, defaultExcluded, recentlyOpened = []) {
   const menu = document.getElementById(menuId);
   menu.innerHTML = '';
   const allDiv = document.createElement('div');
@@ -307,9 +309,10 @@ function buildMultiSelect(menuId, labelId, items, defaultExcluded) {
 
   const itemSafeId = item => `ms_${menuId}_${item.replace(/[^a-z0-9]/gi,'_')}`;
 
-  // Open Studios first, NSO second, Closed third — alphabetical within each category
+  // Open Studios first, then Recently Opened (if any), NSO, Closed — alphabetical within each category
   const categories = [
-    { key: 'os',     label: 'Open Studios', items: items.filter(i => !NSO_STUDIOS.includes(i) && !CLOSED_STUDIOS.includes(i)).slice().sort() },
+    { key: 'os',     label: 'Open Studios', items: items.filter(i => !NSO_STUDIOS.includes(i) && !CLOSED_STUDIOS.includes(i) && !recentlyOpened.includes(i)).slice().sort() },
+    { key: 'recent', label: 'Recently Opened', items: items.filter(i => recentlyOpened.includes(i) && !NSO_STUDIOS.includes(i) && !CLOSED_STUDIOS.includes(i)).slice().sort() },
     { key: 'nso',    label: 'NSO',          items: items.filter(i =>  NSO_STUDIOS.includes(i)).slice().sort() },
     { key: 'closed', label: 'Closed',       items: items.filter(i =>  CLOSED_STUDIOS.includes(i)).slice().sort() },
   ];

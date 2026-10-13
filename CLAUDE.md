@@ -157,7 +157,6 @@ These are excluded by default in all dashboards (override if needed):
 - Dallas - Uptown
 - Dunwoody
 - Fort Myers
-- Herriman
 - Middletown
 - Naples - Mercato
 - Nashville - Capitol View
