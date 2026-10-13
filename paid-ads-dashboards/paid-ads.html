@@ -682,6 +682,8 @@
 
 </div><!-- /.main -->
 
+<script src="../users.js"></script>
+<script src="../shared/auth.js"></script>
 <script>
 let DATA = null;
 let ANALYSIS = null;
@@ -2003,7 +2005,16 @@ async function runLocalAnalysis() {
 }
 // ───────────────────────────────────────────────────────────────────────────
 
-bootstrap();
+// Admin only (linked from Admin Reports). The user / sign-out block goes
+// before the mobile hamburger so the menu button stays at the far right.
+const _authUser = checkAuth();
+if (_authUser && _authUser.role !== 'admin') location.replace('../home.html');
+else if (_authUser) {
+  renderAuthNav(_authUser);
+  const _nav = document.querySelector('.nav'), _ham = document.getElementById('hamburger');
+  if (_nav && _ham) _nav.insertBefore(_nav.querySelector('.nav-user'), _ham);
+  bootstrap();
+}
 </script>
 </body>
 </html>
