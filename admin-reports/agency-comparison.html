@@ -117,7 +117,7 @@
       <div class="chart-box"><canvas id="chFunnel"></canvas></div>
     </div>
     <div class="chart-card" style="margin-bottom:0">
-      <div class="chart-card-title">Conversion rates</div>
+      <div class="chart-card-title" id="chConvTitle">Conversion rates</div>
       <div class="legend-row" id="lg2"></div>
       <div class="chart-box"><canvas id="chConv"></canvas></div>
     </div>
@@ -129,7 +129,7 @@
       <div class="chart-box"><canvas id="chCpl"></canvas></div>
     </div>
     <div class="chart-card" style="margin-bottom:0">
-      <div class="chart-card-title">Cost per member</div>
+      <div class="chart-card-title" id="chCpmTitle">Cost per member</div>
       <div class="legend-row" id="lg4"></div>
       <div class="chart-box"><canvas id="chCpm"></canvas></div>
     </div>
@@ -161,7 +161,7 @@ const PAID_SRC  = { 'Meta Ads':'meta', 'Google Ads':'google' };
 const DEFAULT_FROM = '2026-09-01', DEFAULT_TO = '2026-09-30';
 const EXCL_SOURCES = ['ClassPass / Platforms', 'Grassroots'];
 
-let RAW = null, SPEND = null, META = null, GADS = null, REG = null;
+let RAW = null, SPEND = null, META = null, GADS = null, NSO_SALES = null, REG = null;
 let STUDIOS = [];                 // [{name, code, status, agency}] with an agency, not closed
 let statusMode = 'open', viewMode = 'avg', tableAgency = 'ALL';
 let _charts = {}, _tableRows = [], _sort = { key:'spend', dir:-1 };
@@ -179,9 +179,10 @@ async function loadData() {
   if (_authUser.role !== 'admin') { location.replace('../home.html'); return; }
   renderAuthNav(_authUser);
 
-  [RAW, SPEND, META, GADS] = await Promise.all([
+  [RAW, SPEND, META, GADS, NSO_SALES] = await Promise.all([
     getJSON('../data.json'), getJSON('../spend-data.json'),
     getJSON('../meta-ads-data.json'), getJSON('../google-ads-data.json'),
+    getJSON('../nso-dashboard/nso_sales_data.json'),
   ]);
   REG = await loadStudiosRegistry('../');
   RAW = RAW || { daily_detail: [], sources: [] };
@@ -297,7 +298,8 @@ function emptyAgg() {
            leads:0, ft:0, mem:0,
            paidLeads:0, paidFt:0, paidMem:0,
            mLeadsSf:0, mFtSf:0, mMemSf:0, gLeadsSf:0, gFtSf:0, gMemSf:0,
-           mImp:0, mClk:0, mLeads:0, gImp:0, gClk:0, gConv:0, gCalls:0 };
+           mImp:0, mClk:0, mLeads:0, gImp:0, gClk:0, gConv:0, gCalls:0,
+           pre:0, canc:0, netPre:0, paidNetPre:0, mNetPre:0, gNetPre:0 };
 }
 function addAgg(a, b) { for (const k in a) a[k] += b[k] || 0; return a; }
 
@@ -335,6 +337,18 @@ function perStudio(from, to, srcSel) {
     if (!o || !inRange(r.date)) continue;
     o.gImp += r.impressions || 0; o.gClk += r.clicks || 0; o.gConv += r.leads || 0; o.gCalls += r.calls || 0;
   }
+  // NSO presales (NSO view): net = presales − cancellations, by source like leads
+  for (const st of Object.values((NSO_SALES && NSO_SALES.studios) || {})) {
+    const o = byName[codeToName[st.code]] || byName[(st.name || '').replace(/^SWEAT440\s+/, '')];
+    if (!o) continue;
+    for (const r of st.daily || []) {
+      if (!inRange(r.date)) continue;
+      const P = r.presales || 0, C = r.cancellations || 0;
+      if (srcSet.has(r.source)) { o.pre += P; o.canc += C; o.netPre += P - C; }
+      const p = PAID_SRC[r.source];
+      if (p) { o.paidNetPre += P - C; if (p === 'meta') o.mNetPre += P - C; else o.gNetPre += P - C; }
+    }
+  }
   return Object.values(byName).map(o => {
     o.spend = o.metaSpend + o.googleSpend;
     o.active = o.spend > 0;          // only studios the agency actually ran ads for
@@ -368,10 +382,13 @@ const fmtUSD0 = v => v == null || !isFinite(v) ? null : '$' + Math.round(v).toLo
 const fmtInt  = v => v == null || !isFinite(v) ? null : (Math.abs(v) < 100 && v % 1 ? v.toFixed(1) : Math.round(v).toLocaleString('en-US'));
 const fmtPct  = v => v == null || !isFinite(v) ? null : (v * 100).toFixed(1) + '%';
 const div     = (a, b) => b ? a / b : null;
+const perPos  = (a, b) => b > 0 ? a / b : null;   // cost per net presale (net can be ≤ 0)
 
 // Scorecard rows. vol: volume metric (divided by the column's studio count in
 // "Avg per studio" mode, using nKey as the denominator); better: which
-// direction wins the row's highlight.
+// direction wins the row's highlight; st: only shown for Open or NSO studios
+// (NSO studios are in presale — no first timers / members yet, so their funnel
+// ends at net presales).
 const SC_ROWS = [
   { sec: 'Studios' },
   { label: 'Studios with ad spend', hint: 'studios with no Meta / Google spend in the period are left out', f: a => a.n, fmt: v => v, raw: true, sub: a => a.nAll > a.n ? `of ${a.nAll}` : '' },
@@ -384,22 +401,30 @@ const SC_ROWS = [
 
   { sec: 'Funnel — selected sources' },
   { label: 'Leads', f: a => a.leads, fmt: fmtInt, vol: 'n', better: 'high' },
-  { label: 'First Timers', f: a => a.ft, fmt: fmtInt, vol: 'n', better: 'high' },
-  { label: 'Members', f: a => a.mem, fmt: fmtInt, vol: 'n', better: 'high' },
-  { label: 'Lead → First Timer', f: a => div(a.ft, a.leads), fmt: fmtPct, better: 'high' },
-  { label: 'First Timer → Member', f: a => div(a.mem, a.ft), fmt: fmtPct, better: 'high' },
-  { label: 'Lead → Member', f: a => div(a.mem, a.leads), fmt: fmtPct, better: 'high' },
+  { st: 'open', label: 'First Timers', f: a => a.ft, fmt: fmtInt, vol: 'n', better: 'high' },
+  { st: 'open', label: 'Members', f: a => a.mem, fmt: fmtInt, vol: 'n', better: 'high' },
+  { st: 'open', label: 'Lead → First Timer', f: a => div(a.ft, a.leads), fmt: fmtPct, better: 'high' },
+  { st: 'open', label: 'First Timer → Member', f: a => div(a.mem, a.ft), fmt: fmtPct, better: 'high' },
+  { st: 'open', label: 'Lead → Member', f: a => div(a.mem, a.leads), fmt: fmtPct, better: 'high' },
+  { st: 'nso',  label: 'Presales', f: a => a.pre, fmt: fmtInt, vol: 'n', better: 'high' },
+  { st: 'nso',  label: 'Cancellations', f: a => a.canc, fmt: fmtInt, vol: 'n' },
+  { st: 'nso',  label: 'Net presales', hint: 'presales − cancellations', f: a => a.netPre, fmt: fmtInt, vol: 'n', better: 'high' },
+  { st: 'nso',  label: 'Lead → net presale', f: a => div(a.netPre, a.leads), fmt: fmtPct, better: 'high' },
   { label: 'Blended cost per lead', hint: 'ad spend ÷ leads', f: a => div(a.spend, a.leads), fmt: fmtUSD, better: 'low' },
-  { label: 'Blended cost per member', hint: 'ad spend ÷ members', f: a => div(a.spend, a.mem), fmt: fmtUSD, better: 'low' },
+  { st: 'open', label: 'Blended cost per member', hint: 'ad spend ÷ members', f: a => div(a.spend, a.mem), fmt: fmtUSD, better: 'low' },
+  { st: 'nso',  label: 'Blended cost per net presale', hint: 'ad spend ÷ net presales', f: a => perPos(a.spend, a.netPre), fmt: fmtUSD, better: 'low' },
 
   { sec: 'Paid funnel', hint: 'source = Meta Ads or Google Ads (ignores the Sources filter)' },
   { label: 'Paid leads', f: a => a.paidLeads, fmt: fmtInt, vol: 'n', better: 'high' },
-  { label: 'Paid First Timers', f: a => a.paidFt, fmt: fmtInt, vol: 'n', better: 'high' },
-  { label: 'Paid members', f: a => a.paidMem, fmt: fmtInt, vol: 'n', better: 'high' },
-  { label: 'Paid lead → member', f: a => div(a.paidMem, a.paidLeads), fmt: fmtPct, better: 'high' },
+  { st: 'open', label: 'Paid First Timers', f: a => a.paidFt, fmt: fmtInt, vol: 'n', better: 'high' },
+  { st: 'open', label: 'Paid members', f: a => a.paidMem, fmt: fmtInt, vol: 'n', better: 'high' },
+  { st: 'open', label: 'Paid lead → member', f: a => div(a.paidMem, a.paidLeads), fmt: fmtPct, better: 'high' },
+  { st: 'nso',  label: 'Paid net presales', f: a => a.paidNetPre, fmt: fmtInt, vol: 'n', better: 'high' },
+  { st: 'nso',  label: 'Paid lead → net presale', f: a => div(a.paidNetPre, a.paidLeads), fmt: fmtPct, better: 'high' },
   { label: 'Paid cost per lead', f: a => div(a.spend, a.paidLeads), fmt: fmtUSD, better: 'low' },
-  { label: 'Paid cost per First Timer', f: a => div(a.spend, a.paidFt), fmt: fmtUSD, better: 'low' },
-  { label: 'Paid cost per member', f: a => div(a.spend, a.paidMem), fmt: fmtUSD, better: 'low' },
+  { st: 'open', label: 'Paid cost per First Timer', f: a => div(a.spend, a.paidFt), fmt: fmtUSD, better: 'low' },
+  { st: 'open', label: 'Paid cost per member', f: a => div(a.spend, a.paidMem), fmt: fmtUSD, better: 'low' },
+  { st: 'nso',  label: 'Paid cost per net presale', f: a => perPos(a.spend, a.paidNetPre), fmt: fmtUSD, better: 'low' },
 
   { sec: 'Meta Ads' },
   { label: 'Studios with Meta spend', f: a => a.nMeta, fmt: v => v, raw: true },
@@ -413,8 +438,10 @@ const SC_ROWS = [
   { label: 'CPL (Meta-reported)', f: a => div(a.metaSpend, a.mLeads), fmt: fmtUSD, better: 'low' },
   { label: 'Leads (source = Meta Ads)', hint: 'MindBody / Snowflake', f: a => a.mLeadsSf, fmt: fmtInt, vol: 'nMeta', better: 'high' },
   { label: 'CPL (source = Meta Ads)', f: a => div(a.metaSpend, a.mLeadsSf), fmt: fmtUSD, better: 'low' },
-  { label: 'Members (source = Meta Ads)', f: a => a.mMemSf, fmt: fmtInt, vol: 'nMeta', better: 'high' },
-  { label: 'Cost per member (Meta)', f: a => div(a.metaSpend, a.mMemSf), fmt: fmtUSD, better: 'low' },
+  { st: 'open', label: 'Members (source = Meta Ads)', f: a => a.mMemSf, fmt: fmtInt, vol: 'nMeta', better: 'high' },
+  { st: 'open', label: 'Cost per member (Meta)', f: a => div(a.metaSpend, a.mMemSf), fmt: fmtUSD, better: 'low' },
+  { st: 'nso',  label: 'Net presales (source = Meta Ads)', f: a => a.mNetPre, fmt: fmtInt, vol: 'nMeta', better: 'high' },
+  { st: 'nso',  label: 'Cost per net presale (Meta)', f: a => perPos(a.metaSpend, a.mNetPre), fmt: fmtUSD, better: 'low' },
 
   { sec: 'Google Ads' },
   { label: 'Studios with Google spend', f: a => a.nGoogle, fmt: v => v, raw: true },
@@ -428,8 +455,10 @@ const SC_ROWS = [
   { label: 'Cost per conversion (Google-reported)', f: a => div(a.googleSpend, a.gConv), fmt: fmtUSD, better: 'low' },
   { label: 'Leads (source = Google Ads)', hint: 'MindBody / Snowflake', f: a => a.gLeadsSf, fmt: fmtInt, vol: 'nGoogle', better: 'high' },
   { label: 'CPL (source = Google Ads)', f: a => div(a.googleSpend, a.gLeadsSf), fmt: fmtUSD, better: 'low' },
-  { label: 'Members (source = Google Ads)', f: a => a.gMemSf, fmt: fmtInt, vol: 'nGoogle', better: 'high' },
-  { label: 'Cost per member (Google)', f: a => div(a.googleSpend, a.gMemSf), fmt: fmtUSD, better: 'low' },
+  { st: 'open', label: 'Members (source = Google Ads)', f: a => a.gMemSf, fmt: fmtInt, vol: 'nGoogle', better: 'high' },
+  { st: 'open', label: 'Cost per member (Google)', f: a => div(a.googleSpend, a.gMemSf), fmt: fmtUSD, better: 'low' },
+  { st: 'nso',  label: 'Net presales (source = Google Ads)', f: a => a.gNetPre, fmt: fmtInt, vol: 'nGoogle', better: 'high' },
+  { st: 'nso',  label: 'Cost per net presale (Google)', f: a => perPos(a.googleSpend, a.gNetPre), fmt: fmtUSD, better: 'low' },
 ];
 
 function cellValue(row, agg) {
@@ -476,7 +505,7 @@ function renderScorecard(cols, from, to) {
     `<th class="${c.ref ? 'ref' : ''}" style="--agc:${c.color}">${c.label}${c.sub ? `<small>${c.sub}</small>` : ''}</th>`).join('')}</tr></thead>`;
 
   const nCols = cols.length + 1;
-  const body = SC_ROWS.map(row => {
+  const body = SC_ROWS.filter(row => !row.st || row.st === statusMode).map(row => {
     if (row.sec) return `<tr class="sec"><td colspan="${nCols}">${row.sec}${row.hint ? ` <span style="text-transform:none;font-style:normal;font-family:'Open Sans',sans-serif;font-weight:400;color:#5a7a8a;letter-spacing:0">— ${row.hint}</span>` : ''}</td></tr>`;
     const vals = cols.map(c => cellValue(row, c.agg));
     // Best value across the agency columns.
@@ -518,12 +547,25 @@ function renderCharts(cols) {
   document.getElementById('chFunnelTitle').textContent = viewMode === 'avg' ? 'Funnel — avg per studio' : 'Funnel — totals';
 
   const per = (c, v) => viewMode === 'avg' ? div(v, c.agg.n) : v;
-  draw('chFunnel', ['Leads', 'First Timers', 'Members', 'Paid leads', 'Paid members'], series.map(c => ({
+  const nso = statusMode === 'nso';
+  document.getElementById('chCpmTitle').textContent = nso ? 'Cost per net presale' : 'Cost per member';
+  if (nso) {
+    draw('chFunnel', ['Leads', 'Net presales', 'Paid leads', 'Paid net presales'], series.map(c => ({
+      label: name(c), backgroundColor: color(c),
+      data: [c.agg.leads, c.agg.netPre, c.agg.paidLeads, c.agg.paidNetPre].map(v => per(c, v)),
+    })), v => Math.round(v).toLocaleString('en-US'));
+    draw('chConv', ['Lead → net presale', 'Paid lead → net presale', 'Meta lead → net presale', 'Google lead → net presale'], series.map(c => ({
+      label: name(c), backgroundColor: color(c),
+      data: [div(c.agg.netPre, c.agg.leads), div(c.agg.paidNetPre, c.agg.paidLeads),
+             div(c.agg.mNetPre, c.agg.mLeadsSf), div(c.agg.gNetPre, c.agg.gLeadsSf)].map(v => v == null ? null : v * 100),
+    })), v => v.toFixed(0) + '%', v => v.toFixed(1) + '%');
+  }
+  if (!nso) draw('chFunnel', ['Leads', 'First Timers', 'Members', 'Paid leads', 'Paid members'], series.map(c => ({
     label: name(c), backgroundColor: color(c),
     data: [c.agg.leads, c.agg.ft, c.agg.mem, c.agg.paidLeads, c.agg.paidMem].map(v => per(c, v)),
   })), v => Math.round(v).toLocaleString('en-US'));
 
-  draw('chConv', ['Lead → FT', 'FT → Member', 'Lead → Member', 'Paid lead → member'], series.map(c => ({
+  if (!nso) draw('chConv', ['Lead → FT', 'FT → Member', 'Lead → Member', 'Paid lead → member'], series.map(c => ({
     label: name(c), backgroundColor: color(c),
     data: [div(c.agg.ft, c.agg.leads), div(c.agg.mem, c.agg.ft), div(c.agg.mem, c.agg.leads), div(c.agg.paidMem, c.agg.paidLeads)]
       .map(v => v == null ? null : v * 100),
@@ -537,8 +579,11 @@ function renderCharts(cols) {
 
   draw('chCpm', ['Blended', 'Paid', 'Meta (source)', 'Google (source)'], series.map(c => ({
     label: name(c), backgroundColor: color(c),
-    data: [div(c.agg.spend, c.agg.mem), div(c.agg.spend, c.agg.paidMem), div(c.agg.metaSpend, c.agg.mMemSf),
-           div(c.agg.googleSpend, c.agg.gMemSf)],
+    data: nso
+      ? [perPos(c.agg.spend, c.agg.netPre), perPos(c.agg.spend, c.agg.paidNetPre), perPos(c.agg.metaSpend, c.agg.mNetPre),
+         perPos(c.agg.googleSpend, c.agg.gNetPre)]
+      : [div(c.agg.spend, c.agg.mem), div(c.agg.spend, c.agg.paidMem), div(c.agg.metaSpend, c.agg.mMemSf),
+         div(c.agg.googleSpend, c.agg.gMemSf)],
   })), v => '$' + Math.round(v), v => '$' + Math.round(v).toLocaleString('en-US'));
 }
 
@@ -574,21 +619,30 @@ const TBL_COLS = [
   { key: 'metaSpend', label: 'Meta',            get: s => s.metaSpend, fmt: fmtUSD0 },
   { key: 'googleSpend', label: 'Google',        get: s => s.googleSpend, fmt: fmtUSD0 },
   { key: 'leads',     label: 'Leads',           get: s => s.leads, fmt: fmtInt },
-  { key: 'ft',        label: 'First Timers',    get: s => s.ft, fmt: fmtInt },
-  { key: 'mem',       label: 'Members',         get: s => s.mem, fmt: fmtInt },
-  { key: 'lft',       label: 'Lead→FT',         get: s => div(s.ft, s.leads), fmt: fmtPct },
-  { key: 'ftm',       label: 'FT→Mem',          get: s => div(s.mem, s.ft), fmt: fmtPct },
+  { key: 'ft',        label: 'First Timers',    get: s => s.ft, fmt: fmtInt, st: 'open' },
+  { key: 'mem',       label: 'Members',         get: s => s.mem, fmt: fmtInt, st: 'open' },
+  { key: 'lft',       label: 'Lead→FT',         get: s => div(s.ft, s.leads), fmt: fmtPct, st: 'open' },
+  { key: 'ftm',       label: 'FT→Mem',          get: s => div(s.mem, s.ft), fmt: fmtPct, st: 'open' },
+  { key: 'pre',       label: 'Presales',        get: s => s.pre, fmt: fmtInt, st: 'nso' },
+  { key: 'canc',      label: 'Cancellations',   get: s => s.canc, fmt: fmtInt, st: 'nso' },
+  { key: 'netPre',    label: 'Net presales',    get: s => s.netPre, fmt: fmtInt, st: 'nso' },
+  { key: 'lnp',       label: 'Lead→Net presale', get: s => div(s.netPre, s.leads), fmt: fmtPct, st: 'nso' },
   { key: 'paidLeads', label: 'Paid leads',      get: s => s.paidLeads, fmt: fmtInt },
-  { key: 'paidMem',   label: 'Paid members',    get: s => s.paidMem, fmt: fmtInt },
+  { key: 'paidMem',   label: 'Paid members',    get: s => s.paidMem, fmt: fmtInt, st: 'open' },
+  { key: 'paidNetPre', label: 'Paid net presales', get: s => s.paidNetPre, fmt: fmtInt, st: 'nso' },
   { key: 'pcpl',      label: 'Paid CPL',        get: s => div(s.spend, s.paidLeads), fmt: fmtUSD },
-  { key: 'pcpm',      label: 'Paid cost / member', get: s => div(s.spend, s.paidMem), fmt: fmtUSD0 },
+  { key: 'pcpm',      label: 'Paid cost / member', get: s => div(s.spend, s.paidMem), fmt: fmtUSD0, st: 'open' },
+  { key: 'pcpp',      label: 'Paid cost / net presale', get: s => perPos(s.spend, s.paidNetPre), fmt: fmtUSD0, st: 'nso' },
   { key: 'mctr',      label: 'Meta CTR',        get: s => div(s.mClk, s.mImp), fmt: fmtPct },
-  { key: 'mcpl',      label: 'Meta CPL (source)', get: s => div(s.metaSpend, s.mLeadsSf), fmt: fmtUSD },
+  { key: 'mcpl',      label: 'Meta CPL (source)', get: s => s.metaSpend ? div(s.metaSpend, s.mLeadsSf) : null, fmt: fmtUSD },
   { key: 'gctr',      label: 'Google CTR',      get: s => div(s.gClk, s.gImp), fmt: fmtPct },
-  { key: 'gcpl',      label: 'Google CPL (source)', get: s => div(s.googleSpend, s.gLeadsSf), fmt: fmtUSD },
+  { key: 'gcpl',      label: 'Google CPL (source)', get: s => s.googleSpend ? div(s.googleSpend, s.gLeadsSf) : null, fmt: fmtUSD },
 ];
 
+const tblCols = () => TBL_COLS.filter(c => !c.st || c.st === statusMode);
+
 function renderStudioTable() {
+  const TBL_COLS = tblCols();
   const rows = _tableRows.filter(s => tableAgency === 'ALL' || s.agency === tableAgency);
   const col = TBL_COLS.find(c => c.key === _sort.key) || TBL_COLS[3];
   rows.sort((a, b) => {
@@ -618,6 +672,7 @@ function renderStudioTable() {
 }
 
 function downloadStudioCSV() {
+  const TBL_COLS = tblCols();
   const rows = _tableRows.filter(s => tableAgency === 'ALL' || s.agency === tableAgency);
   const esc = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v);
   const lines = [TBL_COLS.map(c => esc(c.label)).join(',')];
