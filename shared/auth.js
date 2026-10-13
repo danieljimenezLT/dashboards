@@ -33,7 +33,8 @@ function logout() {
 }
 
 function _redirectToLogin() {
-  const isNested = location.pathname.includes('/nso-dashboard/') || location.pathname.includes('/admin-reports/') || location.pathname.includes('/brand-safety-audit/') || location.pathname.includes('/social-media-audit/');
+  const isNested = ['/nso-dashboard/', '/admin-reports/', '/brand-safety-audit/', '/social-media-audit/',
+                    '/campaign-dashboard/', '/paid-ads-dashboards/'].some(dir => location.pathname.includes(dir));
   location.replace(isNested ? '../login.html' : 'login.html');
 }
 

@@ -445,6 +445,8 @@
 </div><!-- /.main -->
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="../users.js"></script>
+<script src="../shared/auth.js"></script>
 <script src="../shared/utils.js"></script>
 <script>
 // ── State ─────────────────────────────────────────────────────────────────
@@ -1826,7 +1828,10 @@ document.addEventListener('click', function(e) {
 });
 
 
-loadData();
+// Admin only (linked from Admin Reports)
+const _authUser = checkAuth();
+if (_authUser && _authUser.role !== 'admin') location.replace('../home.html');
+else if (_authUser) { renderAuthNav(_authUser); loadData(); }
 </script>
 </body>
 </html>
