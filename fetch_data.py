@@ -28,6 +28,15 @@ def strip_brand(name):
     return name
 
 
+BOOKING_KEYS = ("first_bookings", "bookings_1h", "bookings_24h", "bookings_7d")
+
+
+def booking_fields(vals):
+    """First-booking counts (dated by booking date). Zero values are omitted to
+    keep data.json small — consumers read them as `r.first_bookings || 0`."""
+    return {k: int(v) for k, v in zip(BOOKING_KEYS, vals) if v}
+
+
 # ════════════════════════════════════════════════════════════════════════════
 # SNOWFLAKE
 # ════════════════════════════════════════════════════════════════════════════
@@ -46,7 +55,11 @@ cur.execute("""
         SUM(SIGNUPS)            AS signups,
         SUM(FIRST_VISITS)       AS first_visits,
         SUM(FIRST_ACTIVATIONS)  AS first_activations,
-        SUM(FIRST_SALES)        AS first_sales
+        SUM(FIRST_SALES)        AS first_sales,
+        SUM(FIRST_BOOKINGS)            AS first_bookings,
+        SUM(BOOKINGS_WITHIN_1_HOUR)    AS bookings_1h,
+        SUM(BOOKINGS_WITHIN_24_HOURS)  AS bookings_24h,
+        SUM(BOOKINGS_WITHIN_7_DAYS)    AS bookings_7d
     FROM MARKETING_REPORTS.PUBLIC.LEADS
     WHERE EVENT_DATE >= DATE_TRUNC('year', CURRENT_DATE())
       AND EVENT_DATE <= DATEADD('day', -2, CURRENT_DATE())
@@ -62,6 +75,7 @@ daily_detail = [
         "first_visits":       int(r[4] or 0),
         "first_activations":  int(r[5] or 0),
         "first_sales":        int(r[6] or 0),
+        **booking_fields(r[7:11]),
     }
     for r in cur.fetchall()
 ]
@@ -74,7 +88,11 @@ cur.execute("""
         SUM(SIGNUPS)            AS signups,
         SUM(FIRST_VISITS)       AS first_visits,
         SUM(FIRST_ACTIVATIONS)  AS first_activations,
-        SUM(FIRST_SALES)        AS first_sales
+        SUM(FIRST_SALES)        AS first_sales,
+        SUM(FIRST_BOOKINGS)            AS first_bookings,
+        SUM(BOOKINGS_WITHIN_1_HOUR)    AS bookings_1h,
+        SUM(BOOKINGS_WITHIN_24_HOURS)  AS bookings_24h,
+        SUM(BOOKINGS_WITHIN_7_DAYS)    AS bookings_7d
     FROM MARKETING_REPORTS.PUBLIC.LEADS
     WHERE EVENT_DATE <  DATE_TRUNC('year', CURRENT_DATE())
       AND EVENT_DATE >= DATEADD('year', -3, CURRENT_DATE())
@@ -90,6 +108,7 @@ monthly_detail = [
         "first_visits":       int(r[4] or 0),
         "first_activations":  int(r[5] or 0),
         "first_sales":        int(r[6] or 0),
+        **booking_fields(r[7:11]),
     }
     for r in cur.fetchall()
 ]

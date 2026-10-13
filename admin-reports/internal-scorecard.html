@@ -47,6 +47,7 @@
   <a class="nav-logo" href="../home.html"><img src="../logo.png" alt="SWEAT440"/></a>
   <div class="nav-tabs" id="navTabs">
     <button class="nav-tab active" id="navTabOs" onclick="switchTab('os')">OS</button>
+    <button class="nav-tab" id="navTabOsb" onclick="switchTab('osb')">OS Bookings</button>
     <button class="nav-tab" id="navTabNso" onclick="switchTab('nso')">NSO</button>
     <button class="nav-tab" id="navTabMonthly" onclick="switchTab('monthly')">Monthly summary</button>
   </div>
@@ -158,6 +159,146 @@
       </div>
       <div style="overflow-x:auto">
         <table class="data-table" id="osCplTable">
+          <thead><tr></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= OS BOOKINGS TAB ========================= -->
+  <div class="tab-content" id="tab-osb">
+
+    <div class="controls-bar">
+      <button class="controls-toggle" onclick="toggleControls(this)">Filters ▾</button>
+      <div class="controls-inner">
+        <span class="ctrl-label">Studio</span>
+        <div class="multi-select" id="studioDropdownOSB">
+          <button class="ms-trigger" onclick="toggleDropdown('studioOSB')">
+            <span id="studioLabelOSB">All Studios</span><span class="ms-arrow">▾</span>
+          </button>
+          <div class="ms-menu" id="studioOSBMenu"></div>
+        </div>
+        <div class="ctrl-sep"></div>
+        <span class="ctrl-label">Source</span>
+        <div class="multi-select" id="sourceDropdownOSB">
+          <button class="ms-trigger" onclick="toggleDropdown('sourceOSB')">
+            <span id="sourceLabelOSB">All Sources</span><span class="ms-arrow">▾</span>
+          </button>
+          <div class="ms-menu" id="sourceOSBMenu"></div>
+        </div>
+        <div class="ctrl-sep"></div>
+        <span class="ctrl-label">Cost Sources</span>
+        <div class="multi-select" id="costDropdownOSB">
+          <button class="ms-trigger" onclick="toggleDropdown('costOSB')">
+            <span id="costLabelOSB">All</span><span class="ms-arrow">▾</span>
+          </button>
+          <div class="ms-menu" id="costOSBMenu"></div>
+        </div>
+        <div class="ctrl-sep"></div>
+        <span class="ctrl-label">Date range</span>
+        <div class="ctrl-date">
+          <input type="date" id="osbFFrom" onchange="applyOsbFilters()"/>
+          <span style="font-size:12px;color:#5a7a8a">→</span>
+          <input type="date" id="osbFTo" onchange="applyOsbFilters()"/>
+        </div>
+      </div>
+    </div>
+    <div class="data-freshness-note" id="osbFreshnessNote"></div>
+    <div id="osbCprWarning" style="display:none;margin:12px 24px 0;padding:10px 12px;background:#fff8e1;border-left:3px solid #f59e0b;border-radius:4px;font-size:12px;color:#92400e;line-height:1.5"></div>
+    <div id="osbNoDataWarning" style="display:none;margin:12px 24px 0;padding:10px 12px;background:#fff8e1;border-left:3px solid #f59e0b;border-radius:4px;font-size:12px;color:#92400e;line-height:1.5">⚠️ No booking data in data.json yet — bookings will appear after the next daily Snowflake refresh.</div>
+
+    <div class="preset-row" id="presetRowOsb">
+      <span class="preset-label">Blend:</span>
+      <button class="preset-btn active" data-preset="blended" onclick="osbSourcePreset('blended')">Blended</button>
+      <button class="preset-btn" data-preset="meta" onclick="osbSourcePreset('meta')">Meta Ads</button>
+      <button class="preset-btn" data-preset="google" onclick="osbSourcePreset('google')">Google Ads</button>
+      <button class="preset-btn" data-preset="paid" onclick="osbSourcePreset('paid')">Paid Ads</button>
+      <div class="preset-sep"></div>
+      <span class="preset-label">Studios:</span>
+      <button class="studio-preset-btn" onclick="osbStudioPreset()">OS Ads w/ LeadTeam</button>
+    </div>
+
+    <div class="section-title">Funnel Summary</div>
+    <div class="chart-card" style="margin:16px 24px 20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div class="toggle-group" id="osbTrendToggles" style="margin-bottom:0">
+          <button class="tog-btn on" onclick="toggleOsbDs(this,'trend',0)" style="border-color:#00A3E0;background:#00A3E0;color:#000"><span class="dot" style="background:#000"></span>Leads</button>
+          <button class="tog-btn on" onclick="toggleOsbDs(this,'trend',1)" style="border-color:#99DAF3;background:#99DAF3;color:#000"><span class="dot" style="background:#000"></span>Bookings</button>
+          <button class="tog-btn on" onclick="toggleOsbDs(this,'trend',2)" style="border-color:#00FFC2;background:#00FFC2;color:#000"><span class="dot" style="background:#000"></span>First Timers</button>
+          <button class="tog-btn on" onclick="toggleOsbDs(this,'trend',3)" style="border-color:#DDFF00;background:#DDFF00;color:#000"><span class="dot" style="background:#000"></span>New Members</button>
+        </div>
+        <div class="gran-group">
+          <button class="gran-btn" id="osbGranDaily" onclick="setOsbGran('daily')">Daily</button>
+          <button class="gran-btn active" id="osbGranWeekly" onclick="setOsbGran('weekly')">Weekly</button>
+          <button class="gran-btn" id="osbGranMonthly" onclick="setOsbGran('monthly')">Monthly</button>
+        </div>
+      </div>
+      <div class="chart-with-last">
+        <div style="position:relative;flex:1;min-width:0;height:260px"><canvas id="osbTrendChart"></canvas></div>
+        <div class="chart-last-panel" id="osbTrendLast"></div>
+      </div>
+
+      <div style="border-top:1px dashed #dde8ef;margin:24px 0 16px"></div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div class="toggle-group" id="osbCvrToggles" style="margin-bottom:0">
+          <button class="tog-btn on" onclick="toggleOsbDs(this,'cvr',0)" style="border-color:#99DAF3;background:#99DAF3;color:#000"><span class="dot" style="background:#000"></span>Lead → Book %</button>
+          <button class="tog-btn on" onclick="toggleOsbDs(this,'cvr',1)" style="border-color:#0084B5;background:#0084B5;color:#fff"><span class="dot" style="background:#fff"></span>Same-day (24h) %</button>
+        </div>
+      </div>
+      <div class="chart-with-last">
+        <div style="position:relative;flex:1;min-width:0;height:260px"><canvas id="osbCvrChart"></canvas></div>
+        <div class="chart-last-panel" id="osbCvrLast"></div>
+      </div>
+
+      <div style="border-top:1px dashed #dde8ef;margin:24px 0 16px"></div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div class="toggle-group" id="osbCprToggles" style="margin-bottom:0">
+          <button class="tog-btn on" onclick="toggleOsbDs(this,'cpr',0)" style="border-color:#00A3E0;background:#00A3E0;color:#000"><span class="dot" style="background:#000"></span>Blended CPL</button>
+          <button class="tog-btn on" onclick="toggleOsbDs(this,'cpr',1)" style="border-color:#99DAF3;background:#99DAF3;color:#000"><span class="dot" style="background:#000"></span>Blended CPB</button>
+          <button class="tog-btn on" onclick="toggleOsbDs(this,'cpr',2)" style="border-color:#00FFC2;background:#00FFC2;color:#000"><span class="dot" style="background:#000"></span>Blended CPFT</button>
+          <button class="tog-btn on" onclick="toggleOsbDs(this,'cpr',3)" style="border-color:#DDFF00;background:#DDFF00;color:#000"><span class="dot" style="background:#000"></span>Blended CPA</button>
+        </div>
+        <div class="gran-group">
+          <button class="gran-btn" id="osbCprGranDaily" onclick="setOsbCprGran('daily')">Daily</button>
+          <button class="gran-btn active" id="osbCprGranWeekly" onclick="setOsbCprGran('weekly')">Weekly</button>
+          <button class="gran-btn" id="osbCprGranMonthly" onclick="setOsbCprGran('monthly')">Monthly</button>
+        </div>
+      </div>
+      <div class="chart-with-last">
+        <div style="position:relative;flex:1;min-width:0;height:260px"><canvas id="osbCprChart"></canvas></div>
+        <div class="chart-last-panel" id="osbCprLast"></div>
+      </div>
+    </div>
+    <div class="chart-card" style="margin:0 24px 20px">
+      <div class="chart-card-title">Lead → Booking by Studio</div>
+      <div style="overflow-x:auto">
+        <table class="data-table" id="osbStudioTable">
+          <thead><tr>
+            <th class="row-num">#</th>
+            <th data-sort="studio">Studio</th>
+            <th class="num" data-sort="leads">Leads</th>
+            <th class="num" data-sort="bookings">Bookings</th>
+            <th class="num" data-sort="cvr">Lead → Book %</th>
+            <th class="num" data-sort="b24">Booked ≤24h</th>
+            <th class="num" data-sort="cvr24">Same-day (24h) %</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="chart-card" style="margin:0 24px 20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div class="chart-card-title" style="margin-bottom:0">CPL by Period (by studio)</div>
+        <div class="gran-group">
+          <button class="gran-btn active" id="osbCplTableGranMonthly" onclick="setOsbCplTableGran('monthly')">Monthly</button>
+          <button class="gran-btn" id="osbCplTableGranWeekly" onclick="setOsbCplTableGran('weekly')">Weekly</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table" id="osbCplTable">
           <thead><tr></tr></thead>
           <tbody></tbody>
         </table>
@@ -471,9 +612,9 @@ function switchTab(id){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
-  document.getElementById({os:'navTabOs',nso:'navTabNso',monthly:'navTabMonthly'}[id]).classList.add('active');
+  document.getElementById({os:'navTabOs',osb:'navTabOsb',nso:'navTabNso',monthly:'navTabMonthly'}[id]).classList.add('active');
   document.getElementById('navTabs').classList.remove('open');
-  if(id==='os') applyOsFilters(); else if(id==='nso') applyNsoFilters(); else applyMonthlyFilters();
+  if(id==='os') applyOsFilters(); else if(id==='osb') applyOsbFilters(); else if(id==='nso') applyNsoFilters(); else applyMonthlyFilters();
 }
 function toggleNav(){ document.getElementById('navTabs').classList.toggle('open'); }
 function toggleControls(btn){
@@ -486,6 +627,7 @@ function toggleControls(btn){
 // is currently visible (the only one a user's checkbox click could target).
 function applyFilters(){
   if(document.getElementById('tab-os').classList.contains('active')) applyOsFilters();
+  else if(document.getElementById('tab-osb').classList.contains('active')) applyOsbFilters();
   else if(document.getElementById('tab-nso').classList.contains('active')) applyNsoFilters();
   else applyMonthlyFilters();
 }
@@ -506,7 +648,7 @@ function renderChartLast(panelId, chart, fmt){
 
 // Text color per known series color, matching the toggle-button convention
 // used across this dashboard (dark text on the light brand colors, white on red).
-const CHART_STAT_TEXT_COLOR={'#00A3E0':'#000','#00FFC2':'#000','#ff6b6b':'#fff','#DDFF00':'#000'};
+const CHART_STAT_TEXT_COLOR={'#00A3E0':'#000','#00FFC2':'#000','#ff6b6b':'#fff','#DDFF00':'#000','#99DAF3':'#000'};
 
 // Renders a multi-row stats panel beside a timeline chart — one row per stat
 // (e.g. Total / Average / Last), each dataset's value shown as a pill colored
@@ -729,11 +871,11 @@ function toggleOsCprDs(btn, i){
   renderChartStats('osCprLast', osCprChart, _ratioStatsRows(osCprChart, [_osCprTotals.cpl,_osCprTotals.cpft,_osCprTotals.cpa]));
 }
 
-function osCheckCPRWarning(){
-  const warn=document.getElementById('osCprWarning'); if(!warn) return;
-  const paidOnly=(OS_CPR_COSTS_ACTIVE.google||OS_CPR_COSTS_ACTIVE.meta)&&!OS_CPR_COSTS_ACTIVE.leadteam;
-  const allCosts=OS_CPR_COSTS_ACTIVE.google&&OS_CPR_COSTS_ACTIVE.meta&&OS_CPR_COSTS_ACTIVE.leadteam&&OS_CPR_COSTS_ACTIVE.external_agency;
-  const selSources=getSelected('sourceOSMenu')||[];
+function osCheckCPRWarning(warnId='osCprWarning', costs=OS_CPR_COSTS_ACTIVE, sourceMenuId='sourceOSMenu'){
+  const warn=document.getElementById(warnId); if(!warn) return;
+  const paidOnly=(costs.google||costs.meta)&&!costs.leadteam;
+  const allCosts=costs.google&&costs.meta&&costs.leadteam&&costs.external_agency;
+  const selSources=getSelected(sourceMenuId)||[];
   const paidSources=['Meta Ads','Google Ads'];
   const mktgSources=['Website (unattributed)','Business Mode / App','Public API','Meta Ads','Google Ads','SWEAT440 App','MindBody App','Social Media Organic','Local Listings','Word of Mouth','Print Ads / Signs','N/A','Other'];
   const nonPaidSelected=selSources.some(s=>!paidSources.includes(s));
@@ -841,10 +983,15 @@ function setOsCplTableGran(g){
   buildOsCplTable(window._osFrom, window._osTo, window._osStudios||[]);
 }
 function buildOsCplTable(from,to,selStudios){
-  const table=document.getElementById('osCplTable'); if(!table||!OS_RAW||!from||!to) return;
-  const selSources=getSelected('sourceOSMenu')||[];
+  buildStudioCplTable({tableId:'osCplTable', gran:osCplTableGran, sourceMenuId:'sourceOSMenu', costs:OS_CPR_COSTS_ACTIVE, presetRowId:'presetRowOs'}, from, to, selStudios);
+}
+// Shared by the OS and OS Bookings tabs — cfg names the tab's own table,
+// granularity, source menu, active cost sources and preset row.
+function buildStudioCplTable(cfg, from, to, selStudios){
+  const table=document.getElementById(cfg.tableId); if(!table||!OS_RAW||!from||!to) return;
+  const selSources=getSelected(cfg.sourceMenuId)||[];
   const studios=(selStudios&&selStudios.length?selStudios:OS_RAW.studios).slice();
-  const buckets=buildBuckets(osCplTableGran, from, to);
+  const buckets=buildBuckets(cfg.gran, from, to);
   const f$2=v=>'$'+Number(v).toFixed(2);
   const dash='<span style="color:#8aabbf">—</span>';
 
@@ -862,10 +1009,10 @@ function buildOsCplTable(from,to,selStudios){
       const bEnd=bucketEnd235959(b);
       let spend=0;
       const sp=osSpendFor(b.start,bEnd,[studio]);
-      if(OS_CPR_COSTS_ACTIVE.google) spend+=sp.google;
-      if(OS_CPR_COSTS_ACTIVE.meta) spend+=sp.meta;
-      if(OS_CPR_COSTS_ACTIVE.leadteam) spend+=osLeadteamNetForStudio(studio,b.start,bEnd);
-      if(OS_CPR_COSTS_ACTIVE.external_agency) spend+=osExternalAgencyForStudio(studio,b.start,bEnd);
+      if(cfg.costs.google) spend+=sp.google;
+      if(cfg.costs.meta) spend+=sp.meta;
+      if(cfg.costs.leadteam) spend+=osLeadteamNetForStudio(studio,b.start,bEnd);
+      if(cfg.costs.external_agency) spend+=osExternalAgencyForStudio(studio,b.start,bEnd);
       const leads=leadsSeries[i].signups||0;
       row['col_'+i]=leads>0?spend/leads:null;
     });
@@ -873,10 +1020,10 @@ function buildOsCplTable(from,to,selStudios){
   });
 
   const lastKey=buckets.length?'col_'+(buckets.length-1):null;
-  if(lastKey) _sortState['osCplTable']={col:lastKey, asc:false};
-  const th=cplThresholdsFor(getActivePresetKind('presetRowOs'));
+  if(lastKey) _sortState[cfg.tableId]={col:lastKey, asc:false};
+  const th=cplThresholdsFor(getActivePresetKind(cfg.presetRowId));
 
-  sortableTable('osCplTable', rows, (r,i)=>{
+  sortableTable(cfg.tableId, rows, (r,i)=>{
     const cells=buckets.map((b,bi)=>{
       const v=r['col_'+bi];
       const cls=v!=null?cplHeatClass(v,th):'';
@@ -884,7 +1031,198 @@ function buildOsCplTable(from,to,selStudios){
     }).join('');
     return `<tr><td class="row-num cpl-frozen-col">${i}</td><td class="cpl-frozen-col cpl-studio-col">${r.studio}</td>${cells}</tr>`;
   });
-  syncCplFrozenOffset('osCplTable');
+  syncCplFrozenOffset(cfg.tableId);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   OS BOOKINGS TAB — same filters/spend logic as the OS tab, plus first
+   bookings (data.json first_bookings / bookings_24h, dated by booking date).
+   Lead → Book % = first bookings ÷ leads in the same period; Same-day % =
+   first bookings made within 24h of signup ÷ leads.
+   ══════════════════════════════════════════════════════════════════════════ */
+const OSB_CPR_COSTS_ACTIVE={google:true,meta:true,leadteam:true,external_agency:true};
+const OSB_FUNNEL_FIELDS=['signups','first_bookings','bookings_24h','first_visits','first_activations'];
+let osbGran='weekly', osbCprGran='weekly', osbCplTableGran='monthly';
+const OSB_CHARTS={trend:null, cvr:null, cpr:null};
+const OSB_HIDDEN={trend:[false,false,false,false], cvr:[false,false], cpr:[false,false,false,false]};
+let _osbCprTotals=[null,null,null,null], _osbCvrTotals=[null,null];
+
+const pctOrNull=(n,d)=>d>0?Math.round(n/d*1000)/10:null;
+const fmtPct=v=>v==null?'—':v.toFixed(1)+'%';
+
+function setOsbGran(g){ osbGran=g; ['Daily','Weekly','Monthly'].forEach(x=>document.getElementById('osbGran'+x).classList.toggle('active', x.toLowerCase()===g)); applyOsbFilters(); }
+function setOsbCprGran(g){ osbCprGran=g; ['Daily','Weekly','Monthly'].forEach(x=>document.getElementById('osbCprGran'+x).classList.toggle('active', x.toLowerCase()===g)); buildOsbCPR(); }
+function setOsbCplTableGran(g){
+  osbCplTableGran=g;
+  document.getElementById('osbCplTableGranMonthly').classList.toggle('active', g==='monthly');
+  document.getElementById('osbCplTableGranWeekly').classList.toggle('active', g==='weekly');
+  buildOsbCplTable();
+}
+function buildOsbCplTable(){
+  buildStudioCplTable({tableId:'osbCplTable', gran:osbCplTableGran, sourceMenuId:'sourceOSBMenu', costs:OSB_CPR_COSTS_ACTIVE, presetRowId:'presetRowOsb'}, window._osbFrom, window._osbTo, window._osbStudios||[]);
+}
+
+function buildOsbCostMenu(){
+  buildCostMenu('costOSBMenu','costLabelOSB', OS_COST_KEYS, OS_COST_LABELS, OS_COST_COLORS, OSB_CPR_COSTS_ACTIVE, ()=>{
+    clearActivePreset('presetRowOsb');
+    buildOsbCPR();
+    osCheckCPRWarning('osbCprWarning', OSB_CPR_COSTS_ACTIVE, 'sourceOSBMenu');
+  });
+}
+function osbSourcePreset(kind){
+  let keep;
+  if(kind==='meta') keep=['Meta Ads'];
+  else if(kind==='google') keep=['Google Ads'];
+  else if(kind==='paid') keep=['Meta Ads','Google Ads'];
+  else keep=(OS_RAW.sources||[]).filter(s=>!DEFAULT_EXCL_SOURCES.includes(s));
+  buildSourceSelect('sourceOSBMenu','sourceLabelOSB', OS_RAW.sources, (OS_RAW.sources||[]).filter(s=>!keep.includes(s)));
+  const costs = kind==='meta'  ? {google:false,meta:true,leadteam:false,external_agency:false}
+              : kind==='google'? {google:true,meta:false,leadteam:false,external_agency:false}
+              : kind==='paid'  ? {google:true,meta:true,leadteam:false,external_agency:false}
+              :                  {google:true,meta:true,leadteam:true,external_agency:true};
+  Object.assign(OSB_CPR_COSTS_ACTIVE, costs);
+  buildOsbCostMenu();
+  markActivePreset('presetRowOsb', kind);
+  applyOsbFilters();
+}
+function osbStudioPreset(){
+  const fromStr=document.getElementById('osbFFrom').value, toStr=document.getElementById('osbFTo').value;
+  if(!fromStr||!toStr||!OS_CORP_SPEND) return;
+  const months=monthKeysInRange(fromStr, toStr);
+  const spendByCode={};
+  (OS_CORP_SPEND.monthly||[]).forEach(r=>{
+    if(!months.has(r.month)) return;
+    spendByCode[r.studio_code]=(spendByCode[r.studio_code]||0)+(r.spend||0);
+  });
+  const keep=(OS_RAW.studios||[]).filter(s=>{
+    if(OS_EXTERNAL_AGENCY_STUDIOS.includes(s)) return false;
+    if(STUDIOS_STATUS[s]!=='open') return false;
+    const code=STUDIOS_NAME_TO_CODE[s];
+    return code && (spendByCode[code]||0) > 0;
+  });
+  buildMultiSelect('studioOSBMenu','studioLabelOSB', OS_RAW.studios, (OS_RAW.studios||[]).filter(s=>!keep.includes(s)), OS_RECENTLY_OPENED);
+  applyOsbFilters();
+}
+
+function _osbRenderStats(kind){
+  const ch=OSB_CHARTS[kind]; if(!ch) return;
+  if(kind==='trend') renderChartStats('osbTrendLast', ch, _trendStatsRows(ch));
+  else if(kind==='cpr') renderChartStats('osbCprLast', ch, _ratioStatsRows(ch, _osbCprTotals));
+  else {
+    const lasts=ch.data.datasets.map(ds=>ds.data.length?ds.data[ds.data.length-1]:null);
+    renderChartStats('osbCvrLast', ch, [{label:'Total', values:_osbCvrTotals, fmt:fmtPct}, {label:'Last', values:lasts, fmt:fmtPct}]);
+  }
+}
+function toggleOsbDs(btn, kind, i){
+  const ch=OSB_CHARTS[kind]; if(!ch) return;
+  const ds=ch.data.datasets[i]; ds.hidden=!ds.hidden; OSB_HIDDEN[kind][i]=ds.hidden;
+  btn.classList.toggle('on');
+  const col=ds.borderColor, txt=CHART_STAT_TEXT_COLOR[col]||'#fff';
+  if(btn.classList.contains('on')){ btn.style.background=col; btn.style.borderColor=col; btn.style.color=txt; }
+  else { btn.style.background='#f4f9fd'; btn.style.borderColor='#c0d4df'; btn.style.color='#5a7a8a'; }
+  ch.update();
+  _osbRenderStats(kind);
+}
+
+// Destroys and recreates a line chart on this tab, keeping per-series visibility.
+function _osbLineChart(kind, canvasId, labels, datasets, yFmt){
+  if(OSB_CHARTS[kind]){ OSB_CHARTS[kind].destroy(); OSB_CHARTS[kind]=null; }
+  const ctx=document.getElementById(canvasId); if(!ctx) return;
+  const isMobile=window.innerWidth<=768;
+  datasets.forEach((ds,i)=>Object.assign(ds,{borderWidth:2.5, pointRadius:3, pointHoverRadius:6, tension:.4, fill:false, spanGaps:true, hidden:OSB_HIDDEN[kind][i]}));
+  const tip=yFmt?{label:c=>c.dataset.label+': '+yFmt(c.parsed.y)}:{};
+  OSB_CHARTS[kind]=new Chart(ctx,{ type:'line', data:{labels, datasets}, options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false,callbacks:tip}},
+    scales:{ x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',autoSkip:true,maxTicksLimit:isMobile?5:12,maxRotation:0}},
+             y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#5a7a8a',callback:yFmt?(v=>yFmt(v)):undefined}} } } });
+  _osbRenderStats(kind);
+}
+
+function applyOsbFilters(){
+  if(!OS_RAW) return;
+  const studios=getSelected('studioOSBMenu');
+  const sources=getSelected('sourceOSBMenu');
+  const fromStr=document.getElementById('osbFFrom').value, toStr=document.getElementById('osbFTo').value;
+  if(!fromStr||!toStr) return;
+  const from=new Date(fromStr+'T00:00:00Z'), to=new Date(toStr+'T23:59:59Z');
+  _partialPeriod.pp=false; _partialPeriod.py=false;
+  const daily=filterRows(OS_RAW.daily_detail||[], from, to, studios, sources);
+  const monthly=filterRows(OS_RAW.monthly_detail||[], from, to, studios, sources);
+  const curr={daily, monthly, all:[...daily,...monthly]};
+  window._osbCurr=curr; window._osbFrom=from; window._osbTo=to; window._osbStudios=studios;
+
+  const hasBookings=(OS_RAW.daily_detail||[]).some(r=>r.first_bookings);
+  document.getElementById('osbNoDataWarning').style.display=hasBookings?'none':'block';
+
+  const buckets=buildBuckets(osbGran, from, to);
+  const series=aggregateRowsIntoBuckets(buckets, curr.all, OSB_FUNNEL_FIELDS);
+  const labels=series.map(m=>m.label);
+  _osbLineChart('trend','osbTrendChart', labels, [
+    {label:'Leads', data:series.map(m=>m.signups), borderColor:'#00A3E0'},
+    {label:'Bookings', data:series.map(m=>m.first_bookings), borderColor:'#99DAF3'},
+    {label:'First Timers', data:series.map(m=>m.first_visits), borderColor:'#00FFC2'},
+    {label:'New Members', data:series.map(m=>m.first_activations), borderColor:'#DDFF00'},
+  ]);
+
+  const tot=OSB_FUNNEL_FIELDS.reduce((o,f)=>(o[f]=series.reduce((a,m)=>a+m[f],0),o),{});
+  _osbCvrTotals=[pctOrNull(tot.first_bookings,tot.signups), pctOrNull(tot.bookings_24h,tot.signups)];
+  _osbLineChart('cvr','osbCvrChart', labels, [
+    {label:'Lead → Book %', data:series.map(m=>pctOrNull(m.first_bookings,m.signups)), borderColor:'#99DAF3'},
+    {label:'Same-day (24h) %', data:series.map(m=>pctOrNull(m.bookings_24h,m.signups)), borderColor:'#0084B5'},
+  ], fmtPct);
+
+  buildOsbStudioTable(from, to, studios, sources);
+  buildOsbCPR();
+  osCheckCPRWarning('osbCprWarning', OSB_CPR_COSTS_ACTIVE, 'sourceOSBMenu');
+}
+
+function buildOsbStudioTable(from, to, selStudios, sources){
+  const studios=(selStudios&&selStudios.length?selStudios:OS_RAW.studios);
+  const rows=studios.map(studio=>{
+    const rs=[...filterRows(OS_RAW.daily_detail||[],from,to,[studio],sources), ...filterRows(OS_RAW.monthly_detail||[],from,to,[studio],sources)];
+    const leads=rs.reduce((a,r)=>a+(r.signups||0),0);
+    const bookings=rs.reduce((a,r)=>a+(r.first_bookings||0),0);
+    const b24=rs.reduce((a,r)=>a+(r.bookings_24h||0),0);
+    return {studio, leads, bookings, b24, cvr:pctOrNull(bookings,leads), cvr24:pctOrNull(b24,leads)};
+  }).filter(r=>r.leads||r.bookings);
+  if(!_sortState['osbStudioTable']) _sortState['osbStudioTable']={col:'leads', asc:false};
+  const n=v=>v.toLocaleString();
+  sortableTable('osbStudioTable', rows,
+    (r,i)=>`<tr><td class="row-num">${i}</td><td>${r.studio}</td><td class="num">${n(r.leads)}</td><td class="num">${n(r.bookings)}</td><td class="num">${fmtPct(r.cvr)}</td><td class="num">${n(r.b24)}</td><td class="num">${fmtPct(r.cvr24)}</td></tr>`,
+    all=>{
+      const L=all.reduce((a,r)=>a+r.leads,0), B=all.reduce((a,r)=>a+r.bookings,0), B24=all.reduce((a,r)=>a+r.b24,0);
+      return `<tr><td></td><td><strong>Total</strong></td><td class="num"><strong>${n(L)}</strong></td><td class="num"><strong>${n(B)}</strong></td><td class="num"><strong>${fmtPct(pctOrNull(B,L))}</strong></td><td class="num"><strong>${n(B24)}</strong></td><td class="num"><strong>${fmtPct(pctOrNull(B24,L))}</strong></td></tr>`;
+    });
+}
+
+function buildOsbCPR(){
+  const from=window._osbFrom, to=window._osbTo, curr=window._osbCurr, selStudios=window._osbStudios||[];
+  if(!from||!to||!curr) return;
+  const allStudios=selStudios.length>0?selStudios:OS_RAW.studios;
+  const spendStudios=selStudios.length>0?selStudios:null;
+  const buckets=buildBuckets(osbCprGran, from, to);
+  const funnel=aggregateRowsIntoBuckets(buckets, curr.all, OSB_FUNNEL_FIELDS);
+  const data=buckets.map((b,i)=>{
+    const bEnd=bucketEnd235959(b), sp=osSpendFor(b.start,b.end,spendStudios);
+    let s=0;
+    if(OSB_CPR_COSTS_ACTIVE.google) s+=sp.google;
+    if(OSB_CPR_COSTS_ACTIVE.meta) s+=sp.meta;
+    if(OSB_CPR_COSTS_ACTIVE.leadteam) s+=osComputeLeadteamSpend(b.start,bEnd,allStudios);
+    if(OSB_CPR_COSTS_ACTIVE.external_agency) s+=osComputeExternalAgencySpend(b.start,bEnd,allStudios);
+    const f=funnel[i];
+    return {s, counts:[f.signups, f.first_bookings, f.first_visits, f.first_activations]};
+  });
+  const per=(s,c)=>c>0?Math.round(s/c*100)/100:null;
+  const totalSpend=data.reduce((a,d)=>a+d.s,0);
+  _osbCprTotals=[0,1,2,3].map(k=>{ const c=data.reduce((a,d)=>a+d.counts[k],0); return c>0?totalSpend/c:null; });
+  const fmt$=v=>v==null?'-':'$'+Math.round(v).toLocaleString();
+  _osbLineChart('cpr','osbCprChart', buckets.map(b=>b.label), [
+    {label:'Blended CPL', data:data.map(d=>per(d.s,d.counts[0])), borderColor:'#00A3E0'},
+    {label:'Blended CPB', data:data.map(d=>per(d.s,d.counts[1])), borderColor:'#99DAF3'},
+    {label:'Blended CPFT', data:data.map(d=>per(d.s,d.counts[2])), borderColor:'#00FFC2'},
+    {label:'Blended CPA', data:data.map(d=>per(d.s,d.counts[3])), borderColor:'#DDFF00'},
+  ], fmt$);
+  buildOsbCplTable();
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -1555,9 +1893,11 @@ async function loadData(){
 
   renderFreshnessNote('osFreshnessNote', [{raw:OS_RAW, lagDays:2}]);
   renderFreshnessNote('nsoFreshnessNote', [{raw:OS_RAW, lagDays:2}]);
+  renderFreshnessNote('osbFreshnessNote', [{raw:OS_RAW, lagDays:2}]);
 
   const osRange=defaultRange();
   document.getElementById('osFFrom').value=osRange.from; document.getElementById('osFTo').value=osRange.to;
+  document.getElementById('osbFFrom').value=osRange.from; document.getElementById('osbFTo').value=osRange.to;
   const nsoRange=defaultRange();
   document.getElementById('nsoFFrom').value=nsoRange.from; document.getElementById('nsoFTo').value=nsoRange.to;
   const msRange=msDefaultRange();
@@ -1566,6 +1906,9 @@ async function loadData(){
   buildMultiSelect('studioOSMenu','studioLabelOS', OS_RAW.studios, [...DEFAULT_EXCL_STUDIOS, ...OS_RECENTLY_OPENED], OS_RECENTLY_OPENED);
   buildSourceSelect('sourceOSMenu','sourceLabelOS', OS_RAW.sources, DEFAULT_EXCL_SOURCES);
   buildOsCostMenu();
+  buildMultiSelect('studioOSBMenu','studioLabelOSB', OS_RAW.studios, [...DEFAULT_EXCL_STUDIOS, ...OS_RECENTLY_OPENED], OS_RECENTLY_OPENED);
+  buildSourceSelect('sourceOSBMenu','sourceLabelOSB', OS_RAW.sources, DEFAULT_EXCL_SOURCES);
+  buildOsbCostMenu();
   buildMultiSelect('studioNSOMenu','studioLabelNSO', NSO_TAB_STUDIOS, []);
   buildSourceSelect('sourceNSOMenu','sourceLabelNSO', NSO_ALL_SOURCES, NSO_EXCL_SRC);
   buildNsoCostMenu();
