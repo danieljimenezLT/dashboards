@@ -129,7 +129,7 @@
   <div class="two-col">
     <div class="chart-card" style="margin-bottom:0">
       <div class="chart-card-title" id="yoyTitle">Same-store year over year, Jan–Sep</div>
-      <p class="ls-note">Only months where the studio was established in both years. 2026 "best case" assumes every duplicate MBO record was ClassPass.</p>
+      <p class="ls-note">Only months where the studio was established in both years.</p>
       <div class="chart-box short"><canvas id="chYoy"></canvas></div>
     </div>
     <div class="chart-card" style="margin-bottom:0">
@@ -165,15 +165,15 @@
       </div>
       <button class="download-btn" onclick="downloadCSV()">⬇ Download CSV</button>
     </div>
-    <p class="ls-note">Jan–Sep, months established in both years. 2026 studio figures spread the MBO deduplication evenly across studios, so treat them as estimates.</p>
+    <p class="ls-note">Jan–Sep, months established in both years.</p>
     <div class="tbl-scroll"><table class="data-table" id="studioTable"></table></div>
   </div>
 
   <div class="chart-card method">
     <div class="chart-card-title">How this was built</div>
-    <p>Jan 2023 – Nov 2025 uses Marianatek lead counts, treated as the real numbers (one lead per person per brand). Dec 2025 onward uses MBO via Snowflake, scaled each month to Snowflake's first-time unique leads, because MBO repeats lead records for people it already knows and for each studio they sign up at. The ~5% of Marianatek leads that never reached Snowflake is a migration loss of old records only, so no uplift is applied to MBO months.</p>
-    <p>Opening dates come from the studio Master sheet. Presale months and the first 3 months after opening are left out of seasonality, same-store growth and the cohort. Zilker and Capitol View opening dates are estimated from their lead ramp, and both are left out of 2026 comparisons because they closed. Miramar and Ocean Township had large lead volumes long before their listed opening dates and are left out of the cohort charts. Austin - Highland in Snowflake also carried Zilker's leads; those are removed.</p>
-    <p>ClassPass only became a lead source in Marianatek in 2024 and is a much bigger share of MBO records, so "Excl. ClassPass" is the most like-for-like view across years. MBO's split of duplicate records by source is unknown, which is why 2026 shows a range. The cohort uses Marianatek months only; its later age steps rest on few studios and also carry calendar-year effects.</p>
+    <p>Jan 2023 – Nov 2025 uses Marianatek lead counts, treated as the real numbers (one lead per person per brand). Dec 2025 onward uses Snowflake's MBO dedup list: first-time unique leads by month, studio and source. MBO repeats lead records for people it already knows and for each studio they sign up at; the dedup list counts each person once, the first time they appear. The ~5% of Marianatek leads that never reached Snowflake is a migration loss of old records only, so no uplift is applied to MBO months.</p>
+    <p>Opening dates come from the studio Master sheet. Presale months and the first 3 months after opening are left out of seasonality, same-store growth and the cohort. Zilker and Capitol View opening dates are estimated from their lead ramp, and both are left out of 2026 comparisons because they closed. Miramar and Ocean Township had large lead volumes long before their listed opening dates and are left out of the cohort charts. Snowflake merges Zilker into Austin - Highland; in MBO months the combined Austin leads are split between the two by each studio's share of raw lead records.</p>
+    <p>ClassPass only became a lead source in Marianatek in 2024 and is a much bigger share of MBO records, so "Excl. ClassPass" is the most like-for-like view across years. The cohort uses Marianatek months only; its later age steps rest on few studios and also carry calendar-year effects.</p>
     <p id="genNote"></p>
   </div>
 
@@ -561,7 +561,7 @@ function renderTable() {
   _tableRows.sort((a, b) => { const x = a[k], y = b[k]; if (!has(x)) return 1; if (!has(y)) return -1; return (typeof x === 'string' ? x.localeCompare(y) : x - y) * d; });
   const ext = Math.max(0.4, ..._tableRows.map(r => Math.abs(r.yoy || 0)));
   const sx = v => 50 + Math.max(-1, Math.min(1, v / ext)) * 50;
-  const showU = dedup && cmp === '2026 vs 2025' && scen !== 'All sources';
+  const showU = _tableRows.some(r => has(r.yoy_upper));
   let h = '<thead><tr>' + TCOLS.filter(c => c.key !== 'yoy_upper' || showU).map(c => `<th class="${c.num ? 'num' : ''}" data-k="${c.key}" ${c.key === k ? `aria-sort="${d > 0 ? 'ascending' : 'descending'}"` : ''}>${c.label}${c.key === k ? (d > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('') + '</tr></thead><tbody>';
   if (!_tableRows.length) h += '<tr><td colspan="8" class="empty-msg">No studios with comparable months.</td></tr>';
   _tableRows.forEach(r => {
