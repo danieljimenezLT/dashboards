@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-10-13",
+      "pr_number": 460,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/460",
+      "author": "Sebastian Arango",
+      "categories": [
+        "General"
+      ],
+      "title": "Agency Comparison now compares presales for NSO studios",
+      "summary": "In the NSO view, the Agency Comparison report shows presales, cancellations, net presales and cost per net presale instead of first timers and members, which NSO studios don't have yet."
+    },
+    {
+      "date": "2026-10-13",
       "pr_number": 459,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/459",
       "author": "Santiago Estrada",
