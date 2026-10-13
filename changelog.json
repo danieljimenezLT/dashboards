@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-10-13",
+      "pr_number": 465,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/465",
+      "author": "Sebastian Arango",
+      "categories": [
+        "General"
+      ],
+      "title": "Agency Comparison: one main chart with a button per KPI",
+      "summary": "The Agency Comparison report now opens with one large chart where you pick the KPI to compare across agencies, followed by a collapsible scorecard and the per-studio table."
+    },
+    {
+      "date": "2026-10-13",
       "pr_number": 464,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/464",
       "author": "Sebastian Arango",
