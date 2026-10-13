@@ -553,6 +553,8 @@ function _ratioStatsRows(chart, totals){
 let OS_RAW=null, OS_SPEND_RAW=null, OS_AGENCY_OVERRIDES=[], OS_CORP_SPEND=null;
 const STUDIOS_NAME_TO_CODE={};
 const STUDIOS_STATUS={}; // studio name -> 'open' | 'nso' | 'closed', from studios.json
+// OS tab only: just-graduated NSO studios get their own filter category, unchecked by default.
+const OS_RECENTLY_OPENED=['Herriman'];
 const OS_EXTERNAL_AGENCY_STUDIOS=['Dallas - Prestonwood','Austin - Highland','Herriman','Dallas - Uptown','Fort Myers','Orlando - Dr Phillips','OKC - Rose Creek'];
 const LTFEE_MONTHLY=1200;
 const OS_COST_COLORS={google:'#34A853',meta:'#1877F2',leadteam:'#FF6B35',external_agency:'#8E44AD'};
@@ -702,7 +704,7 @@ async function osStudioPreset(){
     const code=STUDIOS_NAME_TO_CODE[s];
     return code && (spendByCode[code]||0) > 0;
   });
-  buildMultiSelect('studioOSMenu','studioLabelOS', OS_RAW.studios, (OS_RAW.studios||[]).filter(s=>!keep.includes(s)));
+  buildMultiSelect('studioOSMenu','studioLabelOS', OS_RAW.studios, (OS_RAW.studios||[]).filter(s=>!keep.includes(s)), OS_RECENTLY_OPENED);
   applyOsFilters();
 }
 
@@ -1561,7 +1563,7 @@ async function loadData(){
   const msRange=msDefaultRange();
   document.getElementById('msFFrom').value=msRange.from; document.getElementById('msFTo').value=msRange.to;
 
-  buildMultiSelect('studioOSMenu','studioLabelOS', OS_RAW.studios, DEFAULT_EXCL_STUDIOS);
+  buildMultiSelect('studioOSMenu','studioLabelOS', OS_RAW.studios, [...DEFAULT_EXCL_STUDIOS, ...OS_RECENTLY_OPENED], OS_RECENTLY_OPENED);
   buildSourceSelect('sourceOSMenu','sourceLabelOS', OS_RAW.sources, DEFAULT_EXCL_SOURCES);
   buildOsCostMenu();
   buildMultiSelect('studioNSOMenu','studioLabelNSO', NSO_TAB_STUDIOS, []);
