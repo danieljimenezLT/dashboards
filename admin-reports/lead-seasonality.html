@@ -77,6 +77,12 @@
       <button type="button" data-v="Excl. ClassPass" class="active">Excl. ClassPass</button>
       <button type="button" data-v="Excl. ClassPass + Grassroots">Excl. ClassPass + Grassroots</button>
     </div>
+    <div class="ctrl-sep"></div>
+    <span class="ctrl-label">MBO leads</span>
+    <div class="seg" id="dedupSeg" role="group" aria-label="MBO leads">
+      <button type="button" data-v="1" class="active">Deduplicated</button>
+      <button type="button" data-v="0">All records</button>
+    </div>
   </div>
 </div>
 
@@ -85,13 +91,14 @@
   <div class="ls-head">
     <div class="ls-title" id="pageTitle">Lead Seasonality &amp; Growth</div>
     <p class="ls-take" id="takeaway"></p>
+    <p class="ls-take" id="rawBanner" style="color:#b25e00" hidden>Showing MBO lead records as recorded, not deduplicated. From Dec 2025 a person is counted again for each studio and each time they sign up again, so 2026 is inflated against earlier years. Months before Dec 2025 are unchanged.</p>
   </div>
 
   <div class="kpi-grid" id="kpis"></div>
 
   <div class="chart-card">
     <div class="chart-card-title">Monthly leads by studio stage</div>
-    <p class="ls-note">Leads per month, split by whether the studio was established, in its first 3 months after opening, or in presale. From Dec 2025 the numbers come from MBO, deduplicated to one lead per person.</p>
+    <p class="ls-note">Leads per month, split by whether the studio was established, in its first 3 months after opening, or in presale. From Dec 2025 the numbers come from MBO, deduplicated or as recorded depending on the MBO leads switch.</p>
     <div class="legend-row"><span><i style="background:#00A3E0"></i>Established</span><span><i style="background:#DDFF00;border:0.5px solid #b8c900"></i>First 3 months</span><span><i style="background:#99DAF3"></i>Presale</span></div>
     <div class="chart-box"><canvas id="chStage"></canvas></div>
   </div>
@@ -183,7 +190,8 @@
 const C = { blue:'#00A3E0', deep:'#0084B5', light:'#99DAF3', pale:'#D2EFFF', yellow:'#DDFF00', ink:'#1a1a2e', muted:'#8aa3b0', grid:'#eef3f7', red:'#d32f2f', green:'#0a8a4a' };
 const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const COL = { 'All sources':'all', 'Excl. ClassPass':'ex_cp', 'Excl. ClassPass + Grassroots':'ex_cp_gr' };
-let D = null, scen = 'Excl. ClassPass', studio = '', cmp = '2026 vs 2025';
+let D = null, scen = 'Excl. ClassPass', studio = '', cmp = '2026 vs 2025', dedup = true;
+const ds = name => (!dedup && D.raw && D.raw[name]) || D[name];
 let _charts = {}, _sort = { key:'yoy', dir:1 }, _tableRows = [];
 
 const fmtN = v => Math.round(v).toLocaleString();
@@ -226,6 +234,12 @@ async function loadData() {
     document.querySelectorAll('#scenSeg button').forEach(x => x.classList.toggle('active', x === b));
     render();
   });
+  document.querySelectorAll('#dedupSeg button').forEach(b => b.onclick = () => {
+    dedup = b.dataset.v === '1';
+    document.querySelectorAll('#dedupSeg button').forEach(x => x.classList.toggle('active', x === b));
+    document.getElementById('rawBanner').hidden = dedup;
+    render();
+  });
   document.querySelectorAll('#cmpSeg button').forEach(b => b.onclick = () => {
     cmp = b.dataset.v;
     document.querySelectorAll('#cmpSeg button').forEach(x => x.classList.toggle('active', x === b));
@@ -254,15 +268,16 @@ function render() {
 // ── helpers over the snapshot ──
 function janSepByYear() {               // leads Jan–Sep per year for the selected studio (any stage)
   const col = COL[scen], out = {};
-  D.monthly_by_studio.forEach(r => {
+  ds('monthly_by_studio').forEach(r => {
     if (r.studio !== studio || +r.month.slice(5) > 9) return;
     const y = +r.month.slice(0, 4); out[y] = (out[y] || 0) + r[col];
   });
   return out;
 }
 function yoyRow(comparison) {
-  if (!studio) return D.yoy_same_store.find(r => r.comparison === comparison && r.scenario === scen);
-  return D.yoy_by_studio.find(r => r.studio === studio && r.comparison === comparison && r.scenario === scen);
+  const r = !studio ? ds('yoy_same_store').find(r => r.comparison === comparison && r.scenario === scen)
+    : ds('yoy_by_studio').find(r => r.studio === studio && r.comparison === comparison && r.scenario === scen);
+  return r && !dedup ? { ...r, yoy_upper: null } : r;
 }
 function studioInfo() { return D.studios.find(s => s.name === studio); }
 
@@ -282,7 +297,7 @@ function renderHeader() {
     take = `<b>${esc(studio)}</b> has no established months in both 2025 and 2026` + (si && si.opened ? ` (opened ${esc(si.opened)})` : si && si.status === 'nso' ? ' (still in presale)' : '') + ', so there is no same-store comparison.';
   }
   if (!studio) {
-    const co = D.company_totals.slice().sort((a, b) => a.year - b.year), c26 = co.find(r => r.year === 2026), c25 = co.find(r => r.year === 2025);
+    const co = ds('company_totals').slice().sort((a, b) => a.year - b.year), c26 = co.find(r => r.year === 2026), c25 = co.find(r => r.year === 2025);
     if (c26 && c25) take += ` Company leads grew <b class="${cls(c26.leads_jan_sep / c25.leads_jan_sep - 1)}">${fmtP(c26.leads_jan_sep / c25.leads_jan_sep - 1)}</b>, almost all from new studios. Studios lose leads as they age.`;
   }
   document.getElementById('takeaway').innerHTML = take;
@@ -290,8 +305,8 @@ function renderHeader() {
   // KPI 1 — leads Jan–Sep 2026
   let v26, v25, k1sub;
   if (!studio) {
-    v26 = (D.company_totals.find(r => r.year === 2026) || {}).leads_jan_sep;
-    v25 = (D.company_totals.find(r => r.year === 2025) || {}).leads_jan_sep;
+    v26 = (ds('company_totals').find(r => r.year === 2026) || {}).leads_jan_sep;
+    v25 = (ds('company_totals').find(r => r.year === 2025) || {}).leads_jan_sep;
     k1sub = 'All studios, all sources';
   } else {
     const t = janSepByYear(); v26 = t[2026]; v25 = t[2025]; k1sub = 'This studio, any stage';
@@ -326,7 +341,7 @@ function renderHeader() {
 // ── monthly by stage ──
 function renderStage() {
   const col = COL[scen], PH = ['Established', 'First 3 months', 'Presale'], by = {};
-  D.monthly_by_studio.forEach(r => {
+  ds('monthly_by_studio').forEach(r => {
     if (studio && r.studio !== studio) return;
     by[r.month] = by[r.month] || { Established:0, 'First 3 months':0, Presale:0 };
     by[r.month][r.phase] += r[col];
@@ -354,13 +369,13 @@ function renderStage() {
 // ── average leads per established studio, by calendar month and year ──
 function renderAvg() {
   const col = COL[scen], sum = {}, cnt = {};
-  D.monthly_by_studio.forEach(r => {
+  ds('monthly_by_studio').forEach(r => {
     if (r.phase !== 'Established' || (studio && r.studio !== studio)) return;
     sum[r.month] = (sum[r.month] || 0) + r[col];
     cnt[r.month] = (cnt[r.month] || 0) + 1;
   });
   const years = [2023, 2024, 2025, 2026], colors = { 2023:'#c0d4df', 2024:C.light, 2025:C.blue, 2026:C.ink };
-  const ds = years.map(y => ({
+  const sets = years.map(y => ({
     label: String(y), borderColor: colors[y], backgroundColor: colors[y], borderWidth: y >= 2025 ? 2.5 : 2, pointRadius: y === 2026 ? 3 : 2, tension: 0,
     data: MN.map((_, i) => { const m = `${y}-${String(i + 1).padStart(2, '0')}`; return cnt[m] ? Math.round(sum[m] / cnt[m]) : null; }),
   }));
@@ -368,9 +383,9 @@ function renderAvg() {
   document.getElementById('avgNote').textContent = studio
     ? "This studio's leads per month, one line per year, counting only months after its first 3 months."
     : 'Leads per month ÷ number of established studios that month (presale and first 3 months left out), one line per year. The studio mix changes as studios open and close.';
-  document.getElementById('avgLegend').innerHTML = years.map(y => `<span><i class="ln" style="background:${colors[y]}"></i>${y}${y === 2026 ? ' (MBO, deduplicated)' : ''}</span>`).join('');
+  document.getElementById('avgLegend').innerHTML = years.map(y => `<span><i class="ln" style="background:${colors[y]}"></i>${y}${y === 2026 ? (dedup ? ' (MBO, deduplicated)' : ' (MBO, all records)') : ''}</span>`).join('');
   chart('chAvg', {
-    type: 'line', data: { labels: MN, datasets: ds },
+    type: 'line', data: { labels: MN, datasets: sets },
     options: { maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
       plugins: { legend: { display: false }, tooltip: { callbacks: {
         label: i => { if (i.parsed.y === null) return null; const m = `${i.dataset.label}-${String(i.dataIndex + 1).padStart(2, '0')}`; return `${i.dataset.label}: ${fmtN(i.parsed.y)}` + (studio ? '' : ` (${cnt[m]} studios)`); } } } },
@@ -380,8 +395,8 @@ function renderAvg() {
 
 // ── seasonality ──
 function renderSeason() {
-  const rows = D.seasonality.filter(r => r.scenario === scen).sort((a, b) => a.month_num - b.month_num);
-  const ds = [
+  const rows = ds('seasonality').filter(r => r.scenario === scen).sort((a, b) => a.month_num - b.month_num);
+  const sets = [
     { label: '2023–24', data: rows.map(r => r.index), borderColor: C.blue, backgroundColor: C.blue, borderWidth: 2.5, pointRadius: 3, tension: 0 },
     { label: '2025', data: rows.map(r => has(r.check_2025) ? r.check_2025 : null), borderColor: C.muted, backgroundColor: C.muted, borderDash: [5, 4], borderWidth: 1.5, pointRadius: 0, tension: 0 },
     { label: '2026 so far', data: rows.map(r => has(r.check_2026) ? r.check_2026 : null), borderColor: C.ink, backgroundColor: C.ink, borderWidth: 2, pointRadius: 2.5, tension: 0 },
@@ -390,13 +405,13 @@ function renderSeason() {
   if (studio) {
     const sr = D.seasonality_by_studio.filter(r => r.studio === studio && r.scenario === scen).sort((a, b) => a.month_num - b.month_num);
     if (sr.length) {
-      ds.unshift({ label: studio, data: sr.map(r => r.index), borderColor: '#F28C28', backgroundColor: '#F28C28', borderWidth: 2.5, pointRadius: 3, tension: 0 });
+      sets.unshift({ label: studio, data: sr.map(r => r.index), borderColor: '#F28C28', backgroundColor: '#F28C28', borderWidth: 2.5, pointRadius: 3, tension: 0 });
       legend = `<span><i class="ln" style="background:#F28C28"></i>${esc(studio)}</span>` + legend;
     } else legend = `<span style="color:#b25e00">${esc(studio)} has no full established year in 2023–24</span>` + legend;
   }
   document.getElementById('seasonLegend').innerHTML = legend;
   chart('chSeason', {
-    type: 'line', data: { labels: MN, datasets: ds },
+    type: 'line', data: { labels: MN, datasets: sets },
     options: { maintainAspectRatio: false, spanGaps: false, interaction: { mode: 'index', intersect: false },
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: i => i.parsed.y === null ? null : `${i.dataset.label}: ${i.parsed.y.toFixed(2)}` } } },
       scales: baseScales(v => v.toFixed(1)) },
@@ -449,9 +464,9 @@ function renderYoy() {
 function renderTotals() {
   let years = [2023, 2024, 2025, 2026], vals;
   if (!studio) {
-    vals = years.map(y => (D.company_totals.find(r => r.year === y) || {}).leads_jan_sep || 0);
+    vals = years.map(y => (ds('company_totals').find(r => r.year === y) || {}).leads_jan_sep || 0);
     document.getElementById('totTitle').textContent = 'Company leads, Jan–Sep';
-    document.getElementById('totNote').textContent = 'All studios including new and presale, all sources. 2026 is MBO first-time leads, deduplicated.';
+    document.getElementById('totNote').textContent = 'All studios including new and presale, all sources. 2026 is ' + (dedup ? 'MBO first-time leads, deduplicated.' : 'every MBO lead record, not deduplicated.');
   } else {
     const t = janSepByYear(); vals = years.map(y => Math.round(t[y] || 0));
     document.getElementById('totTitle').textContent = studio + ' — leads Jan–Sep';
@@ -470,7 +485,7 @@ function renderTotals() {
 function renderAge() {
   const rows = D.cohort_age.filter(r => r.scenario === scen).sort((a, b) => a.age_year - b.age_year);
   const labels = rows.map(r => 'Year ' + r.age_year);
-  const ds = [{ label: 'All studios', data: rows.map(r => r.index), borderColor: C.blue, borderWidth: 2.5, tension: 0,
+  const sets = [{ label: 'All studios', data: rows.map(r => r.index), borderColor: C.blue, borderWidth: 2.5, tension: 0,
     pointRadius: 4.5, pointBorderWidth: 2, pointBorderColor: C.blue, pointBackgroundColor: rows.map(r => !has(r.studios) || r.studios >= 5 ? C.blue : '#fff'),
     segment: { borderDash: ctx => { const r = rows[ctx.p1DataIndex]; return r && has(r.studios) && r.studios < 5 ? [5, 4] : undefined; } } }];
   let legend = '<span><i class="ln" style="background:#00A3E0"></i>All studios</span>';
@@ -482,13 +497,13 @@ function renderAge() {
       const at = y => rows.findIndex(r => r.age_year === y);
       if (at(y0) >= 0) pts[at(y0)] = idx;
       steps.forEach(s => { idx = idx * (1 + s.step); if (at(s.age_year) >= 0) pts[at(s.age_year)] = Math.round(idx * 10) / 10; });
-      ds.push({ label: studio, data: pts, borderColor: '#F28C28', backgroundColor: '#F28C28', borderWidth: 2.5, pointRadius: 3.5, tension: 0, spanGaps: true });
+      sets.push({ label: studio, data: pts, borderColor: '#F28C28', backgroundColor: '#F28C28', borderWidth: 2.5, pointRadius: 3.5, tension: 0, spanGaps: true });
       legend += `<span><i class="ln" style="background:#F28C28"></i>${esc(studio)} (its own steps, started on the average line)</span>`;
     } else legend += `<span style="color:#b25e00">${esc(studio)}: no year-over-year pairs in 2023–25</span>`;
   }
   document.getElementById('ageLegend').innerHTML = legend;
   chart('chAge', {
-    type: 'line', data: { labels, datasets: ds },
+    type: 'line', data: { labels, datasets: sets },
     options: { maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
       plugins: { legend: { display: false }, tooltip: { callbacks: {
         label: i => i.parsed.y === null ? null : `${i.dataset.label}: ${Math.round(i.parsed.y)}`,
@@ -498,22 +513,22 @@ function renderAge() {
   });
 }
 function renderLife() {
-  const rows = D.lifecycle.filter(r => r.scenario === scen).sort((a, b) => a.months_since_open - b.months_since_open);
+  const rows = ds('lifecycle').filter(r => r.scenario === scen).sort((a, b) => a.months_since_open - b.months_since_open);
   const t = rows.map(r => r.months_since_open);
   const labels = t.map(m => m === 0 ? 'Open' : (m > 0 ? '+' : '') + m);
-  const ds = [{ label: 'Average', data: rows.map(r => r.index), borderColor: C.blue, borderWidth: 2.5, pointRadius: 2, tension: 0 }];
+  const sets = [{ label: 'Average', data: rows.map(r => r.index), borderColor: C.blue, borderWidth: 2.5, pointRadius: 2, tension: 0 }];
   let legend = '<span><i class="ln" style="background:#00A3E0"></i>Average of studios opened since mid-2023</span>';
   if (studio) {
-    const sr = D.lifecycle_by_studio.filter(r => r.studio === studio && r.scenario === scen);
+    const sr = ds('lifecycle_by_studio').filter(r => r.studio === studio && r.scenario === scen);
     if (sr.length) {
       const m = new Map(sr.map(r => [r.months_since_open, r.index]));
-      ds.push({ label: studio, data: t.map(x => m.has(x) ? m.get(x) : null), borderColor: '#F28C28', borderWidth: 2.5, pointRadius: 2, tension: 0 });
+      sets.push({ label: studio, data: t.map(x => m.has(x) ? m.get(x) : null), borderColor: '#F28C28', borderWidth: 2.5, pointRadius: 2, tension: 0 });
       legend += `<span><i class="ln" style="background:#F28C28"></i>${esc(studio)}</span>`;
     } else legend += `<span style="color:#b25e00">${esc(studio)} did not open in this window</span>`;
   }
   document.getElementById('lifeLegend').innerHTML = legend;
   chart('chLife', {
-    type: 'line', data: { labels, datasets: ds },
+    type: 'line', data: { labels, datasets: sets },
     options: { maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
       plugins: { legend: { display: false }, tooltip: { callbacks: {
         title: items => { const m = t[items[0].dataIndex]; return m === 0 ? 'Opening month' : `${m > 0 ? '+' : ''}${m} months`; },
@@ -541,12 +556,12 @@ const TCOLS = [
   { key:'months', label:'Months', num:true }, { key:'bar', label:'' },
 ];
 function renderTable() {
-  _tableRows = D.yoy_by_studio.filter(r => r.scenario === scen && r.comparison === cmp);
+  _tableRows = ds('yoy_by_studio').filter(r => r.scenario === scen && r.comparison === cmp);
   const k = _sort.key, d = _sort.dir;
   _tableRows.sort((a, b) => { const x = a[k], y = b[k]; if (!has(x)) return 1; if (!has(y)) return -1; return (typeof x === 'string' ? x.localeCompare(y) : x - y) * d; });
   const ext = Math.max(0.4, ..._tableRows.map(r => Math.abs(r.yoy || 0)));
   const sx = v => 50 + Math.max(-1, Math.min(1, v / ext)) * 50;
-  const showU = cmp === '2026 vs 2025' && scen !== 'All sources';
+  const showU = dedup && cmp === '2026 vs 2025' && scen !== 'All sources';
   let h = '<thead><tr>' + TCOLS.filter(c => c.key !== 'yoy_upper' || showU).map(c => `<th class="${c.num ? 'num' : ''}" data-k="${c.key}" ${c.key === k ? `aria-sort="${d > 0 ? 'ascending' : 'descending'}"` : ''}>${c.label}${c.key === k ? (d > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('') + '</tr></thead><tbody>';
   if (!_tableRows.length) h += '<tr><td colspan="8" class="empty-msg">No studios with comparable months.</td></tr>';
   _tableRows.forEach(r => {
