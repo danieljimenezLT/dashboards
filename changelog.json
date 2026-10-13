@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-10-13",
+      "pr_number": 462,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/462",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Lead Seasonality report now uses exact MBO deduplicated leads per studio",
+      "summary": "2026 lead figures on the Lead Seasonality & Growth report now use the actual one-per-person lead counts for each studio and source, so the estimated 2026 range is gone."
+    },
+    {
+      "date": "2026-10-13",
       "pr_number": 461,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/461",
       "author": "Santiago Estrada",
