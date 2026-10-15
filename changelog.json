@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-10-15",
+      "pr_number": 466,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/466",
+      "author": "Sebastian Arango",
+      "categories": [
+        "General"
+      ],
+      "title": "Agency Comparison now follows each studio's agency start date",
+      "summary": "Each day now counts for the agency that ran the studio that day (LT before FFM / JL started) and for whether it was open or in presale, and the report shows Aug 1 to the latest data by default."
+    },
+    {
       "date": "2026-10-13",
       "pr_number": 465,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/465",
