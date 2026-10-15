@@ -140,17 +140,20 @@
 <script src="../shared/utils.js"></script>
 <script>
 // ── Agency Comparison (admin-only, staging) ─────────────────────────────────
-// Agencies come from studios.json → studio.agency (LT / FFM / JL). For now the
-// CURRENT agency is applied to the whole date range — studios that switched
-// agencies have no start dates yet.
+// Agencies come from studios.json, by day: studio.agency (LT / FFM / JL) from
+// studio.agency_from on, LT before it (and while it isn't set — e.g. an agency
+// that hasn't started yet). Open / NSO also goes by day: NSO before
+// studio.opening_date when there is one, otherwise studio.status.
 const AGENCIES  = ['LT', 'FFM', 'JL'];
+const LT = 'LT';
 const AG_COLOR  = { LT:'#00A3E0', FFM:'#F28C28', JL:'#8E44EC', ALL:'#5a7a8a' };
 const PAID_SRC  = { 'Meta Ads':'meta', 'Google Ads':'google' };
-const DEFAULT_FROM = '2026-09-01', DEFAULT_TO = '2026-09-30';
+const DEFAULT_FROM = '2026-08-01';    // FFM started with its first studios in early August
+let   DEFAULT_TO   = null;          // last day with funnel data (set on load)
 const EXCL_SOURCES = ['ClassPass / Platforms', 'Grassroots'];
 
 let RAW = null, SPEND = null, META = null, GADS = null, NSO_SALES = null, REG = null;
-let STUDIOS = [];                 // [{name, code, status, agency}] with an agency, not closed
+let STUDIOS = [];                 // [{name, code, status, agency, agencyFrom, openingDate}], not closed
 let statusMode = 'open', viewMode = 'avg', tableAgency = 'ALL';
 let _charts = {}, _tableRows = [], _sort = { key:'spend', dir:-1 };
 
@@ -177,18 +180,22 @@ async function loadData() {
 
   STUDIOS = (REG.studios || [])
     .filter(s => s.agency && s.status !== 'closed')
-    .map(s => ({ name: s.name, code: s.code, status: s.status === 'nso' ? 'nso' : 'open', agency: s.agency }));
+    .map(s => ({ name: s.name, code: s.code, status: s.status === 'nso' ? 'nso' : 'open', agency: s.agency,
+                 agencyFrom: s.agency_from || null, openingDate: s.opening_date || null }));
 
+  // Default range: Aug 1 → the last day with data (moves forward with the
+  // daily refresh)
+  DEFAULT_TO = (RAW.daily_detail || []).reduce((m, r) => r.date > m ? r.date : m, '') || DEFAULT_FROM;
+  for (const id of ['fFrom', 'fTo']) document.getElementById(id).max = DEFAULT_TO;
   document.getElementById('fFrom').value = DEFAULT_FROM;
   document.getElementById('fTo').value   = DEFAULT_TO;
 
   setupStudioSelect();
-  renderStudioSelect();
   const sources = (RAW.sources || []).slice();
   if (typeof buildSourceSelect === 'function') buildSourceSelect('sourceMenu', 'sourceLabel', sources, EXCL_SOURCES);
   else buildMultiSelect('sourceMenu', 'sourceLabel', sources, EXCL_SOURCES);
 
-  for (const [segId, setter] of [['statusSeg', v => { statusMode = v; renderStudioSelect(); }], ['viewSeg', v => viewMode = v]]) {
+  for (const [segId, setter] of [['statusSeg', v => statusMode = v], ['viewSeg', v => viewMode = v]]) {
     document.querySelectorAll(`#${segId} button`).forEach(b => b.addEventListener('click', () => {
       document.querySelectorAll(`#${segId} button`).forEach(x => x.classList.toggle('active', x === b));
       setter(b.dataset.v); applyFilters();
@@ -205,18 +212,33 @@ async function loadData() {
   applyFilters();
 }
 
-// Studio filter: the studios of the selected status (Open or NSO), grouped by
-// agency. Agency headers have a checkbox and an "Only" button, like each
+// ── Agency / status on a given day ──────────────────────────────────────────
+function agencyOn(s, d) { return s.agency === LT || !s.agencyFrom || d < s.agencyFrom ? LT : s.agency; }
+function statusOn(s, d) { return s.openingDate ? (d < s.openingDate ? 'nso' : 'open') : s.status; }
+function addDay(iso, n) { const t = new Date(iso + 'T00:00:00Z'); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); }
+function daysIn(from, to) { const out = []; for (let d = from; d <= to; d = addDay(d, 1)) out.push(d); return out; }
+function monthDays(month) {            // 'YYYY-MM-01' or 'YYYY-MM' → every day of that month
+  const m = month.slice(0, 7), out = [];
+  for (let d = m + '-01'; d.slice(0, 7) === m; d = addDay(d, 1)) out.push(d);
+  return out;
+}
+
+// Studio filter: the studios that are Open (or NSO) at some point in the range,
+// grouped by their agency at the end of the range. Agency headers have a checkbox and an "Only" button, like each
 // studio. Unchecked studios are kept in _unchecked so switching status doesn't
 // reset the selection.
 const _unchecked = new Set();
 
-function renderStudioSelect() {
+let _menuKey = null;
+function renderStudioSelect(from, to) {
+  _menuKey = `${statusMode}|${from}|${to}`;
   const menu = document.getElementById('studioMenu');
   const safe = n => 'ms_studio_' + n.replace(/[^a-z0-9]/gi, '_');
   const only = attrs => `<button type="button" class="ms-only-btn" ${attrs}>Only</button>`;
   const st = statusMode;
-  const inSt = STUDIOS.filter(x => x.status === st);
+  // NSO → Open only ever moves forward, so checking both ends is enough
+  const inSt = STUDIOS.filter(x => statusOn(x, from) === st || statusOn(x, to) === st)
+    .map(x => ({ ...x, agency: agencyOn(x, to) }));
   let h = `<div class="ms-item ms-select-all"><input type="checkbox" id="studioMenu_all"> <label for="studioMenu_all" style="cursor:pointer">Select all</label></div><div class="ms-divider"></div>`;
   {
     for (const a of AGENCIES) {
@@ -291,17 +313,28 @@ function emptyAgg() {
 }
 function addAgg(a, b) { for (const k in a) a[k] += b[k] || 0; return a; }
 
-// One row per studio in the selected window.
+// One row per (studio, agency, status) in the selected window: each day of
+// data goes to the agency that ran the studio that day and to its Open / NSO
+// status that day, so a studio that changed agency or opened mid-range shows
+// up once per part. `days` = days of the range in that part.
 function perStudio(from, to, srcSel) {
-  const byName = {}, codeToName = {};
-  for (const s of STUDIOS) { byName[s.name] = Object.assign(emptyAgg(), s); if (s.code) codeToName[s.code] = s.name; }
-  const inRange = d => d >= from && d <= to;
+  const segs = {}, byName = {}, codeToName = {};
+  for (const s of STUDIOS) { byName[s.name] = s; if (s.code) codeToName[s.code] = s.name; }
   const srcSet = new Set(srcSel);
+  const seg = (s, d) => {
+    const a = agencyOn(s, d), st = statusOn(s, d), k = `${s.name}|${a}|${st}`;
+    return segs[k] || (segs[k] = Object.assign(emptyAgg(), { name: s.name, code: s.code, agency: a, status: st, days: 0, first: d, last: d }));
+  };
+  for (const s of STUDIOS) for (const d of daysIn(from, to)) {
+    const o = seg(s, d); o.days++;
+    if (d < o.first) o.first = d; if (d > o.last) o.last = d;
+  }
+  const at = (name, d) => (byName[name] && d >= from && d <= to) ? seg(byName[name], d) : null;
 
-  for (const r of RAW.daily_detail || []) {
-    const o = byName[r.studio];
-    if (!o || !inRange(r.date)) continue;
-    const L = r.signups || 0, F = r.first_visits || 0, M = r.first_activations || 0;
+  // Funnel (data.json): daily rows; months before the daily window come from the
+  // monthly rows, spread evenly over the month's days
+  const addFunnel = (o, r, w = 1) => {
+    const L = (r.signups || 0) * w, F = (r.first_visits || 0) * w, M = (r.first_activations || 0) * w;
     if (srcSet.has(r.source)) { o.leads += L; o.ft += F; o.mem += M; }
     const p = PAID_SRC[r.source];
     if (p) {
@@ -309,52 +342,70 @@ function perStudio(from, to, srcSel) {
       if (p === 'meta') { o.mLeadsSf += L; o.mFtSf += F; o.mMemSf += M; }
       else              { o.gLeadsSf += L; o.gFtSf += F; o.gMemSf += M; }
     }
+  };
+  const dailyMin = (RAW.daily_detail || []).reduce((m, r) => !m || r.date < m ? r.date : m, '');
+  for (const r of RAW.daily_detail || []) { const o = at(r.studio, r.date); if (o) addFunnel(o, r); }
+  for (const r of RAW.monthly_detail || []) {
+    const md = monthDays(r.month);
+    for (const d of md) if (!dailyMin || d < dailyMin) { const o = at(r.studio, d); if (o) addFunnel(o, r, 1 / md.length); }
   }
+
   for (const r of (SPEND && SPEND.daily) || []) {
-    const o = byName[codeToName[r.studio_code]];
-    if (!o || !inRange(r.date)) continue;
-    o.metaSpend += r.meta_spend || 0; o.googleSpend += r.google_spend || 0;
+    const o = at(codeToName[r.studio_code], r.date);
+    if (o) { o.metaSpend += r.meta_spend || 0; o.googleSpend += r.google_spend || 0; }
   }
   for (const r of (META && META.studio_daily) || []) {
-    const o = byName[codeToName[r.studio_code]];
-    if (!o || !inRange(r.date)) continue;
-    o.mImp += r.impressions || 0; o.mClk += r.clicks || 0; o.mLeads += r.leads || 0;
+    const o = at(codeToName[r.studio_code], r.date);
+    if (o) { o.mImp += r.impressions || 0; o.mClk += r.clicks || 0; o.mLeads += r.leads || 0; }
   }
-  for (const r of (GADS && GADS.daily) || []) {
-    const o = byName[r.studio];
-    if (!o || !inRange(r.date)) continue;
-    o.gImp += r.impressions || 0; o.gClk += r.clicks || 0; o.gConv += r.leads || 0; o.gCalls += r.calls || 0;
+  // Google Ads: daily rows cover ~90 days; older days live in the monthly rows
+  // (only the days that aged out of the daily window), spread over those days
+  const addGoogle = (o, r, w = 1) => {
+    o.gImp += (r.impressions || 0) * w; o.gClk += (r.clicks || 0) * w;
+    o.gConv += (r.leads || 0) * w; o.gCalls += (r.calls || 0) * w;
+  };
+  const gMin = ((GADS && GADS.daily) || []).reduce((m, r) => !m || r.date < m ? r.date : m, '');
+  for (const r of (GADS && GADS.daily) || []) { const o = at(r.studio, r.date); if (o) addGoogle(o, r); }
+  for (const r of (GADS && GADS.monthly) || []) {
+    const aged = monthDays(r.month).filter(d => !gMin || d < gMin);
+    for (const d of aged) { const o = at(r.studio, d); if (o) addGoogle(o, r, 1 / aged.length); }
   }
   // NSO presales (NSO view): net = presales − cancellations, by source like leads
   for (const st of Object.values((NSO_SALES && NSO_SALES.studios) || {})) {
-    const o = byName[codeToName[st.code]] || byName[(st.name || '').replace(/^SWEAT440\s+/, '')];
-    if (!o) continue;
+    const name = codeToName[st.code] || (st.name || '').replace(/^SWEAT440\s+/, '');
     for (const r of st.daily || []) {
-      if (!inRange(r.date)) continue;
+      const o = at(name, r.date);
+      if (!o) continue;
       const P = r.presales || 0, C = r.cancellations || 0;
       if (srcSet.has(r.source)) { o.pre += P; o.canc += C; o.netPre += P - C; }
       const p = PAID_SRC[r.source];
       if (p) { o.paidNetPre += P - C; if (p === 'meta') o.mNetPre += P - C; else o.gNetPre += P - C; }
     }
   }
-  return Object.values(byName).map(o => {
+  return Object.values(segs).map(o => {
     o.spend = o.metaSpend + o.googleSpend;
     o.active = o.spend > 0;          // only studios the agency actually ran ads for
     return o;
   });
 }
 
-// Columns of the scorecard for the current status mode.
-function buildColumns(rows) {
+// Columns of the scorecard for the current status mode. Studios that were
+// with the agency for only part of the range weigh by their days in "Avg per
+// studio" (n = studio-days ÷ days in the range); cnt = plain studio counts.
+function buildColumns(rows, rangeDays) {
   const cols = [];
+  const w = list => sum(list.map(s => s.days)) / rangeDays;
   const mk = (key, label, sub, color, filt, ref) => {
     const studios = rows.filter(filt);
     if (!studios.length && !ref) return;      // agency filtered out → no column
     const active = studios.filter(s => s.active);
     const agg = active.reduce(addAgg, emptyAgg());
-    agg.n = active.length; agg.nAll = studios.length;
-    agg.nMeta = active.filter(s => s.metaSpend > 0).length;
-    agg.nGoogle = active.filter(s => s.googleSpend > 0).length;
+    const meta = active.filter(s => s.metaSpend > 0), goog = active.filter(s => s.googleSpend > 0);
+    agg.n = w(active);  agg.nMeta = w(meta);  agg.nGoogle = w(goog);
+    agg.cnt = active.length; agg.cntAll = studios.length; agg.cntMeta = meta.length; agg.cntGoogle = goog.length;
+    agg.partial = active.filter(s => s.days < rangeDays).length;
+    agg.sdays = { n: sum(active.map(s => s.days)), nMeta: sum(meta.map(s => s.days)), nGoogle: sum(goog.map(s => s.days)) };
+    agg.rangeDays = rangeDays;
     cols.push({ key, label, sub, color, agg, ref: !!ref });
   };
   const stOk = s => s.status === statusMode;
@@ -363,6 +414,9 @@ function buildColumns(rows) {
   mk('ALL', 'All agencies', stSub, AG_COLOR.ALL, stOk, true);
   return cols;
 }
+
+const sum = arr => arr.reduce((a, b) => a + (b || 0), 0);
+const CNT_KEY = { n: 'cnt', nMeta: 'cntMeta', nGoogle: 'cntGoogle' };
 
 // ── Formatting ──────────────────────────────────────────────────────────────
 const fmtUSD  = v => v == null || !isFinite(v) ? null : '$' + (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString('en-US') : v.toFixed(2));
@@ -379,7 +433,8 @@ const perPos  = (a, b) => b > 0 ? a / b : null;   // cost per net presale (net c
 // ends at net presales).
 const SC_ROWS = [
   { sec: 'Studios' },
-  { label: 'Studios with ad spend', hint: 'studios with no Meta / Google spend in the period are left out', f: a => a.n, fmt: v => v, raw: true, sub: a => a.nAll > a.n ? `of ${a.nAll}` : '' },
+  { label: 'Studios with ad spend', hint: 'studios with no Meta / Google spend in the period are left out', f: a => a.cnt, fmt: v => v, raw: true,
+    sub: a => [a.cntAll > a.cnt ? `of ${a.cntAll}` : '', a.partial ? `${a.partial} for part of the range` : ''].filter(Boolean).join(' · ') },
 
   { sec: 'Media spend', hint: 'Meta + Google ad spend only — no agency or Leadteam fees' },
   { kpi: 'Ad spend', label: 'Ad spend', f: a => a.spend, fmt: fmtUSD0, vol: 'n' },
@@ -415,7 +470,7 @@ const SC_ROWS = [
   { kpi: 'Paid cost / net presale', st: 'nso',  label: 'Paid cost per net presale', f: a => perPos(a.spend, a.paidNetPre), fmt: fmtUSD, better: 'low' },
 
   { sec: 'Meta Ads' },
-  { label: 'Studios with Meta spend', f: a => a.nMeta, fmt: v => v, raw: true },
+  { label: 'Studios with Meta spend', f: a => a.cntMeta, fmt: v => v, raw: true },
   { label: 'Spend', f: a => a.metaSpend, fmt: fmtUSD0, vol: 'nMeta' },
   { label: 'Impressions', f: a => a.mImp, fmt: fmtInt, vol: 'nMeta' },
   { label: 'Clicks', f: a => a.mClk, fmt: fmtInt, vol: 'nMeta' },
@@ -432,7 +487,7 @@ const SC_ROWS = [
   { st: 'nso',  label: 'Cost per net presale (Meta)', f: a => perPos(a.metaSpend, a.mNetPre), fmt: fmtUSD, better: 'low' },
 
   { sec: 'Google Ads' },
-  { label: 'Studios with Google spend', f: a => a.nGoogle, fmt: v => v, raw: true },
+  { label: 'Studios with Google spend', f: a => a.cntGoogle, fmt: v => v, raw: true },
   { label: 'Spend', f: a => a.googleSpend, fmt: fmtUSD0, vol: 'nGoogle' },
   { label: 'Impressions', f: a => a.gImp, fmt: fmtInt, vol: 'nGoogle' },
   { label: 'Clicks', f: a => a.gClk, fmt: fmtInt, vol: 'nGoogle' },
@@ -472,11 +527,12 @@ function applyFilters() {
   let from = document.getElementById('fFrom').value || DEFAULT_FROM;
   let to   = document.getElementById('fTo').value   || DEFAULT_TO;
   if (from > to) [from, to] = [to, from];
+  if (_menuKey !== `${statusMode}|${from}|${to}`) renderStudioSelect(from, to);
 
   const studioSel = new Set(getSelected('studioMenu') || []);
   const srcSel = getSelected('sourceMenu') || [];
   const rows = perStudio(from, to, srcSel).filter(s => studioSel.has(s.name));
-  const cols = buildColumns(rows);
+  const cols = buildColumns(rows, daysIn(from, to).length);
 
   _tableRows = rows.filter(s => s.status === statusMode);
   renderScorecard(cols, from, to);
@@ -500,13 +556,14 @@ function renderScorecard(cols, from, to) {
     viewMode === 'avg'
       ? 'Volumes are averages per studio with ad spend (Meta / Google rows: per studio with spend on that platform); rates and costs are pooled across the agency\'s studios.'
       : 'Volumes are totals; rates and costs are pooled across the agency\'s studios.',
-    'Each studio is counted under its current agency for the whole period.',
+    'Each day counts for the agency that ran the studio that day (FFM / JL from their start dates, LT before) and for its Open / NSO status that day (NSO until the opening date).',
+    viewMode === 'avg' ? 'Studios with the agency for only part of the range count by their days.' : '',
     'Green = best agency on that row.',
   ];
   if (lastFunnel && to > lastFunnel) notes.push(`Funnel data runs through ${fmtDayLabel(lastFunnel)}.`);
-  const noAds = _tableRows.filter(s => !s.active).map(s => s.name).sort();
+  const noAds = [...new Set(_tableRows.filter(s => !s.active).map(s => s.name))].sort();
   if (noAds.length) notes.push(`No ad spend in the period (left out): ${noAds.join(', ')}.`);
-  document.getElementById('scNote').textContent = notes.join(' ');
+  document.getElementById('scNote').textContent = notes.filter(Boolean).join(' ');
 
   const head = `<thead><tr><th>Metric</th>${cols.map(c =>
     `<th class="${c.ref ? 'ref' : ''}" style="--agc:${c.color}">${c.label}${c.sub ? `<small>${c.sub}</small>` : ''}</th>`).join('')}</tr></thead>`;
@@ -582,7 +639,12 @@ function renderChart(cols) {
   _charts[id] = new Chart(document.getElementById(id), {
     type: 'bar',
     data: {
-      labels: shown.map(c => [c.ref ? 'All agencies' : c.label, `${c.agg[row.nKey]} studios`]),
+      labels: shown.map(c => {
+        // Studios with the agency for only part of the range: say for how long
+        const cnt = c.agg[CNT_KEY[row.nKey]], avgD = cnt ? c.agg.sdays[row.nKey] / cnt : 0;
+        return [c.ref ? 'All agencies' : c.label,
+                `${cnt} studios` + (avgD && avgD < c.agg.rangeDays - 0.5 ? ` · ~${Math.round(avgD)} days each` : '')];
+      }),
       datasets: [{
         data: vals,
         backgroundColor: shown.map(c => c.ref ? '#c9d6de' : c.color),
@@ -612,6 +674,8 @@ const TBL_COLS = [
     html: s => s.name + (s.active ? '' : ' <span class="st-badge" title="No Meta / Google spend in the period — left out of the scorecard">no ads</span>') },
   { key: 'agency',    label: 'Agency',          get: s => s.agency, txt: true,
     html: s => `<span class="ag-badge" style="background:${AG_COLOR[s.agency]}">${s.agency}</span>` },
+  { key: 'days',      label: 'Days',            get: s => s.days, fmt: v => String(v),
+    title: s => `${s.first} → ${s.last}` },
   { key: 'status',    label: 'Status',          get: s => s.status, txt: true,
     html: s => `<span class="st-badge ${s.status}">${s.status === 'nso' ? 'NSO' : 'Open'}</span>` },
   { key: 'spend',     label: 'Ad spend',        get: s => s.spend, fmt: fmtUSD0 },
@@ -657,7 +721,7 @@ function renderStudioTable() {
     if (c.html) return `<td>${c.html(s)}</td>`;
     if (c.txt) return `<td>${c.get(s)}</td>`;
     const v = c.get(s), t = v == null ? null : c.fmt(v);
-    return `<td class="num${t == null || v === 0 ? ' dim' : ''}">${t == null ? '—' : t}</td>`;
+    return `<td class="num${t == null || v === 0 ? ' dim' : ''}"${c.title ? ` title="${c.title(s)}"` : ''}>${t == null ? '—' : t}</td>`;
   }).join('')}</tr>`).join('')
     : `<tr class="no-hover"><td colspan="${TBL_COLS.length}"><div class="empty-msg">No studios match these filters.</div></td></tr>`;
   const t = document.getElementById('studioTable');
