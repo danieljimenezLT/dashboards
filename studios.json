@@ -12,6 +12,7 @@
       "state": "TX",
       "status": "open",
       "agency": "FFM",
+      "agency_from": "2026-08-10",
       "excluded_default": false,
       "meta": {
         "match": "Highland",
@@ -228,6 +229,7 @@
       "state": "TX",
       "status": "open",
       "agency": "FFM",
+      "agency_from": "2026-08-06",
       "excluded_default": false,
       "meta": {
         "match": "Prestonwood",
@@ -254,6 +256,7 @@
       "state": "TX",
       "status": "nso",
       "agency": "FFM",
+      "agency_from": "2026-08-27",
       "excluded_default": true,
       "meta": {
         "page_id": "1013504171849728",
@@ -397,6 +400,7 @@
       "state": "FL",
       "status": "nso",
       "agency": "FFM",
+      "agency_from": "2026-09-11",
       "excluded_default": true,
       "meta": {
         "page_id": "1218885824631723",
@@ -421,6 +425,8 @@
       "status": "open",
       "nso_track": true,
       "agency": "FFM",
+      "agency_from": "2026-08-05",
+      "opening_date": "2026-10-10",
       "excluded_default": false,
       "meta": {
         "page_id": "1016504601542354",
@@ -656,6 +662,7 @@
       "state": "NJ",
       "status": "nso",
       "agency": "JL",
+      "agency_from": "2026-10-12",
       "excluded_default": true,
       "meta": {
         "page_id": "1138263712703066"
@@ -788,6 +795,7 @@
       "state": "FL",
       "status": "open",
       "agency": "LT",
+      "opening_date": "2026-08-22",
       "nso_track": true,
       "excluded_default": false,
       "meta": {
@@ -861,6 +869,7 @@
       "state": "OK",
       "status": "nso",
       "agency": "FFM",
+      "agency_from": "2026-09-14",
       "excluded_default": true,
       "meta": {
         "page_id": "1216719724848272",
@@ -887,6 +896,7 @@
       "state": "NJ",
       "status": "open",
       "agency": "JL",
+      "agency_from": "2026-10-12",
       "excluded_default": false,
       "meta": {
         "match": "Ocean Township",
@@ -910,6 +920,7 @@
       "state": "NJ",
       "status": "nso",
       "agency": "JL",
+      "agency_from": "2026-10-12",
       "excluded_default": true,
       "meta": {
         "page_id": "1094938857031042",
@@ -935,6 +946,7 @@
       "state": "FL",
       "status": "nso",
       "agency": "FFM",
+      "agency_from": "2026-08-25",
       "excluded_default": true,
       "meta": {
         "page_id": "986634234541338",
@@ -1014,6 +1026,7 @@
       "state": "VA",
       "status": "open",
       "agency": "LT",
+      "opening_date": "2026-09-05",
       "nso_track": true,
       "excluded_default": false,
       "meta": {
@@ -1067,6 +1080,7 @@
       "state": "NJ",
       "status": "open",
       "agency": "JL",
+      "agency_from": "2026-10-12",
       "excluded_default": false,
       "meta": {
         "match": "Toms River",
@@ -1090,6 +1104,7 @@
       "state": "NJ",
       "status": "open",
       "agency": "JL",
+      "agency_from": "2026-10-12",
       "excluded_default": false,
       "meta": {
         "match": "Wall",

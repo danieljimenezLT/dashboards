@@ -155,6 +155,17 @@ input::placeholder,textarea::placeholder{color:#b0c4cc}
           <option value="JL">JL</option>
         </select>
       </div>
+      <div class="form-group">
+        <label for="f_agency_from">Agency since <span class="opt">(FFM / JL start date — before it, and while empty, the studio counts as LT)</span></label>
+        <input type="date" id="f_agency_from"/>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="form-group">
+        <label for="f_opening_date">Opening date <span class="opt">(studios that opened recently — before it they count as NSO in reports)</span></label>
+        <input type="date" id="f_opening_date"/>
+      </div>
     </div>
 
     <div class="checkbox-row">
@@ -374,6 +385,8 @@ function loadExistingStudio() {
   document.getElementById('f_code').dataset.userEdited = 'true';
   document.getElementById('f_status').value          = s.status || 'nso';
   document.getElementById('f_agency').value          = s.agency || '';
+  document.getElementById('f_agency_from').value     = s.agency_from || '';
+  document.getElementById('f_opening_date').value    = s.opening_date || '';
   document.getElementById('f_excluded').checked      = !!s.excluded_default;
   document.getElementById('f_nso_track').checked     = !!s.nso_track;
   document.getElementById('nsoTrackRow').style.display = s.status === 'open' ? '' : 'none';
@@ -434,6 +447,8 @@ async function handleSubmit(e) {
     code:             document.getElementById('f_code').value.trim().toUpperCase() || null,
     status:           document.getElementById('f_status').value,
     agency:           document.getElementById('f_agency').value || null,
+    agency_from:      document.getElementById('f_agency_from').value || undefined,
+    opening_date:     document.getElementById('f_opening_date').value || undefined,
     excluded_default: document.getElementById('f_excluded').checked,
     nso_track:        document.getElementById('f_nso_track').checked || undefined,
     snowflake_id:     document.getElementById('f_snowflake_id').value.trim() || null,
