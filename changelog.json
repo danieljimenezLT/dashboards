@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "date": "2026-10-19",
+      "pr_number": 467,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/467",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Leads download works again",
+      "summary": "Fixed the Leads Detail CSV download on the Open Studio and NSO dashboards, which was failing with an \"error code: 1016\" message."
+    },
+    {
       "date": "2026-10-15",
       "pr_number": 466,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/466",
