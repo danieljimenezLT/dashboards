@@ -245,6 +245,7 @@
         <div class="toggle-group" id="osbCvrToggles" style="margin-bottom:0">
           <button class="tog-btn on" onclick="toggleOsbDs(this,'cvr',0)" style="border-color:#99DAF3;background:#99DAF3;color:#000"><span class="dot" style="background:#000"></span>Lead → Book %</button>
           <button class="tog-btn on" onclick="toggleOsbDs(this,'cvr',1)" style="border-color:#0084B5;background:#0084B5;color:#fff"><span class="dot" style="background:#fff"></span>Same-day %</button>
+          <button class="tog-btn on" onclick="toggleOsbDs(this,'cvr',2)" style="border-color:#00FFC2;background:#00FFC2;color:#000" title="Of leads who booked in the period, % who have attended a first visit (recent bookings may not have attended yet)"><span class="dot" style="background:#000"></span>Booked → Attended %</button>
         </div>
       </div>
       <div class="chart-with-last">
@@ -284,6 +285,7 @@
             <th class="num" data-sort="cvr">Lead → Book %</th>
             <th class="num" data-sort="b24">Booked Same Day</th>
             <th class="num" data-sort="cvr24">Same-day %</th>
+            <th class="num" data-sort="att">Booked → Attended %</th>
           </tr></thead>
           <tbody></tbody>
         </table>
@@ -1039,14 +1041,19 @@ function buildStudioCplTable(cfg, from, to, selStudios){
    bookings (data.json first_bookings / bookings_same_day, dated by booking date).
    Lead → Book % = first bookings ÷ leads in the same period; Same-day % =
    first bookings made on the signup date ÷ leads (source has dates only, no
-   times, so there is no hours-to-book metric).
+   times, so there is no hours-to-book metric). Booked → Attended % is a
+   cohort rate: of first bookings in the period, the share whose lead has a
+   first visit (bookings_attended ÷ first_bookings) — recent periods read low
+   until those bookings' classes happen.
    ══════════════════════════════════════════════════════════════════════════ */
 const OSB_CPR_COSTS_ACTIVE={google:true,meta:true,leadteam:true,external_agency:true};
-const OSB_FUNNEL_FIELDS=['signups','first_bookings','bookings_same_day','first_visits','first_activations'];
+const OSB_FUNNEL_FIELDS=['signups','first_bookings','bookings_same_day','bookings_attended','first_visits','first_activations'];
 let osbGran='weekly', osbCprGran='weekly', osbCplTableGran='monthly';
 const OSB_CHARTS={trend:null, cvr:null, cpr:null};
-const OSB_HIDDEN={trend:[false,false,false,false], cvr:[false,false], cpr:[false,false,false,false]};
-let _osbCprTotals=[null,null,null,null], _osbCvrTotals=[null,null];
+const OSB_HIDDEN={trend:[false,false,false,false], cvr:[false,false,false], cpr:[false,false,false,false]};
+let _osbCprTotals=[null,null,null,null], _osbCvrTotals=[null,null,null];
+// Before the LEADS view has BOOKINGS_ATTENDED, show — instead of a fake 0%.
+const osbHasAttended=()=>(OS_RAW.daily_detail||[]).some(r=>r.bookings_attended);
 
 const pctOrNull=(n,d)=>d>0?Math.round(n/d*1000)/10:null;
 const fmtPct=v=>v==null?'—':v.toFixed(1)+'%';
@@ -1166,10 +1173,12 @@ function applyOsbFilters(){
   ]);
 
   const tot=OSB_FUNNEL_FIELDS.reduce((o,f)=>(o[f]=series.reduce((a,m)=>a+m[f],0),o),{});
-  _osbCvrTotals=[pctOrNull(tot.first_bookings,tot.signups), pctOrNull(tot.bookings_same_day,tot.signups)];
+  const att=osbHasAttended()?pctOrNull:()=>null;
+  _osbCvrTotals=[pctOrNull(tot.first_bookings,tot.signups), pctOrNull(tot.bookings_same_day,tot.signups), att(tot.bookings_attended,tot.first_bookings)];
   _osbLineChart('cvr','osbCvrChart', labels, [
     {label:'Lead → Book %', data:series.map(m=>pctOrNull(m.first_bookings,m.signups)), borderColor:'#99DAF3'},
     {label:'Same-day %', data:series.map(m=>pctOrNull(m.bookings_same_day,m.signups)), borderColor:'#0084B5'},
+    {label:'Booked → Attended %', data:series.map(m=>att(m.bookings_attended,m.first_bookings)), borderColor:'#00FFC2'},
   ], fmtPct);
 
   buildOsbStudioTable(from, to, studios, sources);
@@ -1179,20 +1188,22 @@ function applyOsbFilters(){
 
 function buildOsbStudioTable(from, to, selStudios, sources){
   const studios=(selStudios&&selStudios.length?selStudios:OS_RAW.studios);
+  const att=osbHasAttended()?pctOrNull:()=>null;
   const rows=studios.map(studio=>{
     const rs=[...filterRows(OS_RAW.daily_detail||[],from,to,[studio],sources), ...filterRows(OS_RAW.monthly_detail||[],from,to,[studio],sources)];
     const leads=rs.reduce((a,r)=>a+(r.signups||0),0);
     const bookings=rs.reduce((a,r)=>a+(r.first_bookings||0),0);
     const b24=rs.reduce((a,r)=>a+(r.bookings_same_day||0),0);
-    return {studio, leads, bookings, b24, cvr:pctOrNull(bookings,leads), cvr24:pctOrNull(b24,leads)};
+    const attended=rs.reduce((a,r)=>a+(r.bookings_attended||0),0);
+    return {studio, leads, bookings, b24, attended, cvr:pctOrNull(bookings,leads), cvr24:pctOrNull(b24,leads), att:att(attended,bookings)};
   }).filter(r=>r.leads||r.bookings);
   if(!_sortState['osbStudioTable']) _sortState['osbStudioTable']={col:'leads', asc:false};
   const n=v=>v.toLocaleString();
   sortableTable('osbStudioTable', rows,
-    (r,i)=>`<tr><td class="row-num">${i}</td><td>${r.studio}</td><td class="num">${n(r.leads)}</td><td class="num">${n(r.bookings)}</td><td class="num">${fmtPct(r.cvr)}</td><td class="num">${n(r.b24)}</td><td class="num">${fmtPct(r.cvr24)}</td></tr>`,
+    (r,i)=>`<tr><td class="row-num">${i}</td><td>${r.studio}</td><td class="num">${n(r.leads)}</td><td class="num">${n(r.bookings)}</td><td class="num">${fmtPct(r.cvr)}</td><td class="num">${n(r.b24)}</td><td class="num">${fmtPct(r.cvr24)}</td><td class="num">${fmtPct(r.att)}</td></tr>`,
     all=>{
-      const L=all.reduce((a,r)=>a+r.leads,0), B=all.reduce((a,r)=>a+r.bookings,0), B24=all.reduce((a,r)=>a+r.b24,0);
-      return `<tr><td></td><td><strong>Total</strong></td><td class="num"><strong>${n(L)}</strong></td><td class="num"><strong>${n(B)}</strong></td><td class="num"><strong>${fmtPct(pctOrNull(B,L))}</strong></td><td class="num"><strong>${n(B24)}</strong></td><td class="num"><strong>${fmtPct(pctOrNull(B24,L))}</strong></td></tr>`;
+      const L=all.reduce((a,r)=>a+r.leads,0), B=all.reduce((a,r)=>a+r.bookings,0), B24=all.reduce((a,r)=>a+r.b24,0), A=all.reduce((a,r)=>a+r.attended,0);
+      return `<tr><td></td><td><strong>Total</strong></td><td class="num"><strong>${n(L)}</strong></td><td class="num"><strong>${n(B)}</strong></td><td class="num"><strong>${fmtPct(pctOrNull(B,L))}</strong></td><td class="num"><strong>${n(B24)}</strong></td><td class="num"><strong>${fmtPct(pctOrNull(B24,L))}</strong></td><td class="num"><strong>${fmtPct(att(A,B))}</strong></td></tr>`;
     });
 }
 
