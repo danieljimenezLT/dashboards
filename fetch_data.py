@@ -28,7 +28,8 @@ def strip_brand(name):
     return name
 
 
-BOOKING_KEYS = ("first_bookings", "bookings_1h", "bookings_24h", "bookings_7d")
+BOOKING_KEYS = ("first_bookings", "bookings_same_day", "bookings_next_day",
+                "bookings_7d", "bookings_after_7d")
 
 
 def booking_fields(vals):
@@ -57,9 +58,10 @@ cur.execute("""
         SUM(FIRST_ACTIVATIONS)  AS first_activations,
         SUM(FIRST_SALES)        AS first_sales,
         SUM(FIRST_BOOKINGS)            AS first_bookings,
-        SUM(BOOKINGS_WITHIN_1_HOUR)    AS bookings_1h,
-        SUM(BOOKINGS_WITHIN_24_HOURS)  AS bookings_24h,
-        SUM(BOOKINGS_WITHIN_7_DAYS)    AS bookings_7d
+        SUM(SAME_DAY_BOOKINGS)         AS bookings_same_day,
+        SUM(NEXT_DAY_BOOKINGS)         AS bookings_next_day,
+        SUM(BOOKINGS_WITHIN_7_DAYS)    AS bookings_7d,
+        SUM(BOOKINGS_AFTER_7_DAYS)     AS bookings_after_7d
     FROM MARKETING_REPORTS.PUBLIC.LEADS
     WHERE EVENT_DATE >= DATE_TRUNC('year', CURRENT_DATE())
       AND EVENT_DATE <= DATEADD('day', -2, CURRENT_DATE())
@@ -75,7 +77,7 @@ daily_detail = [
         "first_visits":       int(r[4] or 0),
         "first_activations":  int(r[5] or 0),
         "first_sales":        int(r[6] or 0),
-        **booking_fields(r[7:11]),
+        **booking_fields(r[7:12]),
     }
     for r in cur.fetchall()
 ]
@@ -90,9 +92,10 @@ cur.execute("""
         SUM(FIRST_ACTIVATIONS)  AS first_activations,
         SUM(FIRST_SALES)        AS first_sales,
         SUM(FIRST_BOOKINGS)            AS first_bookings,
-        SUM(BOOKINGS_WITHIN_1_HOUR)    AS bookings_1h,
-        SUM(BOOKINGS_WITHIN_24_HOURS)  AS bookings_24h,
-        SUM(BOOKINGS_WITHIN_7_DAYS)    AS bookings_7d
+        SUM(SAME_DAY_BOOKINGS)         AS bookings_same_day,
+        SUM(NEXT_DAY_BOOKINGS)         AS bookings_next_day,
+        SUM(BOOKINGS_WITHIN_7_DAYS)    AS bookings_7d,
+        SUM(BOOKINGS_AFTER_7_DAYS)     AS bookings_after_7d
     FROM MARKETING_REPORTS.PUBLIC.LEADS
     WHERE EVENT_DATE <  DATE_TRUNC('year', CURRENT_DATE())
       AND EVENT_DATE >= DATEADD('year', -3, CURRENT_DATE())
@@ -108,7 +111,7 @@ monthly_detail = [
         "first_visits":       int(r[4] or 0),
         "first_activations":  int(r[5] or 0),
         "first_sales":        int(r[6] or 0),
-        **booking_fields(r[7:11]),
+        **booking_fields(r[7:12]),
     }
     for r in cur.fetchall()
 ]

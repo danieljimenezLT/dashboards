@@ -244,7 +244,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
         <div class="toggle-group" id="osbCvrToggles" style="margin-bottom:0">
           <button class="tog-btn on" onclick="toggleOsbDs(this,'cvr',0)" style="border-color:#99DAF3;background:#99DAF3;color:#000"><span class="dot" style="background:#000"></span>Lead → Book %</button>
-          <button class="tog-btn on" onclick="toggleOsbDs(this,'cvr',1)" style="border-color:#0084B5;background:#0084B5;color:#fff"><span class="dot" style="background:#fff"></span>Same-day (24h) %</button>
+          <button class="tog-btn on" onclick="toggleOsbDs(this,'cvr',1)" style="border-color:#0084B5;background:#0084B5;color:#fff"><span class="dot" style="background:#fff"></span>Same-day %</button>
         </div>
       </div>
       <div class="chart-with-last">
@@ -282,8 +282,8 @@
             <th class="num" data-sort="leads">Leads</th>
             <th class="num" data-sort="bookings">Bookings</th>
             <th class="num" data-sort="cvr">Lead → Book %</th>
-            <th class="num" data-sort="b24">Booked ≤24h</th>
-            <th class="num" data-sort="cvr24">Same-day (24h) %</th>
+            <th class="num" data-sort="b24">Booked Same Day</th>
+            <th class="num" data-sort="cvr24">Same-day %</th>
           </tr></thead>
           <tbody></tbody>
         </table>
@@ -1036,12 +1036,13 @@ function buildStudioCplTable(cfg, from, to, selStudios){
 
 /* ══════════════════════════════════════════════════════════════════════════
    OS BOOKINGS TAB — same filters/spend logic as the OS tab, plus first
-   bookings (data.json first_bookings / bookings_24h, dated by booking date).
+   bookings (data.json first_bookings / bookings_same_day, dated by booking date).
    Lead → Book % = first bookings ÷ leads in the same period; Same-day % =
-   first bookings made within 24h of signup ÷ leads.
+   first bookings made on the signup date ÷ leads (source has dates only, no
+   times, so there is no hours-to-book metric).
    ══════════════════════════════════════════════════════════════════════════ */
 const OSB_CPR_COSTS_ACTIVE={google:true,meta:true,leadteam:true,external_agency:true};
-const OSB_FUNNEL_FIELDS=['signups','first_bookings','bookings_24h','first_visits','first_activations'];
+const OSB_FUNNEL_FIELDS=['signups','first_bookings','bookings_same_day','first_visits','first_activations'];
 let osbGran='weekly', osbCprGran='weekly', osbCplTableGran='monthly';
 const OSB_CHARTS={trend:null, cvr:null, cpr:null};
 const OSB_HIDDEN={trend:[false,false,false,false], cvr:[false,false], cpr:[false,false,false,false]};
@@ -1165,10 +1166,10 @@ function applyOsbFilters(){
   ]);
 
   const tot=OSB_FUNNEL_FIELDS.reduce((o,f)=>(o[f]=series.reduce((a,m)=>a+m[f],0),o),{});
-  _osbCvrTotals=[pctOrNull(tot.first_bookings,tot.signups), pctOrNull(tot.bookings_24h,tot.signups)];
+  _osbCvrTotals=[pctOrNull(tot.first_bookings,tot.signups), pctOrNull(tot.bookings_same_day,tot.signups)];
   _osbLineChart('cvr','osbCvrChart', labels, [
     {label:'Lead → Book %', data:series.map(m=>pctOrNull(m.first_bookings,m.signups)), borderColor:'#99DAF3'},
-    {label:'Same-day (24h) %', data:series.map(m=>pctOrNull(m.bookings_24h,m.signups)), borderColor:'#0084B5'},
+    {label:'Same-day %', data:series.map(m=>pctOrNull(m.bookings_same_day,m.signups)), borderColor:'#0084B5'},
   ], fmtPct);
 
   buildOsbStudioTable(from, to, studios, sources);
@@ -1182,7 +1183,7 @@ function buildOsbStudioTable(from, to, selStudios, sources){
     const rs=[...filterRows(OS_RAW.daily_detail||[],from,to,[studio],sources), ...filterRows(OS_RAW.monthly_detail||[],from,to,[studio],sources)];
     const leads=rs.reduce((a,r)=>a+(r.signups||0),0);
     const bookings=rs.reduce((a,r)=>a+(r.first_bookings||0),0);
-    const b24=rs.reduce((a,r)=>a+(r.bookings_24h||0),0);
+    const b24=rs.reduce((a,r)=>a+(r.bookings_same_day||0),0);
     return {studio, leads, bookings, b24, cvr:pctOrNull(bookings,leads), cvr24:pctOrNull(b24,leads)};
   }).filter(r=>r.leads||r.bookings);
   if(!_sortState['osbStudioTable']) _sortState['osbStudioTable']={col:'leads', asc:false};
