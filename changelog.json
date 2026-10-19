@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-10-19",
+      "pr_number": 468,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/468",
+      "author": "Santiago Estrada",
+      "categories": [
+        "General"
+      ],
+      "title": "Bookings now measured by day instead of hours",
+      "summary": "The OS Bookings tab in the Internal Scorecard now shows Same-day booking % (booked on the signup date) since booking times aren't available."
+    },
+    {
+      "date": "2026-10-19",
       "pr_number": 467,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/467",
       "author": "Santiago Estrada",
