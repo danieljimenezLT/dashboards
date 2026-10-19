@@ -1141,7 +1141,9 @@ async function handleSaveBrandAuditStatuses(body, env, headers) {
 // be formatted as YYYY-MM-DD strings — Snowflake's SQL API otherwise returns
 // DATE columns as raw internal day-count integers, not human-readable dates.
 
-const SF_ACCOUNT   = 'MINDBODYORG-PLAYLIST_DATA_MART_SWEAT440';
+// Hyphens, not underscores: Cloudflare's resolver rejects underscore
+// hostnames (error 1016). Snowflake serves both forms for the same account.
+const SF_ACCOUNT   = 'MINDBODYORG-PLAYLIST-DATA-MART-SWEAT440';
 const SF_ROLE      = 'SYSADMIN';
 const SF_WAREHOUSE = 'COMPUTE_WH';
 const SF_DATABASE  = 'MARKETING_REPORTS';
