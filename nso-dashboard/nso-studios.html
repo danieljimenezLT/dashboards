@@ -325,7 +325,7 @@
 const NSO=['SWEAT440 Aventura','SWEAT440 Burlington','SWEAT440 Charlotte - South End','SWEAT440 Dallas - Uptown','SWEAT440 Dunwoody','SWEAT440 Fort Myers','SWEAT440 Herriman','SWEAT440 Long Beach','SWEAT440 Middletown','SWEAT440 Naples - Mercato','SWEAT440 North Miami','SWEAT440 OKC - Rose Creek','SWEAT440 Old Bridge','SWEAT440 Orlando - Dr Phillips','SWEAT440 Reston'];
 const EXCL_SRC=['ClassPass / Platforms'];
 
-let RAW=null,SC=null,SC2=null,PRE_WEEKS=null,GRS_SPEND=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},VIDEO_DRIVE_LINKS={},CH_RAW=null,OTHER_COSTS=null;const _ch={};let _chDupOnly=false,_presaleDatesActive=false,_presaleCapDate=null;
+let RAW=null,SC=null,SC2=null,PRE_WEEKS=null,GRS_SPEND=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},VIDEO_DRIVE_LINKS={},CH_RAW=null,OTHER_COSTS=null;const _ch={};let _chDupOnly=false,_presaleDatesActive=false,_presaleCapDate=null,_presaleKey=null;
 let CUR_USER=null,_allowedStudios=null;const isAdminUser=()=>CUR_USER&&CUR_USER.role==='admin';
 let _sumView='cum',_sumStudio=null,_scStudio=null,_dataThruLabel='',_sumD7End=null;
 let _mktSel={meta:null,google:null,ga4:null,gbp:null,instagram:null};
@@ -773,17 +773,24 @@ function _applyPresaleDates(cap){
   const firstStart=wks.map(w=>w.date_start).filter(Boolean).sort()[0]||null;
   const fFromEl=document.getElementById('fFrom'),fToEl=document.getElementById('fTo');
   const curFrom=fFromEl?fFromEl.value:'';
-  const needsReset=!curFrom||curFrom>cap.capDate||!_presaleDatesActive||_presaleCapDate!==cap.capDate;
+  // Reset only when the selected opened studios change — not when the cap moves
+  // between tabs (Client History runs to the 1st bill date, the rest of the
+  // dashboard to the day before opening), or the user's dates get overwritten.
+  const key=cap.openDate+'|'+cap.studios.map(s=>s.data_name||s.name).sort().join(',');
+  const needsReset=!curFrom||curFrom>cap.capDate||!_presaleDatesActive||_presaleKey!==key;
   if(needsReset){
     if(firstStart&&fFromEl)fFromEl.value=firstStart;
     if(fToEl)fToEl.value=cap.capDate;
     _presaleDatesActive=true;
-    _presaleCapDate=cap.capDate;
+    _presaleKey=key;
+  } else if(fToEl&&_presaleCapDate!==cap.capDate&&(fToEl.value===_presaleCapDate||fToEl.value>cap.capDate)){
+    fToEl.value=cap.capDate;     // end date still at the old cap (or past the new one) → follow the cap
   }
+  _presaleCapDate=cap.capDate;
 }
 function _resetToRollingMonth(){
   if(!_presaleDatesActive)return;
-  _presaleDatesActive=false;_presaleCapDate=null;
+  _presaleDatesActive=false;_presaleCapDate=null;_presaleKey=null;
   const _now=new Date(),_fomNow=new Date(_now.getFullYear(),_now.getMonth(),1),_2ago=new Date(_now.getTime()-2*864e5);
   const fFromEl=document.getElementById('fFrom'),fToEl=document.getElementById('fTo');
   if(fFromEl)fFromEl.value=lds(_fomNow);
@@ -3738,6 +3745,9 @@ let _chSort={col:'date',asc:false};
 // 'members'      = one row per membership: join date + cancel date, for churn
 let _chView='transactions';
 let _chMemSort={col:'join_date',asc:false};
+// Members view: bill cycle the churn is measured in ('all' | 0 before 1st bill | 1-3 after the Nth bill)
+let _chCycle='all';
+const STUDIO_OPENING={};   // studio name → grand opening (studios.json opening_date)
 
 // View toggle shown in both views' controls bar
 function _chViewToggle(){
@@ -3787,6 +3797,54 @@ function _chBuildMembers(records){
   return out;
 }
 
+// Bill cycles: presale memberships are sold at $0 and first charged on the
+// studio's first bill date, then every 4 weeks. Bill dates come from the data
+// (nso_client_history.json → bill_dates, days with 10+ presale charges);
+// cycles not reached yet are projected 28 days apart. Cycle 0 = before the
+// 1st bill, 1 = from the 1st bill to the day before the 2nd, 2 = the same for
+// the 2nd bill, 3 = from the 3rd bill to the end of tracking, 90 days after the
+// grand opening (no 4th-bill cycle: only ~6 days of it would fit).
+const CH_CYCLES=[{k:0,name:'Before 1st bill'},{k:1,name:'After 1st bill'},{k:2,name:'After 2nd bill'},{k:3,name:'After 3rd bill'}];
+const CH_TRACK_DAYS=90;
+const _chAddDays=(iso,n)=>{const d=new Date(iso+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
+function _chStudioBills(studio){
+  const st=(CH_RAW&&CH_RAW.studios||[]).find(x=>x.name.replace(/^SWEAT440\s+/,'')===studio);
+  return (st&&st.bill_dates)||[];
+}
+// First bill date: from the data; for a studio that opened but whose bills
+// aren't detected, its grand opening
+function _chBillDate(studio){
+  const b=_chStudioBills(studio);
+  if(b.length)return b[0];
+  if(STUDIO_OPENING[studio])return STUDIO_OPENING[studio];
+  const sc=(SC&&SC.studios||[]).find(x=>(x.data_name||x.name)===studio);
+  return sc&&sc.opening_date||null;
+}
+// Grand opening (start of the 90-day window)
+const _chOpening=studio=>STUDIO_OPENING[studio]||_chBillDate(studio);
+// Nth bill date (1 = first bill)
+function _chBill(studio,n){
+  const b=_chStudioBills(studio);
+  if(b[n-1])return b[n-1];
+  const last=b.length?b[b.length-1]:_chBillDate(studio), k=b.length?b.length:1;
+  return _chAddDays(last,28*(n-k));
+}
+// Cycle a cancellation fell in (0-3), 5 = past the 90-day window, or null
+function _chCancelCycle(studio,cancel){
+  if(!cancel)return null;
+  if(cancel>_chAddDays(_chOpening(studio),CH_TRACK_DAYS-1))return 5;
+  if(cancel<_chBill(studio,1))return 0;
+  let n=1;while(n<3&&cancel>=_chBill(studio,n+1))n++;
+  return n;
+}
+// Presale data cap for opened studios: through the first bill date (was the
+// day before opening)
+function _chPresaleCap(cap){
+  if(!cap)return null;
+  const bills=cap.studios.map(s=>_chBillDate(s.data_name||s.name)).filter(Boolean);
+  return bills.length?{...cap,capDate:bills.sort().pop()}:cap;
+}
+
 function chMemSortBy(col){
   if(_chMemSort.col===col)_chMemSort.asc=!_chMemSort.asc;
   else{_chMemSort.col=col;_chMemSort.asc=!/date/.test(col);}
@@ -3814,13 +3872,19 @@ function renderClientHistory(){
     }
   }
 
-  // Cap at 2 days ago (same cutoff as other tabs); further capped at opening_date-1 for opened studios
-  const _chCap=(()=>{const n=new Date();n.setDate(n.getDate()-2);return n.toISOString().slice(0,10);})();
-  const _chOpenCap=_nsoOpenedCap();
-  const _chEffCap=_chOpenCap?(_chCap<_chOpenCap.capDate?_chCap:_chOpenCap.capDate):_chCap;
-  records=records.filter(r=>r.date<=_chEffCap);
+  // Automatic charges on existing presale contracts (first bill, renewals) aren't purchases
+  records=records.filter(r=>!r.bill_charge);
 
-  if(_chView==='members'){el.innerHTML=_chMembersHtml(records,_chOpenCap,_chEffCap);return;}
+  // Cap at 2 days ago (same cutoff as other tabs); further capped at the first
+  // bill date for opened studios
+  const _chCap=(()=>{const n=new Date();n.setDate(n.getDate()-2);return n.toISOString().slice(0,10);})();
+  const _chOpenCap=_chPresaleCap(_nsoOpenedCap());
+  const _chEffCap=_chOpenCap?(_chCap<_chOpenCap.capDate?_chCap:_chOpenCap.capDate):_chCap;
+  // Members view: joins still follow the presale cap (date range = join date),
+  // but cancellations run to the 2-day cut, so churn after opening / after each
+  // bill shows up.
+  if(_chView==='members'){el.innerHTML=_chMembersHtml(records.filter(r=>r.date<=_chCap),_chOpenCap,_chCap);return;}
+  records=records.filter(r=>r.date<=_chEffCap);
 
   // Date filter
   const from=document.getElementById('fFrom').value||'';
@@ -4016,10 +4080,34 @@ function _chMembersHtml(records,_chOpenCap,_chEffCap){
   const avgDays=cancelled.length?cancelled.reduce((s,m)=>s+m.days_to_cancel,0)/cancelled.length:null;
   const unknown=mem.filter(m=>m.join_unknown).length;
 
+  // Bill cycles — presale members (joined before the grand opening) of studios
+  // that have opened; everyone else stays out of the cycle numbers.
+  for(const m of mem){
+    const bill=_chBillDate(m.studio);
+    m.bill_date=bill&&bill<=_chEffCap?bill:null;
+    // presale memberships bought through the first bill date — packs and regular
+    // memberships bill on their own schedule
+    m.presale=!!(m.bill_date&&m.join_date&&m.join_date<=m.bill_date&&/pre.?sale/i.test(m.product||''));
+    m.cycle=m.presale?_chCancelCycle(m.studio,m.cancel_date):null;
+  }
+  const preMem=joined.filter(m=>m.presale);
+  const openedStudios=[...new Set(preMem.map(m=>m.studio))];
+  const notOpen=[...new Set(joined.filter(m=>!m.bill_date).map(m=>m.studio))];
+  const hasCycles=preMem.length>0;
+  if(!hasCycles)_chCycle='all';
+  // A cycle counts for a studio once its start (the Nth bill) has been reached
+  const reached=(m,k)=>k===0||_chBill(m.studio,k)<=_chEffCap;
+  const cycStats=k=>{
+    const pool=preMem.filter(m=>reached(m,k));
+    const start=pool.filter(m=>m.cycle==null||m.cycle>=k).length;   // still active when the cycle starts (incl. past day 90)
+    const lost=pool.filter(m=>m.cycle===k).length;
+    return{start,lost,pending:!pool.length,partial:pool.length<preMem.length};
+  };
+
   const {col,asc}=_chMemSort;
   mem.sort((a,b)=>{
     let av=a[col]??'',bv=b[col]??'';
-    if(col==='amount'||col==='days_to_cancel'){av=av===''?-1:+av;bv=bv===''?-1:+bv;}
+    if(col==='amount'||col==='days_to_cancel'||col==='cycle'){av=av===''?-1:+av;bv=bv===''?-1:+bv;}
     else{av=String(av).toLowerCase();bv=String(bv).toLowerCase();}
     return av<bv?(asc?-1:1):av>bv?(asc?1:-1):0;
   });
@@ -4035,45 +4123,77 @@ function _chMembersHtml(records,_chOpenCap,_chEffCap){
   h+=`<div class="chart-card" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:0">`;
   h+=_chViewToggle();
   h+=`<button onclick="_chDupOnly=!_chDupOnly;renderClientHistory()" style="padding:5px 14px;border-radius:4px;border:2px solid ${_chDupOnly?'#f4a021':'#2a4a5a'};background:${_chDupOnly?'#f4a021':'transparent'};color:${_chDupOnly?'#000':'#8aaabb'};font-family:Oswald,sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;cursor:pointer;letter-spacing:.5px">Multiple Memberships Only${multiAccts.size?' ('+multiAccts.size+')':''}</button>`;
+  {
+    const cb=(k,label,dis)=>`<button ${dis?'disabled':''} onclick="_chCycle=${k==='all'?"'all'":k};renderClientHistory()" style="padding:5px 12px;border-radius:4px;border:2px solid ${_chCycle===k?'#00A3E0':'#2a4a5a'};background:${_chCycle===k?'#00A3E0':'transparent'};color:${_chCycle===k?'#fff':'#8aaabb'};font-family:Oswald,sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;cursor:${dis?'not-allowed':'pointer'};opacity:${dis?.45:1};letter-spacing:.5px">${label}</button>`;
+    h+=`<span style="font-family:Oswald,sans-serif;font-style:italic;font-weight:600;font-size:12px;text-transform:uppercase;color:#5a7a8a" title="Presale memberships are first billed on the grand opening, then on the same day each month">Bill cycle</span>`;
+    h+=cb('all','All',false)+CH_CYCLES.map(c=>cb(c.k,c.name,!hasCycles)).join('');
+  }
   h+=`<div style="margin-left:auto;display:flex;gap:8px"><button onclick="chExportCSV()" style="background:#00A3E0;color:#000;border:none;border-radius:4px;padding:6px 14px;font-family:Oswald,sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;cursor:pointer">Export CSV</button></div>`;
   h+=`</div>`;
 
-  // Churn KPIs
+  // Bill-cycle notes
+  const fmtD=iso=>new Date(iso+'T00:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'});
+  if(hasCycles){
+    const bills=openedStudios.map(st=>{const real=_chStudioBills(st).length;
+      return `${st}: ${[1,2,3].map(n=>`${fmtD(_chBill(st,n))}${n>real?'*':''}`).join(' · ')} → tracked to ${fmtD(_chAddDays(_chOpening(st),CH_TRACK_DAYS-1))}`;}).join(' &nbsp;|&nbsp; ');
+    h+=`<div style="font-size:11px;color:#8aaabb;margin:10px 0 0">Bill dates (every 4 weeks; * = projected) — ${bills}</div>`;
+  }
+  if(_chCycle!=='all'&&notOpen.length)h+=`<div style="font-size:11px;color:#f4a021;margin:6px 0 0">${notOpen.length} studio${notOpen.length>1?'s':''} not open yet ${notOpen.length>1?'are':'is'} left out of bill cycles (${notOpen.join(', ')}). Bill cycles start at grand opening.</div>`;
+  else if(!hasCycles&&notOpen.length)h+=`<div style="font-size:11px;color:#8aaabb;margin:6px 0 0">Bill cycles start at grand opening — none of the selected studios has opened yet.</div>`;
+
+  // Churn KPIs (All, or the selected bill cycle)
   const card=(label,val,sub,color)=>`<div class="kpi-card"><div class="kpi-card-label">${label}</div><div class="kpi-card-val"${color?` style="color:${color}"`:''}>${val}</div>${sub?`<div style="font-size:10px;color:#8aaabb;margin-top:2px">${sub}</div>`:''}</div>`;
   h+=`<div class="kpi-grid" style="margin:16px 0;grid-template-columns:repeat(5,1fr)">`;
-  h+=card('Joined',joined.length.toLocaleString(),'memberships sold');
-  h+=card('Cancelled',cancelled.length.toLocaleString(),'of those memberships','#ff6b6b');
-  h+=card('Still Active',active.toLocaleString(),'');
-  h+=card('Churn %',pct(churn),'cancelled ÷ joined','#ff6b6b');
-  h+=card('Avg Days to Cancel',avgDays==null?'—':avgDays.toFixed(1),'join → cancel');
+  if(_chCycle==='all'){
+    h+=card('Joined',joined.length.toLocaleString(),'memberships sold');
+    h+=card('Cancelled',cancelled.length.toLocaleString(),'of those memberships','#ff6b6b');
+    h+=card('Still Active',active.toLocaleString(),'');
+    h+=card('Churn %',pct(churn),'cancelled ÷ joined','#ff6b6b');
+    h+=card('Avg Days to Cancel',avgDays==null?'—':avgDays.toFixed(1),'join → cancel');
+  } else {
+    const c=CH_CYCLES[_chCycle], st=cycStats(_chCycle);
+    const preCanc=preMem.filter(m=>m.cycle!=null&&m.cycle<5).length;   // within 90 days of opening
+    const nth=['','1st','2nd','3rd','4th'];
+    h+=card(_chCycle===0?'Presale Members':`Billed at ${nth[_chCycle]} bill`,st.pending?'—':st.start.toLocaleString(),_chCycle===0?'presale memberships sold through the 1st bill date':'still active on that bill date');
+    h+=card(`Cancelled ${c.name.toLowerCase()}`,st.pending?'—':st.lost.toLocaleString(),_chCycle===0?'never paid a bill':_chCycle<3?`before the ${nth[_chCycle+1]} bill`:`until day ${CH_TRACK_DAYS} after opening`,'#ff6b6b');
+    h+=card('Cycle Churn %',st.pending?'—':pct(st.start?st.lost/st.start*100:null),st.pending?'not reached yet':`cancelled ÷ ${_chCycle===0?'presale members':'billed'}${st.partial?' · only studios that reached it':''}`,'#ff6b6b');
+    h+=card('Total Presale Churn',pct(preMem.length?preCanc/preMem.length*100:null),`all cycles, to day ${CH_TRACK_DAYS} after opening`);
+    h+=card('Still Active',(preMem.length-preCanc).toLocaleString(),`presale members (to day ${CH_TRACK_DAYS})`);
+  }
   h+=`</div>`;
   if(unknown)h+=`<div style="font-size:11px;color:#8aaabb;margin:-8px 0 12px">${unknown} cancellation${unknown>1?'s':''} without an earlier sale in the data (join date unknown) — listed below, not counted in churn.</div>`;
 
   // Churn by join month
   const byMonth={};
-  joined.forEach(m=>{const k=m.join_date.slice(0,7);const e=byMonth[k]||(byMonth[k]={j:0,c:0,d:0});e.j++;if(m.status==='Cancelled'){e.c++;e.d+=m.days_to_cancel;}});
+  joined.forEach(m=>{const k=m.join_date.slice(0,7);const e=byMonth[k]||(byMonth[k]={j:0,c:0,d:0,cy:[0,0,0,0,0,0],pre:0});e.j++;if(m.status==='Cancelled'){e.c++;e.d+=m.days_to_cancel;}
+    if(m.presale){e.pre++;if(m.cycle!=null)e.cy[m.cycle]++;}});
+  const cyReached=k=>preMem.some(m=>reached(m,k));
+  const hl=k=>_chCycle===k?'background:rgba(0,163,224,.12);':'';
+  const cyHead=hasCycles?CH_CYCLES.map(c=>`<th class="num" style="${hl(c.k)}white-space:nowrap" title="Presale members only">${c.name}</th>`).join(''):'';
+  const cyCells=e=>hasCycles?CH_CYCLES.map(c=>`<td class="num" style="${hl(c.k)}color:${cyReached(c.k)?'#ff6b6b':'#8aaabb'}">${!e.pre?'—':cyReached(c.k)?e.cy[c.k]:'pending'}</td>`).join(''):'';
+  const totCy=[0,1,2,3,4,5].map(k=>preMem.filter(m=>m.cycle===k).length);
   const months=Object.keys(byMonth).sort();
   if(months.length){
     h+=`<div class="chart-card" style="margin-bottom:0"><div class="chart-card-title">Churn by Join Month</div><div style="overflow-x:auto"><table class="data-table"><thead><tr>
-      <th>Join Month</th><th class="num">Joined</th><th class="num">Cancelled</th><th class="num">Still Active</th><th class="num">Churn %</th><th class="num">Avg Days to Cancel</th></tr></thead><tbody>`;
+      <th>Join Month</th><th class="num">Joined</th><th class="num">Cancelled</th>${cyHead}<th class="num">Still Active</th><th class="num">Churn %</th><th class="num">Avg Days to Cancel</th></tr></thead><tbody>`;
     for(const k of months){
       const e=byMonth[k];
       const lbl=new Date(k+'-01T00:00:00Z').toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'});
-      h+=`<tr><td>${lbl}</td><td class="num">${e.j}</td><td class="num" style="color:#ff6b6b">${e.c}</td><td class="num">${e.j-e.c}</td><td class="num">${pct(e.j?e.c/e.j*100:null)}</td><td class="num">${e.c?(e.d/e.c).toFixed(1):'—'}</td></tr>`;
+      h+=`<tr><td>${lbl}</td><td class="num">${e.j}</td><td class="num" style="color:#ff6b6b">${e.c}</td>${cyCells(e)}<td class="num">${e.j-e.c}</td><td class="num">${pct(e.j?e.c/e.j*100:null)}</td><td class="num">${e.c?(e.d/e.c).toFixed(1):'—'}</td></tr>`;
     }
-    h+=`<tr style="font-weight:700;border-top:2px solid #dde8ef"><td>Total</td><td class="num">${joined.length}</td><td class="num" style="color:#ff6b6b">${cancelled.length}</td><td class="num">${active}</td><td class="num">${pct(churn)}</td><td class="num">${avgDays==null?'—':avgDays.toFixed(1)}</td></tr>`;
-    h+=`</tbody></table></div></div>`;
+    h+=`<tr style="font-weight:700;border-top:2px solid #dde8ef"><td>Total</td><td class="num">${joined.length}</td><td class="num" style="color:#ff6b6b">${cancelled.length}</td>${cyCells({pre:preMem.length,cy:totCy})}<td class="num">${active}</td><td class="num">${pct(churn)}</td><td class="num">${avgDays==null?'—':avgDays.toFixed(1)}</td></tr>`;
+    h+=`</tbody></table></div>${hasCycles?`<div style="font-size:10px;color:#8aaabb;margin-top:6px">Bill-cycle columns count presale memberships only (bought through the first bill date), by the cycle they cancelled in, up to day ${CH_TRACK_DAYS} after opening.${totCy[5]?` ${totCy[5]} cancelled after day ${CH_TRACK_DAYS} — counted in Cancelled only.`:''}</div>`:''}</div>`;
   }
 
   // Members table
   h+=`<div class="chart-card"><div style="font-size:11px;color:#8aaabb;margin-bottom:8px">${mem.length} membership${mem.length!==1?'s':''} shown${_chDupOnly?' — accounts with multiple memberships':''}</div>`;
   h+=`<div style="overflow-x:auto"><table class="data-table" id="chTable"><thead><tr>`;
   h+=th('Name','client_name')+th('Email','email')+th('Phone','phone')+th('Studio','studio')+th('Source','source')+th('Product','product')+
-     th('Join Date','join_date',1)+th('Cancel Date','cancel_date',1)+th('Days to Cancel','days_to_cancel',1)+th('Status','status')+
+     th('Join Date','join_date',1)+th('Cancel Date','cancel_date',1)+th('Days to Cancel','days_to_cancel',1)+th('Status','status')+th('Cancelled In','cycle')+
      th('Platform','platform')+th('Amount','amount',1);
   h+=`</tr></thead><tbody>`;
   if(!mem.length){
-    h+=`<tr><td colspan="12" style="text-align:center;color:#8aaabb;padding:24px">No memberships match the current filters.</td></tr>`;
+    h+=`<tr><td colspan="13" style="text-align:center;color:#8aaabb;padding:24px">No memberships match the current filters.</td></tr>`;
   } else for(const m of mem){
     const isMulti=multiAccts.has(m.email);
     const badge=isMulti?` <span style="font-size:9px;background:rgba(244,160,33,.2);color:#f4a021;border-radius:3px;padding:1px 4px;margin-left:3px" title="${acctN[m.email]} memberships on this account">×${acctN[m.email]}</span>`:'';
@@ -4086,12 +4206,19 @@ function _chMembersHtml(records,_chOpenCap,_chEffCap){
     h+=`<td class="num">${m.join_date||'<span style="color:#8aaabb">unknown</span>'}</td>`;
     h+=`<td class="num" style="color:${m.cancel_date?'#ff6b6b':'inherit'}">${m.cancel_date||'—'}</td>`;
     h+=`<td class="num">${m.days_to_cancel==null?'—':m.days_to_cancel}</td>`;
-    h+=`<td>${st}</td><td>${m.platform||'—'}</td><td class="num">${amt}</td></tr>`;
+    h+=`<td>${st}</td><td>${_chCycleLabel(m)}</td><td>${m.platform||'—'}</td><td class="num">${amt}</td></tr>`;
   }
   h+=`</tbody></table></div></div>`;
 
   window._chMembers=mem;
   return h;
+}
+
+// "Cancelled In" for one membership: bill cycle of the cancel (presale members of opened studios)
+function _chCycleLabel(m,plain){
+  if(m.cycle==null)return plain?'':'<span style="color:#8aaabb">—</span>';
+  const t=m.cycle===5?`After day ${CH_TRACK_DAYS}`:CH_CYCLES[m.cycle].name;
+  return plain?t:`<span style="color:#ff6b6b">${t}</span>`;
 }
 
 function chSortBy(col){
@@ -4102,9 +4229,9 @@ function chSortBy(col){
 
 function chExportCSV(){
   if(_chView==='members'){
-    const hdr=['Name','Email','Phone','Studio','Source','Product','Join Date','Cancel Date','Days to Cancel','Status','Platform','Sold By','Amount'];
+    const hdr=['Name','Email','Phone','Studio','Source','Product','Join Date','Cancel Date','Days to Cancel','Status','Cancelled In','Platform','Sold By','Amount'];
     const rows=(window._chMembers||[]).map(m=>[
-      m.client_name,m.email,m.phone,m.studio,m.source||'N/A',m.product,m.join_date||'unknown',m.cancel_date||'',m.days_to_cancel??'',m.status,m.platform,m.sold_by,m.amount??''
+      m.client_name,m.email,m.phone,m.studio,m.source||'N/A',m.product,m.join_date||'unknown',m.cancel_date||'',m.days_to_cancel??'',m.status,_chCycleLabel(m,true),m.platform,m.sold_by,m.amount??''
     ].map(v=>{const s=String(v??'').replace(/"/g,'""');return /[",\n]/.test(s)?`"${s}"`:s;}).join(','));
     const blob=new Blob([[hdr.join(','),...rows].join('\n')],{type:'text/csv'});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);
@@ -5136,6 +5263,9 @@ async function init(){
 
   if(chRes.status==='fulfilled'){CH_RAW=chRes.value}
   else{console.warn('nso_client_history.json not found')}
+  // Grand opening = first bill date of presale memberships (Client History bill cycles)
+  try{const _sr=await fetch('../studios.json?_='+Date.now());if(_sr.ok){((await _sr.json()).studios||[]).forEach(s=>{if(s.opening_date)STUDIO_OPENING[s.name]=s.opening_date;});}}
+  catch(e){console.warn('studios.json not found — bill cycles fall back to scorecard opening dates')}
 
   if(pwRes.status==='fulfilled'){PRE_WEEKS=pwRes.value}
   else{console.warn('nso_pre_weeks_data.json not found');PRE_WEEKS=null}

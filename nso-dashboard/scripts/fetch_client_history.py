@@ -156,6 +156,8 @@ WITH filtered AS (
         s.SOURCE_CHANNEL,
         s.QUANTITY,
         s.IS_RETURN,
+        s.IS_AUTOPAY,
+        COALESCE(s.PAYMENTAMT_LOCAL, 0)             AS paid_now,
         COALESCE(s.GROSS_PAYMENTAMT_LOCAL, 0)       AS amount
     FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS s
     WHERE s.STUDIO_ID IN ({ID_LIST})
@@ -226,6 +228,7 @@ SELECT
     COALESCE(f.SOURCE_CHANNEL, '')                  AS source_channel,
     CASE WHEN f.QUANTITY = 1 AND f.IS_RETURN = 0 THEN 'sale' ELSE 'cancel' END AS txn_type,
     f.amount,
+    IFF(COALESCE(f.IS_AUTOPAY, 0) = 1 AND f.paid_now > 0, 1, 0) AS is_bill_charge,
     COALESCE({_SOURCE_CASE}, 'N/A')                 AS lead_source
 FROM filtered f
 LEFT JOIN phones     p ON p.CLIENT_ID             = f.CLIENT_ID
@@ -257,6 +260,8 @@ WITH filtered AS (
         s.SOURCE_CHANNEL,
         s.QUANTITY,
         s.IS_RETURN,
+        s.IS_AUTOPAY,
+        COALESCE(s.PAYMENTAMT_LOCAL, 0)             AS paid_now,
         COALESCE(s.GROSS_PAYMENTAMT_LOCAL, 0)       AS amount
     FROM PLAYLIST_DATA_MART.MINDBODY_REPORTING_ANALYTICS.MART_SALES_DETAILS s
     WHERE s.STUDIO_ID IN ({MEM_ID_LIST})
@@ -338,6 +343,7 @@ SELECT
     COALESCE(f.SOURCE_CHANNEL, '')                  AS source_channel,
     CASE WHEN f.QUANTITY = 1 AND f.IS_RETURN = 0 THEN 'sale' ELSE 'cancel' END AS txn_type,
     f.amount,
+    IFF(COALESCE(f.IS_AUTOPAY, 0) = 1 AND f.paid_now > 0, 1, 0) AS is_bill_charge,
     COALESCE({_SOURCE_CASE}, 'N/A')                 AS lead_source
 FROM filtered f
 LEFT JOIN phones     p ON p.CLIENT_ID             = f.CLIENT_ID
@@ -377,8 +383,23 @@ def _parse_rows(rows, cols) -> list[dict]:
             "sold_by":     _sold_by(row["SOURCE_CHANNEL"], row["ONLINE_FLAG"]),
             "amount":      float(row["AMOUNT"] or 0),
             "source":      row["LEAD_SOURCE"] or "N/A",
+            # Automatic charge on an existing contract (presale first bill / monthly
+            # renewal), not a new purchase. Presale purchases are sold at $0 paid and
+            # first charged on the bill date.
+            **({"bill_charge": True} if row.get("IS_BILL_CHARGE") else {}),
         })
     return out
+
+
+def _bill_dates(records: list[dict]) -> list[str]:
+    """Days presale memberships were billed (every 4 weeks from the first bill):
+    dates with 10+ automatic presale-product charges — single stray charges
+    are ignored. Empty until the studio has billed its presales."""
+    per_day: dict[str, int] = {}
+    for r in records:
+        if r.get("bill_charge") and r["type"] == "sale" and "pre" in r["product"].lower() and "sale" in r["product"].lower():
+            per_day[r["date"]] = per_day.get(r["date"], 0) + 1
+    return sorted(d for d, n in per_day.items() if n >= 10)
 
 
 def fetch_all() -> dict:
@@ -417,6 +438,7 @@ def fetch_all() -> dict:
         studios_out.append({
             "name":    info["name"],
             "code":    info["code"],
+            "bill_dates": _bill_dates(records),   # [0] = first bill date
             "records": records,
         })
         print(f"  {info['name']}: {len(records)} records")
