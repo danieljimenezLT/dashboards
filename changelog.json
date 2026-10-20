@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-10-20",
+      "pr_number": 471,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/471",
+      "author": "Sebastian Arango",
+      "categories": [
+        "NSO Dashboard"
+      ],
+      "title": "Client History now shows churn by bill cycle for opened studios",
+      "summary": "The Members view in Client History can measure presale churn before the first bill and after the 1st, 2nd and 3rd bills, tracked up to 90 days after the grand opening, and its data now runs through each studio's first bill date."
+    },
+    {
+      "date": "2026-10-20",
       "pr_number": 470,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/470",
       "author": "Sebastian Arango",
