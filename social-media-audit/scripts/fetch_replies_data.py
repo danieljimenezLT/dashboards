@@ -4,7 +4,8 @@ fetch_replies_data.py
 
 Monthly-only fetch of Instagram DM and comment reply times, for the
 "Replies to DMs" (within 4 business hours) and "Replies to comments"
-(within 1 business day) rubric items. Outputs data/replies.json.
+(share of comments with >=1 like or a studio reply) rubric items.
+Outputs data/replies.json.
 
 - Comments: read from each post's own comment thread via the Graph API.
   Comment threads persist indefinitely, so there's no retention concern
@@ -110,13 +111,16 @@ def _is_studio(author: dict, ig_id: str, username: str | None) -> bool:
 
 def evaluate_comments(comments, ig_id: str, username: str | None, tz, month_key: str):
     """comments: list of {id, timestamp, username, from:{id,username},
-    replies:{data:[...]}} as returned by
-    /{media-id}/comments?fields=id,timestamp,username,from,replies{...}.
-    Returns (total_incoming, on_time_count, replied_count) for comments
-    posted in month_key — replied_count ignores the deadline."""
+    like_count, replies:{data:[...]}} as returned by
+    /{media-id}/comments?fields=id,timestamp,username,from,like_count,replies{...}.
+    Returns (total_incoming, on_time_count, replied_count, engaged_count)
+    for comments posted in month_key — replied_count ignores the deadline;
+    engaged_count is comments with >=1 like (from anyone — the API only
+    exposes a count, not who liked it) or a studio reply, at any time."""
     total = 0
     on_time = 0
     replied = 0
+    engaged = 0
     for c in comments:
         if _is_studio(c, ig_id, username):
             continue  # the studio's own top-level comment, not incoming
@@ -138,7 +142,9 @@ def evaluate_comments(comments, ig_id: str, username: str | None, tz, month_key:
             replied += 1
             if min(studio_replies) <= deadline:
                 on_time += 1
-    return total, on_time, replied
+        if studio_replies or (c.get("like_count") or 0) >= 1:
+            engaged += 1
+    return total, on_time, replied, engaged
 
 
 def evaluate_conversation_messages(messages, ig_id: str, username: str | None, tz, month_key: str):
@@ -177,16 +183,21 @@ def classify_dms(total: int, on_time: int) -> str:
     return DM_ONTIME_PARTIAL
 
 
-def classify_comments(total: int, on_time: int) -> str:
-    """Mirrors classify_dms(): full credit if every comment was replied to in
-    time (or there were none), no credit if none were, partial credit
-    ("Sometimes") in between — instead of collapsing any single late reply
-    down to the same 0 credit as never replying at all."""
-    if total == 0 or on_time == total:
+COMMENTS_PASS_RATE = 0.9
+COMMENTS_PARTIAL_RATE = 0.5
+
+
+def classify_comments(total: int, engaged: int) -> str:
+    """Share of comments with >=1 like or a studio reply: >=90% (or no
+    comments) = Yes, 50-90% = Sometimes, <50% = No."""
+    if total == 0:
         return DM_ONTIME_PASS
-    if on_time == 0:
-        return DM_ONTIME_FAIL
-    return DM_ONTIME_PARTIAL
+    rate = engaged / total
+    if rate >= COMMENTS_PASS_RATE:
+        return DM_ONTIME_PASS
+    if rate >= COMMENTS_PARTIAL_RATE:
+        return DM_ONTIME_PARTIAL
+    return DM_ONTIME_FAIL
 
 
 # ── Network calls ───────────────────────────────────────────────────────────
@@ -244,10 +255,10 @@ def log_token_permissions(token: str):
 
 
 def fetch_comment_stats(ig_id: str, username: str | None, posts_in_month: list, tz, month_key: str, token: str):
-    """Returns (total, on_time, replied, posts_read, authorless) — posts_read lets the
-    caller tell "no comments" apart from "couldn't read any post"; authorless
-    means the API hid comment authors, so replies can't be attributed."""
-    total = on_time = replied = posts_read = 0
+    """Returns (total, on_time, replied, engaged, posts_read, authorless) — posts_read
+    lets the caller tell "no comments" apart from "couldn't read any post";
+    authorless means the API hid comment authors, so replies can't be attributed."""
+    total = on_time = replied = engaged = posts_read = 0
     authorless = False
     for post in posts_in_month:
         media_id = post.get("id")
@@ -256,7 +267,7 @@ def fetch_comment_stats(ig_id: str, username: str | None, posts_in_month: list, 
         try:
             comments = list(_paginate(
                 f"{BASE}/{media_id}/comments",
-                {"fields": "id,timestamp,username,from,replies{id,timestamp,username,from}", "limit": 50},
+                {"fields": "id,timestamp,username,from,like_count,replies{id,timestamp,username,from}", "limit": 50},
                 token,
             ))
         except Exception as e:
@@ -269,11 +280,12 @@ def fetch_comment_stats(ig_id: str, username: str | None, posts_in_month: list, 
             authorless = True
             continue
         posts_read += 1
-        t, o, r = evaluate_comments(comments, ig_id, username, tz, month_key)
+        t, o, r, e = evaluate_comments(comments, ig_id, username, tz, month_key)
         total += t
         on_time += o
         replied += r
-    return total, on_time, replied, posts_read, authorless
+        engaged += e
+    return total, on_time, replied, engaged, posts_read, authorless
 
 
 def fetch_dm_stats(page_id: str, ig_id: str, username: str | None, tz, month_key: str, token: str):
@@ -377,7 +389,7 @@ def main():
         if not username:
             print("    WARNING no username — falling back to id match, studio replies may be missed")
 
-        c_total, c_on_time, c_replied, c_read, c_authorless = fetch_comment_stats(
+        c_total, c_on_time, c_replied, c_engaged, c_read, c_authorless = fetch_comment_stats(
             ig_id, username, posts_in_month, tz, target_month, token)
         dm_stats = None
         if page_id:
@@ -393,11 +405,12 @@ def main():
         elif posts_in_month and c_read == 0:
             print(f"    comments: none of {len(posts_in_month)} posts readable — not scored")
         else:
-            print(f"    comments: {c_on_time}/{c_total} on time, {c_replied}/{c_total} replied at all "
-                  f"({c_read}/{len(posts_in_month)} posts read)")
-            month_data["repliesComments"] = classify_comments(c_total, c_on_time)
-            month_data["commentStats"] = {"total": c_total, "onTime": c_on_time, "replied": c_replied,
-                                          "postsRead": c_read, "postsInMonth": len(posts_in_month)}
+            print(f"    comments: {c_engaged}/{c_total} liked or replied, {c_replied}/{c_total} replied, "
+                  f"{c_on_time}/{c_total} replied on time ({c_read}/{len(posts_in_month)} posts read)")
+            month_data["repliesComments"] = classify_comments(c_total, c_engaged)
+            month_data["commentStats"] = {"total": c_total, "engaged": c_engaged, "onTime": c_on_time,
+                                          "replied": c_replied, "postsRead": c_read,
+                                          "postsInMonth": len(posts_in_month)}
         if dm_stats is None:
             print("    DMs: not readable — not scored")
         else:
