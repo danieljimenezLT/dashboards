@@ -440,11 +440,11 @@ const SC_ROWS = [
   { st: 'nso',  label: 'Presales', f: a => a.pre, fmt: fmtInt, vol: 'n', better: 'high' },
   { st: 'nso',  label: 'Cancellations', f: a => a.canc, fmt: fmtInt, vol: 'n' },
   { kpi: 'Net presales', st: 'nso',  label: 'Net presales', hint: 'presales − cancellations', f: a => a.netPre, fmt: fmtInt, vol: 'n', better: 'high' },
-  { kpi: 'Lead → net presale', st: 'nso',  label: 'Lead → net presale', f: a => div(a.netPre, a.leads), fmt: fmtPct, better: 'high' },
+  { kpi: 'Lead → Net Presale', st: 'nso',  label: 'Lead → Net Presale', f: a => div(a.netPre, a.leads), fmt: fmtPct, better: 'high' },
   { kpi: 'CPL', label: 'CPL', hint: 'cost per lead: ad spend ÷ leads', f: a => div(a.spend, a.leads), fmt: fmtUSD, better: 'low', when: paid },
   { kpi: 'CPFT', st: 'open', label: 'CPFT', hint: 'cost per first timer: ad spend ÷ first timers', f: a => div(a.spend, a.ft), fmt: fmtUSD, better: 'low', when: paid },
   { kpi: 'CPA', st: 'open', label: 'CPA', hint: 'cost per member: ad spend ÷ members', f: a => div(a.spend, a.mem), fmt: fmtUSD, better: 'low', when: paid },
-  { kpi: 'Cost / net presale', st: 'nso',  label: 'Cost per net presale', hint: 'ad spend ÷ net presales', f: a => perPos(a.spend, a.netPre), fmt: fmtUSD, better: 'low', when: paid },
+  { kpi: 'CPS', st: 'nso',  label: 'CPS', hint: 'cost per net presale: ad spend ÷ net presales', f: a => perPos(a.spend, a.netPre), fmt: fmtUSD, better: 'low', when: paid },
 
 ];
 
@@ -634,10 +634,10 @@ const TBL_COLS = [
   { key: 'pre',       label: 'Presales',        get: s => s.pre, fmt: fmtInt, st: 'nso' },
   { key: 'canc',      label: 'Cancellations',   get: s => s.canc, fmt: fmtInt, st: 'nso' },
   { key: 'netPre',    label: 'Net presales',    get: s => s.netPre, fmt: fmtInt, st: 'nso' },
-  { key: 'lnp',       label: 'Lead→Net presale', get: s => div(s.netPre, s.leads), fmt: fmtPct, st: 'nso' },
+  { key: 'lnp',       label: 'Lead→Net Presale', get: s => div(s.netPre, s.leads), fmt: fmtPct, st: 'nso' },
   { key: 'cpl',       label: 'CPL',             get: s => s.spend ? div(s.spend, s.leads) : null, fmt: fmtUSD, when: paid },
   { key: 'cpa',       label: 'CPA',   get: s => s.spend ? div(s.spend, s.mem) : null, fmt: fmtUSD0, st: 'open', when: paid },
-  { key: 'cpp',       label: 'Cost / net presale', get: s => s.spend ? perPos(s.spend, s.netPre) : null, fmt: fmtUSD0, st: 'nso', when: paid },
+  { key: 'cpp',       label: 'CPS', get: s => s.spend ? perPos(s.spend, s.netPre) : null, fmt: fmtUSD0, st: 'nso', when: paid },
 ];
 
 const tblCols = () => TBL_COLS.filter(rowShown);
