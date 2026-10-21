@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-10-21",
+      "pr_number": 475,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/475",
+      "author": "Sebastian Arango",
+      "categories": [
+        "Brand Audit"
+      ],
+      "title": "Brand Audit checks AI-made posts and starts fresh from October, feed posts only",
+      "summary": "The Brand Audit adds an \"AI misuse\" category based on SWEAT440's AI Post Check, goes back to reviewing feed posts only (no Stories), and its data was cleared so reviews restart from October 1."
+    },
+    {
+      "date": "2026-10-21",
       "pr_number": 474,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/474",
       "author": "Sebastian Arango",
