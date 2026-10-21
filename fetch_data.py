@@ -28,8 +28,26 @@ def strip_brand(name):
     return name
 
 
-BOOKING_KEYS = ("first_bookings", "bookings_same_day", "bookings_next_day",
-                "bookings_7d", "bookings_after_7d")
+# data.json key → LEADS view column (definition in sql/leads_view.sql).
+BOOKING_COLUMNS = {
+    "first_bookings":    "FIRST_BOOKINGS",
+    "bookings_same_day": "SAME_DAY_BOOKINGS",
+    "bookings_next_day": "NEXT_DAY_BOOKINGS",
+    "bookings_7d":       "BOOKINGS_WITHIN_7_DAYS",
+    "bookings_after_7d": "BOOKINGS_AFTER_7_DAYS",
+    "bookings_attended": "BOOKINGS_ATTENDED",
+}
+BOOKING_KEYS = tuple(BOOKING_COLUMNS)
+
+
+def booking_select(view_cols):
+    """SUM() list for the booking columns. A column the view doesn't have yet
+    reads as 0, so the refresh keeps working if the view is redeployed after
+    this script."""
+    return ",\n        ".join(
+        f"SUM({col}) AS {key}" if col in view_cols else f"0 AS {key}"
+        for key, col in BOOKING_COLUMNS.items()
+    )
 
 
 def booking_fields(vals):
@@ -49,19 +67,23 @@ conn = snowflake.connector.connect(
 )
 cur = conn.cursor()
 
+cur.execute("SELECT * FROM MARKETING_REPORTS.PUBLIC.LEADS LIMIT 0")
+LEADS_COLS = {d[0].upper() for d in cur.description}
+missing = [c for c in BOOKING_COLUMNS.values() if c not in LEADS_COLS]
+if missing:
+    print(f"  WARNING: LEADS view is missing {', '.join(missing)} — reading them as 0")
+BOOKING_SELECT = booking_select(LEADS_COLS)
+N_BOOK = len(BOOKING_KEYS)
+
 # ── Daily: start of current year → today ────────────────────────────────
-cur.execute("""
+cur.execute(f"""
     SELECT
         EVENT_DATE, STUDIO_NAME, SOURCE,
         SUM(SIGNUPS)            AS signups,
         SUM(FIRST_VISITS)       AS first_visits,
         SUM(FIRST_ACTIVATIONS)  AS first_activations,
         SUM(FIRST_SALES)        AS first_sales,
-        SUM(FIRST_BOOKINGS)            AS first_bookings,
-        SUM(SAME_DAY_BOOKINGS)         AS bookings_same_day,
-        SUM(NEXT_DAY_BOOKINGS)         AS bookings_next_day,
-        SUM(BOOKINGS_WITHIN_7_DAYS)    AS bookings_7d,
-        SUM(BOOKINGS_AFTER_7_DAYS)     AS bookings_after_7d
+        {BOOKING_SELECT}
     FROM MARKETING_REPORTS.PUBLIC.LEADS
     WHERE EVENT_DATE >= DATE_TRUNC('year', CURRENT_DATE())
       AND EVENT_DATE <= DATEADD('day', -2, CURRENT_DATE())
@@ -77,13 +99,13 @@ daily_detail = [
         "first_visits":       int(r[4] or 0),
         "first_activations":  int(r[5] or 0),
         "first_sales":        int(r[6] or 0),
-        **booking_fields(r[7:12]),
+        **booking_fields(r[7:7 + N_BOOK]),
     }
     for r in cur.fetchall()
 ]
 
 # ── Monthly: older history, 3yr cap ──────────────────────────────────────
-cur.execute("""
+cur.execute(f"""
     SELECT
         DATE_TRUNC('month', EVENT_DATE) AS month,
         STUDIO_NAME, SOURCE,
@@ -91,11 +113,7 @@ cur.execute("""
         SUM(FIRST_VISITS)       AS first_visits,
         SUM(FIRST_ACTIVATIONS)  AS first_activations,
         SUM(FIRST_SALES)        AS first_sales,
-        SUM(FIRST_BOOKINGS)            AS first_bookings,
-        SUM(SAME_DAY_BOOKINGS)         AS bookings_same_day,
-        SUM(NEXT_DAY_BOOKINGS)         AS bookings_next_day,
-        SUM(BOOKINGS_WITHIN_7_DAYS)    AS bookings_7d,
-        SUM(BOOKINGS_AFTER_7_DAYS)     AS bookings_after_7d
+        {BOOKING_SELECT}
     FROM MARKETING_REPORTS.PUBLIC.LEADS
     WHERE EVENT_DATE <  DATE_TRUNC('year', CURRENT_DATE())
       AND EVENT_DATE >= DATEADD('year', -3, CURRENT_DATE())
@@ -111,7 +129,7 @@ monthly_detail = [
         "first_visits":       int(r[4] or 0),
         "first_activations":  int(r[5] or 0),
         "first_sales":        int(r[6] or 0),
-        **booking_fields(r[7:12]),
+        **booking_fields(r[7:7 + N_BOOK]),
     }
     for r in cur.fetchall()
 ]
