@@ -163,11 +163,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   <details class="howto" id="howto" open>
     <summary>How to use this tool</summary>
     <ol class="howto-steps">
-      <li><div><strong>Install the Claude skill (one time only).</strong> Download it here, then in Claude.ai go to <em>Settings → Capabilities</em>, turn on <em>Code execution and file creation</em>, and under <em>Skills</em> click <em>Upload skill</em> and pick the downloaded .zip. The skill teaches Claude the 6 evaluation categories and the exact file format this dashboard needs. You also need the <em>Claude in Chrome</em> extension installed and connected, since that's how Claude looks at each post's image.<br>
+      <li><div><strong>Install the Claude skill (one time only).</strong> Download it here, then in Claude.ai go to <em>Settings → Capabilities</em>, turn on <em>Code execution and file creation</em>, and under <em>Skills</em> click <em>Upload skill</em> and pick the downloaded .zip. The skill teaches Claude the 7 evaluation categories (including the AI Post Check for posts made with AI) and the exact file format this dashboard needs. You also need the <em>Claude in Chrome</em> extension installed and connected, since that's how Claude looks at each post's image.<br>
         <button class="status-btn st-ops" onclick="downloadSkill()">Download Claude skill</button> <span class="publish-msg" id="skillMsg"></span></div></li>
       <li><div><strong>Download the posts.</strong> In the box below, the <em>from</em> date is already set to the day after the last reviewed date. Pick the <em>to</em> date and click <em>Download posts</em>. You get a .json file with every Static and Carousel post from all studios in that range. Reels and Stories aren't included.</div></li>
-      <li><div><strong>Run the audit in Claude.</strong> Open a new chat in Claude.ai with Claude in Chrome connected, attach the posts file, then copy and paste this prompt:
-        <div class="prompt-box"><code id="auditPrompt">Run the brand safety audit on this file using the skill sweat440-brand-safety-audit</code><button class="status-btn st-ops" onclick="copyPrompt(this)">Copy prompt</button></div>
+      <li><div><strong>Run the audit in Claude.</strong> Open a new chat in Claude.ai with Claude in Chrome connected. Attach the posts file <strong>and the official SWEAT440 logo PNG</strong> (from the <a href="https://drive.google.com/drive/folders/1s8u7-eyWGXEanwog-yeL3EkGBdiA65LR" target="_blank" rel="noopener">official logo folder</a>; Claude compares every logo against it), then copy and paste this prompt:
+        <div class="prompt-box"><code id="auditPrompt">Run the brand safety audit on this file using the skill sweat440-brand-safety-audit. The official SWEAT440 logo is attached.</code><button class="status-btn st-ops" onclick="copyPrompt(this)">Copy prompt</button></div>
         Claude reads each post's caption, opens its cover image in Chrome to look at it, and gives you back an audit .json file to download. Large ranges take a while. If the chat stops midway, ask Claude to continue, and it picks up where it left off.</div></li>
       <li><div><strong>Publish the result.</strong> In <em>Publish Claude's result</em>, choose the audit file Claude gave you and click <em>Publish</em>. It's saved for everyone and the <em>Data reviewed</em> date moves forward.</div></li>
       <li><div><strong>Review the flags.</strong> Pick a date range under <em>Filter by post date</em> and click <em>Apply</em>. Each flag says where the problem was found (caption or image) and why it was flagged, with a suggested action. Open each flagged post on Instagram and click its status to move it from <em>Pending review</em> to <em>Reported to Ops</em> or <em>Cleared</em>. Then click <em>Save status changes</em> so everyone sees it. The period summary under the date filter counts accounts, clean accounts and flags for that period.</div></li>
@@ -231,11 +231,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   </div>
 
   <div class="tab-panel" id="tab-criteria">
-    <div class="criteria-intro">This audit evaluates SWEAT440 Instagram content against 6 brand-safety categories. It is a <strong>triage tool</strong> — its output is a flag-and-review queue for human adjudication. It surfaces genuine risk, not aesthetic preferences. The only strict visual rule is logo integrity. Use the status button on each flag to track its lifecycle: <strong>Pending review → Reported to Ops → Cleared</strong>. Status changes are kept in this session until you click <strong>Save status changes</strong> at the top — that's what actually publishes them for everyone.</div>
+    <div class="criteria-intro">This audit evaluates SWEAT440 Instagram feed posts against 7 brand-safety categories. It is a <strong>triage tool</strong> — its output is a flag-and-review queue for human adjudication. It surfaces genuine risk, not aesthetic preferences. The only strict visual rule is logo integrity, except for posts made with AI, which also get SWEAT440's AI Post Check (category 7). Use the status button on each flag to track its lifecycle: <strong>Pending review → Reported to Ops → Cleared</strong>. Status changes are kept in this session until you click <strong>Save status changes</strong> next to the Show filter — that's what actually publishes them for everyone.</div>
     <div class="score-row"><span class="score-badge" style="background:var(--red-pale);color:var(--red)">HIGH</span><div><strong>Clear, unambiguous violation.</strong> Logo recolored or distorted; explicit lyric soundtrack confirmed; active alcohol consumption on camera; overt political endorsement. Immediate action.</div></div>
     <div class="score-row"><span class="score-badge" style="background:var(--amber-pale);color:var(--amber)">MEDIUM</span><div><strong>Likely violation, context-dependent.</strong> Suggestive pose; unconfirmed explicit audio; external partnership without documented approval. Review this week.</div></div>
     <div class="score-row"><span class="score-badge" style="background:var(--sky-pale);color:var(--sky)">LOW</span><div><strong>Borderline — quick human glance.</strong> Cultural/social messaging short of a violation; loose brand formatting. Confirm or dismiss.</div></div>
-    <div class="criteria-title">The 6 Evaluation Categories</div>
+    <div class="criteria-title">The 7 Evaluation Categories</div>
     <table class="criteria-table">
       <thead><tr><th style="width:19%">Category</th><th style="width:33%">Flag if you see this</th><th style="width:33%">Do NOT flag this</th><th style="width:15%">Typical confidence</th></tr></thead>
       <tbody>
@@ -245,6 +245,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
         <tr><td><strong>4. Active alcohol consumption</strong></td><td class="do-flag">Alcohol actively consumed on camera; "happy hour" language with alcohol emojis</td><td class="dont-flag">Background presence only; non-alcoholic beverage partnerships</td><td><span class="conf-pill cp-high">HIGH</span> if shown · <span class="conf-pill cp-low">LOW</span> if presence</td></tr>
         <tr><td><strong>5. Logo misuse</strong></td><td class="do-flag">Any modification of the official mark: recoloring, distortion, stretching, unofficial fonts, unapproved backgrounds</td><td class="dont-flag">Official logo used correctly with approved colors and backgrounds</td><td><span class="conf-pill cp-high">HIGH</span> — binary, zero tolerance</td></tr>
         <tr><td><strong>6. Loose brand adherence</strong></td><td class="do-flag">Unapproved external partnerships in-studio; third-party medical providers without documented approval; major brand voice departure</td><td class="dont-flag">Minor caption formatting; emoji use; slight tone variation; aligned community events</td><td><span class="conf-pill cp-med">MED</span> or <span class="conf-pill cp-low">LOW</span> — light touch</td></tr>
+        <tr><td><strong>7. AI misuse</strong></td><td class="do-flag">A post made with AI that fails the AI Post Check: AI-rendered or distorted logo instead of the official file; real identifiable people; third-party brands or characters; shaming or before-and-after; medical or guaranteed-results claims; off-palette colors (royal blue instead of #00A3E0), non-brand fonts, too much text, dark backgrounds; banned caption phrases</td><td class="dont-flag">Real photos; designs built from the official templates with the official logo file placed on top. Co-branded posts (Mode B) skip our palette, font and text rules</td><td><span class="conf-pill cp-high">HIGH</span> blockers · <span class="conf-pill cp-low">LOW</span> style fixes</td></tr>
       </tbody>
     </table>
   </div>
@@ -258,11 +259,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 <!-- The Claude skill offered by "Download Claude skill" (step 1). Each block
      below is one file of the skill; downloadSkill() zips them in the browser.
      The evaluation framework in SKILL.md mirrors the Evaluation Criteria tab
-     and scripts/eval_prompt.py; if those change, update it here too. -->
+     and scripts/eval_prompt.py; if those change, update it here too.
+     references/ai-post-check.md is SWEAT440's "AI Post Check" for creators,
+     adapted so its findings map to category 7 (AI misuse). -->
 <script type="text/plain" class="skill-file" data-path="sweat440-brand-safety-audit/SKILL.md">
 ---
 name: sweat440-brand-safety-audit
-description: Runs the SWEAT440 Brand Safety Audit on a posts export downloaded from the Brand Safety Audit dashboard (a file named like 2026-08-04_to_2026-09-24-posts.json). Reviews every Instagram post's caption and cover image against SWEAT440's 6 brand-safety categories and returns the audit JSON file the dashboard's Publish step accepts. Use whenever the user uploads one of these posts exports or asks to run the brand safety audit.
+description: Runs the SWEAT440 Brand Safety Audit on a posts export downloaded from the Brand Safety Audit dashboard (a file named like 2026-08-04_to_2026-09-24-posts.json). Reviews every Instagram post's caption and cover image against SWEAT440's 7 brand-safety categories, including the AI Post Check for posts made with AI, and returns the audit JSON file the dashboard's Publish step accepts. Use whenever the user uploads one of these posts exports or asks to run the brand safety audit.
 ---
 
 # SWEAT440 Brand Safety Audit
@@ -291,11 +294,14 @@ Only Static and Carousel feed posts are in it. Reels and Stories were already ex
 ## Workflow
 
 1. Load the export and report how many posts and accounts with posts it has.
-2. Before you start, check that the Claude in Chrome extension is connected. You view the cover images through it. If it isn't connected, tell the user to connect it and wait. Don't run the audit on captions alone.
+2. Before you start, check two things:
+   - **Claude in Chrome** is connected. You view the cover images through it. If it isn't connected, tell the user to connect it and wait. Don't run the audit on captions alone.
+   - **The official SWEAT440 logo** is attached, as a PNG in the user's message. You compare every logo against it. If it isn't attached, open the official logo folder in Chrome and look at the logo there: https://drive.google.com/drive/folders/1s8u7-eyWGXEanwog-yeL3EkGBdiA65LR
 3. Review every post, one at a time:
    - Read the caption.
    - With Claude in Chrome, open the post's `imageUrl` in a browser tab and take a screenshot to see the cover image. For a Carousel, `imageUrl` is the first slide. If a specific image doesn't load, open the post's `link` on Instagram instead.
    - If you still can't see the image, evaluate the caption only, set `"visualReviewed": false`, and start `why` with "Visual not reviewed."
+   - If the post was made, or looks like it was made, with AI image tools, run the full check in `references/ai-post-check.md` on it. Read that file once before your first AI-made post.
    - Decide a verdict using the framework below.
    - Reuse one tab for every post rather than opening a new tab per post.
 4. Append each verdict as one line to `verdicts.jsonl`, in the format shown under "Verdict format". For big exports, work account by account and save after each account. That way nothing is lost if the conversation gets long, and you can pick up where you left off.
@@ -311,7 +317,7 @@ If you can't run code, write the final JSON yourself in the format under "Output
 
 ## Evaluation framework
 
-Evaluate the post (cover image + caption) against these 6 categories:
+Evaluate the post (cover image + caption) against these 7 categories:
 
 1. **Political or religious messaging**
    - Flag: candidate endorsement, partisan statements, proselytizing content, divisive legislation stances.
@@ -329,13 +335,19 @@ Evaluate the post (cover image + caption) against these 6 categories:
 5. **Logo misuse**
    - Flag: any modification of the official mark: recoloring, distortion, stretching, unofficial fonts, unapproved backgrounds.
    - Do NOT flag: the official logo used correctly with approved colors and backgrounds.
+   - Compare against the official logo file. Check the shield shape, crisp edges, the spelling and spacing of the letters, SWEAT and 440 in the same color, no extra words, and the exact blue.
    - This is a zero-tolerance, binary category.
+   - If the post is AI-made, file logo problems under `AI misuse` instead.
 6. **Loose brand adherence**
    - Flag: unapproved external partnerships in-studio, third-party medical providers without documented approval, major brand voice departure.
    - Do NOT flag: minor caption formatting, emoji use, slight tone variation, aligned community events.
+7. **AI misuse**
+   - Flag: a post made with AI that fails the AI Post Check in `references/ai-post-check.md`. Examples: an AI-rendered or distorted SWEAT440 logo instead of the official file; real identifiable people; third-party brands, characters or songs; shaming or before-and-after messaging; medical or guaranteed-results claims; off-palette colors (especially royal blue instead of `#00A3E0`), non-brand fonts, too much text or dark backgrounds; and the caption rules in that file.
+   - Do NOT flag: real photos, and designs built from the official templates with the official logo file placed on top.
+   - AI-made alcohol, political or religious, and sexualized content keep their own categories (4, 1 and 3).
 
 Severity (`level`), if flagged:
-- `high`: a clear, unambiguous violation, such as a recolored or distorted logo, a confirmed explicit lyric, active alcohol consumption on camera, or an overt political endorsement. Needs immediate action.
+- `high`: a clear, unambiguous violation, such as a recolored or distorted logo, an AI-rendered logo, a confirmed explicit lyric, active alcohol consumption on camera, or an overt political endorsement. Needs immediate action.
 - `medium`: a likely violation that depends on context, such as a suggestive pose, unconfirmed explicit audio, or an external partnership without documented approval. Review this week.
 - `low`: borderline and worth a quick human look, such as cultural or social messaging short of a violation, or loose brand formatting. Confirm or dismiss.
 
@@ -393,6 +405,117 @@ Follow these rules:
 - Copy `date`, `caption` and `link` verbatim from the export.
 - Include every account from the export, even the ones with 0 posts.
 </script>
+<script type="text/plain" class="skill-file" data-path="sweat440-brand-safety-audit/references/ai-post-check.md">
+# SWEAT440 AI Post Check
+
+Use this check on any post that was made, or looks like it was made, with AI image tools. It comes from SWEAT440's "AI Post Check" for creators. In this audit its findings become flags, mapped as described in "Turning findings into a verdict" at the end.
+
+Be strict. If you're unsure whether something is wrong, treat it as a finding, and lower the `confidence` instead of dropping it.
+
+## Signs a post was made with AI
+
+Look for these:
+- Plastic-smooth skin, waxy faces, or extra, missing or fused fingers.
+- Text in the image that's garbled, misspelled, or has letters that melt into each other.
+- A SWEAT440 shield that's close but not exact: warped, soft-edged or asymmetrical.
+- Objects that blend into each other, or impossible lighting and reflections.
+- A royal or electric blue where SWEAT440's cyan-leaning sky blue should be.
+
+One clear sign is enough to run the check. If the post is plainly a real photo, or a design built from the official template files, this check doesn't apply.
+
+## Step 1: Decide the mode
+
+- **MODE A, SWEAT440-led:** our event, our promotion, our content, with no other brand hosting. Apply every step below.
+- **MODE B, co-branded or guest:** another brand hosts or shares the event, and we're a partner or invited guest. Apply only Step 2 (universal blockers) and Step 3 (logo integrity). Do NOT enforce our palette, fonts, headline length, tagline or text limits, because those likely belong to the partner brand. Say in `why` that you skipped them because it's Mode B.
+
+If you can't tell which mode it is, use Mode B and say so in `why`.
+
+## Step 2: Universal blockers (both modes)
+
+1. Real identifiable celebrities, athletes, influencers or public figures.
+2. Any third-party brand, show, film, character, song or catchphrase we don't own. Mode B exception: the actual partner brand is allowed, but nothing else is.
+3. Alcohol or drinking references, such as bars, bottles, cocktails or red party cups, even as a joke.
+4. Political or religious content of any kind.
+5. Sexualized posing, framing or wardrobe.
+6. Shaming, body comparison, or before-and-after messaging.
+7. Any medical, injury or guaranteed-results claim.
+
+## Step 3: Logo integrity (both modes; this is the step that matters most)
+
+Compare the logo in the post directly against the official logo. The user attaches the official logo PNG. If it's missing, open the official folder in Chrome and look at the logo there:
+
+https://drive.google.com/drive/folders/1s8u7-eyWGXEanwog-yeL3EkGBdiA65LR
+
+Before judging, describe what you actually see in the post's logo: the number of shapes, the shield outline, any text inside or around the shield, the letterforms, the spacing and the colors. Then flag any of these:
+- The shield outline is warped, stretched, softened, asymmetrical, or a different proportion than the official file.
+- Edges are blurred, melted or slightly irregular where the official file is crisp and geometric.
+- A letter is misspelled, mirrored, malformed or spaced differently.
+- SWEAT and 440 are in different colors from each other.
+- A tagline or extra words appear that aren't in the official file.
+- The logo appears more than once.
+- The blue in the logo is visibly different from the official file's blue.
+
+Assume the logo is wrong until you've confirmed each point above. AI image models can't reproduce this shield correctly; they always distort it slightly. A logo that looks approximately right is still wrong. If the post was generated by AI rather than built with the official file placed on top, the logo is a blocker by default.
+
+## Step 4: Color (Mode A only)
+
+First list every distinct color in the post in plain words, for example "a deep royal blue", "a warm orange" or "an off-white". Then check each one against the approved palette:
+
+| Hex | Reads as |
+|---|---|
+| `#00A3E0` | Bright, cyan-leaning sky blue (the primary) |
+| `#99DAF3` | Pale, washed-out sky blue |
+| `#0084B5` | Deeper ocean blue, still cyan-leaning |
+| `#D2EFFF` | Almost white with a blue tint |
+| `#00FFC2` | Electric mint green (digital only, never print) |
+| `#DDFF00` | Acid yellow-green (callouts and CTAs) |
+
+Black or a dark neutral is allowed only for small body text.
+
+Flag on sight anything off-brand: red, orange, purple, brown, gold, pink, or any hue not listed above.
+
+The blue is the color most often missed. `#00A3E0` is a bright, cyan-leaning sky blue. It is NOT navy, royal blue, cobalt, teal, turquoise, or a deep saturated blue. AI image tools almost never produce `#00A3E0`; they default to royal or electric blue, which looks close at a glance and is wrong. Compare the post's blue with the official logo's blue. If they aren't the same blue, or you're unsure, it's a finding.
+
+## Step 5: Type, text, tagline and background (Mode A only)
+
+- **Fonts:** Prohibition for headlines and ALS Haus for body copy, nothing else. Font files:
+  https://drive.google.com/drive/folders/1YvHvcfnO8gVaQO2mPbqi98k-jfN08VjQ
+- **Name:** SWEAT440, one word, all caps, no space, no hyphen. SWEAT and 440 are always the same color.
+- **Tagline:** our tagline is "Your Workout. Your Time." Other short phrases are fine as part of the design. Flag a phrase only if it makes a false claim, breaks the caption rules below, or is presented as if it were our official tagline.
+- **Text volume:** one main headline of six words or fewer. Total text covers roughly a fifth of the image or less, and must be readable at phone thumbnail size.
+- **Background:** white or brand blue. No dark or moody backgrounds.
+
+## Step 6: Caption
+
+- **Never use:**
+  - "sweaties"
+  - "no excuses just results"
+  - "transform your body"
+  - "from beginners to beasts"
+  - "show up anytime"
+  - "locations" or "gyms" (say **studios**)
+  - "new class every 10 minutes" (say **classes start every 10 minutes**)
+- At most 3 emojis.
+- No hashtags in the caption body.
+- Close with one of: Jump in Today / Try it Out / Ready? Join Now / Book Your Free Class / Learn More.
+
+## Turning findings into a verdict
+
+The post gets one verdict, filed under the most serious finding. List the rest in `why` and `action`.
+
+- **Category:**
+  - Alcohol (blocker 3) → `Active alcohol consumption`.
+  - Political or religious (blocker 4) → `Political or religious messaging`.
+  - Sexualized (blocker 5) → `Overly sexualized content`.
+  - Everything else this check finds → `AI misuse`. That includes an AI-rendered or distorted logo, real people, third-party brands or IP, shaming, medical claims, off-palette color, wrong fonts, too much text, dark backgrounds and caption rules.
+- **Level:**
+  - A Step 2 or Step 3 blocker → `high` when it's clear, `medium` when it's likely but not certain.
+  - Steps 4 to 6 (color, type, text volume, background, caption) → `low`.
+- **Fields:**
+  - `why`: start it with "AI-made post, Mode A." or "AI-made post, Mode B." Then cite what you saw, including your description of the logo when the logo is the finding.
+  - `action`: say what to change, with the exact value or link from this file when there is one, such as the logo folder, a hex code or a closing CTA.
+  - `foundIn`: `image` for findings in the image, `caption` for caption rules, `both` when each one has a finding on its own.
+</script>
 <script type="text/plain" class="skill-file" data-path="sweat440-brand-safety-audit/scripts/assemble_audit.py">
 """Build the dashboard's audit file from a posts export + per-post verdicts.
 
@@ -422,6 +545,7 @@ CATEGORIES = {
     "Active alcohol consumption",
     "Logo misuse",
     "Loose brand adherence",
+    "AI misuse",
 }
 LEVELS = {"high", "medium", "low"}
 CONFIDENCES = {"HIGH", "MEDIUM", "LOW"}
@@ -971,9 +1095,7 @@ function updateCoverageUI(){
     fromInput.value=next.toISOString().slice(0,10);
   }else{
     label.textContent=LATEST_AUDIT?"Data reviewed: unknown (older cycle — no coverage recorded)":"Data reviewed: no cycles published yet";
-    const weekAgo=new Date();
-    weekAgo.setDate(weekAgo.getDate()-7);
-    fromInput.value=weekAgo.toISOString().slice(0,10);
+    fromInput.value=AUDIT_START;
   }
 }
 
@@ -993,6 +1115,10 @@ async function listCycles(){
 
 // Validate the bare minimum shape before accepting a file — catches a
 // malformed Claude response or a wrong file before it reaches the sheet.
+// Audit history was reset to start here (Oct 2026) — the first Download
+// pre-fills this "from" date until a cycle has been published.
+const AUDIT_START="2026-10-01";
+
 const ISO_DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
 
 function validateAuditShape(data){

@@ -20,7 +20,7 @@ studio franchise. You are a triage tool — your output is a flag-and-review \
 queue for human adjudication. You surface genuine risk, not aesthetic \
 preferences. You never make a final call.
 
-Evaluate the post (cover image + caption) against these 6 categories:
+Evaluate the post (cover image + caption) against these 7 categories:
 
 1. Political or religious messaging — flag: candidate endorsement, partisan \
    statements, proselytizing content, divisive legislation stances. Do NOT \
@@ -46,6 +46,17 @@ Evaluate the post (cover image + caption) against these 6 categories:
    third-party medical providers without documented approval, major brand \
    voice departure. Do NOT flag: minor caption formatting, emoji use, slight \
    tone variation, aligned community events.
+7. AI misuse — flag: a post made (or looking made) with AI image tools that \
+   breaks SWEAT440's AI Post Check: an AI-rendered or distorted SWEAT440 \
+   logo instead of the official file, real identifiable people, third-party \
+   brands/characters/songs, shaming or before-and-after messaging, medical or \
+   guaranteed-results claims; and, for SWEAT440-led posts (not co-branded), \
+   off-palette colors (royal blue instead of #00A3E0), non-brand fonts, too \
+   much text, dark backgrounds, or banned caption phrases. Do NOT flag: real \
+   photos, designs built from official templates with the official logo file \
+   placed on top. AI-made alcohol, political/religious and sexualized \
+   content keep categories 4, 1 and 3. The full check lives in the Claude \
+   skill's references/ai-post-check.md (embedded in index.html).
 
 Severity (`level`), if flagged:
 - "high" — clear, unambiguous violation (logo recolored/distorted, explicit \
@@ -97,6 +108,7 @@ FLAG_OUTPUT_SCHEMA = {
                 "Active alcohol consumption",
                 "Logo misuse",
                 "Loose brand adherence",
+                "AI misuse",
                 "none",
             ],
         },
@@ -141,7 +153,7 @@ publish (this has happened before):
         {
           "id": "<post id from the export>",
           "level": "high" | "medium" | "low",
-          "category": "<one of the 6 category names, exact text>",
+          "category": "<one of the 7 category names, exact text>",
           "confidence": "HIGH" | "MEDIUM" | "LOW",
           "date": "<sentAt/dueAt from the export>",
           "postType": "Static" | "Carousel",
