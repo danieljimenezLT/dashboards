@@ -29,6 +29,7 @@
   .sc-table td.ref,.sc-table th.ref{color:#5a7a8a;font-weight:400;background:#fafcfd}
   .sc-table tr.sec td{background:#f3f8fb;font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:#0084B5;text-align:left;padding-top:10px}
   .sc-table tr.sub td{font-weight:400;color:#5a7a8a;font-size:11px}
+  .sc-table td .worst{display:inline-block;padding:1px 6px;margin:-1px -6px;border-radius:4px;background:#fdecea;color:#c62828}
   .sc-table td .best{display:inline-block;padding:1px 6px;margin:-1px -6px;border-radius:4px;background:#e3f6ec;color:#1b7a43}
   .sc-table td.lbl{font-weight:400;color:#1a1a2e}
   .sc-table td.lbl .hint{display:block;font-size:10px;color:#8aa3b0;margin-top:1px}
@@ -438,7 +439,7 @@ const SC_ROWS = [
   { kpi: 'FT → Member', st: 'open', label: 'First Timer → Member', f: a => div(a.mem, a.ft), fmt: fmtPct, better: 'high' },
   { kpi: 'Lead → Member', st: 'open', label: 'Lead → Member', f: a => div(a.mem, a.leads), fmt: fmtPct, better: 'high' },
   { st: 'nso',  label: 'Presales', f: a => a.pre, fmt: fmtInt, vol: 'n', better: 'high' },
-  { st: 'nso',  label: 'Cancellations', f: a => a.canc, fmt: fmtInt, vol: 'n' },
+  { st: 'nso',  label: 'Cancellations', f: a => a.canc, fmt: fmtInt, vol: 'n', worst: 'high' },
   { kpi: 'Net presales', st: 'nso',  label: 'Net presales', hint: 'presales − cancellations', f: a => a.netPre, fmt: fmtInt, vol: 'n', better: 'high' },
   { kpi: 'Lead → Net Presale', st: 'nso',  label: 'Lead → Net Presale', f: a => div(a.netPre, a.leads), fmt: fmtPct, better: 'high' },
   { kpi: 'CPL', label: 'CPL', hint: 'cost per lead: ad spend ÷ leads', f: a => div(a.spend, a.leads), fmt: fmtUSD, better: 'low', when: paid },
@@ -503,7 +504,7 @@ function renderScorecard(cols, from, to) {
       : 'Volumes are totals; rates and costs are pooled across the agency\'s studios.',
     'Every metric follows the Sources filter' + (PS.paid ? '' : ' — no ad platform selected, so spend and costs are hidden') + '.',
     'Each day counts for the agency that ran the studio that day (FFM / JL from their start dates, LT before) and for its Open / NSO status that day (NSO until the opening date).',
-    'Green = best agency on that row.',
+    'Green = best agency on that row; red = worst (cancellations).',
   ];
   if (lastFunnel && to > lastFunnel) notes.push(`Funnel data runs through ${fmtDayLabel(lastFunnel)}.`);
   const noAds = _noAds;
@@ -532,12 +533,19 @@ function renderScorecard(cols, from, to) {
       for (const [g, ok] of Object.entries(groups))
         if (ok.length > 1 && Math.max(...ok) !== Math.min(...ok)) best[g] =row.better === 'high' ? Math.max(...ok) : Math.min(...ok);
     }
+    // Worst value (red) on rows where that's the signal, e.g. cancellations
+    let worst = null;
+    if (row.worst) {
+      const ok = vals.filter((v, i) => !cols[i].ref && v != null && isFinite(v));
+      if (ok.length > 1 && Math.max(...ok) !== Math.min(...ok)) worst = row.worst === 'high' ? Math.max(...ok) : Math.min(...ok);
+    }
     const tds = vals.map((v, i) => {
       const s = v == null ? null : row.fmt(v);
       if (s == null) return `<td class="na${cols[i].ref ? ' ref' : ''}">—</td>`;
       const sub = row.sub ? row.sub(cols[i].agg) : '';
       const b = best[''];
-      const inner = b != null && v === b && !cols[i].ref ?`<span class="best">${s}</span>` : s;
+      const inner = b != null && v === b && !cols[i].ref ? `<span class="best">${s}</span>`
+                  : worst != null && s === row.fmt(worst) && !cols[i].ref ? `<span class="worst">${s}</span>` : s;   // ties as shown → all red
       return `<td class="${cols[i].ref ? 'ref' : ''}">${inner}${sub ? ` <span style="font-weight:400;color:#8aa3b0">${sub}</span>` : ''}</td>`;
     }).join('');
     const label = row.label + (row.vol && viewMode === 'day' ? ' <span style="color:#8aa3b0">/ studio / day</span>' : '');
