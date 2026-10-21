@@ -60,7 +60,7 @@ def build_export(posts, start_date, end_date):
             post_type, asset = post_type_and_asset(post)
             if asset is None:
                 skipped += 1
-                continue  # Reel or no-image post — video review not built yet
+                continue  # Reel/Story/video/no-image post — Phase 2
             posts_for_review.append(
                 {
                     "id": f"{post['id']}",
@@ -68,7 +68,7 @@ def build_export(posts, start_date, end_date):
                     "postType": post_type,
                     "caption": post.get("text", ""),
                     "imageUrl": asset["source"],
-                    "link": asset["link"],
+                    "link": post.get("externalLink", ""),
                 }
             )
         accounts.append(
@@ -85,7 +85,7 @@ def build_export(posts, start_date, end_date):
         "period": coverage_end.strftime("%B %Y"),
         "generated": datetime.date.today().isoformat(),
         "coverage": {"from": start_date, "to": end_date},
-        "note": f"{skipped} Reel(s) excluded — video review isn't built yet.",
+        "note": f"{skipped} Reel(s)/Story post(s) excluded — video and 24h-ephemeral content aren't in scope yet.",
         "accounts": accounts,
     }
 

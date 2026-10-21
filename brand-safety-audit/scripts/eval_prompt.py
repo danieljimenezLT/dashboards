@@ -20,12 +20,7 @@ studio franchise. You are a triage tool — your output is a flag-and-review \
 queue for human adjudication. You surface genuine risk, not aesthetic \
 preferences. You never make a final call.
 
-Evaluate the post (cover image + caption) against these 6 categories. A \
-Story usually has no caption — judge its image, including any text or \
-stickers on it, plus the caption if one is present; a "Video story (cover)" is a single \
-frame of a video, so flag only what's visible in it. A Story that just \
-reshares the studio's own feed post (post shown as a card over a blurred \
-background) is clean — that post is audited on its own.
+Evaluate the post (cover image + caption) against these 7 categories:
 
 1. Political or religious messaging — flag: candidate endorsement, partisan \
    statements, proselytizing content, divisive legislation stances. Do NOT \
@@ -51,6 +46,17 @@ background) is clean — that post is audited on its own.
    third-party medical providers without documented approval, major brand \
    voice departure. Do NOT flag: minor caption formatting, emoji use, slight \
    tone variation, aligned community events.
+7. AI misuse — flag: a post made (or looking made) with AI image tools that \
+   breaks SWEAT440's AI Post Check: an AI-rendered or distorted SWEAT440 \
+   logo instead of the official file, real identifiable people, third-party \
+   brands/characters/songs, shaming or before-and-after messaging, medical or \
+   guaranteed-results claims; and, for SWEAT440-led posts (not co-branded), \
+   off-palette colors (royal blue instead of #00A3E0), non-brand fonts, too \
+   much text, dark backgrounds, or banned caption phrases. Do NOT flag: real \
+   photos, designs built from official templates with the official logo file \
+   placed on top. AI-made alcohol, political/religious and sexualized \
+   content keep categories 4, 1 and 3. The full check lives in the Claude \
+   skill's references/ai-post-check.md (embedded in index.html).
 
 Severity (`level`), if flagged:
 - "high" — clear, unambiguous violation (logo recolored/distorted, explicit \
@@ -102,6 +108,7 @@ FLAG_OUTPUT_SCHEMA = {
                 "Active alcohol consumption",
                 "Logo misuse",
                 "Loose brand adherence",
+                "AI misuse",
                 "none",
             ],
         },
@@ -120,8 +127,8 @@ FLAG_OUTPUT_SCHEMA = {
 # appended after the exported posts data in that flow. Keep it aligned with
 # analyze()'s assembly logic in run_audit.py (same fields per flag).
 MANUAL_BATCH_INSTRUCTIONS = """Attached is a JSON export of SWEAT440 Instagram posts for a specific \
-date range (feed posts and Stories — Reels are excluded, see the \
-"postType" already set per post). Evaluate every post using the \
+date range (Static and Carousel only — Reels and Stories are excluded, see \
+the "postType" already set per post). Evaluate every post using the \
 SWEAT440 Brand Safety Audit framework above, one post at a time, then \
 return a SINGLE JSON object with this exact shape (matching the dashboard's \
 data file). "coverage" and "postLog" are REQUIRED, not optional — the \
@@ -146,10 +153,10 @@ publish (this has happened before):
         {
           "id": "<post id from the export>",
           "level": "high" | "medium" | "low",
-          "category": "<one of the 6 category names, exact text>",
+          "category": "<one of the 7 category names, exact text>",
           "confidence": "HIGH" | "MEDIUM" | "LOW",
           "date": "<sentAt/dueAt from the export>",
-          "postType": "Static" | "Carousel" | "Story" | "Video story (cover)",
+          "postType": "Static" | "Carousel",
           "visualReviewed": true,
           "caption": "<the post's caption, verbatim>",
           "foundIn": "caption" | "image" | "both",
@@ -164,7 +171,7 @@ publish (this has happened before):
           "id": "<post id from the export — every post, flagged or not>",
           "date": "<sentAt/dueAt from the export — this is the post's own \
 publish date, NOT the date you're running this analysis>",
-          "postType": "Static" | "Carousel" | "Story" | "Video story (cover)",
+          "postType": "Static" | "Carousel",
           "caption": "<the post's caption, verbatim>",
           "link": "<externalLink from the export>",
           "flagged": true | false,

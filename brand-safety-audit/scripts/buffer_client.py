@@ -285,43 +285,28 @@ def pull_posts(buffer_token, start_date=None, end_date=None, days=7):
     raise RuntimeError(f"More than {MAX_PAGES * PAGE_SIZE} posts in range — pick a shorter date range.")
 
 
-def backfill_url(post):
-    """Buffer's permanent S3 copy of a Story (or a video's cover frame). It
-    outlives the Story itself, whose instagram.com/stories/... link is dead
-    after 24h. Assets carry it as `thumbnail`; rebuilt here only as a
-    fallback. Same as bufferBackfillUrl in refresh-proxy/worker.js."""
-    return (
-        "https://buffer-updates-media-backfill-bucket.s3.amazonaws.com/"
-        f"{ORG_ID}/{post['channelId']}/{post['id']}_thumbnail.jpg"
-    )
-
-
 def post_type_and_asset(post):
-    """Classify a post and pick the image to review, or (None, None) to skip.
+    """Classify a post and pick its cover image, or (None, None) to skip.
 
-    Returns (post_type, {"source": image url, "link": url for "View"}).
-    Allow-list, not block-list — same rules as postTypeAndAsset in
-    refresh-proxy/worker.js:
-      - feed post ("post") → "Static" / "Carousel", cover image, Instagram link
-      - Story ("story")    → "Story" (full image) or "Video story (cover)"
-        (cover frame only; the video file expires in 1-2 days). Image AND
-        link are Buffer's permanent S3 copy.
-      - Reel, or an unrecognized type → skipped (video review isn't built yet)
+    Allow-list, not block-list: only `metadata.type == "post"` (a permanent
+    Instagram feed post) is evaluated. Confirmed against real org data that
+    Buffer's `metadata.type` also returns "story" for Instagram Stories —
+    these slip through a Reel-only exclusion because they have an image
+    asset and no caption, but they're out of scope here just like Reels:
+    they expire in 24h (any permalink is dead by the time a weekly review
+    happens) and README's "Current scope" only covers Static + Carousel feed
+    posts. Anything other than "post" (reel, story, or an unrecognized
+    future type) is skipped rather than guessed at.
     """
-    kind = (post.get("metadata") or {}).get("type")
-    assets = post.get("assets") or []
+    metadata = post.get("metadata") or {}
+    if metadata.get("type") != "post":
+        return None, None
 
-    if kind == "post":
-        image_assets = [a for a in assets if (a.get("mimeType") or "").startswith("image/")]
-        if not image_assets:
-            return None, None
-        post_type = "Carousel" if len(image_assets) > 1 else "Static"
-        return post_type, {"source": image_assets[0]["source"], "link": post.get("externalLink", "")}
+    image_assets = [
+        a for a in (post.get("assets") or []) if (a.get("mimeType") or "").startswith("image/")
+    ]
+    if not image_assets:
+        return None, None
 
-    if kind == "story" and assets:
-        asset = assets[0]
-        url = asset.get("thumbnail") or backfill_url(post)
-        is_video = asset.get("type") == "video" or (asset.get("mimeType") or "").startswith("video/")
-        return ("Video story (cover)" if is_video else "Story"), {"source": url, "link": url}
-
-    return None, None
+    post_type = "Carousel" if len(image_assets) > 1 else "Static"
+    return post_type, image_assets[0]
