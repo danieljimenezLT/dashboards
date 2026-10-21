@@ -158,7 +158,7 @@ let statusMode = 'open', viewMode = 'day', tableAgency = 'ALL';
 // Which ad platforms the Sources filter includes (set in applyFilters): spend and
 // ad-delivery metrics only count the selected platforms
 let PS = { meta: true, google: true, paid: true };
-let _charts = {}, _tableRows = [], _sort = { key:'spend', dir:-1 };
+let _charts = {}, _tableRows = [], _noAds = [], _sort = { key:'spend', dir:-1 };
 
 function toggleControls() { document.getElementById('ctrlInner').classList.toggle('open'); }
 
@@ -311,7 +311,10 @@ function emptyAgg() {
            leads:0, ft:0, mem:0, pre:0, canc:0, netPre:0,
          };
 }
-function addAgg(a, b) { for (const k in a) a[k] += b[k] || 0; return a; }
+// Adds b's numeric totals into a (only the emptyAgg fields, so labels and
+// lists on a studio row are left alone)
+const AGG_KEYS = Object.keys(emptyAgg());
+function addAgg(a, b) { for (const k of AGG_KEYS) a[k] += b[k] || 0; return a; }
 
 // One row per (studio, agency, status) in the selected window: each day of
 // data goes to the agency that ran the studio that day and to its Open / NSO
@@ -323,7 +326,7 @@ function perStudio(from, to, srcSel) {
   const srcSet = new Set(srcSel);
   const seg = (s, d) => {
     const a = agencyOn(s, d), st = statusOn(s, d), k = `${s.name}|${a}|${st}`;
-    return segs[k] || (segs[k] = Object.assign(emptyAgg(), { name: s.name, code: s.code, agency: a, status: st, days: 0, first: d, last: d }));
+    return segs[k] || (segs[k] = Object.assign(emptyAgg(), { name: s.name, code: s.code, agency: a, status: st, days: 0, spendDays: 0, first: d, last: d }));
   };
   for (const s of STUDIOS) for (const d of daysIn(from, to)) {
     const o = seg(s, d); o.days++;
@@ -346,7 +349,10 @@ function perStudio(from, to, srcSel) {
 
   for (const r of (SPEND && SPEND.daily) || []) {
     const o = at(codeToName[r.studio_code], r.date);
-    if (o) { o.metaSpend += r.meta_spend || 0; o.googleSpend += r.google_spend || 0; }
+    if (o) {
+      o.metaSpend += r.meta_spend || 0; o.googleSpend += r.google_spend || 0;
+      if ((r.meta_spend || 0) + (r.google_spend || 0) > 0) o.spendDays++;
+    }
   }
   // NSO presales (NSO view): net = presales − cancellations, by source like leads
   for (const st of Object.values((NSO_SALES && NSO_SALES.studios) || {})) {
@@ -381,8 +387,11 @@ function buildColumns(rows, rangeDays) {
     const active = studios.filter(s => s.active);
     const agg = active.reduce(addAgg, emptyAgg());
     agg.n = sum(active.map(s => s.days));
+    // Avg days with ad spend per studio; the All agencies column shows the days
+    // in the range instead, as the yardstick
+    agg.spendDaysAvgAct = active.length ? sum(active.map(s => s.spendDays)) / active.length : null;
+    agg.spendDaysAvg = ref ? rangeDays : agg.spendDaysAvgAct;
     agg.cnt = active.length; agg.cntAll = studios.length;
-    agg.partial = active.filter(s => s.days < rangeDays).length;
     agg.rangeDays = rangeDays;
     cols.push({ key, label, sub, color, agg, ref: !!ref });
   };
@@ -413,13 +422,13 @@ const perPos  = (a, b) => b > 0 ? a / b : null;   // cost per net presale (net c
 const paid = () => PS.paid;
 const SC_ROWS = [
   { sec: 'Studios' },
-  { label: 'Studios with ad spend', hint: 'studios with no Meta / Google spend in the period are left out', f: a => a.cnt, fmt: v => v, raw: true,
-    sub: a => [a.cntAll > a.cnt ? `of ${a.cntAll}` : '', a.partial ? `${a.partial} for part of the range` : ''].filter(Boolean).join(' · ') },
-  { label: 'Studio-days', hint: 'days each studio was with the agency in the range, added up', f: a => a.n, fmt: v => Math.round(v).toLocaleString('en-US'), raw: true },
+  { label: 'Studios with ad spend', hint: 'a studio that changed agency counts for each, by its days with each', f: a => a.cnt, fmt: v => v, raw: true },
+  { label: 'Days with ad spend', hint: 'avg per studio · All agencies = days in the period', f: a => a.spendDaysAvg, fmt: v => Math.round(v).toLocaleString('en-US'), raw: true },
 
   { sec: 'Spend', hint: 'ad spend of the selected sources (Meta Ads / Google Ads) — no agency or Leadteam fees', when: paid },
   { kpi: 'Spend', label: 'Ad spend', f: a => a.spend, fmt: fmtUSD0, vol: 'n', when: paid },
   { label: 'Meta share of spend', f: a => div(a.metaSpend, a.metaSpend + a.googleSpend), fmt: fmtPct, when: () => PS.meta && PS.google },
+  { label: 'Google share of spend', f: a => div(a.googleSpend, a.metaSpend + a.googleSpend), fmt: fmtPct, when: () => PS.meta && PS.google },
 
   { sec: 'Funnel', hint: 'selected sources' },
   { kpi: 'Leads', label: 'Leads', f: a => a.leads, fmt: fmtInt, vol: 'n', better: 'high' },
@@ -469,6 +478,8 @@ function applyFilters() {
   const cols = buildColumns(rows, daysIn(from, to).length);
 
   _tableRows = rows.filter(s => s.status === statusMode);
+  _noAds = [...new Set(_tableRows.filter(s => !s.active).map(s => s.name))].sort();
+  _tableRows = _tableRows.filter(s => s.active);      // By Studio: only studios with ad spend
   renderScorecard(cols, from, to);
   renderChart(cols);
   renderStudioTable();
@@ -495,7 +506,7 @@ function renderScorecard(cols, from, to) {
     'Green = best agency on that row.',
   ];
   if (lastFunnel && to > lastFunnel) notes.push(`Funnel data runs through ${fmtDayLabel(lastFunnel)}.`);
-  const noAds = [...new Set(_tableRows.filter(s => !s.active).map(s => s.name))].sort();
+  const noAds = _noAds;
   if (noAds.length) notes.push(`No ad spend in the period (left out): ${noAds.join(', ')}.`);
   document.getElementById('scNote').textContent = notes.filter(Boolean).join(' ');
 
@@ -574,10 +585,11 @@ function renderChart(cols) {
     type: 'bar',
     data: {
       labels: shown.map(c => {
-        // Studios with the agency for only part of the range: say for how long
-        const cnt = c.agg.cnt, avgD = cnt ? c.agg.n / cnt : 0;
+        // Avg days with ad spend per studio (same as the scorecard's "Days with ad spend")
+        const cnt = c.agg.cnt, avgD = c.agg.spendDaysAvgAct;
         return [c.ref ? 'All agencies' : c.label,
-                `${cnt} studios` + (avgD && avgD < c.agg.rangeDays - 0.5 ? ` · ~${Math.round(avgD)} days each` : '')];
+                `${cnt} studios` + (avgD != null ? ` · ~${Math.round(avgD)} day${Math.round(avgD) === 1 ? '' : 's'} with spend each` : ''),
+                ...(c.ref ? [`${c.agg.rangeDays} days in the period`] : [])];   // yardstick for the days above
       }),
       datasets: [{
         data: vals,
@@ -606,10 +618,9 @@ function renderChart(cols) {
 // Same rules as the scorecard: funnel by the selected sources; spend, costs and
 // costs only with Meta Ads / Google Ads selected (when()).
 const TBL_COLS = [
-  { key: 'name',      label: 'Studio',          get: s => s.name, txt: true,
-    html: s => s.name + (s.active ? '' : ' <span class="st-badge" title="No Meta / Google spend in the period — left out of the scorecard">no ads</span>') },
-  { key: 'agency',    label: 'Agency',          get: s => s.agency, txt: true,
-    html: s => `<span class="ag-badge" style="background:${AG_COLOR[s.agency]}">${s.agency}</span>` },
+  { key: 'name',      label: 'Studio',          get: s => s.name, txt: true },
+  { key: 'agency',    label: 'Agency',          get: s => (s.agencies || [s.agency]).join(' → '), txt: true,
+    html: s => (s.agencies || [s.agency]).map(a => `<span class="ag-badge" style="background:${AG_COLOR[a]}">${a}</span>`).join(' <span style="color:#8aa3b0">→</span> ') },
   { key: 'days',      label: 'Days',            get: s => s.days, fmt: v => String(v),
     title: s => `${s.first} → ${s.last}` },
   { key: 'status',    label: 'Status',          get: s => s.status, txt: true,
@@ -631,9 +642,26 @@ const TBL_COLS = [
 
 const tblCols = () => TBL_COLS.filter(rowShown);
 
+// Rows of the By Studio table. "All agencies": one row per studio — a studio
+// that changed agency in the range gets its parts added up, with every agency
+// it had (in order). One agency: only that agency's part of each studio.
+function studioTableRows() {
+  if (tableAgency !== 'ALL') return _tableRows.filter(s => s.agency === tableAgency);
+  const by = {};
+  for (const seg of [..._tableRows].sort((a, b) => a.first < b.first ? -1 : 1)) {
+    const o = by[seg.name];
+    if (!o) { by[seg.name] = { ...seg, agencies: [seg.agency] }; continue; }
+    addAgg(o, seg);
+    o.days += seg.days; o.spendDays += seg.spendDays;
+    if (seg.first < o.first) o.first = seg.first; if (seg.last > o.last) o.last = seg.last;
+    if (!o.agencies.includes(seg.agency)) o.agencies.push(seg.agency);
+  }
+  return Object.values(by);
+}
+
 function renderStudioTable() {
   const TBL_COLS = tblCols();
-  const rows = _tableRows.filter(s => tableAgency === 'ALL' || s.agency === tableAgency);
+  const rows = studioTableRows();
   const col = TBL_COLS.find(c => c.key === _sort.key) || TBL_COLS.find(c => c.key === 'leads');
   rows.sort((a, b) => {
     const va = col.get(a), vb = col.get(b);
@@ -663,7 +691,7 @@ function renderStudioTable() {
 
 function downloadStudioCSV() {
   const TBL_COLS = tblCols();
-  const rows = _tableRows.filter(s => tableAgency === 'ALL' || s.agency === tableAgency);
+  const rows = studioTableRows();
   const esc = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v);
   const lines = [TBL_COLS.map(c => esc(c.label)).join(',')];
   for (const s of rows) lines.push(TBL_COLS.map(c => {
