@@ -20,12 +20,7 @@ studio franchise. You are a triage tool — your output is a flag-and-review \
 queue for human adjudication. You surface genuine risk, not aesthetic \
 preferences. You never make a final call.
 
-Evaluate the post (cover image + caption) against these 6 categories. A \
-Story usually has no caption — judge its image, including any text or \
-stickers on it, plus the caption if one is present; a "Video story (cover)" is a single \
-frame of a video, so flag only what's visible in it. A Story that just \
-reshares the studio's own feed post (post shown as a card over a blurred \
-background) is clean — that post is audited on its own.
+Evaluate the post (cover image + caption) against these 6 categories:
 
 1. Political or religious messaging — flag: candidate endorsement, partisan \
    statements, proselytizing content, divisive legislation stances. Do NOT \
@@ -120,8 +115,8 @@ FLAG_OUTPUT_SCHEMA = {
 # appended after the exported posts data in that flow. Keep it aligned with
 # analyze()'s assembly logic in run_audit.py (same fields per flag).
 MANUAL_BATCH_INSTRUCTIONS = """Attached is a JSON export of SWEAT440 Instagram posts for a specific \
-date range (feed posts and Stories — Reels are excluded, see the \
-"postType" already set per post). Evaluate every post using the \
+date range (Static and Carousel only — Reels and Stories are excluded, see \
+the "postType" already set per post). Evaluate every post using the \
 SWEAT440 Brand Safety Audit framework above, one post at a time, then \
 return a SINGLE JSON object with this exact shape (matching the dashboard's \
 data file). "coverage" and "postLog" are REQUIRED, not optional — the \
@@ -149,7 +144,7 @@ publish (this has happened before):
           "category": "<one of the 6 category names, exact text>",
           "confidence": "HIGH" | "MEDIUM" | "LOW",
           "date": "<sentAt/dueAt from the export>",
-          "postType": "Static" | "Carousel" | "Story" | "Video story (cover)",
+          "postType": "Static" | "Carousel",
           "visualReviewed": true,
           "caption": "<the post's caption, verbatim>",
           "foundIn": "caption" | "image" | "both",
@@ -164,7 +159,7 @@ publish (this has happened before):
           "id": "<post id from the export — every post, flagged or not>",
           "date": "<sentAt/dueAt from the export — this is the post's own \
 publish date, NOT the date you're running this analysis>",
-          "postType": "Static" | "Carousel" | "Story" | "Video story (cover)",
+          "postType": "Static" | "Carousel",
           "caption": "<the post's caption, verbatim>",
           "link": "<externalLink from the export>",
           "flagged": true | false,

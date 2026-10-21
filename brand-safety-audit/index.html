@@ -165,10 +165,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <ol class="howto-steps">
       <li><div><strong>Install the Claude skill (one time only).</strong> Download it here, then in Claude.ai go to <em>Settings → Capabilities</em>, turn on <em>Code execution and file creation</em>, and under <em>Skills</em> click <em>Upload skill</em> and pick the downloaded .zip. The skill teaches Claude the 6 evaluation categories and the exact file format this dashboard needs. You also need the <em>Claude in Chrome</em> extension installed and connected, since that's how Claude looks at each post's image.<br>
         <button class="status-btn st-ops" onclick="downloadSkill()">Download Claude skill</button> <span class="publish-msg" id="skillMsg"></span></div></li>
-      <li><div><strong>Download the posts.</strong> In the box below, the <em>from</em> date is already set to the day after the last reviewed date. Pick the <em>to</em> date and click <em>Download posts</em>. You get a .json file with every feed post (Static and Carousel) and every Story from all studios in that range. Reels aren't included yet.</div></li>
+      <li><div><strong>Download the posts.</strong> In the box below, the <em>from</em> date is already set to the day after the last reviewed date. Pick the <em>to</em> date and click <em>Download posts</em>. You get a .json file with every Static and Carousel post from all studios in that range. Reels and Stories aren't included.</div></li>
       <li><div><strong>Run the audit in Claude.</strong> Open a new chat in Claude.ai with Claude in Chrome connected, attach the posts file, then copy and paste this prompt:
         <div class="prompt-box"><code id="auditPrompt">Run the brand safety audit on this file using the skill sweat440-brand-safety-audit</code><button class="status-btn st-ops" onclick="copyPrompt(this)">Copy prompt</button></div>
-        Claude reads each post's caption, opens its image in Chrome to look at it, and gives you back an audit .json file to download. Stories are reviewed from the copy Buffer keeps, which stays available after the Story expires on Instagram; for video Stories only the cover frame is kept. Large ranges take a while. If the chat stops midway, ask Claude to continue, and it picks up where it left off.</div></li>
+        Claude reads each post's caption, opens its cover image in Chrome to look at it, and gives you back an audit .json file to download. Large ranges take a while. If the chat stops midway, ask Claude to continue, and it picks up where it left off.</div></li>
       <li><div><strong>Publish the result.</strong> In <em>Publish Claude's result</em>, choose the audit file Claude gave you and click <em>Publish</em>. It's saved for everyone and the <em>Data reviewed</em> date moves forward.</div></li>
       <li><div><strong>Review the flags.</strong> Pick a date range under <em>Filter by post date</em> and click <em>Apply</em>. Each flag says where the problem was found (caption or image) and why it was flagged, with a suggested action. Open each flagged post on Instagram and click its status to move it from <em>Pending review</em> to <em>Reported to Ops</em> or <em>Cleared</em>. Then click <em>Save status changes</em> so everyone sees it. The period summary under the date filter counts accounts, clean accounts and flags for that period.</div></li>
     </ol>
@@ -262,7 +262,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 <script type="text/plain" class="skill-file" data-path="sweat440-brand-safety-audit/SKILL.md">
 ---
 name: sweat440-brand-safety-audit
-description: Runs the SWEAT440 Brand Safety Audit on a posts export downloaded from the Brand Safety Audit dashboard (a file named like 2026-08-04_to_2026-09-24-posts.json). Reviews every Instagram feed post's caption and cover image, and every Story's image, against SWEAT440's 6 brand-safety categories and returns the audit JSON file the dashboard's Publish step accepts. Use whenever the user uploads one of these posts exports or asks to run the brand safety audit.
+description: Runs the SWEAT440 Brand Safety Audit on a posts export downloaded from the Brand Safety Audit dashboard (a file named like 2026-08-04_to_2026-09-24-posts.json). Reviews every Instagram post's caption and cover image against SWEAT440's 6 brand-safety categories and returns the audit JSON file the dashboard's Publish step accepts. Use whenever the user uploads one of these posts exports or asks to run the brand safety audit.
 ---
 
 # SWEAT440 Brand Safety Audit
@@ -280,33 +280,25 @@ The user uploads a posts export from the dashboard. Its shape:
   "note": "...",
   "accounts": [
     {"name": "Boca Raton", "handle": "sweat440boca",
-     "posts": [{"id": "...", "date": "...", "postType": "Static" | "Carousel" | "Story" | "Video story (cover)",
+     "posts": [{"id": "...", "date": "...", "postType": "Static" | "Carousel",
                 "caption": "...", "imageUrl": "...", "link": "..."}]}
   ]
 }
 ```
 
-It has two kinds of items:
-
-- **Feed posts** (`Static`, `Carousel`): the caption, plus `imageUrl` for the cover image. `link` is the post on Instagram.
-- **Stories** (`Story`, `Video story (cover)`): usually there's no caption, so the text is whatever appears in the image. Some Stories do have a `caption` from Buffer; read it when it's there. `imageUrl` and `link` are both Buffer's permanent copy of the Story image. The Story itself is gone from Instagram after 24 hours, but this copy stays. For `Video story (cover)`, only the cover frame is available, because the video file isn't kept.
-
-Reels were already excluded.
+Only Static and Carousel feed posts are in it. Reels and Stories were already excluded.
 
 ## Workflow
 
-1. Load the export and report how many feed posts, Stories and accounts with posts it has.
+1. Load the export and report how many posts and accounts with posts it has.
 2. Before you start, check that the Claude in Chrome extension is connected. You view the cover images through it. If it isn't connected, tell the user to connect it and wait. Don't run the audit on captions alone.
 3. Review every post, one at a time:
    - Read the caption.
-   - With Claude in Chrome, open the post's `imageUrl` in a browser tab and take a screenshot to see the image. For a Carousel, `imageUrl` is the first slide. If a feed post's image doesn't load, open its `link` on Instagram instead.
-   - **Stories:** judge the image, including any text, stickers or tags on it, plus the `caption` if there is one. `foundIn` is `image` unless the problem is in that caption. Category 2 (explicit lyrics) can't apply, because there's no audio.
-   - **Reposts:** a Story that reshares one of the studio's own feed posts shows the post as a card over a blurred background, with the handle below. That feed post is audited on its own, so mark the Story clean with `why` "Repost of own feed post." A Story that reshares ANOTHER account's post (a partner, a member, a brand) still gets reviewed, because the studio chose to show it.
-   - **`Video story (cover)`:** you only see one frame of a video. Flag only what's visible in it, and start `why` with "Cover frame only."
+   - With Claude in Chrome, open the post's `imageUrl` in a browser tab and take a screenshot to see the cover image. For a Carousel, `imageUrl` is the first slide. If a specific image doesn't load, open the post's `link` on Instagram instead.
    - If you still can't see the image, evaluate the caption only, set `"visualReviewed": false`, and start `why` with "Visual not reviewed."
    - Decide a verdict using the framework below.
    - Reuse one tab for every post rather than opening a new tab per post.
-4. Append each verdict as one line to `verdicts.jsonl`, in the format shown under "Verdict format". Stories add up fast (around 100 a day across the network), so work account by account and save after each account. That way nothing is lost if the conversation gets long, and you can pick up where you left off.
+4. Append each verdict as one line to `verdicts.jsonl`, in the format shown under "Verdict format". For big exports, work account by account and save after each account. That way nothing is lost if the conversation gets long, and you can pick up where you left off.
 5. Check progress at any point:
    `python scripts/assemble_audit.py <export.json> verdicts.jsonl --check`
    It lists invalid verdicts and the posts that still need one.
@@ -398,7 +390,7 @@ Follow these rules:
 - `coverage` is required. The dashboard refuses to publish without it.
 - `postLog` lists EVERY post, flagged or clean.
 - `flags` lists only flagged posts.
-- Copy `date`, `postType`, `caption` and `link` verbatim from the export.
+- Copy `date`, `caption` and `link` verbatim from the export.
 - Include every account from the export, even the ones with 0 posts.
 </script>
 <script type="text/plain" class="skill-file" data-path="sweat440-brand-safety-audit/scripts/assemble_audit.py">
@@ -661,10 +653,6 @@ function topLevel(a){
 
 function esc(t){return String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 
-// Stories ("Story" / "Video story (cover)") link to Buffer's permanent copy
-// of the image instead of Instagram, where they expire after 24h.
-function isStory(p){return /story/i.test(p.postType||"");}
-
 const FOUND_IN_LABEL={caption:"Caption",image:"Image",both:"Caption + image"};
 
 // Why a post was flagged: where (caption / image) and a one-line reason,
@@ -723,7 +711,7 @@ function render(){
             +'<div class="flag-caption">&ldquo;'+f.caption+'&rdquo;</div>'
             +flagExplainHtml(f)
             +'<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:8px">'
-              +'<a class="ig-link" href="'+f.link+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+IG_ICON+(isStory(f)?' View Story image':' View post on Instagram')+'</a>'
+              +'<a class="ig-link" href="'+f.link+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+IG_ICON+' View post on Instagram</a>'
               +'<button class="status-btn '+STATUS_CLASS[st]+'" onclick="event.stopPropagation();cycleStatus(\''+f.id+'\')" title="Click to change status">'+STATUS_LABEL[st]+'</button>'
               +(stDate?'<span class="status-meta">updated '+stDate+'</span>':"")
             +'</div>'
@@ -929,12 +917,11 @@ function renderPeriodSummary(){
   const flaggedAccounts=new Set(flags.map(p=>p.accountHandle));
   const clean=[...s.withPosts].filter(h=>!flaggedAccounts.has(h)).length;
   const byLevel=l=>flags.filter(p=>p.level===l).length;
-  const stories=s.posts.filter(isStory).length;
   const pct=(n,d)=>d?Math.round(n/d*100)+"%":"—";
   const tile=(label,val,cls,sub)=>'<div class="metric"><div class="metric-label">'+label+'</div><div class="metric-value '+cls+'">'+val+'</div><div class="metric-sub">'+sub+'</div></div>';
   el.style.display="";
   el.innerHTML='<h2>Period summary</h2>'
-    +'<div class="ps-sub">'+s.title+' · '+s.posts.length+' posts reviewed ('+(s.posts.length-stories)+' feed · '+stories+' Stories) · '
+    +'<div class="ps-sub">'+s.title+' · '+s.posts.length+' posts reviewed · '
       +(s.covered.length?'Audited in this range: '+s.covered.join(", "):'No published audit covers this range yet')+'</div>'
     +'<div class="ps-grid">'
       +tile("Accounts reviewed",s.reviewed.size,"mv-blue","In the published audits for this period")
@@ -1032,8 +1019,8 @@ async function callProxy(payload){
   return data;
 }
 
-// Buffer returns ~1,000 posts/week across the org (mostly Stories), so a
-// long range is fetched as 7-day chunks — one Worker
+// Buffer returns ~1,000 posts/week across the org (mostly Stories, dropped
+// by the Worker), so a long range is fetched as 7-day chunks — one Worker
 // call each, keeping every call well inside its page/subrequest limits —
 // then merged into one export covering the full range.
 function weekChunks(fromVal,toVal){
@@ -1060,13 +1047,13 @@ function mergeExports(parts,fromVal,toVal){
   return {
     cycle:last.cycle,period:last.period,generated:last.generated,
     coverage:{from:fromVal,to:toVal},
-    note:skipped+" Reel(s) excluded — video review isn't built yet."
+    note:skipped+" Reel(s)/Story post(s) excluded — video and 24h-ephemeral content aren't in scope yet."
       +(unavailable.length?" Not in Buffer anymore (skipped): "+unavailable.join(", ")+".":""),
     skipped,unavailableChannels:unavailable,accounts
   };
 }
 
-// Pulls feed posts + Stories for the selected date range live from Buffer
+// Pulls Static/Carousel posts for the selected date range live from Buffer
 // (via the Worker — the Buffer token never reaches this page) and downloads
 // them as a file ready to upload to a Claude.ai chat/Project for analysis.
 async function downloadPosts(){
