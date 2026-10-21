@@ -2,6 +2,17 @@
   "entries": [
     {
       "date": "2026-10-21",
+      "pr_number": 474,
+      "pr_url": "https://github.com/dev-leadteam/dashboards/pull/474",
+      "author": "Sebastian Arango",
+      "categories": [
+        "General"
+      ],
+      "title": "Agency Comparison shows days with ad spend and combines studios that changed agency",
+      "summary": "The report now shows how many days each agency's studios had ad spend against the days in the period, adds Google's share of spend, hides studios with no ads, and shows a studio that changed agency as one combined row (e.g. LT → JL) unless one agency is picked."
+    },
+    {
+      "date": "2026-10-21",
       "pr_number": 469,
       "pr_url": "https://github.com/dev-leadteam/dashboards/pull/469",
       "author": "Santiago Estrada",
