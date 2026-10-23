@@ -34,7 +34,7 @@ function logout() {
 
 function _redirectToLogin() {
   const isNested = ['/nso-dashboard/', '/admin-reports/', '/brand-safety-audit/', '/social-media-audit/',
-                    '/campaign-dashboard/', '/paid-ads-dashboards/'].some(dir => location.pathname.includes(dir));
+                    '/campaign-dashboard/', '/paid-ads-dashboards/', '/organic-social/'].some(dir => location.pathname.includes(dir));
   location.replace(isNested ? '../login.html' : 'login.html');
 }
 
