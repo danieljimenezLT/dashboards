@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SWEAT440 — Organic Social Media</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet"/>
+<link rel="icon" href="../favicon.jpg"/>
+<link rel="stylesheet" href="../shared/style.css"/>
+<style>
+  .os-check{display:flex;align-items:center;gap:6px;font-size:12px;color:#1a1a2e;cursor:pointer;white-space:nowrap}
+  .os-check input{accent-color:#00A3E0;width:14px;height:14px;cursor:pointer}
+  .os-section-head{font-family:'Oswald',sans-serif;font-style:italic;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#5a7a8a;margin:6px 0 10px}
+  .os-target{font-size:11px;font-weight:600;margin-top:6px;color:#5a7a8a}
+  .os-target.met{color:#0a8a4a}
+  .os-target.miss{color:#d32f2f}
+  .os-sub{font-size:11px;color:#8aaabb;margin-top:5px}
+  .os-note{font-size:12px;color:#5a7a8a;line-height:1.6}
+  .os-chart{position:relative;width:100%;height:240px}
+  .os-flag{display:inline-block;margin-left:6px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#b85c00;background:#fef3e2;border-radius:4px;padding:1px 5px;vertical-align:middle}
+  .os-post{display:flex;gap:10px;align-items:center;min-width:260px;max-width:380px}
+  .os-thumb{width:52px;height:52px;border-radius:8px;object-fit:cover;background:#edf3f7;flex-shrink:0;display:block}
+  .os-thumb-ph{width:52px;height:52px;border-radius:8px;background:#edf3f7;flex-shrink:0}
+  .os-post a{color:inherit;text-decoration:none}
+  .os-post a:hover .os-cap{text-decoration:underline}
+  .os-cap{font-size:12px;color:#1a1a2e;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .os-meta{font-size:10.5px;color:#5a7a8a;margin-top:3px}
+  .os-pill{display:inline-block;padding:1px 7px;border-radius:9px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-right:4px;background:#f0f6fa;color:#5a7a8a}
+  .os-pill.collab{background:rgba(0,163,224,.14);color:#0077aa}
+  .os-pill.studio{background:rgba(0,201,167,.16);color:#00806a}
+  .os-demo-row{display:grid;grid-template-columns:70px 1fr 52px;gap:10px;align-items:center;font-size:12px;padding:4px 0}
+  .os-demo-track{height:8px;background:#f0f6fa;border-radius:4px;overflow:hidden}
+  .os-demo-fill{height:100%;background:#0084B5;border-radius:4px}
+  .os-demo-pct{text-align:right;font-weight:600;color:#1a1a2e}
+  .os-table-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .os-empty{font-size:12px;color:#8aaabb;font-style:italic;padding:20px 0;text-align:center}
+  .os-legend-key{display:inline-flex;align-items:center;gap:5px;margin-right:12px}
+  .os-legend-key i{display:inline-block;width:10px;height:10px;border-radius:2px}
+  .data-table td.os-c{text-align:right;color:#1a1a2e}
+  @media(max-width:768px){.os-post{min-width:200px}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="../home.html"><img src="../logo.png" alt="SWEAT440"/></a>
+  <div class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" onclick="switchTab('summary',this)">Summary</button>
+    <button class="nav-tab" onclick="switchTab('details',this)">Details &amp; Trends</button>
+    <button class="nav-tab" onclick="switchTab('posts',this)">Post Performance</button>
+    <button class="nav-tab" onclick="switchTab('glossary',this)">Glossary</button>
+  </div>
+  <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Toggle navigation">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="controls-bar">
+  <button class="controls-toggle" onclick="document.getElementById('ctrlInner').classList.toggle('open')">Filters ▾</button>
+  <div class="controls-inner" id="ctrlInner">
+    <span class="ctrl-label">Month</span>
+    <select id="fMonth" onchange="onFilterChange()"></select>
+    <div class="ctrl-sep"></div>
+    <label class="os-check"><input type="checkbox" id="fStudioCollabs" checked onchange="onFilterChange()"/> Include studio-started collabs</label>
+    <label class="os-check"><input type="checkbox" id="fHideTests" checked onchange="onFilterChange()"/> Hide test posts (under 200 reach)</label>
+  </div>
+</div>
+<div class="data-freshness-note" id="dataFreshness"></div>
+
+<div class="main">
+
+  <!-- SUMMARY TAB -->
+  <div class="tab-content active" id="tab-summary">
+    <div class="os-section-head" id="summaryHead"></div>
+    <div class="kpi-grid" id="summaryKpis"></div>
+    <div class="kpi-grid" id="summaryKpis2"></div>
+    <div class="chart-card">
+      <div class="chart-card-title">Base for this month</div>
+      <div class="os-note" id="summaryBase"></div>
+    </div>
+  </div>
+
+  <!-- DETAILS & TRENDS TAB -->
+  <div class="tab-content" id="tab-details">
+    <div class="two-col">
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-card-title">#1 Are new people seeing us?</div>
+        <div style="overflow-x:auto"><table class="data-table" id="secReach"></table></div>
+      </div>
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-card-title">#2 Are they engaging meaningfully?</div>
+        <div style="overflow-x:auto"><table class="data-table" id="secEngage"></table></div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-card-title">#3 Are they taking action?</div>
+        <div style="overflow-x:auto"><table class="data-table" id="secAction"></table></div>
+      </div>
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-card-title">Content published</div>
+        <div style="overflow-x:auto"><table class="data-table" id="secContent"></table></div>
+      </div>
+    </div>
+
+    <div class="os-section-head">Trends — 13 months to <span id="trendEnd"></span></div>
+    <div class="two-col">
+      <div class="chart-card" style="margin-bottom:0"><div class="chart-card-title">Median reach per post</div><div class="os-chart"><canvas id="chReach" role="img" aria-label="Median reach per post by month, all posts and own posts"></canvas></div></div>
+      <div class="chart-card" style="margin-bottom:0"><div class="chart-card-title">Engagement rate (median)</div><div class="os-chart"><canvas id="chEr" role="img" aria-label="Median engagement rate by month"></canvas></div></div>
+    </div>
+    <div class="two-col">
+      <div class="chart-card" style="margin-bottom:0"><div class="chart-card-title">Share, save &amp; comment rate (median)</div><div class="os-chart"><canvas id="chRates" role="img" aria-label="Median share, save and comment rate by month"></canvas></div></div>
+      <div class="chart-card" style="margin-bottom:0"><div class="chart-card-title">Reel retention (median)</div><div class="os-chart"><canvas id="chRet" role="img" aria-label="Median reel retention by month"></canvas></div></div>
+    </div>
+    <div class="two-col">
+      <div class="chart-card" style="margin-bottom:0"><div class="chart-card-title">Account views — followers vs non-followers</div><div class="os-chart"><canvas id="chViews" role="img" aria-label="Account views by month split by followers and non-followers"></canvas></div></div>
+      <div class="chart-card" style="margin-bottom:0"><div class="chart-card-title">Follows &amp; unfollows</div><div class="os-chart"><canvas id="chFollows" role="img" aria-label="Follows, unfollows and net followers by month"></canvas></div></div>
+    </div>
+    <div class="two-col">
+      <div class="chart-card" style="margin-bottom:0"><div class="chart-card-title">Followers at month close</div><div class="os-chart"><canvas id="chFollowers" role="img" aria-label="Follower count at the end of each month"></canvas></div></div>
+      <div class="chart-card" style="margin-bottom:0"><div class="chart-card-title">Feed posts by format</div><div class="os-chart"><canvas id="chFormats" role="img" aria-label="Feed posts per month by format"></canvas></div></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card-title-row">
+        <div class="chart-card-title">Audience</div>
+        <div class="os-note" id="demoAsOf"></div>
+      </div>
+      <div class="two-col" style="margin-bottom:0" id="demoBody"></div>
+    </div>
+  </div>
+
+  <!-- POST PERFORMANCE TAB -->
+  <div class="tab-content" id="tab-posts">
+    <div class="chart-card">
+      <div class="chart-card-title-row">
+        <div class="chart-card-title">Post performance <span class="os-note" id="postCount" style="font-family:'Open Sans',sans-serif;font-style:normal;text-transform:none;letter-spacing:0;font-weight:400"></span></div>
+        <div class="os-table-tools">
+          <select id="pRange" onchange="renderPosts()">
+            <option value="1">Selected month</option>
+            <option value="3">Last 3 months</option>
+            <option value="12">Last 12 months</option>
+            <option value="all">All posts</option>
+          </select>
+          <select id="pFormat" onchange="renderPosts()">
+            <option value="">All formats</option>
+            <option value="Reel">Reels</option>
+            <option value="Carousel">Carousels</option>
+            <option value="Static">Statics</option>
+          </select>
+          <select id="pCollab" onchange="renderPosts()">
+            <option value="">Own + collabs</option>
+            <option value="own">Own posts only</option>
+            <option value="collab">Collabs only</option>
+          </select>
+          <button class="download-btn" onclick="downloadPosts()">Download CSV</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table" id="postsTable">
+          <thead><tr>
+            <th data-sort="date">Post</th>
+            <th class="num" data-sort="views">Views</th>
+            <th class="num" data-sort="reach">Reach</th>
+            <th class="num" data-sort="likes">Likes</th>
+            <th class="num" data-sort="comments">Comments</th>
+            <th class="num" data-sort="shares">Shares</th>
+            <th class="num" data-sort="saves">Saves</th>
+            <th class="num" data-sort="er">Eng. rate</th>
+            <th class="num" data-sort="shareRate">Share rate</th>
+            <th class="num" data-sort="retention">Retention</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="os-note" style="margin-top:12px">Eng. rate = (likes + comments) ÷ reach · Share rate = shares ÷ reach · Retention = average watch time ÷ reel length (Reels only). Click a post to open it on Instagram.</div>
+    </div>
+  </div>
+
+  <!-- GLOSSARY TAB -->
+  <div class="tab-content" id="tab-glossary">
+    <div class="chart-card">
+      <div class="chart-card-title">How we measure</div>
+      <p class="os-note">HQ Instagram (@sweat440) only, organic. Every per-post figure is Instagram's own insight for that post. Medians are used for per-post metrics so one viral post can't carry the month.</p>
+    </div>
+    <div id="glossaryContent"></div>
+    <div class="chart-card" style="margin-top:20px">
+      <div class="chart-card-title">Industry benchmarks</div>
+      <div style="overflow-x:auto"><table class="data-table" id="benchTable"></table></div>
+      <p class="os-note" style="margin-top:12px">Published studies of Instagram brand accounts, checked Oct 20, 2026. Refresh each quarter when the sources publish. No comparable benchmark yet for comment rate, save rate or reel retention.</p>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">Data sources &amp; known gaps</div>
+      <div class="os-note" id="sourceNotes"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="kpi-info-overlay" id="kpiInfoOverlay" onclick="closeKpiInfo()"></div>
+<div class="kpi-info-box" id="kpiInfoBox">
+  <button class="kpi-info-box-close" onclick="closeKpiInfo()" aria-label="Close">&#215;</button>
+  <div class="kpi-info-box-title" id="kpiInfoTitle"></div>
+  <div class="kpi-info-box-desc" id="kpiInfoDesc"></div>
+  <div class="kpi-info-box-date-label" id="kpiInfoDateLabel"></div>
+  <div class="kpi-info-box-date" id="kpiInfoDate"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="../users.js"></script>
+<script src="../shared/auth.js"></script>
+<script src="../shared/utils.js"></script>
+<script>
+// Organic Social Media dashboard - HQ @sweat440 Instagram only.
+// Data: organic_social.json, written by scripts/fetch_organic_social.py
+// (manual monthly workflow: organic-social-refresh.yml).
+
+const C_MAIN = '#0084B5', C_TWO = '#00C9A7', C_THREE = '#9aab00', C_REF = '#8aaabb';
+const TEST_REACH = 200;          // "Hide test posts" cut-off (the deck drops ~100-reach test videos)
+const TARGETS = { medReach: 1100, er: 0.03 };   // rock targets from the monthly report
+
+let RAW = null, MONTHS = [], SEL = null;
+
+// -- Glossary: one entry per metric, reused by the info buttons ---------------
+const GLOSSARY_SECTIONS = [
+  ['Reach & views', ['medReach','medReachOwn','totalReach','views','nonFollowerPct']],
+  ['Engagement', ['er','commentRate','shareRate','saveRate','sharesPerPost','retention']],
+  ['Followers & action', ['followers','netFollowers','growth','follows','churn','profileVisits','v2f']],
+  ['Content', ['posts','collabs','stories']],
+];
+const GLOSSARY = {
+  medReach: { title:'Median reach / post', how:'Middle value of reach across the month\'s feed posts (Reels, carousels, statics), collabs included. Reach = unique accounts that saw the post, from Instagram\'s insights for that post.', why:'One viral post cannot carry the month. Rock target: 1,100 or more.' },
+  medReachOwn: { title:'Median reach / post (own posts)', how:'Same as median reach, leaving out every collab (HQ-started and studio-started).', why:'Shows whether HQ\'s own content holds its reach when collabs swing the overall number.' },
+  totalReach: { title:'Total feed reach', how:'Sum of reach across the month\'s feed posts. A person who saw two posts counts twice.', why:'Volume view of the same base as median reach.' },
+  views: { title:'Total views', how:'Account-level views in the month from Instagram (all content, Stories included). Counts every time content is shown, so one person can add several views.', why:'Overall visibility of the account. Instagram only reports views from August 2025.' },
+  nonFollowerPct: { title:'Views from non-followers', how:'Views from accounts that don\'t follow @sweat440 ÷ total views (Instagram\'s follower / non-follower split).', why:'How much of what we publish reaches new people.' },
+  er: { title:'Engagement rate', how:'Median per post of (likes + comments) ÷ reach.', why:'The rock metric. Target: 3.0% or more. Shares and saves are tracked as their own rates.' },
+  commentRate: { title:'Comment rate', how:'Median per post of comments ÷ reach.', why:'Rates stay comparable as reach changes.' },
+  shareRate: { title:'Share rate', how:'Median per post of shares ÷ reach.', why:'Shares are the interaction that spreads reach to new people.' },
+  saveRate: { title:'Save rate', how:'Median per post of saves ÷ reach.', why:'Signals content worth coming back to (the Educational series is built for this).' },
+  sharesPerPost: { title:'Shares per post', how:'Average shares per feed post in the month (median shown alongside).', why:'The unit industry benchmarks use.' },
+  retention: { title:'Reel retention', how:'Median per Reel of average watch time ÷ reel length. Reel length is read from the video file.', why:'Scale: under 25% below average · 25–30% average · 30–50% good · 50–70% very good · over 70% excellent.' },
+  followers: { title:'Followers', how:'Followers at month close. Worked back from today\'s count using each later month\'s follows minus unfollows.', why:'Account size; the base for growth and churn.' },
+  netFollowers: { title:'Net new followers', how:'Follows − unfollows in the month.', why:'Net change in the audience.' },
+  growth: { title:'Follower growth rate', how:'Net new followers ÷ followers at month start.', why:'Comparable as the account grows.' },
+  follows: { title:'Follows / unfollows', how:'Accounts that followed and unfollowed @sweat440 in the month (Instagram, from October 2025).', why:'Splits net growth into what we gained and what we gave back.' },
+  churn: { title:'Churn rate', how:'Unfollows ÷ followers at month start.', why:'Share of the audience lost in the month.' },
+  profileVisits: { title:'Profile visits', how:'Times the @sweat440 profile was viewed in the month.', why:'People curious enough to check us out.' },
+  v2f: { title:'Visit-to-follow', how:'Follows ÷ profile visits.', why:'Whether the profile converts visits into followers.' },
+  posts: { title:'Feed posts', how:'Reels, carousels and statics published in the month, own posts plus collabs. Stories are not counted here. Test posts under 200 reach are hidden by default.', why:'The base every per-post metric is computed on.' },
+  collabs: { title:'Collabs', how:'Posts shared with another account. HQ-started collabs come from HQ\'s own posts; studio-started collabs are found through the studio Instagram data (from mid-2026 only).', why:'Collabs sit in the HQ grid as brand content, but can swing reach, so own-post figures are shown too.' },
+  stories: { title:'Stories', how:'Stories posted in the month, counted from a daily snapshot of the Stories live on the account.', why:'Stories only count in account totals (views), not in per-post metrics. Counting started Sep 24, 2026, so September reads low.' },
+};
+const BENCHMARKS = [
+  ['Views per post (avg)', '2,460 Reels · 4,275 carousels', 'Brands with 10K–50K followers, 2025 data', 'Socialinsider Instagram Benchmarks 2026'],
+  ['Engagement rate', '3.20% of reach', 'Brand pages, Aug 2026. Their interactions include shares and saves; ours counts likes and comments only', 'Socialinsider Reach Study, Sep 2026'],
+  ['Shares per post (median)', '1', '11,515 US brand profiles, Jul–Sep 2026', 'Emplifi Q3 2026 Benchmarks'],
+  ['Follower growth / month', '≈1.3%', 'Brands with 10K–50K followers, 17.2% in 2025', 'Socialinsider Instagram Benchmarks 2026'],
+];
+
+// -- Helpers ------------------------------------------------------------------
+function median(xs){ xs = xs.filter(v => v != null && isFinite(v)).sort((a,b)=>a-b); if(!xs.length) return null; const m = Math.floor(xs.length/2); return xs.length % 2 ? xs[m] : (xs[m-1]+xs[m])/2; }
+function mean(xs){ xs = xs.filter(v => v != null && isFinite(v)); return xs.length ? xs.reduce((a,b)=>a+b,0)/xs.length : null; }
+function fmtN(v){ return v == null ? '—' : Math.round(v).toLocaleString('en-US'); }
+function fmtP(v, d){ return v == null ? '—' : (v*100).toFixed(d == null ? 2 : d) + '%'; }
+function fmtSigned(v){ return v == null ? '—' : (v > 0 ? '+' : '') + Math.round(v).toLocaleString('en-US'); }
+function monthLabel(mk){ return new Date(mk+'-01T00:00:00Z').toLocaleString('en-US',{month:'short',year:'numeric',timeZone:'UTC'}); }
+function monthShort(mk){ return new Date(mk+'-01T00:00:00Z').toLocaleString('en-US',{month:'short',timeZone:'UTC'}); }
+function shiftMonth(mk, n){ const [y,m] = mk.split('-').map(Number); const d = new Date(Date.UTC(y, m-1+n, 1)); return d.toISOString().slice(0,7); }
+function infoBtn(key, inline){
+  const g = GLOSSARY[key]; if(!g) return '';
+  return '<button class="kpi-info-btn'+(inline?' kpi-info-inline':'')+'" onclick="showKpiInfo(this,event)" data-title="'+_esc(g.title)+'" data-desc="'+_esc(g.how)+'" data-date="'+_esc(g.why)+'">i</button>';
+}
+function showKpiInfo(btn, evt){
+  if (evt) evt.stopPropagation();
+  document.getElementById('kpiInfoTitle').textContent = btn.dataset.title;
+  document.getElementById('kpiInfoDesc').textContent = btn.dataset.desc;
+  document.getElementById('kpiInfoDateLabel').textContent = btn.dataset.date ? 'Why it matters' : '';
+  document.getElementById('kpiInfoDate').textContent = btn.dataset.date || '';
+  document.getElementById('kpiInfoOverlay').classList.add('active');
+  document.getElementById('kpiInfoBox').classList.add('active');
+}
+function closeKpiInfo(){
+  document.getElementById('kpiInfoOverlay').classList.remove('active');
+  document.getElementById('kpiInfoBox').classList.remove('active');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeKpiInfo(); });
+
+// -- Metrics ------------------------------------------------------------------
+function retentionOf(p){
+  return p.format === 'Reel' && p.avg_watch_time_ms && p.reel_length_s ? p.avg_watch_time_ms/1000/p.reel_length_s : null;
+}
+function passesBase(p){
+  if (p.reach == null) return false;
+  if (document.getElementById('fHideTests').checked && p.reach < TEST_REACH) return false;
+  if (!document.getElementById('fStudioCollabs').checked && p.collab_source === 'studio') return false;
+  return true;
+}
+function acctRow(mk){ return (RAW.monthly || []).find(r => r.month.slice(0,7) === mk) || null; }
+function netOf(r){ return r && r.follows != null && r.unfollows != null ? r.follows - r.unfollows : null; }
+
+// Followers at the close of mk: today's count minus every later month's net.
+// null if any later month has no follows/unfollows data.
+function followersEnd(mk){
+  let f = RAW.account.followers;
+  for (const r of RAW.monthly || []) {
+    if (r.month.slice(0,7) <= mk) continue;
+    const n = netOf(r); if (n == null) return null;
+    f -= n;
+  }
+  return f;
+}
+
+const _statsCache = {};
+function monthStats(mk){
+  const key = mk + '|' + document.getElementById('fHideTests').checked + document.getElementById('fStudioCollabs').checked;
+  if (_statsCache[key]) return _statsCache[key];
+  const ps = (RAW.posts || []).filter(p => p.date.slice(0,7) === mk && passesBase(p));
+  const own = ps.filter(p => !p.collab);
+  const r = acctRow(mk);
+  const views = r && r.views ? r.views : null;            // 0 = before Instagram reported views
+  const split = r && r.views_followers != null && r.views_non_followers != null ? r.views_followers + r.views_non_followers : null;
+  const net = netOf(r);
+  const fStart = followersEnd(shiftMonth(mk, -1));
+  const story = (RAW.stories_by_month || {})[mk];
+  const s = {
+    mk, hasData: !!r || ps.length > 0, complete: r ? r.complete !== false : true,
+    posts: ps.length, own: own.length, collabs: ps.length - own.length,
+    collabsHq: ps.filter(p => p.collab_source === 'hq').length,
+    collabsStudio: ps.filter(p => p.collab_source === 'studio').length,
+    reels: ps.filter(p => p.format === 'Reel').length,
+    carousels: ps.filter(p => p.format === 'Carousel').length,
+    statics: ps.filter(p => p.format === 'Static').length,
+    medReach: median(ps.map(p => p.reach)),
+    medReachOwn: median(own.map(p => p.reach)),
+    totalReach: ps.length ? ps.reduce((a,p)=>a+p.reach,0) : null,
+    er: median(ps.map(p => ((p.likes||0)+(p.comments||0))/p.reach)),
+    commentRate: median(ps.map(p => (p.comments||0)/p.reach)),
+    shareRate: median(ps.map(p => p.shares == null ? null : p.shares/p.reach)),
+    saveRate: median(ps.map(p => p.saves == null ? null : p.saves/p.reach)),
+    sharesPerPost: mean(ps.map(p => p.shares)),
+    medShares: median(ps.map(p => p.shares)),
+    retention: median(ps.map(retentionOf)),
+    reelsWithRetention: ps.filter(p => retentionOf(p) != null).length,
+    views, viewsFollowers: r ? r.views_followers : null, viewsNonFollowers: r ? r.views_non_followers : null,
+    nonFollowerPct: split ? r.views_non_followers / split : null,
+    profileVisits: r ? r.profile_views : null,
+    follows: r ? r.follows : null, unfollows: r ? r.unfollows : null, net,
+    followersStart: fStart, followersEnd: followersEnd(mk),
+    growth: net != null && fStart ? net / fStart : null,
+    churn: r && r.unfollows != null && fStart ? r.unfollows / fStart : null,
+    v2f: r && r.follows != null && r.profile_views ? r.follows / r.profile_views : null,
+    stories: story ? story.count : null, storyDays: story ? story.days : null,
+  };
+  _statsCache[key] = s;
+  return s;
+}
+
+// -- KPI cards ----------------------------------------------------------------
+// kind: 'n' count (delta in %), 'p' rate (delta in points). invert: lower is better.
+function deltaLine(cur, prev, kind, invert, label){
+  if (cur == null || prev == null) return '';
+  let txt, d;
+  if (kind === 'p') { d = (cur - prev) * 100; txt = Math.abs(d).toFixed(2) + ' pts'; }
+  else { if (!prev) return ''; d = (cur - prev) / Math.abs(prev) * 100; txt = Math.abs(d).toFixed(1) + '%'; }
+  const good = invert ? d < 0 : d > 0;
+  const cls = d === 0 ? 'neu' : (good ? 'pos' : 'neg');
+  return '<div class="kpi-card-delta '+cls+'">'+(d >= 0 ? '&#9650;' : '&#9660;')+' '+txt+' vs '+label+'</div>';
+}
+function card(key, label, cur, s, pm, py, kind, fmt, opts){
+  opts = opts || {};
+  const prevLabel = monthShort(pm.mk), yearLabel = monthShort(py.mk) + " '" + py.mk.slice(2,4);
+  let h = '<div class="kpi-card">' + infoBtn(key) + '<div class="kpi-card-label">'+label+'</div><div class="kpi-card-val">'+fmt(cur)+'</div>';
+  h += deltaLine(cur, opts.pick(pm), kind, opts.invert, prevLabel);
+  h += deltaLine(cur, opts.pick(py), kind, opts.invert, yearLabel);
+  if (opts.target != null && cur != null) {
+    const met = cur >= opts.target;
+    h += '<div class="os-target '+(met?'met':'miss')+'">Target ≥ '+(kind==='p'?fmtP(opts.target,1):fmtN(opts.target))+' · '+(met?'met':'not met')+'</div>';
+  }
+  if (opts.sub) h += '<div class="os-sub">'+opts.sub+'</div>';
+  return h + '</div>';
+}
+
+function renderSummary(){
+  const s = monthStats(SEL), pm = monthStats(shiftMonth(SEL,-1)), py = monthStats(shiftMonth(SEL,-12));
+  document.getElementById('summaryHead').innerHTML = monthLabel(SEL) + (s.complete ? '' : ' <span class="os-flag">month to date</span>') + ' · HQ Instagram · organic';
+  const k = (key) => (x) => x[key];
+  let h = '';
+  h += card('medReach', 'Median reach / post', s.medReach, s, pm, py, 'n', fmtN, {pick:k('medReach'), target:TARGETS.medReach, sub:'Own posts only: '+fmtN(s.medReachOwn)});
+  h += card('er', 'Engagement rate', s.er, s, pm, py, 'p', v => fmtP(v), {pick:k('er'), target:TARGETS.er});
+  h += card('views', 'Total views', s.views, s, pm, py, 'n', fmtN, {pick:k('views')});
+  h += card('netFollowers', 'Net new followers', s.net, s, pm, py, 'n', fmtSigned, {pick:k('net'), sub: s.growth != null ? fmtP(s.growth) + ' growth' : ''});
+  document.getElementById('summaryKpis').innerHTML = h;
+  h = '';
+  h += card('nonFollowerPct', 'Views from non-followers', s.nonFollowerPct, s, pm, py, 'p', v => fmtP(v,1), {pick:k('nonFollowerPct')});
+  h += card('shareRate', 'Share rate', s.shareRate, s, pm, py, 'p', v => fmtP(v), {pick:k('shareRate')});
+  h += card('profileVisits', 'Profile visits', s.profileVisits, s, pm, py, 'n', fmtN, {pick:k('profileVisits'), sub: s.v2f != null ? fmtP(s.v2f,1) + ' visit-to-follow' : ''});
+  h += card('followers', 'Followers', s.followersEnd, s, pm, py, 'n', fmtN, {pick:k('followersEnd'), sub: s.complete ? 'At month close' : 'As of ' + new Date(RAW.generated_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})});
+  document.getElementById('summaryKpis2').innerHTML = h;
+  document.getElementById('summaryBase').innerHTML =
+    s.posts + ' feed posts (' + s.own + ' own, ' + s.collabs + ' collabs: ' + s.collabsHq + ' HQ-started, ' + s.collabsStudio + ' studio-started) · ' +
+    s.reels + ' Reels, ' + s.carousels + ' carousels, ' + s.statics + ' statics' +
+    (s.stories != null ? ' · ' + s.stories + ' Stories' + (s.storyDays != null && s.storyDays < 28 && s.complete ? ' (counted on ' + s.storyDays + ' days only)' : '') : '') +
+    '.<br>Deltas compare with ' + monthLabel(pm.mk) + ' and ' + monthLabel(py.mk) + ' on the same base. Rates move in points; counts in %.';
+}
+
+// -- Details: section tables --------------------------------------------------
+function sectionTable(id, rows, cur, prev){
+  let h = '<thead><tr><th>Metric</th><th class="num">'+monthShort(cur.mk)+'</th><th class="num">'+monthShort(prev.mk)+'</th><th class="num">Change</th></tr></thead><tbody>';
+  rows.forEach(([key, label, field, kind, invert, fmt]) => {
+    const a = cur[field], b = prev[field];
+    let ch = '—', cls = 'neu';
+    if (a != null && b != null) {
+      if (kind === 'p') { const d = (a-b)*100; ch = (d>=0?'▲ +':'▼ ')+d.toFixed(2)+' pts'; cls = d===0?'neu':((invert? d<0 : d>0)?'pos':'neg'); }
+      else if (b) { const d = (a-b)/Math.abs(b)*100; ch = (d>=0?'▲ +':'▼ ')+d.toFixed(0)+'%'; cls = d===0?'neu':((invert? d<0 : d>0)?'pos':'neg'); }
+    }
+    h += '<tr><td>'+label+(key?infoBtn(key,true):'')+'</td><td class="num">'+fmt(a)+'</td><td class="os-c">'+fmt(b)+'</td><td class="num"><span class="delta '+cls+'" style="justify-content:flex-end">'+ch+'</span></td></tr>';
+  });
+  document.getElementById(id).innerHTML = h + '</tbody>';
+}
+
+function renderDetails(){
+  const s = monthStats(SEL), pm = monthStats(shiftMonth(SEL,-1));
+  const pct = v => fmtP(v), pct1 = v => fmtP(v,1);
+  sectionTable('secReach', [
+    ['medReach','Median reach / post (with collabs)','medReach','n',false,fmtN],
+    ['medReachOwn','Median reach / post (own posts)','medReachOwn','n',false,fmtN],
+    ['totalReach','Total feed reach','totalReach','n',false,fmtN],
+    ['views','Total views','views','n',false,fmtN],
+    ['nonFollowerPct','Views from non-followers','nonFollowerPct','p',false,pct1],
+    ['shareRate','Share rate (median)','shareRate','p',false,pct],
+    ['retention','Reel retention (median)','retention','p',false,pct1],
+  ], s, pm);
+  sectionTable('secEngage', [
+    ['er','Engagement rate (median)','er','p',false,pct],
+    ['commentRate','Comment rate (median)','commentRate','p',false,pct],
+    ['shareRate','Share rate (median)','shareRate','p',false,pct],
+    ['saveRate','Save rate (median)','saveRate','p',false,pct],
+    ['sharesPerPost','Shares per post (avg)','sharesPerPost','n',false,v => v==null?'—':v.toFixed(2)],
+    ['sharesPerPost','Shares per post (median)','medShares','n',false,v => v==null?'—':String(v)],
+  ], s, pm);
+  sectionTable('secAction', [
+    ['follows','New follows','follows','n',false,fmtN],
+    ['follows','Unfollows','unfollows','n',true,fmtN],
+    ['netFollowers','Net followers','net','n',false,fmtSigned],
+    ['growth','Growth rate','growth','p',false,pct],
+    ['churn','Churn rate','churn','p',true,pct],
+    ['profileVisits','Profile visits','profileVisits','n',false,fmtN],
+    ['v2f','Visit-to-follow','v2f','p',false,pct1],
+    ['followers','Followers at month close','followersEnd','n',false,fmtN],
+  ], s, pm);
+  sectionTable('secContent', [
+    ['posts','Feed posts','posts','n',false,fmtN],
+    ['posts','Own posts','own','n',false,fmtN],
+    ['collabs','Collabs (HQ-started)','collabsHq','n',false,fmtN],
+    ['collabs','Collabs (studio-started)','collabsStudio','n',false,fmtN],
+    ['posts','Reels','reels','n',false,fmtN],
+    ['posts','Carousels','carousels','n',false,fmtN],
+    ['posts','Statics','statics','n',false,fmtN],
+    ['stories','Stories','stories','n',false,fmtN],
+  ], s, pm);
+  renderTrends();
+  renderDemographics();
+}
+
+// -- Details: trend charts ----------------------------------------------------
+const CH = {};
+function chartOpts(yFmt, stacked, legend){
+  return {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: legend, position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, font: { family: 'Open Sans', size: 11 }, color: '#5a7a8a' } },
+      tooltip: { callbacks: { label: c => ' ' + c.dataset.label + ': ' + (c.raw == null ? '—' : yFmt(c.raw)) } },
+    },
+    scales: {
+      x: { stacked, grid: { display: false }, ticks: { color: '#5a7a8a', font: { size: 11 } } },
+      y: { stacked, beginAtZero: true, grid: { color: '#eef3f7' }, border: { display: false }, ticks: { color: '#8aaabb', font: { size: 11 }, callback: v => yFmt(v) } },
+    },
+  };
+}
+function drawChart(id, type, labels, datasets, yFmt, stacked){
+  if (CH[id]) CH[id].destroy();
+  datasets.forEach(d => {
+    if ((d.type || type) === 'line') Object.assign(d, { borderWidth: d.borderWidth || 2, pointRadius: d.pointRadius != null ? d.pointRadius : 3, pointHoverRadius: 5, tension: .25, backgroundColor: d.borderColor, spanGaps: false });
+    else Object.assign(d, { borderRadius: 4, borderSkipped: 'start', borderColor: '#fff', borderWidth: stacked ? { top: 2 } : 0, maxBarThickness: 28 });
+  });
+  CH[id] = new Chart(document.getElementById(id), { type, data: { labels, datasets }, options: chartOpts(yFmt, !!stacked, datasets.filter(d => !d.hideLegend).length > 1) });
+}
+function targetLine(labels, v){ return { type: 'line', label: 'Target', data: labels.map(() => v), borderColor: C_REF, borderDash: [5,4], borderWidth: 1.5, pointRadius: 0 }; }
+
+function renderTrends(){
+  const first = MONTHS[0];
+  const keys = [];
+  for (let i = 12; i >= 0; i--) { const mk = shiftMonth(SEL, -i); if (mk >= first) keys.push(mk); }
+  const st = keys.map(monthStats);
+  const labels = keys.map(mk => monthShort(mk) + " '" + mk.slice(2,4));
+  document.getElementById('trendEnd').textContent = monthLabel(SEL);
+  const pick = f => st.map(s => s[f]);
+  const n = v => fmtN(v), p2 = v => fmtP(v), p1 = v => fmtP(v, 1);
+
+  drawChart('chReach', 'line', labels, [
+    { label: 'All posts', data: pick('medReach'), borderColor: C_MAIN },
+    { label: 'Own posts', data: pick('medReachOwn'), borderColor: C_TWO },
+    targetLine(labels, TARGETS.medReach),
+  ], n);
+  drawChart('chEr', 'line', labels, [
+    { label: 'Engagement rate', data: pick('er'), borderColor: C_MAIN },
+    targetLine(labels, TARGETS.er),
+  ], p1);
+  drawChart('chRates', 'line', labels, [
+    { label: 'Share rate', data: pick('shareRate'), borderColor: C_MAIN },
+    { label: 'Save rate', data: pick('saveRate'), borderColor: C_TWO },
+    { label: 'Comment rate', data: pick('commentRate'), borderColor: C_THREE },
+  ], p2);
+  drawChart('chRet', 'line', labels, [
+    { label: 'Reel retention', data: pick('retention'), borderColor: C_MAIN },
+    { type: 'line', label: 'Average (25%)', data: labels.map(() => .25), borderColor: C_REF, borderDash: [5,4], borderWidth: 1.5, pointRadius: 0 },
+  ], p1);
+  drawChart('chViews', 'bar', labels, [
+    { label: 'Followers', data: pick('viewsFollowers').map((v,i) => st[i].views ? v : null), backgroundColor: C_MAIN },
+    { label: 'Non-followers', data: pick('viewsNonFollowers').map((v,i) => st[i].views ? v : null), backgroundColor: C_TWO },
+  ], n, true);
+  drawChart('chFollows', 'bar', labels, [
+    { label: 'Follows', data: pick('follows'), backgroundColor: C_MAIN },
+    { label: 'Unfollows', data: pick('unfollows'), backgroundColor: C_TWO },
+    { type: 'line', label: 'Net', data: pick('net'), borderColor: C_THREE },
+  ], n);
+  drawChart('chFollowers', 'line', labels, [
+    { label: 'Followers', data: pick('followersEnd'), borderColor: C_MAIN },
+  ], n);
+  CH.chFollowers.options.scales.y.beginAtZero = false; CH.chFollowers.update();
+  drawChart('chFormats', 'bar', labels, [
+    { label: 'Reels', data: pick('reels'), backgroundColor: C_MAIN },
+    { label: 'Carousels', data: pick('carousels'), backgroundColor: C_TWO },
+    { label: 'Statics', data: pick('statics'), backgroundColor: C_THREE },
+  ], n, true);
+}
+
+function renderDemographics(){
+  const demo = RAW.demographics || {};
+  const keys = Object.keys(demo).sort();
+  const mk = keys.filter(k => k <= SEL).pop() || keys[keys.length-1];
+  const box = document.getElementById('demoBody');
+  if (!mk) { box.innerHTML = '<div class="os-empty">No audience data yet.</div>'; document.getElementById('demoAsOf').textContent = ''; return; }
+  const d = demo[mk];
+  document.getElementById('demoAsOf').textContent = 'Share of followers · Instagram, as of ' + new Date(d.as_of+'T00:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}) + (mk !== SEL ? ' (closest snapshot to ' + monthLabel(SEL) + ')' : '');
+  const block = (title, obj, names, order) => {
+    const entries = (order || Object.keys(obj)).filter(k => k in obj && k !== 'U');
+    const total = entries.reduce((a,k) => a + obj[k], 0) || 1;
+    return '<div><div class="kpi-group-title">'+title+'</div>' + entries.map(k =>
+      '<div class="os-demo-row"><div>'+(names[k]||k)+'</div><div class="os-demo-track"><div class="os-demo-fill" style="width:'+(obj[k]/total*100).toFixed(1)+'%"></div></div><div class="os-demo-pct">'+(obj[k]/total*100).toFixed(1)+'%</div></div>'
+    ).join('') + '</div>';
+  };
+  box.innerHTML = block('Gender', d.gender || {}, {F:'Women', M:'Men'}, ['F','M'])
+    + block('Age', d.age || {}, {}, ['13-17','18-24','25-34','35-44','45-54','55-64','65+']);
+}
+
+// -- Post performance -----------------------------------------------------------
+let _postRows = [];
+function renderPosts(){
+  const range = document.getElementById('pRange').value;
+  const fmtSel = document.getElementById('pFormat').value;
+  const collabSel = document.getElementById('pCollab').value;
+  const from = range === 'all' ? '0000-00' : shiftMonth(SEL, -(Number(range)-1));
+  _postRows = (RAW.posts || []).filter(p => {
+    const mk = p.date.slice(0,7);
+    if (mk < from || mk > SEL || !passesBase(p)) return false;
+    if (fmtSel && p.format !== fmtSel) return false;
+    if (collabSel === 'own' && p.collab) return false;
+    if (collabSel === 'collab' && !p.collab) return false;
+    return true;
+  }).map(p => ({
+    ...p,
+    er: p.reach ? ((p.likes||0)+(p.comments||0))/p.reach : null,
+    shareRate: p.reach && p.shares != null ? p.shares/p.reach : null,
+    retention: retentionOf(p),
+  }));
+  document.getElementById('postCount').textContent = '· ' + _postRows.length + ' posts';
+  const tbody = document.querySelector('#postsTable tbody');
+  if (!_postRows.length) { tbody.innerHTML = '<tr class="no-hover"><td colspan="10"><div class="os-empty">No posts match these filters.</div></td></tr>'; return; }
+  if (!_sortState.postsTable) _sortState.postsTable = { col: 'date', asc: false };
+  sortableTable('postsTable', _postRows, p => {
+    const thumb = p.image_url
+      ? '<img class="os-thumb" src="'+_esc(p.image_url)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML=\'<div class=&quot;os-thumb-ph&quot;></div>\'"/>'
+      : '<div class="os-thumb-ph"></div>';
+    const pills = '<span class="os-pill">'+p.format+'</span>'
+      + (p.collab_source === 'hq' ? '<span class="os-pill collab">Collab</span>' : '')
+      + (p.collab_source === 'studio' ? '<span class="os-pill studio" title="Started by @'+_esc(p.owner||'')+'">Studio collab</span>' : '');
+    const date = new Date(p.date+'T00:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
+    const cap = (p.caption || '').split('\n')[0] || '(no caption)';
+    return '<tr><td><div class="os-post">'+thumb+'<a href="'+_esc(p.permalink)+'" target="_blank" rel="noopener"><div class="os-cap">'+_esc(cap)+'</div><div class="os-meta">'+date+' · '+pills+'</div></a></div></td>'
+      + '<td class="num">'+fmtN(p.views)+'</td><td class="num">'+fmtN(p.reach)+'</td>'
+      + '<td class="os-c">'+fmtN(p.likes)+'</td><td class="os-c">'+fmtN(p.comments)+'</td><td class="os-c">'+fmtN(p.shares)+'</td><td class="os-c">'+fmtN(p.saves)+'</td>'
+      + '<td class="os-c">'+fmtP(p.er,1)+'</td><td class="os-c">'+fmtP(p.shareRate)+'</td><td class="os-c">'+(p.retention == null ? '—' : fmtP(p.retention,1))+'</td></tr>';
+  });
+}
+function downloadPosts(){
+  downloadCSV('sweat440-organic-posts-' + SEL + '.csv',
+    ['Date','Format','Collab','Owner','Caption','Link','Views','Reach','Likes','Comments','Shares','Saves','Engagement rate','Share rate','Reel retention'],
+    _postRows.map(p => [p.date, p.format, p.collab_source || '', p.owner || '', (p.caption||'').replace(/\s+/g,' '), p.permalink,
+      p.views, p.reach, p.likes, p.comments, p.shares, p.saves,
+      p.er == null ? '' : (p.er*100).toFixed(2)+'%', p.shareRate == null ? '' : (p.shareRate*100).toFixed(2)+'%',
+      p.retention == null ? '' : (p.retention*100).toFixed(1)+'%']));
+}
+
+// -- Glossary ------------------------------------------------------------------
+function renderGlossary(){
+  let h = '<div class="glossary-table-wrap"><table class="glossary-table"><thead><tr><th>Metric</th><th>How we measure it</th><th>Why</th></tr></thead><tbody>';
+  GLOSSARY_SECTIONS.forEach(([title, keys]) => {
+    h += '<tr class="glossary-section-row"><td colspan="3">'+_esc(title)+'</td></tr>';
+    keys.forEach(k => { const g = GLOSSARY[k]; h += '<tr><td class="glossary-metric">'+_esc(g.title)+'</td><td class="glossary-desc">'+_esc(g.how)+'</td><td class="glossary-desc">'+_esc(g.why)+'</td></tr>'; });
+  });
+  document.getElementById('glossaryContent').innerHTML = h + '</tbody></table></div>';
+  document.getElementById('benchTable').innerHTML = '<thead><tr><th>Metric</th><th>Benchmark</th><th>Basis</th><th>Source</th></tr></thead><tbody>'
+    + BENCHMARKS.map(b => '<tr><td style="font-weight:600">'+b[0]+'</td><td class="num" style="text-align:left">'+b[1]+'</td><td>'+b[2]+'</td><td>'+b[3]+'</td></tr>').join('') + '</tbody>';
+  document.getElementById('sourceNotes').innerHTML = [
+    'All data comes from Instagram\'s API for @sweat440, pulled by the Organic Social workflow (run it from GitHub Actions once a month, around the 5th).',
+    'Reach and views keep adding up for days after a post goes out; each pull refreshes posts from the last 60 days, so a month\'s numbers can rise slightly between pulls.',
+    'Account views are only reported from August 2025; follows and unfollows from October 2025. Earlier months show “—”.',
+    'Studio-started collabs are found through the studio Instagram data, which records collaborators from mid-2026 only, so earlier months count fewer collabs.',
+    'Stories are counted from a daily snapshot that started Sep 24, 2026.',
+    'Test posts: “Hide test posts” drops feed posts under 200 reach (the internal test videos). Untick it to see every post.',
+  ].map(t => '• ' + t).join('<br>');
+}
+
+// -- Tabs & filters ---------------------------------------------------------------
+let _curTab = 'summary';
+function toggleNav(){ document.getElementById('navTabs').classList.toggle('open'); }
+function switchTab(id, btn){
+  _curTab = id;
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('navTabs').classList.remove('open');
+  ['summary','details','posts','glossary'].forEach(t => document.getElementById('tab-'+t).classList.toggle('active', t === id));
+  renderCurrent();
+}
+function renderCurrent(){
+  if (_curTab === 'summary') renderSummary();
+  else if (_curTab === 'details') renderDetails();
+  else if (_curTab === 'posts') renderPosts();
+}
+function onFilterChange(){
+  SEL = document.getElementById('fMonth').value;
+  renderCurrent();
+}
+
+async function loadData(){
+  const user = checkAuth();
+  if (!user) return;
+  if (user.role !== 'admin') { location.replace('../home.html'); return; }
+  renderAuthNav(user);
+  try {
+    const res = await fetch('organic_social.json?_=' + Date.now());
+    RAW = await res.json();
+  } catch (e) {
+    document.querySelector('.main').innerHTML = '<div class="os-empty">Couldn\'t load organic_social.json. Run the Organic Social workflow to create it.</div>';
+    return;
+  }
+  MONTHS = (RAW.monthly || []).map(r => r.month.slice(0,7)).sort();
+  const sel = document.getElementById('fMonth');
+  sel.innerHTML = MONTHS.slice().reverse().map(mk => {
+    const r = acctRow(mk);
+    return '<option value="'+mk+'">'+monthLabel(mk)+(r && r.complete === false ? ' (to date)' : '')+'</option>';
+  }).join('');
+  const complete = MONTHS.filter(mk => (acctRow(mk) || {}).complete !== false);
+  SEL = complete[complete.length-1] || MONTHS[MONTHS.length-1];
+  sel.value = SEL;
+  if (RAW.generated_at) {
+    document.getElementById('dataFreshness').textContent = '@' + (RAW.account.username || 'sweat440') + ' · data pulled ' + new Date(RAW.generated_at).toLocaleString('en-US', {month:'short', day:'numeric', year:'numeric'});
+  }
+  renderGlossary();
+  renderSummary();
+}
+
+loadData();
+</script>
+</body>
+</html>
