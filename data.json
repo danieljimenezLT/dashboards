@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-24T10:23:47.569074Z",
+  "generated_at": "2026-10-24T12:32:34.801503Z",
   "studios": [
     "Austin - Highland",
     "Austin - Zilker",
@@ -5938,7 +5938,7 @@
       "signups": 1,
       "first_visits": 1,
       "first_activations": 9,
-      "first_sales": 5,
+      "first_sales": 6,
       "first_bookings": 16,
       "bookings_after_7d": 16
     },
@@ -16416,8 +16416,8 @@
       "source": "ClassPass / Platforms",
       "signups": 6,
       "first_visits": 8,
-      "first_activations": 0,
-      "first_sales": 0,
+      "first_activations": 1,
+      "first_sales": 1,
       "first_bookings": 5,
       "bookings_same_day": 4,
       "bookings_7d": 5
@@ -16428,8 +16428,8 @@
       "source": "N/A",
       "signups": 0,
       "first_visits": 0,
-      "first_activations": 9,
-      "first_sales": 9,
+      "first_activations": 8,
+      "first_sales": 8,
       "first_bookings": 15,
       "bookings_after_7d": 15
     },
@@ -19840,8 +19840,8 @@
       "first_visits": 0,
       "first_activations": 1,
       "first_sales": 2,
-      "first_bookings": 9,
-      "bookings_after_7d": 9
+      "first_bookings": 8,
+      "bookings_after_7d": 8
     },
     {
       "date": "2026-01-14",
@@ -20120,8 +20120,19 @@
       "first_visits": 0,
       "first_activations": 0,
       "first_sales": 2,
-      "first_bookings": 8,
-      "bookings_after_7d": 8
+      "first_bookings": 7,
+      "bookings_after_7d": 7
+    },
+    {
+      "date": "2026-01-14",
+      "studio": "Miami - Coconut Grove",
+      "source": "SWEAT440 App",
+      "signups": 0,
+      "first_visits": 0,
+      "first_activations": 0,
+      "first_sales": 0,
+      "first_bookings": 1,
+      "bookings_after_7d": 1
     },
     {
       "date": "2026-01-14",
@@ -53689,6 +53700,15 @@
     {
       "date": "2026-02-04",
       "studio": "NYC - Chelsea",
+      "source": "Google Ads",
+      "signups": 1,
+      "first_visits": 0,
+      "first_activations": 0,
+      "first_sales": 0
+    },
+    {
+      "date": "2026-02-04",
+      "studio": "NYC - Chelsea",
       "source": "Meta Ads",
       "signups": 1,
       "first_visits": 0,
@@ -53697,15 +53717,6 @@
       "first_bookings": 2,
       "bookings_next_day": 1,
       "bookings_7d": 2
-    },
-    {
-      "date": "2026-02-04",
-      "studio": "NYC - Chelsea",
-      "source": "MindBody App",
-      "signups": 1,
-      "first_visits": 0,
-      "first_activations": 0,
-      "first_sales": 0
     },
     {
       "date": "2026-02-04",
@@ -73706,7 +73717,9 @@
       "signups": 1,
       "first_visits": 0,
       "first_activations": 0,
-      "first_sales": 0
+      "first_sales": 0,
+      "first_bookings": 1,
+      "bookings_after_7d": 1
     },
     {
       "date": "2026-02-17",
@@ -73729,8 +73742,8 @@
       "first_visits": 0,
       "first_activations": 1,
       "first_sales": 2,
-      "first_bookings": 6,
-      "bookings_after_7d": 6
+      "first_bookings": 5,
+      "bookings_after_7d": 5
     },
     {
       "date": "2026-02-17",
@@ -231563,6 +231576,17 @@
     {
       "date": "2026-05-26",
       "studio": "NYC - Chelsea",
+      "source": "Google Ads",
+      "signups": 0,
+      "first_visits": 1,
+      "first_activations": 0,
+      "first_sales": 0,
+      "first_bookings": 1,
+      "bookings_after_7d": 1
+    },
+    {
+      "date": "2026-05-26",
+      "studio": "NYC - Chelsea",
       "source": "Meta Ads",
       "signups": 1,
       "first_visits": 0,
@@ -231574,13 +231598,12 @@
       "studio": "NYC - Chelsea",
       "source": "MindBody App",
       "signups": 1,
-      "first_visits": 2,
+      "first_visits": 1,
       "first_activations": 0,
       "first_sales": 0,
-      "first_bookings": 2,
+      "first_bookings": 1,
       "bookings_same_day": 1,
-      "bookings_7d": 1,
-      "bookings_after_7d": 1
+      "bookings_7d": 1
     },
     {
       "date": "2026-05-26",
@@ -250342,14 +250365,13 @@
       "date": "2026-06-06",
       "studio": "Boca Raton",
       "source": "ClassPass / Platforms",
-      "signups": 2,
+      "signups": 1,
       "first_visits": 2,
       "first_activations": 0,
       "first_sales": 0,
-      "first_bookings": 3,
-      "bookings_same_day": 1,
+      "first_bookings": 2,
       "bookings_next_day": 2,
-      "bookings_7d": 3
+      "bookings_7d": 2
     },
     {
       "date": "2026-06-06",
@@ -250359,6 +250381,18 @@
       "first_visits": 1,
       "first_activations": 1,
       "first_sales": 1
+    },
+    {
+      "date": "2026-06-06",
+      "studio": "Boca Raton",
+      "source": "Other",
+      "signups": 1,
+      "first_visits": 0,
+      "first_activations": 0,
+      "first_sales": 0,
+      "first_bookings": 1,
+      "bookings_same_day": 1,
+      "bookings_7d": 1
     },
     {
       "date": "2026-06-06",
@@ -252018,7 +252052,7 @@
       "studio": "Boca Raton",
       "source": "ClassPass / Platforms",
       "signups": 2,
-      "first_visits": 2,
+      "first_visits": 1,
       "first_activations": 0,
       "first_sales": 0
     },
@@ -252033,6 +252067,15 @@
       "first_bookings": 1,
       "bookings_same_day": 1,
       "bookings_7d": 1
+    },
+    {
+      "date": "2026-06-07",
+      "studio": "Boca Raton",
+      "source": "Other",
+      "signups": 0,
+      "first_visits": 1,
+      "first_activations": 0,
+      "first_sales": 0
     },
     {
       "date": "2026-06-07",
@@ -280173,15 +280216,6 @@
       "signups": 2,
       "first_visits": 0,
       "first_activations": 0,
-      "first_sales": 3
-    },
-    {
-      "date": "2026-06-23",
-      "studio": "Dallas - Uptown",
-      "source": "Grassroots",
-      "signups": 0,
-      "first_visits": 0,
-      "first_activations": 0,
       "first_sales": 1
     },
     {
@@ -305401,8 +305435,19 @@
       "first_visits": 0,
       "first_activations": 1,
       "first_sales": 1,
-      "first_bookings": 2,
-      "bookings_after_7d": 2
+      "first_bookings": 1,
+      "bookings_after_7d": 1
+    },
+    {
+      "date": "2026-07-07",
+      "studio": "South Miami",
+      "source": "Other",
+      "signups": 0,
+      "first_visits": 0,
+      "first_activations": 0,
+      "first_sales": 0,
+      "first_bookings": 1,
+      "bookings_after_7d": 1
     },
     {
       "date": "2026-07-07",
@@ -316865,7 +316910,7 @@
       "signups": 1,
       "first_visits": 1,
       "first_activations": 0,
-      "first_sales": 0,
+      "first_sales": 1,
       "first_bookings": 1,
       "bookings_same_day": 1,
       "bookings_7d": 1
@@ -341284,7 +341329,7 @@
       "date": "2026-07-28",
       "studio": "Miami Beach",
       "source": "N/A",
-      "signups": 0,
+      "signups": 1,
       "first_visits": 3,
       "first_activations": 0,
       "first_sales": 0,
@@ -363388,6 +363433,15 @@
     {
       "date": "2026-08-10",
       "studio": "Miami Beach",
+      "source": "Other",
+      "signups": 1,
+      "first_visits": 0,
+      "first_activations": 0,
+      "first_sales": 0
+    },
+    {
+      "date": "2026-08-10",
+      "studio": "Miami Beach",
       "source": "SWEAT440 App",
       "signups": 1,
       "first_visits": 3,
@@ -370147,7 +370201,7 @@
       "studio": "Doral",
       "source": "ClassPass / Platforms",
       "signups": 2,
-      "first_visits": 1,
+      "first_visits": 0,
       "first_activations": 0,
       "first_sales": 0,
       "first_bookings": 1,
@@ -370594,6 +370648,15 @@
       "bookings_same_day": 1,
       "bookings_7d": 1,
       "bookings_after_7d": 1
+    },
+    {
+      "date": "2026-08-14",
+      "studio": "Miami Beach",
+      "source": "Other",
+      "signups": 1,
+      "first_visits": 0,
+      "first_activations": 0,
+      "first_sales": 0
     },
     {
       "date": "2026-08-14",
@@ -371957,13 +372020,13 @@
       "date": "2026-08-15",
       "studio": "Doral",
       "source": "Website (unattributed)",
-      "signups": 6,
-      "first_visits": 1,
+      "signups": 4,
+      "first_visits": 0,
       "first_activations": 0,
       "first_sales": 1,
-      "first_bookings": 2,
-      "bookings_same_day": 2,
-      "bookings_7d": 2
+      "first_bookings": 1,
+      "bookings_same_day": 1,
+      "bookings_7d": 1
     },
     {
       "date": "2026-08-15",
@@ -402258,7 +402321,7 @@
       "studio": "South Miami",
       "source": "ClassPass / Platforms",
       "signups": 3,
-      "first_visits": 3,
+      "first_visits": 2,
       "first_activations": 0,
       "first_sales": 0,
       "first_bookings": 5,
@@ -405200,6 +405263,15 @@
       "first_sales": 0,
       "first_bookings": 3,
       "bookings_after_7d": 3
+    },
+    {
+      "date": "2026-09-02",
+      "studio": "Miami Beach",
+      "source": "Other",
+      "signups": 1,
+      "first_visits": 0,
+      "first_activations": 0,
+      "first_sales": 0
     },
     {
       "date": "2026-09-02",
@@ -429521,6 +429593,15 @@
     {
       "date": "2026-09-15",
       "studio": "Miami Beach",
+      "source": "Other",
+      "signups": 1,
+      "first_visits": 0,
+      "first_activations": 0,
+      "first_sales": 0
+    },
+    {
+      "date": "2026-09-15",
+      "studio": "Miami Beach",
       "source": "SWEAT440 App",
       "signups": 1,
       "first_visits": 1,
@@ -450433,7 +450514,7 @@
       "signups": 3,
       "first_visits": 4,
       "first_activations": 0,
-      "first_sales": 0,
+      "first_sales": 1,
       "first_bookings": 1,
       "bookings_same_day": 1,
       "bookings_7d": 1
@@ -454436,7 +454517,7 @@
       "signups": 3,
       "first_visits": 0,
       "first_activations": 0,
-      "first_sales": 1
+      "first_sales": 0
     },
     {
       "date": "2026-09-29",
@@ -456746,17 +456827,6 @@
       "first_bookings": 3,
       "bookings_same_day": 2,
       "bookings_7d": 3
-    },
-    {
-      "date": "2026-09-30",
-      "studio": "Fort Lauderdale - Las Olas",
-      "source": "Grassroots",
-      "signups": 0,
-      "first_visits": 0,
-      "first_activations": 0,
-      "first_sales": 0,
-      "first_bookings": 1,
-      "bookings_after_7d": 1
     },
     {
       "date": "2026-09-30",
@@ -466071,7 +466141,7 @@
       "signups": 1,
       "first_visits": 3,
       "first_activations": 1,
-      "first_sales": 0
+      "first_sales": 1
     },
     {
       "date": "2026-10-05",
@@ -467007,15 +467077,6 @@
     {
       "date": "2026-10-05",
       "studio": "NYC - Park Slope",
-      "source": "Google Ads",
-      "signups": 1,
-      "first_visits": 0,
-      "first_activations": 0,
-      "first_sales": 0
-    },
-    {
-      "date": "2026-10-05",
-      "studio": "NYC - Park Slope",
       "source": "Internet / AI Search",
       "signups": 1,
       "first_visits": 0,
@@ -467029,7 +467090,7 @@
       "date": "2026-10-05",
       "studio": "NYC - Park Slope",
       "source": "Meta Ads",
-      "signups": 0,
+      "signups": 1,
       "first_visits": 1,
       "first_activations": 0,
       "first_sales": 0,
@@ -468144,13 +468205,10 @@
       "date": "2026-10-06",
       "studio": "Doral",
       "source": "Website (unattributed)",
-      "signups": 1,
-      "first_visits": 2,
+      "signups": 0,
+      "first_visits": 1,
       "first_activations": 0,
-      "first_sales": 0,
-      "first_bookings": 1,
-      "bookings_same_day": 1,
-      "bookings_7d": 1
+      "first_sales": 0
     },
     {
       "date": "2026-10-06",
@@ -468217,6 +468275,15 @@
     {
       "date": "2026-10-06",
       "studio": "Eastchester",
+      "source": "Local Listings",
+      "signups": 1,
+      "first_visits": 0,
+      "first_activations": 0,
+      "first_sales": 0
+    },
+    {
+      "date": "2026-10-06",
+      "studio": "Eastchester",
       "source": "Meta Ads",
       "signups": 0,
       "first_visits": 1,
@@ -468251,7 +468318,7 @@
       "date": "2026-10-06",
       "studio": "Eastchester",
       "source": "Website (unattributed)",
-      "signups": 3,
+      "signups": 2,
       "first_visits": 0,
       "first_activations": 1,
       "first_sales": 0
@@ -469562,7 +469629,7 @@
       "signups": 2,
       "first_visits": 0,
       "first_activations": 1,
-      "first_sales": 0
+      "first_sales": 1
     },
     {
       "date": "2026-10-06",
@@ -479170,9 +479237,7 @@
       "signups": 0,
       "first_visits": 2,
       "first_activations": 0,
-      "first_sales": 0,
-      "first_bookings": 1,
-      "bookings_after_7d": 1
+      "first_sales": 0
     },
     {
       "date": "2026-10-12",
@@ -479872,7 +479937,7 @@
       "signups": 1,
       "first_visits": 0,
       "first_activations": 0,
-      "first_sales": 0
+      "first_sales": 1
     },
     {
       "date": "2026-10-12",
@@ -482259,7 +482324,7 @@
       "date": "2026-10-13",
       "studio": "Reston",
       "source": "Meta Ads",
-      "signups": 4,
+      "signups": 3,
       "first_visits": 0,
       "first_activations": 0,
       "first_sales": 0
@@ -482268,7 +482333,7 @@
       "date": "2026-10-13",
       "studio": "Reston",
       "source": "Website (unattributed)",
-      "signups": 1,
+      "signups": 2,
       "first_visits": 2,
       "first_activations": 0,
       "first_sales": 0,
@@ -482923,13 +482988,10 @@
       "date": "2026-10-14",
       "studio": "Doral",
       "source": "SWEAT440 App",
-      "signups": 1,
+      "signups": 0,
       "first_visits": 1,
       "first_activations": 0,
-      "first_sales": 0,
-      "first_bookings": 1,
-      "bookings_same_day": 1,
-      "bookings_7d": 1
+      "first_sales": 0
     },
     {
       "date": "2026-10-14",
@@ -483809,17 +483871,6 @@
       "first_visits": 0,
       "first_activations": 1,
       "first_sales": 0
-    },
-    {
-      "date": "2026-10-14",
-      "studio": "NYC - Park Slope",
-      "source": "Meta Ads",
-      "signups": 0,
-      "first_visits": 0,
-      "first_activations": 0,
-      "first_sales": 0,
-      "first_bookings": 1,
-      "bookings_7d": 1
     },
     {
       "date": "2026-10-14",
@@ -485038,7 +485089,7 @@
       "signups": 8,
       "first_visits": 0,
       "first_activations": 0,
-      "first_sales": 3
+      "first_sales": 2
     },
     {
       "date": "2026-10-15",
@@ -485418,7 +485469,7 @@
       "signups": 1,
       "first_visits": 0,
       "first_activations": 0,
-      "first_sales": 0
+      "first_sales": 1
     },
     {
       "date": "2026-10-15",
@@ -486122,10 +486173,10 @@
       "first_visits": 1,
       "first_activations": 0,
       "first_sales": 1,
-      "first_bookings": 4,
-      "bookings_same_day": 2,
+      "first_bookings": 3,
+      "bookings_same_day": 1,
       "bookings_next_day": 1,
-      "bookings_7d": 3,
+      "bookings_7d": 2,
       "bookings_after_7d": 1
     },
     {
@@ -487274,10 +487325,9 @@
       "first_visits": 0,
       "first_activations": 0,
       "first_sales": 0,
-      "first_bookings": 2,
+      "first_bookings": 1,
       "bookings_same_day": 1,
-      "bookings_next_day": 1,
-      "bookings_7d": 2
+      "bookings_7d": 1
     },
     {
       "date": "2026-10-16",
@@ -489014,7 +489064,7 @@
       "date": "2026-10-17",
       "studio": "Miami - Coconut Grove",
       "source": "Local Listings",
-      "signups": 2,
+      "signups": 1,
       "first_visits": 1,
       "first_activations": 0,
       "first_sales": 0,
@@ -489063,7 +489113,7 @@
       "date": "2026-10-17",
       "studio": "Miami - Coconut Grove",
       "source": "Website (unattributed)",
-      "signups": 0,
+      "signups": 1,
       "first_visits": 1,
       "first_activations": 0,
       "first_sales": 0
@@ -489516,9 +489566,9 @@
       "first_visits": 1,
       "first_activations": 0,
       "first_sales": 0,
-      "first_bookings": 7,
-      "bookings_same_day": 6,
-      "bookings_7d": 6,
+      "first_bookings": 6,
+      "bookings_same_day": 5,
+      "bookings_7d": 5,
       "bookings_after_7d": 1
     },
     {
@@ -490567,7 +490617,7 @@
       "signups": 11,
       "first_visits": 0,
       "first_activations": 0,
-      "first_sales": 4
+      "first_sales": 3
     },
     {
       "date": "2026-10-18",
@@ -490812,7 +490862,9 @@
       "signups": 1,
       "first_visits": 0,
       "first_activations": 1,
-      "first_sales": 0
+      "first_sales": 0,
+      "first_bookings": 1,
+      "bookings_7d": 1
     },
     {
       "date": "2026-10-18",
@@ -491106,7 +491158,7 @@
       "signups": 1,
       "first_visits": 0,
       "first_activations": 0,
-      "first_sales": 0,
+      "first_sales": 1,
       "first_bookings": 1,
       "bookings_same_day": 1,
       "bookings_7d": 1
@@ -491186,10 +491238,10 @@
       "signups": 17,
       "first_visits": 0,
       "first_activations": 0,
-      "first_sales": 0,
-      "first_bookings": 11,
-      "bookings_same_day": 10,
-      "bookings_7d": 10,
+      "first_sales": 1,
+      "first_bookings": 6,
+      "bookings_same_day": 5,
+      "bookings_7d": 5,
       "bookings_after_7d": 1
     },
     {
@@ -491350,7 +491402,7 @@
       "date": "2026-10-18",
       "studio": "Pembroke Pines",
       "source": "Local Listings",
-      "signups": 1,
+      "signups": 2,
       "first_visits": 1,
       "first_activations": 0,
       "first_sales": 0,
@@ -491362,7 +491414,7 @@
       "date": "2026-10-18",
       "studio": "Pembroke Pines",
       "source": "Meta Ads",
-      "signups": 3,
+      "signups": 2,
       "first_visits": 0,
       "first_activations": 0,
       "first_sales": 0
@@ -491661,10 +491713,10 @@
       "first_visits": 1,
       "first_activations": 0,
       "first_sales": 0,
-      "first_bookings": 4,
-      "bookings_same_day": 3,
+      "first_bookings": 3,
+      "bookings_same_day": 2,
       "bookings_next_day": 1,
-      "bookings_7d": 4
+      "bookings_7d": 3
     },
     {
       "date": "2026-10-18",
@@ -491682,10 +491734,7 @@
       "signups": 1,
       "first_visits": 0,
       "first_activations": 0,
-      "first_sales": 0,
-      "first_bookings": 1,
-      "bookings_same_day": 1,
-      "bookings_7d": 1
+      "first_sales": 0
     },
     {
       "date": "2026-10-18",
@@ -492646,10 +492695,7 @@
       "signups": 1,
       "first_visits": 0,
       "first_activations": 0,
-      "first_sales": 0,
-      "first_bookings": 1,
-      "bookings_next_day": 1,
-      "bookings_7d": 1
+      "first_sales": 0
     },
     {
       "date": "2026-10-19",
@@ -492920,9 +492966,7 @@
       "signups": 1,
       "first_visits": 0,
       "first_activations": 0,
-      "first_sales": 0,
-      "first_bookings": 1,
-      "bookings_after_7d": 1
+      "first_sales": 0
     },
     {
       "date": "2026-10-19",
@@ -494312,10 +494356,10 @@
       "first_visits": 1,
       "first_activations": 0,
       "first_sales": 0,
-      "first_bookings": 3,
+      "first_bookings": 2,
       "bookings_same_day": 1,
-      "bookings_next_day": 2,
-      "bookings_7d": 3
+      "bookings_next_day": 1,
+      "bookings_7d": 2
     },
     {
       "date": "2026-10-20",
@@ -494476,9 +494520,9 @@
       "first_visits": 0,
       "first_activations": 0,
       "first_sales": 1,
-      "first_bookings": 12,
-      "bookings_same_day": 12,
-      "bookings_7d": 12
+      "first_bookings": 9,
+      "bookings_same_day": 9,
+      "bookings_7d": 9
     },
     {
       "date": "2026-10-20",
@@ -494869,10 +494913,7 @@
       "signups": 1,
       "first_visits": 0,
       "first_activations": 0,
-      "first_sales": 0,
-      "first_bookings": 1,
-      "bookings_same_day": 1,
-      "bookings_7d": 1
+      "first_sales": 0
     },
     {
       "date": "2026-10-20",
@@ -495030,9 +495071,9 @@
       "first_visits": 3,
       "first_activations": 0,
       "first_sales": 0,
-      "first_bookings": 2,
-      "bookings_same_day": 2,
-      "bookings_7d": 2
+      "first_bookings": 1,
+      "bookings_same_day": 1,
+      "bookings_7d": 1
     },
     {
       "date": "2026-10-20",
@@ -495385,9 +495426,9 @@
       "first_visits": 0,
       "first_activations": 1,
       "first_sales": 0,
-      "first_bookings": 2,
-      "bookings_same_day": 2,
-      "bookings_7d": 2
+      "first_bookings": 1,
+      "bookings_same_day": 1,
+      "bookings_7d": 1
     },
     {
       "date": "2026-10-20",
@@ -495510,10 +495551,7 @@
       "signups": 1,
       "first_visits": 1,
       "first_activations": 0,
-      "first_sales": 0,
-      "first_bookings": 1,
-      "bookings_same_day": 1,
-      "bookings_7d": 1
+      "first_sales": 0
     },
     {
       "date": "2026-10-20",
@@ -496022,8 +496060,17 @@
     {
       "date": "2026-10-21",
       "studio": "Dallas - Uptown",
+      "source": "SWEAT440 App",
+      "signups": 1,
+      "first_visits": 0,
+      "first_activations": 0,
+      "first_sales": 0
+    },
+    {
+      "date": "2026-10-21",
+      "studio": "Dallas - Uptown",
       "source": "Website (unattributed)",
-      "signups": 2,
+      "signups": 1,
       "first_visits": 0,
       "first_activations": 0,
       "first_sales": 0
@@ -496329,9 +496376,9 @@
       "first_visits": 1,
       "first_activations": 0,
       "first_sales": 0,
-      "first_bookings": 3,
-      "bookings_same_day": 2,
-      "bookings_7d": 2,
+      "first_bookings": 2,
+      "bookings_same_day": 1,
+      "bookings_7d": 1,
       "bookings_after_7d": 1
     },
     {
@@ -496341,7 +496388,7 @@
       "signups": 0,
       "first_visits": 1,
       "first_activations": 0,
-      "first_sales": 0,
+      "first_sales": 1,
       "first_bookings": 1,
       "bookings_next_day": 1,
       "bookings_7d": 1
@@ -496353,7 +496400,9 @@
       "signups": 0,
       "first_visits": 2,
       "first_activations": 1,
-      "first_sales": 0
+      "first_sales": 0,
+      "first_bookings": 1,
+      "bookings_after_7d": 1
     },
     {
       "date": "2026-10-21",
@@ -496905,10 +496954,7 @@
       "signups": 1,
       "first_visits": 0,
       "first_activations": 0,
-      "first_sales": 0,
-      "first_bookings": 1,
-      "bookings_same_day": 1,
-      "bookings_7d": 1
+      "first_sales": 0
     },
     {
       "date": "2026-10-21",
@@ -496990,7 +497036,7 @@
       "signups": 4,
       "first_visits": 2,
       "first_activations": 0,
-      "first_sales": 0,
+      "first_sales": 1,
       "first_bookings": 1,
       "bookings_same_day": 1,
       "bookings_7d": 1
@@ -497113,7 +497159,7 @@
       "signups": 3,
       "first_visits": 1,
       "first_activations": 1,
-      "first_sales": 0,
+      "first_sales": 1,
       "first_bookings": 2,
       "bookings_same_day": 2,
       "bookings_7d": 2
@@ -497312,9 +497358,9 @@
       "first_visits": 0,
       "first_activations": 0,
       "first_sales": 0,
-      "first_bookings": 2,
-      "bookings_same_day": 2,
-      "bookings_7d": 2
+      "first_bookings": 1,
+      "bookings_same_day": 1,
+      "bookings_7d": 1
     },
     {
       "date": "2026-10-21",
@@ -497362,7 +497408,7 @@
       "signups": 2,
       "first_visits": 1,
       "first_activations": 0,
-      "first_sales": 0,
+      "first_sales": 1,
       "first_bookings": 2,
       "bookings_same_day": 2,
       "bookings_7d": 2
@@ -497847,7 +497893,7 @@
       "studio": "Coral Gables",
       "source": "ClassPass / Platforms",
       "signups": 5,
-      "first_visits": 4,
+      "first_visits": 6,
       "first_activations": 0,
       "first_sales": 0,
       "first_bookings": 8,
@@ -497862,7 +497908,7 @@
       "signups": 3,
       "first_visits": 1,
       "first_activations": 0,
-      "first_sales": 0,
+      "first_sales": 1,
       "first_bookings": 2,
       "bookings_same_day": 2,
       "bookings_7d": 2
@@ -497871,17 +497917,6 @@
       "date": "2026-10-22",
       "studio": "Coral Gables",
       "source": "N/A",
-      "signups": 0,
-      "first_visits": 0,
-      "first_activations": 0,
-      "first_sales": 0,
-      "first_bookings": 1,
-      "bookings_after_7d": 1
-    },
-    {
-      "date": "2026-10-22",
-      "studio": "Coral Gables",
-      "source": "Other",
       "signups": 0,
       "first_visits": 0,
       "first_activations": 0,
@@ -497922,10 +497957,9 @@
       "first_visits": 2,
       "first_activations": 0,
       "first_sales": 0,
-      "first_bookings": 2,
-      "bookings_same_day": 1,
+      "first_bookings": 1,
       "bookings_next_day": 1,
-      "bookings_7d": 2
+      "bookings_7d": 1
     },
     {
       "date": "2026-10-22",
@@ -498251,7 +498285,7 @@
       "signups": 2,
       "first_visits": 3,
       "first_activations": 0,
-      "first_sales": 0,
+      "first_sales": 1,
       "first_bookings": 5,
       "bookings_same_day": 1,
       "bookings_next_day": 3,
@@ -498278,9 +498312,9 @@
       "first_visits": 5,
       "first_activations": 0,
       "first_sales": 0,
-      "first_bookings": 7,
-      "bookings_same_day": 6,
-      "bookings_7d": 6,
+      "first_bookings": 6,
+      "bookings_same_day": 5,
+      "bookings_7d": 5,
       "bookings_after_7d": 1
     },
     {
@@ -498404,6 +498438,15 @@
     {
       "date": "2026-10-22",
       "studio": "Madison",
+      "source": "Grassroots",
+      "signups": 1,
+      "first_visits": 0,
+      "first_activations": 0,
+      "first_sales": 0
+    },
+    {
+      "date": "2026-10-22",
+      "studio": "Madison",
       "source": "Local Listings",
       "signups": 1,
       "first_visits": 0,
@@ -498417,7 +498460,7 @@
       "date": "2026-10-22",
       "studio": "Madison",
       "source": "SWEAT440 App",
-      "signups": 1,
+      "signups": 0,
       "first_visits": 1,
       "first_activations": 0,
       "first_sales": 0,
@@ -498442,7 +498485,7 @@
       "signups": 5,
       "first_visits": 3,
       "first_activations": 0,
-      "first_sales": 0,
+      "first_sales": 1,
       "first_bookings": 5,
       "bookings_same_day": 3,
       "bookings_next_day": 1,
@@ -498621,7 +498664,9 @@
       "signups": 0,
       "first_visits": 1,
       "first_activations": 0,
-      "first_sales": 0
+      "first_sales": 0,
+      "first_bookings": 1,
+      "bookings_7d": 1
     },
     {
       "date": "2026-10-22",
@@ -498710,6 +498755,17 @@
       "first_visits": 0,
       "first_activations": 1,
       "first_sales": 0
+    },
+    {
+      "date": "2026-10-22",
+      "studio": "Miami Lakes",
+      "source": "N/A",
+      "signups": 0,
+      "first_visits": 0,
+      "first_activations": 0,
+      "first_sales": 0,
+      "first_bookings": 1,
+      "bookings_after_7d": 1
     },
     {
       "date": "2026-10-22",
@@ -499072,10 +499128,10 @@
       "signups": 8,
       "first_visits": 3,
       "first_activations": 0,
-      "first_sales": 0,
-      "first_bookings": 8,
-      "bookings_same_day": 8,
-      "bookings_7d": 8
+      "first_sales": 1,
+      "first_bookings": 3,
+      "bookings_same_day": 3,
+      "bookings_7d": 3
     },
     {
       "date": "2026-10-22",
@@ -499293,10 +499349,7 @@
       "signups": 1,
       "first_visits": 0,
       "first_activations": 0,
-      "first_sales": 0,
-      "first_bookings": 1,
-      "bookings_same_day": 1,
-      "bookings_7d": 1
+      "first_sales": 0
     },
     {
       "date": "2026-10-22",
@@ -499402,15 +499455,6 @@
     {
       "date": "2026-10-22",
       "studio": "South Miami",
-      "source": "SWEAT440 App",
-      "signups": 1,
-      "first_visits": 0,
-      "first_activations": 0,
-      "first_sales": 0
-    },
-    {
-      "date": "2026-10-22",
-      "studio": "South Miami",
       "source": "Website (unattributed)",
       "signups": 2,
       "first_visits": 2,
@@ -499427,10 +499471,7 @@
       "signups": 1,
       "first_visits": 0,
       "first_activations": 0,
-      "first_sales": 0,
-      "first_bookings": 1,
-      "bookings_same_day": 1,
-      "bookings_7d": 1
+      "first_sales": 0
     },
     {
       "date": "2026-10-22",
@@ -502945,7 +502986,7 @@
       "month": "2024-05-01",
       "studio": "Coral Gables",
       "source": "N/A",
-      "signups": 279,
+      "signups": 280,
       "first_visits": 200,
       "first_activations": 0,
       "first_sales": 0
@@ -503755,7 +503796,7 @@
       "month": "2024-06-01",
       "studio": "Miramar",
       "source": "N/A",
-      "signups": 121,
+      "signups": 122,
       "first_visits": 0,
       "first_activations": 2,
       "first_sales": 2
@@ -504260,7 +504301,7 @@
       "studio": "Miami - Coconut Grove",
       "source": "N/A",
       "signups": 188,
-      "first_visits": 230,
+      "first_visits": 229,
       "first_activations": 0,
       "first_sales": 0
     },
@@ -504269,7 +504310,7 @@
       "studio": "Miami - Coconut Grove",
       "source": "SWEAT440 App",
       "signups": 0,
-      "first_visits": 2,
+      "first_visits": 3,
       "first_activations": 0,
       "first_sales": 0
     },
@@ -505779,6 +505820,15 @@
     {
       "month": "2024-09-01",
       "studio": "South Miami",
+      "source": "ClassPass / Platforms",
+      "signups": 0,
+      "first_visits": 1,
+      "first_activations": 0,
+      "first_sales": 0
+    },
+    {
+      "month": "2024-09-01",
+      "studio": "South Miami",
       "source": "N/A",
       "signups": 188,
       "first_visits": 143,
@@ -505790,7 +505840,7 @@
       "studio": "South Miami",
       "source": "SWEAT440 App",
       "signups": 2,
-      "first_visits": 1,
+      "first_visits": 0,
       "first_activations": 0,
       "first_sales": 0
     },
@@ -508434,9 +508484,18 @@
     {
       "month": "2025-02-01",
       "studio": "Doral",
+      "source": "ClassPass / Platforms",
+      "signups": 0,
+      "first_visits": 1,
+      "first_activations": 0,
+      "first_sales": 0
+    },
+    {
+      "month": "2025-02-01",
+      "studio": "Doral",
       "source": "N/A",
-      "signups": 243,
-      "first_visits": 204,
+      "signups": 242,
+      "first_visits": 203,
       "first_activations": 17,
       "first_sales": 8
     },
@@ -513826,8 +513885,8 @@
       "month": "2025-09-01",
       "studio": "South Miami",
       "source": "N/A",
-      "signups": 160,
-      "first_visits": 141,
+      "signups": 158,
+      "first_visits": 140,
       "first_activations": 10,
       "first_sales": 10
     },
@@ -513835,8 +513894,8 @@
       "month": "2025-09-01",
       "studio": "South Miami",
       "source": "Other",
-      "signups": 1,
-      "first_visits": 0,
+      "signups": 3,
+      "first_visits": 1,
       "first_activations": 0,
       "first_sales": 0
     },
@@ -516558,8 +516617,8 @@
       "source": "Business Mode / App",
       "signups": 31,
       "first_visits": 27,
-      "first_activations": 2,
-      "first_sales": 2,
+      "first_activations": 3,
+      "first_sales": 3,
       "first_bookings": 24,
       "bookings_same_day": 24,
       "bookings_7d": 24
@@ -516608,8 +516667,8 @@
       "source": "N/A",
       "signups": 72,
       "first_visits": 68,
-      "first_activations": 462,
-      "first_sales": 495,
+      "first_activations": 461,
+      "first_sales": 494,
       "first_bookings": 510,
       "bookings_same_day": 10,
       "bookings_next_day": 1,
@@ -517023,8 +517082,8 @@
       "source": "N/A",
       "signups": 47,
       "first_visits": 43,
-      "first_activations": 436,
-      "first_sales": 481,
+      "first_activations": 435,
+      "first_sales": 480,
       "first_bookings": 535,
       "bookings_same_day": 14,
       "bookings_next_day": 3,
@@ -517046,8 +517105,8 @@
       "source": "SWEAT440 App",
       "signups": 21,
       "first_visits": 10,
-      "first_activations": 18,
-      "first_sales": 21,
+      "first_activations": 19,
+      "first_sales": 22,
       "first_bookings": 27,
       "bookings_same_day": 6,
       "bookings_next_day": 2,
@@ -518369,12 +518428,12 @@
       "signups": 17,
       "first_visits": 4,
       "first_activations": 20,
-      "first_sales": 20,
-      "first_bookings": 24,
+      "first_sales": 19,
+      "first_bookings": 23,
       "bookings_same_day": 3,
       "bookings_next_day": 1,
       "bookings_7d": 5,
-      "bookings_after_7d": 19
+      "bookings_after_7d": 18
     },
     {
       "month": "2025-12-01",
