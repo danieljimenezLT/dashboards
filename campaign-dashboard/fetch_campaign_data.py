@@ -46,7 +46,7 @@ CAMPAIGNS = [
         "product":       "3 Month Summer Pass",
         "date_from":     "2026-05-15",
         "date_to":       "2026-06-15",
-        "post_promo_to": "2026-09-26",
+        "post_promo_to": "2026-10-15",
     },
     {
         "id":            "33-percent-off",
