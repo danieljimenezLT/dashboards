@@ -325,7 +325,7 @@
 const NSO=['SWEAT440 Aventura','SWEAT440 Burlington','SWEAT440 Charlotte - South End','SWEAT440 Dallas - Uptown','SWEAT440 Dunwoody','SWEAT440 Fort Myers','SWEAT440 Herriman','SWEAT440 Long Beach','SWEAT440 Middletown','SWEAT440 Naples - Mercato','SWEAT440 North Miami','SWEAT440 OKC - Rose Creek','SWEAT440 Old Bridge','SWEAT440 Orlando - Dr Phillips','SWEAT440 Reston'];
 const EXCL_SRC=['ClassPass / Platforms'];
 
-let RAW=null,SC=null,SC2=null,PRE_WEEKS=null,GRS_SPEND=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},VIDEO_DRIVE_LINKS={},CH_RAW=null,OTHER_COSTS=null;const _ch={};let _chDupOnly=false,_presaleDatesActive=false,_presaleCapDate=null;
+let RAW=null,SC=null,SC2=null,PRE_WEEKS=null,GRS_SPEND=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},VIDEO_DRIVE_LINKS={},CH_RAW=null,OTHER_COSTS=null,NSO_CHANGES=[];const _ch={};let _chDupOnly=false,_presaleDatesActive=false,_presaleCapDate=null;
 let CUR_USER=null,_allowedStudios=null;const isAdminUser=()=>CUR_USER&&CUR_USER.role==='admin';
 let _sumView='cum',_sumStudio=null,_scStudio=null,_dataThruLabel='',_sumD7End=null;
 let _mktSel={meta:null,google:null,ga4:null,gbp:null,instagram:null};
@@ -1678,6 +1678,63 @@ function skValRow(label,actual,benchmark){
   return`<div class="sk-row" style="margin-top:8px"><div class="sk-label">${label}</div><div class="sk-vals"><div class="sk-actual" style="font-size:18px">${actual}</div>${bStr?`<div class="sk-goal">Target: ${bStr}</div>`:''}</div></div>`;
 }
 
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CHANGE LOG HELPERS
+   ══════════════════════════════════════════════════════════════════════════ */
+function _changeToKey(date){
+  if(GRAN==='monthly')return date.substring(0,7)+'-01';
+  if(GRAN==='weekly'){const dt=new Date(date+'T00:00:00Z');const ws=new Date(dt);ws.setUTCDate(dt.getUTCDate()-dt.getUTCDay());return ws.toISOString().slice(0,10);}
+  return date;
+}
+function _parseCsvChanges(csv){
+  const rows=csv.trim().split('\n');if(rows.length<2)return[];
+  const headers=rows[0].split(',').map(h=>h.replace(/^"|"$/g,'').trim());
+  return rows.slice(1).map(row=>{
+    const vals=[];let cur='',inQ=false;
+    for(let i=0;i<row.length;i++){
+      const c=row[i];
+      if(c==='"'&&!inQ){inQ=true;}
+      else if(c==='"'&&inQ){if(row[i+1]==='"'){cur+='"';i++;}else{inQ=false;}}
+      else if(c===','&&!inQ){vals.push(cur);cur='';}
+      else{cur+=c;}
+    }
+    vals.push(cur);
+    const obj={};headers.forEach((h,i)=>{obj[h]=(vals[i]||'').replace(/^"|"$/g,'');});
+    return obj;
+  }).filter(r=>r.date);
+}
+function _changesInPeriod(from,to,studios){
+  return NSO_CHANGES.filter(c=>{
+    if(from&&c.date<from)return false;
+    if(to&&c.date>to)return false;
+    if(c.studio&&c.studio!=='All'&&c.studio!=='all'){
+      const sel=(studios||[]);
+      if(sel.length&&!sel.some(s=>s.replace(/^SWEAT440\s+/,'').toLowerCase()===c.studio.toLowerCase()))return false;
+    }
+    return true;
+  });
+}
+function renderChangesTable(from,to,studios){
+  const changes=_changesInPeriod(from,to,studios).slice().sort((a,b)=>b.date.localeCompare(a.date));
+  if(!changes.length)return'';
+  const catColors={'Meta Ads':'#0866ff','Google Ads':'#4285f4','Budget':'#27ae60','Creative':'#8e44ad','Targeting':'#e67e22','Other':'#5a7a8a'};
+  let h=`<div class="kpi-group-title" style="margin-top:20px">Changes Log</div>`;
+  h+=`<div class="chart-card"><div style="overflow-x:auto"><table class="data-table">`;
+  h+=`<thead><tr><th>Date</th><th>Studio</th><th>Category</th><th>Change</th><th>By</th></tr></thead><tbody>`;
+  changes.forEach(c=>{
+    const cc=catColors[c.category]||catColors['Other'];
+    h+=`<tr>
+      <td style="white-space:nowrap;font-weight:600">${c.date}</td>
+      <td>${c.studio||'All'}</td>
+      <td><span style="display:inline-block;padding:2px 8px;border-radius:10px;background:${cc}22;color:${cc};font-size:11px;font-weight:600">${c.category||''}</span></td>
+      <td>${c.change||''}</td>
+      <td style="white-space:nowrap;color:#8aaabb">${c.made_by||''}</td>
+    </tr>`;
+  });
+  h+=`</tbody></table></div></div>`;
+  return h;
+}
 
 /* ══════════════════════════════════════════════════════════════════════════
    CHART BUILDERS (Funnel, Area, Ring, Rank)
@@ -4895,7 +4952,7 @@ async function init(){
   // All tabs now visible to all users — no role-based tab removal
 
   // Load all data files
-  const [dataRes,sc2Res,mktRes,dashRes,gadsRes,socialRes,salesRes,gbpRes,adMetaRes,chRes,pwRes,grRes,vdlRes,ocRes]=await Promise.allSettled([
+  const [dataRes,sc2Res,mktRes,dashRes,gadsRes,socialRes,salesRes,gbpRes,adMetaRes,chRes,pwRes,grRes,vdlRes,ocRes,changesRes]=await Promise.allSettled([
     fetch('../data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('nso_scorecard_data2.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('marketing_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
@@ -4910,6 +4967,19 @@ async function init(){
     fetch('nso_grassroots_spend.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('../video_drive_links.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('nso_other_costs.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
+    (async()=>{
+      const SHEET_CSV='https://docs.google.com/spreadsheets/d/1ua9k0NIe85qnHOQNhKlXs8ya0en4Rbi5XgTTIb4vHX0/gviz/tq?tqx=out:csv';
+      const [shRes,loRes]=await Promise.allSettled([
+        fetch(SHEET_CSV+'&_='+Date.now(),{signal:AbortSignal.timeout(5000)}).then(r=>{if(!r.ok)throw 0;return r.text().then(_parseCsvChanges);}),
+        fetch('nso_changes.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
+      ]);
+      const sheet=shRes.status==='fulfilled'?shRes.value:[];
+      const local=loRes.status==='fulfilled'?loRes.value:[];
+      const _seen=new Set();
+      const merged=[...sheet,...local].filter(c=>{const k=`${c.date}|${c.studio}|${c.change}`;if(_seen.has(k))return false;_seen.add(k);return true;});
+      if(!merged.length&&shRes.status!=='fulfilled'&&loRes.status!=='fulfilled')throw new Error('no changes data');
+      return merged;
+    })(),
   ]);
 
   if(dataRes.status==='fulfilled'){RAW=dataRes.value;if(!RAW.daily_detail)RAW.daily_detail=[];if(!RAW.monthly_detail)RAW.monthly_detail=[]
@@ -4973,6 +5043,9 @@ async function init(){
 
   if(ocRes.status==='fulfilled'){OTHER_COSTS=ocRes.value}
   else{console.warn('nso_other_costs.json not found — other cost sources unavailable');OTHER_COSTS=null}
+
+  if(changesRes.status==='fulfilled'){NSO_CHANGES=Array.isArray(changesRes.value)?changesRes.value:[]}
+  else{NSO_CHANGES=[]}
 
   renderFreshnessNote('dataFreshnessNote', [
     {raw: dataRes.status==='fulfilled'   ? dataRes.value   : null, lagDays: 2},
