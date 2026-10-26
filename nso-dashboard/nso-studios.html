@@ -317,7 +317,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="../users.js"></script>
 <script src="../shared/auth.js"></script>
-<script src="../shared/utils.js"></script>
+<script src="../shared/utils.js?v=20261022"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════════
    NSO STUDIOS DASHBOARD — Self-contained
@@ -325,7 +325,7 @@
 const NSO=['SWEAT440 Aventura','SWEAT440 Burlington','SWEAT440 Charlotte - South End','SWEAT440 Dallas - Uptown','SWEAT440 Dunwoody','SWEAT440 Fort Myers','SWEAT440 Herriman','SWEAT440 Long Beach','SWEAT440 Middletown','SWEAT440 Naples - Mercato','SWEAT440 North Miami','SWEAT440 OKC - Rose Creek','SWEAT440 Old Bridge','SWEAT440 Orlando - Dr Phillips','SWEAT440 Reston'];
 const EXCL_SRC=['ClassPass / Platforms'];
 
-let RAW=null,SC=null,SC2=null,PRE_WEEKS=null,GRS_SPEND=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},VIDEO_DRIVE_LINKS={},CH_RAW=null,OTHER_COSTS=null;const _ch={};let _chDupOnly=false,_presaleDatesActive=false,_presaleCapDate=null,_presaleKey=null;
+let RAW=null,SC=null,SC2=null,PRE_WEEKS=null,GRS_SPEND=null,GRAN='daily',trendChart=null,NSO_SALES=null,NSO_SALES_ROWS=[],GBP_RAW=null,AD_META={},VIDEO_DRIVE_LINKS={},CH_RAW=null,OTHER_COSTS=null,NSO_CHANGES=[];const _ch={};let _chDupOnly=false,_presaleDatesActive=false,_presaleCapDate=null,_presaleKey=null;
 let CUR_USER=null,_allowedStudios=null;const isAdminUser=()=>CUR_USER&&CUR_USER.role==='admin';
 let _sumView='cum',_sumStudio=null,_scStudio=null,_dataThruLabel='',_sumD7End=null;
 let _mktSel={meta:null,google:null,ga4:null,gbp:null,instagram:null};
@@ -1687,6 +1687,145 @@ function skValRow(label,actual,benchmark){
 
 
 /* ══════════════════════════════════════════════════════════════════════════
+   CHANGE LOG HELPERS
+   ══════════════════════════════════════════════════════════════════════════ */
+function _changeToKey(date){
+  if(GRAN==='monthly')return date.substring(0,7)+'-01';
+  if(GRAN==='weekly'){const dt=new Date(date+'T00:00:00Z');const ws=new Date(dt);ws.setUTCDate(dt.getUTCDate()-dt.getUTCDay());return ws.toISOString().slice(0,10);}
+  return date;
+}
+function _parseCsvChanges(csv){
+  const rows=csv.trim().split('\n');if(rows.length<2)return[];
+  const headers=rows[0].split(',').map(h=>h.replace(/^"|"$/g,'').trim());
+  return rows.slice(1).map(row=>{
+    const vals=[];let cur='',inQ=false;
+    for(let i=0;i<row.length;i++){
+      const c=row[i];
+      if(c==='"'&&!inQ){inQ=true;}
+      else if(c==='"'&&inQ){if(row[i+1]==='"'){cur+='"';i++;}else{inQ=false;}}
+      else if(c===','&&!inQ){vals.push(cur);cur='';}
+      else{cur+=c;}
+    }
+    vals.push(cur);
+    const obj={};headers.forEach((h,i)=>{obj[h]=(vals[i]||'').replace(/^"|"$/g,'');});
+    return obj;
+  }).filter(r=>r.date);
+}
+function _changesInPeriod(from,to,studios){
+  return NSO_CHANGES.filter(c=>{
+    if(from&&c.date<from)return false;
+    if(to&&c.date>to)return false;
+    if(c.studio&&c.studio!=='All'&&c.studio!=='all'){
+      const sel=(studios||[]);
+      if(sel.length&&!sel.some(s=>s.replace(/^SWEAT440\s+/,'').toLowerCase()===c.studio.toLowerCase()))return false;
+    }
+    return true;
+  });
+}
+function renderChangesTable(from,to,studios){
+  const changes=_changesInPeriod(from,to,studios).slice().sort((a,b)=>b.date.localeCompare(a.date));
+  if(!changes.length)return'';
+  const catColors={'Meta Ads':'#0866ff','Google Ads':'#4285f4','Budget':'#27ae60','Creative':'#8e44ad','Targeting':'#e67e22','Other':'#5a7a8a'};
+  let h=`<div class="kpi-group-title" style="margin-top:20px">Changes Log</div>`;
+  h+=`<div class="chart-card"><div style="overflow-x:auto"><table class="data-table">`;
+  h+=`<thead><tr><th>Date</th><th>Studio</th><th>Category</th><th>Change</th><th>By</th></tr></thead><tbody>`;
+  changes.forEach(c=>{
+    const cc=catColors[c.category]||catColors['Other'];
+    h+=`<tr>
+      <td style="white-space:nowrap;font-weight:600">${c.date}</td>
+      <td>${c.studio||'All'}</td>
+      <td><span style="display:inline-block;padding:2px 8px;border-radius:10px;background:${cc}22;color:${cc};font-size:11px;font-weight:600">${c.category||''}</span></td>
+      <td>${c.change||''}</td>
+      <td style="white-space:nowrap;color:#8aaabb">${c.made_by||''}</td>
+    </tr>`;
+  });
+  h+=`</tbody></table></div></div>`;
+  return h;
+}
+/* Change dots use a canvas OVERLAY to avoid Chart.js 4 reactive-proxy stack overflow.
+   chart.data.datasets.push() triggers an infinite setter loop in Chart.js 4.4.1,
+   so we draw orange dots directly on a sibling <canvas> instead. */
+const _nsoDotsMap=new WeakMap();   // chart → {rowKeys, byKey}
+const _nsoDotsCharts=[];           // registered charts, in insertion order
+
+function addChangeDots(chart,rowKeys){
+  // Deregister first (dedup)
+  const di=_nsoDotsCharts.indexOf(chart);if(di>=0)_nsoDotsCharts.splice(di,1);
+  _nsoDotsMap.delete(chart);
+  if(!chart||!rowKeys||!rowKeys.length||!NSO_CHANGES.length)return;
+  const from=document.getElementById('fFrom')?.value||null;
+  const to=document.getElementById('fTo')?.value||null;
+  const studios=_effectiveSt();
+  // Only show change dots when a specific studio (or up to 5) is selected.
+  // With "All NSO Studios" (studios=null or too many), dots from all studios create noise.
+  if(!studios||studios.length>5)return;
+  const changes=_changesInPeriod(from,to,studios);
+  if(!changes.length)return;
+  const byKey={};
+  changes.forEach(c=>{const k=_changeToKey(c.date);if(!byKey[k])byKey[k]=[];byKey[k].push(c);});
+  if(!rowKeys.some(k=>byKey[k]))return;
+  _nsoDotsMap.set(chart,{rowKeys,byKey});
+  _nsoDotsCharts.push(chart);
+}
+
+function _drawAllChangeDots(){_nsoDotsCharts.forEach(_drawChangeDots);}
+
+function _drawChangeDots(chart){
+  if(!chart||!chart.canvas)return;
+  const mc=chart.canvas,cont=mc.parentElement;if(!cont)return;
+  // Shared tooltip div
+  let tip=document.getElementById('_nsoDotTip');
+  if(!tip){
+    tip=document.createElement('div');tip.id='_nsoDotTip';
+    tip.style.cssText='position:fixed;background:#1a1a2e;color:#e0f0fa;padding:8px 12px;border-radius:6px;font-size:12px;line-height:1.6;pointer-events:none;z-index:9999;display:none;max-width:280px;box-shadow:0 2px 10px rgba(0,0,0,.4);border:1px solid #f4a021';
+    document.body.appendChild(tip);
+  }
+  // Per-chart overlay canvas
+  if(!chart._nsoOverlay){
+    const ov=document.createElement('canvas');
+    ov.style.cssText='position:absolute;top:0;left:0;pointer-events:none;z-index:5;';
+    cont.style.position='relative';cont.appendChild(ov);chart._nsoOverlay=ov;
+    mc.addEventListener('mousemove',function(e){
+      const pos=chart._nsoDotPos;if(!pos||!pos.length){tip.style.display='none';return;}
+      const r=mc.getBoundingClientRect();
+      const sx=mc.width/r.width,sy=mc.height/r.height;
+      const mx=(e.clientX-r.left)*sx,my=(e.clientY-r.top)*sy;
+      let found=null;
+      for(const p of pos){const dx=mx-p.x,dy=my-p.y;if(dx*dx+dy*dy<=100){found=p.ch;break;}}
+      if(found){
+        tip.innerHTML='<div style="font-weight:600;color:#f4a021;margin-bottom:4px">Changes</div>'+
+          found.map(c=>`<div>• <b>${c.category}</b>: ${c.change}${c.made_by?`<span style="color:#8aaabb"> (${c.made_by})</span>`:''}</div>`).join('');
+        tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-30)+'px';
+      }else{tip.style.display='none';}
+    });
+    mc.addEventListener('mouseleave',()=>tip.style.display='none');
+  }
+  const ov=chart._nsoOverlay;
+  ov.width=mc.width;ov.height=mc.height;
+  ov.style.width=(mc.offsetWidth||mc.width)+'px';ov.style.height=(mc.offsetHeight||mc.height)+'px';
+  const octx=ov.getContext('2d');octx.clearRect(0,0,ov.width,ov.height);
+  chart._nsoDotPos=[];
+  const info=_nsoDotsMap.get(chart);if(!info)return;
+  const {rowKeys,byKey}=info;
+  const meta0=chart.getDatasetMeta(0);if(!meta0||!meta0.data)return;
+  const ca=chart.chartArea;
+  // Chart.js ca.bottom and pt.x are in CSS (logical) pixels.
+  // The overlay canvas uses physical pixels (ov.width = mc.width = physical).
+  // Scale by DPR so dots appear at the correct position on every display.
+  const dpr=mc.width/(mc.offsetWidth||mc.width)||1;
+  const dotY=ca?(ca.bottom+14)*dpr:ov.height;
+  rowKeys.forEach((k,i)=>{
+    if(!byKey[k])return;
+    const pt=meta0.data[i];if(!pt)return;
+    const x=pt.x*dpr;
+    octx.save();octx.beginPath();octx.arc(x,dotY,7*dpr,0,Math.PI*2);
+    octx.fillStyle='#f4a021';octx.strokeStyle='#fff';octx.lineWidth=2*dpr;
+    octx.fill();octx.stroke();octx.restore();
+    chart._nsoDotPos.push({x,y:dotY,ch:byKey[k]});
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
    CHART BUILDERS (Funnel, Area, Ring, Rank)
    ══════════════════════════════════════════════════════════════════════════ */
 function buildTrend(s,newSalesMap,cancMap){
@@ -1763,7 +1902,9 @@ function applyFilters(){
   const cnC=sCurr.reduce((a,r)=>a+(r.cancellations||0),0),cnP=sPP.reduce((a,r)=>a+(r.cancellations||0),0),cnY=sPY.reduce((a,r)=>a+(r.cancellations||0),0);
   const newSalesByPeriod=_bucketByPeriod(sCurr,r=>(r.first_sales||0));
   const cancByPeriod=_bucketByPeriod(sCurr,r=>r.cancellations||0);
-  buildTrend(toTS(curr.daily,curr.monthly,from,to),newSalesByPeriod,cancByPeriod);
+  const _trendTS=toTS(curr.daily,curr.monthly,from,to);
+  buildTrend(_trendTS,newSalesByPeriod,cancByPeriod);
+  addChangeDots(trendChart,_trendTS.map(m=>m.key));
   const fkpi=document.getElementById('funnel-kpis');
   if(fkpi)fkpi.innerHTML=kpiCard('Total Leads (New Accounts Created)',cS.leads,pS.leads,yS.leads,null,GLOSSARY.leads)+kpiCard('Total New Sales',nsC,nsP||null,nsY||null,null,GLOSSARY.nso_new_sale)+kpiCard('Total Cancellations',cnC,cnP||null,cnY||null,null,GLOSSARY.nso_cancel)+kpiCard('Total Net Sales',smC,smP||null,smY||null,null,GLOSSARY.nso_sale);
   // Conversion rate: Lead → Net Sale
@@ -1771,23 +1912,27 @@ function applyFilters(){
   const cvrL2NS_c=_cvr(smC,cS.leads),cvrL2NS_p=_cvr(smP,pS.leads),cvrL2NS_y=_cvr(smY,yS.leads);
   const cvrKpis=document.getElementById('cvr-kpis');
   if(cvrKpis)cvrKpis.innerHTML=_cvrCard('Lead → Net Sale Conversion Rate',cvrL2NS_c,cvrL2NS_p,cvrL2NS_y);
-  buildCvrChart(toTS(curr.daily,curr.monthly,from,to),newSalesByPeriod,cancByPeriod);
+  buildCvrChart(_trendTS,newSalesByPeriod,cancByPeriod);
+  addChangeDots(_cvrChart,_trendTS.map(m=>m.key));
   document.getElementById('leads-kpis').innerHTML=kpiCard('Total Leads (New Accounts Created)',cS.leads,pS.leads,yS.leads,null,GLOSSARY.leads);
   const leadsSeries=toSrcTSGran(curr.daily,curr.monthly,from,to);
   const activeSrcLeads=(sr||[]).filter(s=>leadsSeries.some(r=>r.source===s&&(r.signups||0)>0));
   buildArea('leadsChart','leads-toggles',leadsSeries,activeSrcLeads,'signups');
+  addChangeDots(_ch['leadsChart'],[...new Set(leadsSeries.map(r=>r.key))].sort());
   buildRing('leadsRing','leadsRingLeg',curr.all,'signups');
   const newsalesKpis=document.getElementById('newsales-kpis');if(newsalesKpis)newsalesKpis.innerHTML=kpiCard('Total New Sales',nsC,nsP||null,nsY||null,null,GLOSSARY.nso_new_sale);
 
   const newSalesSeries=toSrcTSGran(sCurr,[],from,to);
   const activeSrcNewSales=(sr||[]).filter(s=>newSalesSeries.some(r=>r.source===s&&(r.first_sales||0)>0));
   buildArea('newsalesChart','newsales-toggles',newSalesSeries,activeSrcNewSales,'first_sales');
+  addChangeDots(_ch['newsalesChart'],[...new Set(newSalesSeries.map(r=>r.key))].sort());
   buildRing('newsalesRing','newsalesRingLeg',sCurr,'first_sales');
   const cancKpis=document.getElementById('canc-kpis');if(cancKpis)cancKpis.innerHTML=kpiCard('Total Cancellations',cnC,cnP||null,cnY||null,null,GLOSSARY.nso_cancel);
   const cancRows=sCurr.map(r=>({...r,first_sales:r.cancellations||0}));
   const cancSeries=toSrcTSGran(cancRows,[],from,to);
   const activeSrcCanc=(sr||[]).filter(s=>cancSeries.some(r=>r.source===s&&(r.first_sales||0)>0));
   buildArea('cancChart','canc-toggles',cancSeries,activeSrcCanc,'first_sales');
+  addChangeDots(_ch['cancChart'],[...new Set(cancSeries.map(r=>r.key))].sort());
   buildRing('cancRing','cancRingLeg',cancRows,'first_sales');
   if(document.getElementById('tab-meta').classList.contains('active'))renderMeta();
   if(document.getElementById('tab-google').classList.contains('active'))renderGoogle();
@@ -1798,6 +1943,8 @@ function applyFilters(){
   if(document.getElementById('tab-instagram').classList.contains('active'))renderInstagram();
   if(document.getElementById('tab-summary2').classList.contains('active'))renderSummary2();
   if(document.getElementById('tab-clienthistory').classList.contains('active'))renderClientHistory();
+  // Draw change dots on canvas overlays (deferred so charts have rendered)
+  requestAnimationFrame(_drawAllChangeDots);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -3160,6 +3307,9 @@ function renderMeta(){
   h+=kpiCard('Cost / Lead',cpl,null,null,f$2,GLOSSARY.meta_cpl);
   // Offsite Conversions hidden — data preserved in totalOffsiteLeads, re-enable with kpiCard call above
   h+=`</div>`;
+
+  // Changes log — filter by current period and selected studios
+  h+=renderChangesTable(from,to,activeStudios);
 
   // Creative ads table — grouped by creative short name
   const _ST_PRI={ACTIVE:5,PAUSED:4,ADSET_PAUSED:3,CAMPAIGN_PAUSED:3,COMPLETED:2,ARCHIVED:1,DELETED:0};
@@ -5197,7 +5347,7 @@ async function init(){
   // All tabs now visible to all users — no role-based tab removal
 
   // Load all data files
-  const [dataRes,sc2Res,mktRes,dashRes,gadsRes,socialRes,salesRes,gbpRes,adMetaRes,chRes,pwRes,grRes,vdlRes,ocRes]=await Promise.allSettled([
+  const [dataRes,sc2Res,mktRes,dashRes,gadsRes,socialRes,salesRes,gbpRes,adMetaRes,chRes,pwRes,grRes,vdlRes,ocRes,changesRes]=await Promise.allSettled([
     fetch('../data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('nso_scorecard_data2.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('marketing_data.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
@@ -5212,6 +5362,19 @@ async function init(){
     fetch('nso_grassroots_spend.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('../video_drive_links.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
     fetch('nso_other_costs.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
+    (async()=>{
+      const SHEET_CSV='https://docs.google.com/spreadsheets/d/1ua9k0NIe85qnHOQNhKlXs8ya0en4Rbi5XgTTIb4vHX0/gviz/tq?tqx=out:csv';
+      const [shRes,loRes]=await Promise.allSettled([
+        fetch(SHEET_CSV+'&_='+Date.now(),{signal:AbortSignal.timeout(5000)}).then(r=>{if(!r.ok)throw 0;return r.text().then(_parseCsvChanges);}),
+        fetch('nso_changes.json?_='+Date.now()).then(r=>r.ok?r.json():Promise.reject()),
+      ]);
+      const sheet=shRes.status==='fulfilled'?shRes.value:[];
+      const local=loRes.status==='fulfilled'?loRes.value:[];
+      const _seen=new Set();
+      const merged=[...sheet,...local].filter(c=>{const k=`${c.date}|${c.studio}|${c.change}`;if(_seen.has(k))return false;_seen.add(k);return true;});
+      if(!merged.length&&shRes.status!=='fulfilled'&&loRes.status!=='fulfilled')throw new Error('no changes data');
+      return merged;
+    })(),
   ]);
 
   if(dataRes.status==='fulfilled'){RAW=dataRes.value;if(!RAW.daily_detail)RAW.daily_detail=[];if(!RAW.monthly_detail)RAW.monthly_detail=[]
@@ -5278,6 +5441,9 @@ async function init(){
 
   if(ocRes.status==='fulfilled'){OTHER_COSTS=ocRes.value}
   else{console.warn('nso_other_costs.json not found — other cost sources unavailable');OTHER_COSTS=null}
+
+  if(changesRes.status==='fulfilled'){NSO_CHANGES=Array.isArray(changesRes.value)?changesRes.value:[]}
+  else{NSO_CHANGES=[]}
 
   renderFreshnessNote('dataFreshnessNote', [
     {raw: dataRes.status==='fulfilled'   ? dataRes.value   : null, lagDays: 2},
