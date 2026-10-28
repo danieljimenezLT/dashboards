@@ -1,0 +1,1153 @@
+{
+  "defaults": {
+    "meta_ad_account_id": "act_1553887681409034",
+    "google_ads_mcc_id": "605-546-2417",
+    "ga4_property_id": "341934364",
+    "gbp_account_id": "accounts/4243744174605320602"
+  },
+  "studios": [
+    {
+      "name": "Austin - Highland",
+      "code": "TX-002",
+      "state": "TX",
+      "status": "open",
+      "agency": "FFM",
+      "agency_from": "2026-08-10",
+      "excluded_default": false,
+      "meta": {
+        "match": "Highland",
+        "page_id": "351629338025804",
+        "ad_account_id": "act_1360692008741848"
+      },
+      "google_ads": {
+        "match": "ighland"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/locations-texas-austin-highland/"
+      },
+      "gbp": {
+        "location_id": "1169708896465579865",
+        "code": "S440-Highland"
+      },
+      "snowflake_id": null,
+      "social_slug": "highland",
+      "tier_pricing": null
+    },
+    {
+      "name": "Austin - Zilker",
+      "code": "TX-001",
+      "state": "TX",
+      "status": "closed",
+      "agency": null,
+      "excluded_default": true,
+      "meta": {
+        "match": "Zilker",
+        "page_id": "119087484495208"
+      },
+      "google_ads": {
+        "pattern": "ilker|Zilker"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "13711200876115787193",
+        "code": "S440-Zilker"
+      },
+      "snowflake_id": null,
+      "social_slug": "zilker",
+      "tier_pricing": null
+    },
+    {
+      "name": "Aventura",
+      "code": "FL-018",
+      "state": "FL",
+      "status": "nso",
+      "agency": "LT",
+      "excluded_default": true,
+      "meta": {
+        "page_id": "1047698415096383"
+      },
+      "google_ads": {
+        "match": "Aventura"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/locations-florida-aventura/"
+      },
+      "gbp": {
+        "location_id": null
+      },
+      "snowflake_id": 5753604,
+      "social_slug": "aventura",
+      "tier_pricing": {
+        "tier1_price": 129,
+        "tier2_price": 149
+      }
+    },
+    {
+      "name": "Boca Raton",
+      "code": "FL-016",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Boca",
+        "page_id": "637367179456983"
+      },
+      "google_ads": {
+        "match": "Boca"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/locations-florida-boca-raton/"
+      },
+      "gbp": {
+        "location_id": "7065200393670588135",
+        "code": "S440-Boca"
+      },
+      "snowflake_id": null,
+      "social_slug": "boca",
+      "tier_pricing": null
+    },
+    {
+      "name": "Burlington",
+      "code": "MA-001",
+      "state": "MA",
+      "status": "nso",
+      "agency": "JL",
+      "excluded_default": true,
+      "meta": {
+        "page_id": "1222433990955477"
+      },
+      "google_ads": {},
+      "ga4": {
+        "studio_page_path": "/gyms/locations-massachusetts-burlington/"
+      },
+      "gbp": {
+        "location_id": "7131182870655842086",
+        "code": "S440-Burlington"
+      },
+      "snowflake_id": 5755228,
+      "social_slug": "burlington",
+      "tier_pricing": null
+    },
+    {
+      "name": "Charlotte - Noda",
+      "code": "NC-001",
+      "state": "NC",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Charlotte",
+        "page_id": "104198619263881"
+      },
+      "google_ads": {
+        "match": "NODA"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "13151717982539622083",
+        "code": "S440-NoDa"
+      },
+      "snowflake_id": null,
+      "social_slug": "noda",
+      "tier_pricing": null
+    },
+    {
+      "name": "Charlotte - South End",
+      "code": "NC-002",
+      "state": "NC",
+      "status": "nso",
+      "agency": "LT",
+      "excluded_default": true,
+      "meta": {
+        "page_id": "1302876979566754"
+      },
+      "google_ads": {},
+      "ga4": {
+        "studio_page_path": "/gyms/locations-north-carolina-charlotte-south-end/"
+      },
+      "gbp": {
+        "location_id": "5669765220811209208"
+      },
+      "snowflake_id": 5755905,
+      "social_slug": "south-end",
+      "tier_pricing": {
+        "tier1_price": 99,
+        "tier2_price": 129,
+        "tier3_price": 149
+      }
+    },
+    {
+      "name": "Coral Gables",
+      "code": "FL-003",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Coral Gables",
+        "page_id": "110268611810389"
+      },
+      "google_ads": {
+        "match": "Gables"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/locations-florida-coral-gables/"
+      },
+      "gbp": {
+        "location_id": "7463859448263219148",
+        "code": "S440-Gables"
+      },
+      "snowflake_id": null,
+      "social_slug": "gables",
+      "tier_pricing": null
+    },
+    {
+      "name": "Coral Springs",
+      "code": "FL-008",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Coral Springs",
+        "page_id": "106485985557697"
+      },
+      "google_ads": {
+        "match": "Springs"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "664231527795610789",
+        "code": "S440-CoralSprings"
+      },
+      "snowflake_id": null,
+      "social_slug": "coralsprings",
+      "tier_pricing": null
+    },
+    {
+      "name": "Dallas - Prestonwood",
+      "code": "TX-003",
+      "state": "TX",
+      "status": "open",
+      "agency": "FFM",
+      "agency_from": "2026-08-06",
+      "excluded_default": false,
+      "meta": {
+        "match": "Prestonwood",
+        "page_id": "845182982009071",
+        "ad_account_id": "act_901653169105027"
+      },
+      "google_ads": {
+        "match": "Prestonwood"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/locations-texas-dallas-prestonwood/"
+      },
+      "gbp": {
+        "location_id": "11402535545027699120",
+        "code": "S440-Prestonwood"
+      },
+      "snowflake_id": null,
+      "social_slug": "prestonwood",
+      "tier_pricing": null
+    },
+    {
+      "name": "Dallas - Uptown",
+      "code": "TX-004",
+      "state": "TX",
+      "status": "nso",
+      "agency": "FFM",
+      "agency_from": "2026-08-27",
+      "excluded_default": true,
+      "meta": {
+        "page_id": "1013504171849728",
+        "ad_account_id": ["act_907636075750262", "act_1739390993942536"]
+      },
+      "google_ads": {
+        "match": "Dallas Uptown"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": null
+      },
+      "snowflake_id": 5753491,
+      "social_slug": "uptown",
+      "tier_pricing": {
+        "tier1_price": 129,
+        "tier2_price": 149
+      }
+    },
+    {
+      "name": "Deerfield Beach",
+      "code": "FL-006",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Deerfield",
+        "page_id": "106597632212836"
+      },
+      "google_ads": {
+        "match": "eerfield"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "10754559321713930787",
+        "code": "S440-Deerfield"
+      },
+      "snowflake_id": null,
+      "social_slug": "deerfield",
+      "tier_pricing": null
+    },
+    {
+      "name": "Doral",
+      "code": "FL-004",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Doral",
+        "page_id": "103789732469470"
+      },
+      "google_ads": {
+        "match": "Doral"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/locations-florida-doral/"
+      },
+      "gbp": {
+        "location_id": "5492541826748651334",
+        "code": "S440-Doral"
+      },
+      "snowflake_id": null,
+      "social_slug": "doral",
+      "tier_pricing": null
+    },
+    {
+      "name": "Dunwoody",
+      "code": "GA-001",
+      "state": "GA",
+      "status": "nso",
+      "agency": "LT",
+      "excluded_default": true,
+      "meta": {
+        "page_id": "1119194191285831"
+      },
+      "google_ads": {
+        "match": "Dunwoody"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "14348234584447062751",
+        "code": "S440-Dunwoody"
+      },
+      "snowflake_id": 5754676,
+      "social_slug": "dunwoody",
+      "tier_pricing": null
+    },
+    {
+      "name": "Eastchester",
+      "code": "NY-004",
+      "state": "NY",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Eastchester",
+        "page_id": "664055870131827"
+      },
+      "google_ads": {
+        "match": "astchester"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "9100379360747055617",
+        "code": "S440-Eastchester"
+      },
+      "snowflake_id": null,
+      "social_slug": "eastchester",
+      "tier_pricing": null
+    },
+    {
+      "name": "Fort Lauderdale - Las Olas",
+      "code": "FL-013",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Las Olas",
+        "page_id": "300173986520471"
+      },
+      "google_ads": {
+        "match": "Olas"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/locations-florida-ft-lauderdale/"
+      },
+      "gbp": {
+        "location_id": "15716475017336552276",
+        "code": "S440-LasOlas"
+      },
+      "snowflake_id": null,
+      "social_slug": "lasolas",
+      "tier_pricing": null
+    },
+    {
+      "name": "Fort Myers",
+      "code": "FL-022",
+      "state": "FL",
+      "status": "nso",
+      "agency": "FFM",
+      "agency_from": "2026-09-11",
+      "excluded_default": true,
+      "meta": {
+        "page_id": "1218885824631723",
+        "ad_account_id": "act_4650978861891466"
+      },
+      "google_ads": {
+        "match": "Fort Myers"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "2005684758562901799",
+        "code": "S440-FortMyers"
+      },
+      "snowflake_id": 5754665,
+      "social_slug": "fortmyers",
+      "tier_pricing": null
+    },
+    {
+      "name": "Herriman",
+      "code": "UT-001",
+      "state": "UT",
+      "status": "open",
+      "nso_track": true,
+      "agency": "FFM",
+      "agency_from": "2026-08-05",
+      "opening_date": "2026-10-10",
+      "excluded_default": false,
+      "meta": {
+        "page_id": "1016504601542354",
+        "ad_account_id": "act_28850449604546812"
+      },
+      "google_ads": {
+        "match": "Herriman",
+        "customer_id": "385-801-4125"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/utah-herriman/"
+      },
+      "gbp": {
+        "location_id": "4243744174605320602",
+        "code": "S440-Herriman"
+      },
+      "snowflake_id": 5752080,
+      "social_slug": "herriman",
+      "tier_pricing": {
+        "tier1_price": 99,
+        "tier2_price": 129,
+        "tier3_price": 149
+      }
+    },
+    {
+      "name": "Huntsville",
+      "code": null,
+      "state": "AL",
+      "status": "nso",
+      "agency": null,
+      "excluded_default": true,
+      "meta": {},
+      "google_ads": {
+        "match": "untsville"
+      },
+      "ga4": {},
+      "gbp": {},
+      "snowflake_id": null,
+      "social_slug": null,
+      "tier_pricing": null
+    },
+    {
+      "name": "Long Beach",
+      "code": "NY-005",
+      "state": "NY",
+      "status": "nso",
+      "agency": "LT",
+      "excluded_default": true,
+      "meta": {
+        "instagram_account_id": "17841411727425800",
+        "page_id": "1159681193897713"
+      },
+      "google_ads": {
+        "customer_id": "330-965-6191"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/locations-new-york-long-beach/"
+      },
+      "gbp": {
+        "location_id": "7629344561899220561"
+      },
+      "snowflake_id": 5755749,
+      "social_slug": "longbeachny",
+      "tier_pricing": null
+    },
+    {
+      "name": "Madison",
+      "code": null,
+      "state": "AL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "page_id": "111726744769276"
+      },
+      "google_ads": {
+        "match": "adison"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "8346193268583733484",
+        "code": "S440-Madison"
+      },
+      "snowflake_id": null,
+      "social_slug": "madison",
+      "tier_pricing": null
+    },
+    {
+      "name": "Miami - Brickell",
+      "code": "FL-002",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Brickell",
+        "page_id": "107873258720021"
+      },
+      "google_ads": {
+        "match": "rickell"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/locations-florida-brickell/"
+      },
+      "gbp": {
+        "location_id": "14204655201727465322",
+        "code": "S440-Brickell"
+      },
+      "snowflake_id": null,
+      "social_slug": "brickell",
+      "tier_pricing": null
+    },
+    {
+      "name": "Miami - Coconut Grove",
+      "code": "FL-011",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Coconut Grove",
+        "page_id": "196520916880971"
+      },
+      "google_ads": {
+        "pattern": "oconut|Coconut|Grove|FL011"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "13239535872064474502",
+        "code": "S440-Grove"
+      },
+      "snowflake_id": null,
+      "social_slug": "coconutgrove",
+      "tier_pricing": null
+    },
+    {
+      "name": "Miami - Midtown",
+      "code": "FL-010",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Midtown",
+        "page_id": "103476569380316"
+      },
+      "google_ads": {
+        "match": "idtown"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "7167540952370862788",
+        "code": "S440-Midtown"
+      },
+      "snowflake_id": null,
+      "social_slug": "midtown",
+      "tier_pricing": null
+    },
+    {
+      "name": "Miami - Upper East Side",
+      "code": "FL-007",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Upper East",
+        "page_id": "108861828669519"
+      },
+      "google_ads": {
+        "pattern": "pper|iscayne"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "10716690281924579206",
+        "code": "S440-UES"
+      },
+      "snowflake_id": null,
+      "social_slug": "uppereastside",
+      "tier_pricing": null
+    },
+    {
+      "name": "Miami Beach",
+      "code": "FL-001",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Miami Beach",
+        "page_id": "105547208952141"
+      },
+      "google_ads": {
+        "pattern": "Sobe|Miami Beach|SoBe"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/locations-florida-miami-beach/"
+      },
+      "gbp": {
+        "location_id": "7903117717083019565",
+        "code": "S440-SOBE"
+      },
+      "snowflake_id": null,
+      "social_slug": "sobe",
+      "tier_pricing": null
+    },
+    {
+      "name": "Miami Lakes",
+      "code": "FL-005",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Miami Lakes",
+        "page_id": "101752329601099"
+      },
+      "google_ads": {
+        "match": "Lakes"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "17771088988285686232",
+        "code": "S440-Lakes"
+      },
+      "snowflake_id": null,
+      "social_slug": "miamilakes",
+      "tier_pricing": null
+    },
+    {
+      "name": "Middletown",
+      "code": "NJ-005",
+      "state": "NJ",
+      "status": "nso",
+      "agency": "JL",
+      "agency_from": "2026-10-12",
+      "excluded_default": true,
+      "meta": {
+        "page_id": "1138263712703066"
+      },
+      "google_ads": {
+        "match": "Middletown"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "9688833394650228159",
+        "code": "S440-Middletown"
+      },
+      "snowflake_id": 5753113,
+      "social_slug": "middletown",
+      "tier_pricing": null
+    },
+    {
+      "name": "Miramar",
+      "code": "FL-012",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Miramar",
+        "page_id": "203760659484865"
+      },
+      "google_ads": {
+        "match": "iramar"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "17466150247466580313",
+        "code": "S440-Miramar"
+      },
+      "snowflake_id": null,
+      "social_slug": "miramar",
+      "tier_pricing": null
+    },
+    {
+      "name": "Music Row",
+      "code": "TN-001",
+      "state": "TN",
+      "status": "nso",
+      "agency": null,
+      "excluded_default": true,
+      "meta": {
+        "match": "Music Row"
+      },
+      "google_ads": {
+        "pattern": "usic Row|Music"
+      },
+      "ga4": {},
+      "gbp": {},
+      "snowflake_id": null,
+      "social_slug": null,
+      "tier_pricing": null
+    },
+    {
+      "name": "NYC - Chelsea",
+      "code": "NY-002",
+      "state": "NY",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Chelsea",
+        "page_id": "105456357683242"
+      },
+      "google_ads": {
+        "match": "helsea"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "17441960021947392889",
+        "code": "S440-Chelsea"
+      },
+      "snowflake_id": null,
+      "social_slug": "chelsea",
+      "tier_pricing": null
+    },
+    {
+      "name": "NYC - FiDi",
+      "code": null,
+      "state": "NY",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "page_id": "149250091597748"
+      },
+      "google_ads": {
+        "pattern": "FIDI|FiDi|Financial District|NYC|New York"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "2621266453224563061",
+        "code": "S440-FIDI"
+      },
+      "snowflake_id": null,
+      "social_slug": "fidi",
+      "tier_pricing": null
+    },
+    {
+      "name": "NYC - Park Slope",
+      "code": "NY-003",
+      "state": "NY",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Park Slope",
+        "page_id": "681591261709097"
+      },
+      "google_ads": {
+        "match": "Slope"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "17704049939806391312",
+        "code": "S440-ParkSlope"
+      },
+      "snowflake_id": null,
+      "social_slug": "parkslope",
+      "tier_pricing": null
+    },
+    {
+      "name": "Naples - Mercato",
+      "code": "FL-019",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "opening_date": "2026-08-22",
+      "nso_track": true,
+      "excluded_default": false,
+      "meta": {
+        "match": "Naples"
+      },
+      "google_ads": {
+        "match": "Naples"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/locations-florida-naples-mercato/"
+      },
+      "gbp": {
+        "location_id": "9241286551304249574",
+        "code": "S440-Naples"
+      },
+      "snowflake_id": 5751381,
+      "social_slug": null,
+      "tier_pricing": {
+        "tier1_price": 99,
+        "tier2_price": 129,
+        "tier3_price": 149
+      }
+    },
+    {
+      "name": "Nashville - Capitol View",
+      "code": null,
+      "state": null,
+      "status": "closed",
+      "agency": null,
+      "excluded_default": true,
+      "meta": {},
+      "google_ads": {
+        "pattern": "ulch|apitol"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": null,
+        "code": "S440-CapitolView"
+      },
+      "snowflake_id": null,
+      "social_slug": null,
+      "tier_pricing": null
+    },
+    {
+      "name": "North Miami",
+      "code": "FL-021",
+      "state": "FL",
+      "status": "nso",
+      "agency": "LT",
+      "excluded_default": true,
+      "meta": {
+        "page_id": "1145229115329264"
+      },
+      "google_ads": {
+        "match": "North Miami"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": null
+      },
+      "snowflake_id": 5753608,
+      "social_slug": "northmiami",
+      "tier_pricing": {
+        "tier1_price": 129,
+        "tier2_price": 149
+      }
+    },
+    {
+      "name": "OKC - Rose Creek",
+      "code": "OK-001",
+      "state": "OK",
+      "status": "nso",
+      "agency": "FFM",
+      "agency_from": "2026-09-14",
+      "excluded_default": true,
+      "meta": {
+        "page_id": "1216719724848272",
+        "ad_account_id": "act_1312894794251775"
+      },
+      "google_ads": {
+        "customer_id": "2797876176"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "9431067527342434273"
+      },
+      "snowflake_id": 5755839,
+      "social_slug": "rose-creek",
+      "tier_pricing": {
+        "tier1_price": 99,
+        "tier2_price": 129,
+        "tier3_price": 149
+      }
+    },
+    {
+      "name": "Ocean Township",
+      "code": "NJ-002",
+      "state": "NJ",
+      "status": "open",
+      "agency": "JL",
+      "agency_from": "2026-10-12",
+      "excluded_default": false,
+      "meta": {
+        "match": "Ocean Township",
+        "page_id": "184923338027883"
+      },
+      "google_ads": {
+        "match": "cean"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "14043102866859948554",
+        "code": "S440-OceanTownship"
+      },
+      "snowflake_id": null,
+      "social_slug": "oceantownship",
+      "tier_pricing": null
+    },
+    {
+      "name": "Old Bridge",
+      "code": "NJ-004",
+      "state": "NJ",
+      "status": "nso",
+      "agency": "JL",
+      "agency_from": "2026-10-12",
+      "excluded_default": true,
+      "meta": {
+        "page_id": "1094938857031042",
+        "instagram_account_id": "17841439161726674"
+      },
+      "google_ads": {
+        "match": "Old Bridge"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": null
+      },
+      "snowflake_id": 5753073,
+      "social_slug": "oldbridge",
+      "tier_pricing": {
+        "tier1_price": 99,
+        "tier2_price": 129
+      }
+    },
+    {
+      "name": "Orlando - Dr Phillips",
+      "code": "FL-020",
+      "state": "FL",
+      "status": "nso",
+      "agency": "FFM",
+      "agency_from": "2026-08-25",
+      "excluded_default": true,
+      "meta": {
+        "page_id": "986634234541338",
+        "ad_account_id": "act_1774165283928502"
+      },
+      "google_ads": {
+        "pattern": "Phillips|Dr.?\\s*Phillips"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/locations-florida-orlando/"
+      },
+      "gbp": {
+        "location_id": "11294882594993712026",
+        "code": "S440-Orlando"
+      },
+      "snowflake_id": 5753281,
+      "social_slug": "drphillips",
+      "tier_pricing": {
+        "tier1_price": 99,
+        "tier2_price": 129,
+        "tier3_price": 149
+      }
+    },
+    {
+      "name": "Pembroke Pines",
+      "code": "FL-014",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Pembroke",
+        "page_id": "328512683684059"
+      },
+      "google_ads": {
+        "match": "embroke"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/locations-florida-pembroke-pines/"
+      },
+      "gbp": {
+        "location_id": "7667757151493569095",
+        "code": "S440-Pines"
+      },
+      "snowflake_id": null,
+      "social_slug": "pembrokepines",
+      "tier_pricing": null
+    },
+    {
+      "name": "Pinecrest - Palmetto Bay",
+      "code": "FL-017",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "Pinecrest",
+        "page_id": "848877064975048"
+      },
+      "google_ads": {
+        "match": "inecrest"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/locations-florida-pinecrest/"
+      },
+      "gbp": {
+        "location_id": "13145255458617855723",
+        "code": "S440-Pinecrest"
+      },
+      "snowflake_id": null,
+      "social_slug": "pinecrest",
+      "tier_pricing": null
+    },
+    {
+      "name": "Reston",
+      "code": "VA-001",
+      "state": "VA",
+      "status": "open",
+      "agency": "LT",
+      "opening_date": "2026-09-05",
+      "nso_track": true,
+      "excluded_default": false,
+      "meta": {
+        "match": "Reston",
+        "page_id": "875200972337017"
+      },
+      "google_ads": {
+        "match": "Reston"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/virginia-reston/"
+      },
+      "gbp": {
+        "location_id": "10767130387921211013",
+        "code": "S440-Reston"
+      },
+      "snowflake_id": 5750130,
+      "social_slug": "reston",
+      "tier_pricing": {
+        "tier0_price": 99,
+        "tier1_price": 129,
+        "tier2_price": 149
+      }
+    },
+    {
+      "name": "South Miami",
+      "code": "FL-009",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "South Miami",
+        "page_id": "116631111441913"
+      },
+      "google_ads": {
+        "match": "South Miami"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "6035103980871581769",
+        "code": "S440-SouthMiami"
+      },
+      "snowflake_id": null,
+      "social_slug": "southmiami",
+      "tier_pricing": null
+    },
+    {
+      "name": "Toms River",
+      "code": "NJ-001",
+      "state": "NJ",
+      "status": "open",
+      "agency": "JL",
+      "agency_from": "2026-10-12",
+      "excluded_default": false,
+      "meta": {
+        "match": "Toms River",
+        "page_id": "108238962107956"
+      },
+      "google_ads": {
+        "pattern": "River|Toms"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "11096005039049334458",
+        "code": "S440-TomsRiver"
+      },
+      "snowflake_id": null,
+      "social_slug": "tomsriver",
+      "tier_pricing": null
+    },
+    {
+      "name": "Wall Township",
+      "code": "NJ-003",
+      "state": "NJ",
+      "status": "open",
+      "agency": "JL",
+      "agency_from": "2026-10-12",
+      "excluded_default": false,
+      "meta": {
+        "match": "Wall",
+        "page_id": "700746796454324"
+      },
+      "google_ads": {
+        "match": "Wall"
+      },
+      "ga4": {},
+      "gbp": {
+        "location_id": "8536971399907740515",
+        "code": "S440-WallTownship"
+      },
+      "snowflake_id": null,
+      "social_slug": "wallnj",
+      "tier_pricing": null
+    },
+    {
+      "name": "West Palm Beach",
+      "code": "FL-015",
+      "state": "FL",
+      "status": "open",
+      "agency": "LT",
+      "excluded_default": false,
+      "meta": {
+        "match": "West Palm",
+        "page_id": "703238786198886"
+      },
+      "google_ads": {
+        "match": "West Palm"
+      },
+      "ga4": {
+        "studio_page_path": "/gyms/locations-florida-west-palm-beach/"
+      },
+      "gbp": {
+        "location_id": "17821267300280087598",
+        "code": "S440-WPB"
+      },
+      "snowflake_id": null,
+      "social_slug": "westpalm",
+      "tier_pricing": null
+    }
+  ]
+}

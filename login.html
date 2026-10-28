@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SWEAT440 — Sign In</title>
+<link rel="icon" href="favicon.jpg"/>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Open Sans',sans-serif;background:#0084B5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{background:#fff;border-radius:16px;padding:48px 40px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:22px;font-weight:700;text-transform:uppercase;color:#1a1a2e;text-align:center;letter-spacing:1px;margin-bottom:6px}
+.login-sub{font-size:13px;color:#8aaabb;text-align:center;margin-bottom:32px}
+.form-group{margin-bottom:18px}
+label{display:block;font-family:'Oswald',sans-serif;font-style:italic;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#5a7a8a;margin-bottom:6px}
+input{width:100%;padding:10px 14px;border:1.5px solid #c0d4df;border-radius:8px;font-size:14px;font-family:'Open Sans',sans-serif;color:#1a1a2e;outline:none;transition:border-color .15s}
+input:focus{border-color:#00A3E0}
+.login-btn{width:100%;padding:12px;background:#00A3E0;color:#fff;border:none;border-radius:8px;font-family:'Oswald',sans-serif;font-style:italic;font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;margin-top:8px;transition:background .15s}
+.login-btn:hover{background:#0084B5}
+.login-btn:disabled{background:#a0c8df;cursor:not-allowed}
+.error-msg{display:none;background:#fff0f0;border:1px solid #f5c6c6;color:#c0392b;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:16px;text-align:center}
+.error-msg.show{display:block}
+.forgot-link{display:block;text-align:center;margin-top:18px;font-size:13px;color:#00A3E0;cursor:pointer;text-decoration:none;background:none;border:none;width:100%;font-family:'Open Sans',sans-serif}
+.forgot-link:hover{color:#0084B5;text-decoration:underline}
+
+/* Forgot password panel */
+.forgot-panel{display:none;margin-top:24px;padding-top:24px;border-top:1px solid #edf3f7}
+.forgot-panel.show{display:block}
+.forgot-title{font-family:'Oswald',sans-serif;font-style:italic;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1a1a2e;margin-bottom:6px}
+.forgot-sub{font-size:12px;color:#8aaabb;margin-bottom:14px;line-height:1.5}
+.forgot-row{display:flex;gap:8px}
+.forgot-row input{flex:1}
+.forgot-btn{padding:10px 16px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;font-family:'Oswald',sans-serif;font-style:italic;font-size:13px;font-weight:700;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:background .15s;flex-shrink:0}
+.forgot-btn:hover{background:#0d0d1e}
+.forgot-sent{display:none;margin-top:12px;background:#e8faf0;border:1px solid #a8e6c3;color:#0a8a4a;border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.5}
+.forgot-sent.show{display:block}
+</style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="login-logo">
+    <img src="sweat440-black-blue.png" alt="SWEAT440" style="height:36px;"/>
+  </div>
+  <div class="login-title">Dashboard Access</div>
+  <div class="login-sub">Sign in with your credentials</div>
+
+  <form id="loginForm" onsubmit="handleLogin(event)">
+    <div class="form-group">
+      <label for="username">Email</label>
+      <input type="email" id="username" name="username" autocomplete="email" required placeholder="Enter your email address"/>
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" autocomplete="current-password" required placeholder="Enter your password"/>
+    </div>
+    <button type="submit" class="login-btn" id="submitBtn">Sign In</button>
+    <div class="error-msg" id="errorMsg">Incorrect email or password. Please try again.</div>
+  </form>
+
+  <button class="forgot-link" onclick="toggleForgot()">Forgot your password?</button>
+
+  <div class="forgot-panel" id="forgotPanel">
+    <div class="forgot-title">Reset your password</div>
+    <div class="forgot-sub">Enter your email and we'll open a message to our admin so they can send you a new password.</div>
+    <div class="forgot-row">
+      <input type="email" id="forgotEmail" placeholder="Your email address"/>
+      <button class="forgot-btn" onclick="sendReset()">Send Request</button>
+    </div>
+    <div class="forgot-sent" id="forgotSent">
+      Your email app should have opened with a pre-written reset request. If it didn't open automatically, email <strong>santiago.estrada@leadteam.com</strong> directly and ask for a password reset.
+    </div>
+  </div>
+</div>
+
+<script src="users.js"></script>
+<script>
+// Redirect if already authenticated
+(function() {
+  const raw = sessionStorage.getItem('sw440_auth');
+  if (raw) {
+    try {
+      JSON.parse(raw);
+      const dest = new URLSearchParams(location.search).get('next') || 'home.html';
+      location.replace(dest);
+    } catch(e) {
+      sessionStorage.removeItem('sw440_auth');
+    }
+  }
+})();
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  const errorEl = document.getElementById('errorMsg');
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+  errorEl.classList.remove('show');
+
+  const username = document.getElementById('username').value.trim().toLowerCase();
+  const password = document.getElementById('password').value;
+
+  const user = USERS[username];
+  if (!user) { showError(btn, errorEl); return; }
+
+  const hash = await sha256(password);
+  if (hash !== user.passwordHash) { showError(btn, errorEl); return; }
+
+  sessionStorage.setItem('sw440_auth', JSON.stringify({
+    username,
+    name: user.name,
+    studios: user.studios,
+    role: user.role
+  }));
+
+  const dest = new URLSearchParams(location.search).get('next') || 'home.html';
+  location.replace(dest);
+}
+
+function showError(btn, errorEl) {
+  btn.disabled = false;
+  btn.textContent = 'Sign In';
+  errorEl.classList.add('show');
+}
+
+function toggleForgot() {
+  const panel = document.getElementById('forgotPanel');
+  panel.classList.toggle('show');
+  if (panel.classList.contains('show')) {
+    // Pre-fill with whatever they typed in the login email field
+    const typed = document.getElementById('username').value.trim();
+    if (typed) document.getElementById('forgotEmail').value = typed;
+    document.getElementById('forgotEmail').focus();
+  }
+}
+
+function sendReset() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  if (!email) { document.getElementById('forgotEmail').focus(); return; }
+
+  const subject = encodeURIComponent('SWEAT440 Dashboard — Password Reset Request');
+  const body = encodeURIComponent(
+`Hi,
+
+I need help resetting my SWEAT440 Dashboard password.
+
+My email address: ${email}
+
+Please send me a new temporary password when you get a chance.
+
+Thank you`
+  );
+
+  window.location.href = `mailto:santiago.estrada@leadteam.com?subject=${subject}&body=${body}`;
+  document.getElementById('forgotSent').classList.add('show');
+}
+</script>
+</body>
+</html>
