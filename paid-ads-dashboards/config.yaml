@@ -17,6 +17,7 @@ campaigns_to_track:
   - win_a_free_month_apr2026
   - free_class_open_studios_2026
   - buy_1_get_3_open_studios_2026
+  - two_weeks_for_40_2026
 
 # 'campaigns_to_refresh' son las campanas que el ETL re-fetchea desde Meta
 # cada run. Las campanas en 'campaigns_to_track' que NO esten aqui se cargan
@@ -24,6 +25,7 @@ campaigns_to_track:
 # Para forzar el re-fetch de una campana completada, agregala aqui temporalmente.
 campaigns_to_refresh:
   - free_class_open_studios_2026
+  - two_weeks_for_40_2026
 
 
 campaigns:
@@ -56,32 +58,14 @@ campaigns:
       HYROX:                  ["HYROX"]
       DC:                     ["DC"]
 
-    studios:
-      - { code: "FL-001", name: "Miami Beach",                  state: "FL", match: "Miami Beach" }
-      - { code: "FL-002", name: "Miami Brickell",               state: "FL", match: "Brickell" }
-      - { code: "FL-003", name: "Coral Gables",                 state: "FL", match: "Coral Gables" }
-      - { code: "FL-004", name: "Doral",                        state: "FL", match: "Doral" }
-      - { code: "FL-005", name: "Miami Lakes",                  state: "FL", match: "Miami Lakes" }
-      - { code: "FL-006", name: "Deerfield Beach",              state: "FL", match: "Deerfield" }
-      - { code: "FL-007", name: "Miami Upper East Side",        state: "FL", match: "Upper East" }
-      - { code: "FL-008", name: "Coral Springs",                state: "FL", match: "Coral Springs" }
-      - { code: "FL-009", name: "South Miami",                  state: "FL", match: "South Miami" }
-      - { code: "FL-010", name: "Midtown Miami",                state: "FL", match: "Midtown" }
-      - { code: "FL-011", name: "Coconut Grove",                state: "FL", match: "Coconut Grove" }
-      - { code: "FL-012", name: "Miramar",                      state: "FL", match: "Miramar" }
-      - { code: "FL-013", name: "Fort Lauderdale - Las Olas",   state: "FL", match: "Las Olas" }
-      - { code: "FL-014", name: "Pembroke Pines",               state: "FL", match: "Pembroke" }
-      - { code: "FL-015", name: "West Palm Beach",              state: "FL", match: "West Palm" }
-      - { code: "FL-016", name: "Boca Raton",                   state: "FL", match: "Boca" }
-      - { code: "NC-001", name: "Charlotte - NoDa",             state: "NC", match: "Charlotte" }
-      - { code: "NJ-001", name: "Toms River",                   state: "NJ", match: "Toms River" }
-      - { code: "NJ-002", name: "Ocean Township",               state: "NJ", match: "Ocean Township" }
-      - { code: "NJ-003", name: "Wall Township",                state: "NJ", match: "Wall" }
-      - { code: "NY-002", name: "NYC Chelsea",                  state: "NY", match: "Chelsea" }
-      - { code: "NY-003", name: "NYC Park Slope",               state: "NY", match: "Park Slope" }
-      - { code: "NY-004", name: "Eastchester",                  state: "NY", match: "Eastchester" }
-      - { code: "TX-001", name: "Austin - Zilker",              state: "TX", match: "Zilker" }
-      - { code: "TX-002", name: "Austin - Highland",            state: "TX", match: "Highland" }
+    # Studio roster resolved from studios.json (canonical registry) by code —
+    # see resolve_campaign_studios() in fetch_paid_ads.py. Legacy inline
+    # `studios:` list format is still supported as a fallback.
+    studio_codes:
+      [FL-001, FL-002, FL-003, FL-004, FL-005, FL-006, FL-007, FL-008,
+       FL-009, FL-010, FL-011, FL-012, FL-013, FL-014, FL-015, FL-016,
+       NC-001, NJ-001, NJ-002, NJ-003, NY-002, NY-003, NY-004, TX-001, TX-002,
+       FL-017, TX-003]
 
 
   # =================================================================
@@ -96,16 +80,18 @@ campaigns:
     date_start:   "2026-04-15"
     date_end:     "2026-12-31"
     ad_account_id: "act_1553887681409034"   # misma cuenta corporate
-    campaign_ids:                            # 3 campanas bajo Free Class
-      - "120243103413640249"                 # Free Class - Native Forms
-      - "120249459170510249"                 # Free Class - Landing Pages - No Conversion
-      - "120250407271150249"                 # Free Class - Landing Pages
+    campaign_ids:                            # campanas bajo Free Class
+      - "120243103413640249"                 # Free Class - Native Forms (Apr–Aug 2026)
+      - "120249459170510249"                 # Free Class - Landing Pages - No Conversion (Apr–Aug 2026)
+      - "120250407271150249"                 # Free Class - Landing Pages (Apr–Aug 2026)
+      - "120253123210040249"                 # Free Class - New Landing Pages (Aug 14, 2026 onwards)
     # Tipo de lead por campaign_id (Results column de Meta):
     # Native Forms → native form events; Landing Pages → pixel lead event
     campaign_lead_types:
       "120243103413640249": [onsite_conversion.lead_grouped, leadgen_grouped, leadgen.other]
       "120249459170510249": [_pixel_custom]   # custom pixel conversion in conversions[]
       "120250407271150249": [_pixel_custom]   # custom pixel conversion in conversions[]
+      "120253123210040249": [_pixel_custom]   # Free Class - New Landing Pages
 
     audience_tokens:
       DINKS: ["DINKS"]
@@ -123,35 +109,13 @@ campaigns:
       HYROX:                  ["HYROX"]
       DC:                     ["DC"]
 
-    # Reutilizamos el mismo mapeo de studios. Si tu proxima campana es
-    # solo para algunos studios, elimina los que no apliquen y el
-    # dashboard mostrara solo los relevantes.
-    studios:
-      - { code: "FL-001", name: "Miami Beach",                  state: "FL", match: "Miami Beach" }
-      - { code: "FL-002", name: "Miami Brickell",               state: "FL", match: "Brickell" }
-      - { code: "FL-003", name: "Coral Gables",                 state: "FL", match: "Coral Gables" }
-      - { code: "FL-004", name: "Doral",                        state: "FL", match: "Doral" }
-      - { code: "FL-005", name: "Miami Lakes",                  state: "FL", match: "Miami Lakes" }
-      - { code: "FL-006", name: "Deerfield Beach",              state: "FL", match: "Deerfield" }
-      - { code: "FL-007", name: "Miami Upper East Side",        state: "FL", match: "Upper East" }
-      - { code: "FL-008", name: "Coral Springs",                state: "FL", match: "Coral Springs" }
-      - { code: "FL-009", name: "South Miami",                  state: "FL", match: "South Miami" }
-      - { code: "FL-010", name: "Midtown Miami",                state: "FL", match: "Midtown" }
-      - { code: "FL-011", name: "Coconut Grove",                state: "FL", match: "Coconut Grove" }
-      - { code: "FL-012", name: "Miramar",                      state: "FL", match: "Miramar" }
-      - { code: "FL-013", name: "Fort Lauderdale - Las Olas",   state: "FL", match: "Las Olas" }
-      - { code: "FL-014", name: "Pembroke Pines",               state: "FL", match: "Pembroke" }
-      - { code: "FL-015", name: "West Palm Beach",              state: "FL", match: "West Palm" }
-      - { code: "FL-016", name: "Boca Raton",                   state: "FL", match: "Boca" }
-      - { code: "NC-001", name: "Charlotte - NoDa",             state: "NC", match: "Charlotte" }
-      - { code: "NJ-001", name: "Toms River",                   state: "NJ", match: "Toms River" }
-      - { code: "NJ-002", name: "Ocean Township",               state: "NJ", match: "Ocean Township" }
-      - { code: "NJ-003", name: "Wall Township",                state: "NJ", match: "Wall" }
-      - { code: "NY-002", name: "NYC Chelsea",                  state: "NY", match: "Chelsea" }
-      - { code: "NY-003", name: "NYC Park Slope",               state: "NY", match: "Park Slope" }
-      - { code: "NY-004", name: "Eastchester",                  state: "NY", match: "Eastchester" }
-      - { code: "TX-001", name: "Austin - Zilker",              state: "TX", match: "Zilker" }
-      - { code: "TX-002", name: "Austin - Highland",            state: "TX", match: "Highland" }
+    # Si tu proxima campana es solo para algunos studios, quita los codigos
+    # que no apliquen de la lista y el dashboard mostrara solo los relevantes.
+    studio_codes:
+      [FL-001, FL-002, FL-003, FL-004, FL-005, FL-006, FL-007, FL-008,
+       FL-009, FL-010, FL-011, FL-012, FL-013, FL-014, FL-015, FL-016,
+       NC-001, NJ-001, NJ-002, NJ-003, NY-002, NY-003, NY-004, TX-001, TX-002,
+       FL-017, TX-003]
 
 
   # =================================================================
@@ -181,32 +145,48 @@ campaigns:
       HYROX:                  ["HYROX"]
       DC:                     ["DC"]
 
-    studios:
-      - { code: "FL-001", name: "Miami Beach",                  state: "FL", match: "Miami Beach" }
-      - { code: "FL-002", name: "Miami Brickell",               state: "FL", match: "Brickell" }
-      - { code: "FL-003", name: "Coral Gables",                 state: "FL", match: "Coral Gables" }
-      - { code: "FL-004", name: "Doral",                        state: "FL", match: "Doral" }
-      - { code: "FL-005", name: "Miami Lakes",                  state: "FL", match: "Miami Lakes" }
-      - { code: "FL-006", name: "Deerfield Beach",              state: "FL", match: "Deerfield" }
-      - { code: "FL-007", name: "Miami Upper East Side",        state: "FL", match: "Upper East" }
-      - { code: "FL-008", name: "Coral Springs",                state: "FL", match: "Coral Springs" }
-      - { code: "FL-009", name: "South Miami",                  state: "FL", match: "South Miami" }
-      - { code: "FL-010", name: "Midtown Miami",                state: "FL", match: "Midtown" }
-      - { code: "FL-011", name: "Coconut Grove",                state: "FL", match: "Coconut Grove" }
-      - { code: "FL-012", name: "Miramar",                      state: "FL", match: "Miramar" }
-      - { code: "FL-013", name: "Fort Lauderdale - Las Olas",   state: "FL", match: "Las Olas" }
-      - { code: "FL-014", name: "Pembroke Pines",               state: "FL", match: "Pembroke" }
-      - { code: "FL-015", name: "West Palm Beach",              state: "FL", match: "West Palm" }
-      - { code: "FL-016", name: "Boca Raton",                   state: "FL", match: "Boca" }
-      - { code: "NC-001", name: "Charlotte - NoDa",             state: "NC", match: "Charlotte" }
-      - { code: "NJ-001", name: "Toms River",                   state: "NJ", match: "Toms River" }
-      - { code: "NJ-002", name: "Ocean Township",               state: "NJ", match: "Ocean Township" }
-      - { code: "NJ-003", name: "Wall Township",                state: "NJ", match: "Wall" }
-      - { code: "NY-002", name: "NYC Chelsea",                  state: "NY", match: "Chelsea" }
-      - { code: "NY-003", name: "NYC Park Slope",               state: "NY", match: "Park Slope" }
-      - { code: "NY-004", name: "Eastchester",                  state: "NY", match: "Eastchester" }
-      - { code: "TX-001", name: "Austin - Zilker",              state: "TX", match: "Zilker" }
-      - { code: "TX-002", name: "Austin - Highland",            state: "TX", match: "Highland" }
+    studio_codes:
+      [FL-001, FL-002, FL-003, FL-004, FL-005, FL-006, FL-007, FL-008,
+       FL-009, FL-010, FL-011, FL-012, FL-013, FL-014, FL-015, FL-016,
+       NC-001, NJ-001, NJ-002, NJ-003, NY-002, NY-003, NY-004, TX-001, TX-002,
+       FL-017, TX-003]
+
+
+  # =================================================================
+  # 2 Weeks for $40 - Open Studios  (activa - Aug 25 – Sep 7, 2026)
+  # =================================================================
+  two_weeks_for_40_2026:
+    display_name: "2 Weeks for $40"
+    period_label: "Aug 25 – Sep 7, 2026"
+    date_start:   "2026-08-25"
+    date_end:     "2026-09-07"
+    ad_account_id: "act_1553887681409034"   # SWEAT440 - Corporate Studios
+    campaign_id:   "120253272459430249"     # 2026 - Open Studios - 2 Weeks for 40
+
+    campaign_lead_types:
+      "120253272459430249": [offsite_conversion.fb_pixel_lead]   # Website Leads - standard pixel lead
+
+    audience_tokens:
+      DINKS: ["DINKS"]
+      POC:   ["POC"]
+      PYC:   ["PYC"]
+      SI:    ["SI"]
+      SAHP:  ["SAHP"]
+
+    pillar_tokens:
+      "Decision Relief":      ["DR"]
+      "Value Confidence":     ["VC"]
+      "Psychological Safety": ["PS"]
+      "Performance & Results": ["P&R", "P+R", "PR"]
+      "Social Safety":        ["SSB", "SS"]
+      HYROX:                  ["HYROX"]
+      DC:                     ["DC"]
+
+    studio_codes:
+      [FL-001, FL-002, FL-003, FL-004, FL-005, FL-006, FL-007, FL-008,
+       FL-009, FL-010, FL-011, FL-012, FL-013, FL-014, FL-015, FL-016,
+       NC-001, NJ-001, NJ-002, NJ-003, NY-002, NY-003, NY-004, TX-001, TX-002,
+       FL-017, TX-003]
 
 
 # ---------------------------------------------------------------------

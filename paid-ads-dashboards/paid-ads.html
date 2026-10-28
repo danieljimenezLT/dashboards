@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SWEAT440 — Paid Ads Dashboard</title>
+<title>SWEAT440 — Meta Ads Dashboard - Open Studios</title>
 
 <!-- Brand fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,13 +21,13 @@
   :root {
     --brand-blue: #00A3E0;
     --brand-blue-deep: #0084B5;
-    --ink: #0F172A;
-    --ink-soft: #475569;
-    --border: #E2E8F0;
-    --bg: #F8FAFC;
+    --ink: #1a1a2e;
+    --ink-soft: #5a7a8a;
+    --border: #dde8ef;
+    --bg: #f4f9fd;
     --card: #FFFFFF;
-    --good: #16A34A;
-    --bad: #DC2626;
+    --good: #0a8a4a;
+    --bad: #d32f2f;
   }
   * { box-sizing: border-box; }
   body {
@@ -38,25 +38,37 @@
     font-size: 14px;
   }
   h1, h2, h3 { font-family: 'Oswald', sans-serif; font-weight: 600; letter-spacing: .5px; }
-  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
-  header.topbar {
-    display: flex; align-items: center; justify-content: space-between;
+
+  .page-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
     gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
   }
-  header.topbar h1 {
-    margin: 0; font-size: 28px; text-transform: uppercase;
-    color: var(--brand-blue-deep);
+  .page-header h1 {
+    margin: 0; font-size: 22px; font-style: italic; text-transform: uppercase;
+    letter-spacing: .5px; color: var(--ink);
   }
-  header.topbar .meta { color: var(--ink-soft); font-size: 12px; }
-  .campaign-picker {
-    display: flex; align-items: center; gap: 10px;
+  .page-header .meta { color: var(--ink-soft); font-size: 12px; text-align: right; }
+
+  .dashboard-subtitle {
+    font-size: 13px; color: var(--ink-soft); margin-top: 2px;
   }
-  .campaign-picker select {
-    font-family: inherit; font-size: 14px; padding: 8px 12px;
-    border: 1px solid var(--border); border-radius: 6px; background: #fff;
-    min-width: 280px;
+
+  /* Keep a control's label glued to its input so they wrap to the next
+     line together instead of splitting apart. */
+  .ctrl-group {
+    display: flex; align-items: center; gap: 8px;
   }
-  .period { color: var(--ink-soft); font-size: 12px; }
+
+  /* Center the nav tabs in the top blue bar (desktop only — mobile keeps the
+     shared dropdown behavior from shared/style.css) */
+  @media (min-width: 769px) {
+    .nav-tabs {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
 
   /* KPI grid */
   .kpi-grid {
@@ -65,18 +77,59 @@
     margin-bottom: 24px;
   }
   .kpi {
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-    padding: 14px 16px;
+    background: var(--card); border: 0.5px solid var(--border); border-radius: 10px;
+    padding: 18px 16px; position: relative;
   }
   .kpi .label {
-    font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
-    color: var(--ink-soft); font-weight: 600;
+    font-family: 'Oswald', sans-serif; font-style: italic;
+    font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--ink-soft);
+    display: flex; align-items: center; gap: 5px;
+    padding-right: 18px; /* keep room for the info icon */
+    margin-bottom: 6px;
   }
+  .kpi-info {
+    display: inline-flex; align-items: center; justify-content: center;
+    position: absolute; top: 10px; right: 10px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; border: 1.5px solid var(--brand-blue); color: var(--brand-blue);
+    font-size: 11px; font-weight: 700; font-style: italic;
+    text-transform: none; letter-spacing: normal;
+    cursor: pointer; user-select: none; flex: none;
+  }
+  .kpi-info:hover { background: var(--brand-blue); color: #fff; }
+
+  /* Info modal (opened by clicking a .kpi-info icon) */
+  .kpi-modal-backdrop {
+    display: none; position: fixed; inset: 0; z-index: 100;
+    background: rgba(15, 23, 42, .35);
+    align-items: center; justify-content: center;
+  }
+  .kpi-modal-backdrop.open { display: flex; }
+  .kpi-modal {
+    position: relative; width: 320px; max-width: calc(100vw - 32px);
+    background: #fff; border-radius: 12px; padding: 20px 22px;
+    box-shadow: 0 20px 40px rgba(0,0,0,.25);
+  }
+  .kpi-modal-title {
+    color: var(--brand-blue); font-weight: 700; font-style: italic;
+    text-transform: uppercase; letter-spacing: .5px; font-size: 13px;
+    margin-bottom: 10px; padding-right: 20px;
+  }
+  .kpi-modal-body {
+    font-size: 13px; line-height: 1.5; color: var(--ink); font-style: normal;
+  }
+  .kpi-modal-close {
+    position: absolute; top: 14px; right: 16px;
+    background: none; border: none; cursor: pointer;
+    font-size: 18px; line-height: 1; color: var(--ink-soft); padding: 0;
+  }
+  .kpi-modal-close:hover { color: var(--ink); }
   .kpi .value {
-    font-family: 'Oswald', sans-serif; font-size: 28px; font-weight: 600;
-    color: var(--ink); margin-top: 2px;
+    font-family: 'Open Sans', sans-serif; font-size: 26px; font-weight: 600;
+    font-style: normal; color: var(--ink); line-height: 1;
   }
-  .kpi .sub { font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+  .kpi .sub { font-size: 11px; font-weight: 600; color: var(--ink-soft); margin-top: 5px; }
   .kpi.accent { border-left: 4px solid var(--brand-blue); }
 
   /* Section cards */
@@ -133,27 +186,85 @@
     font-weight: 600; margin-right: 4px;
   }
 
-  /* Tabs */
-  .tab-bar {
-    display: flex; gap: 2px; flex-wrap: wrap;
-    border-bottom: 2px solid var(--border);
-    margin-bottom: 20px;
-  }
-  .tab {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 13px; font-weight: 600;
-    padding: 10px 18px; border: none; background: transparent;
-    color: var(--ink-soft); cursor: pointer;
-    text-transform: uppercase; letter-spacing: .5px;
-    border-bottom: 2px solid transparent; margin-bottom: -2px;
-    transition: color .15s, border-color .15s;
-  }
-  .tab:hover:not(.active) { color: var(--ink); }
-  .tab.active {
-    color: var(--brand-blue-deep);
-    border-bottom-color: var(--brand-blue);
-  }
+  /* Tab panels (tabs themselves are styled by shared/style.css .nav-tab) */
   .tab-panel.hidden { display: none; }
+
+  /* ── AI Analysis tab ─────────────────────────────────────────────────── */
+  .ai-summary-bar { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .ai-count-badge { padding:8px 16px; border-radius:8px; font-weight:700; font-size:13px; }
+  .ai-filter-bar  { display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; align-items:center; }
+  .ai-filter-btn  {
+    padding:5px 12px; border:1px solid var(--border); border-radius:20px;
+    background:var(--card); color:var(--ink-soft); cursor:pointer; font-size:12px;
+    font-family:'Open Sans',sans-serif; white-space:nowrap;
+  }
+  .ai-filter-btn.active { background:var(--brand-blue); color:#fff; border-color:var(--brand-blue); }
+  .ai-filter-btn:hover:not(.active) { background:var(--bg); }
+  .ai-filter-group {
+    display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+    padding:4px 10px; border-radius:8px;
+  }
+  .ai-filter-group.grp-alert  { background:#FEF2F2; }
+  .ai-filter-group.grp-warn   { background:#FFFBEB; }
+  .ai-filter-group.grp-opp    { background:#F0FDF4; }
+  .ai-filter-group-label {
+    font-size:10px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.7px; white-space:nowrap; padding-right:2px;
+  }
+  .grp-alert .ai-filter-group-label  { color:#DC2626; }
+  .grp-warn  .ai-filter-group-label  { color:#D97706; }
+  .grp-opp   .ai-filter-group-label  { color:#16A34A; }
+
+  .finding-card {
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    padding:16px 18px; margin-bottom:10px; border-left:4px solid var(--border);
+  }
+  .finding-card.sev-high        { border-left-color:#DC2626; }
+  .finding-card.sev-medium      { border-left-color:#F59E0B; }
+  .finding-card.sev-opportunity { border-left-color:#16A34A; }
+  .finding-card.sev-info        { border-left-color:#3B82F6; }
+
+  .finding-header   { display:flex; align-items:flex-start; gap:10px; margin-bottom:6px; flex-wrap:wrap; }
+  .finding-badge    { padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700;
+                      text-transform:uppercase; letter-spacing:.5px; white-space:nowrap; }
+  .fbadge-high        { background:#FEE2E2; color:#DC2626; }
+  .fbadge-medium      { background:#FEF3C7; color:#D97706; }
+  .fbadge-opportunity { background:#DCFCE7; color:#16A34A; }
+  .fbadge-info        { background:#DBEAFE; color:#2563EB; }
+  .fbadge-type        { background:#F1F5F9; color:var(--ink-soft); }
+
+  .finding-headline   { font-weight:700; font-size:14px; flex:1; min-width:0; }
+  .finding-studio     { font-size:11px; color:var(--ink-soft); white-space:nowrap; }
+  .finding-detail     { color:var(--ink-soft); font-size:13px; margin-bottom:8px; }
+  .finding-rec-alert  { background:#FFF7ED; border:1px solid #FED7AA; border-radius:6px;
+                        padding:8px 12px; font-size:12px; color:#92400E; }
+  .finding-rec-good   { background:#F0FDF4; border:1px solid #BBF7D0; border-radius:6px;
+                        padding:8px 12px; font-size:12px; color:#166534; }
+  .finding-meta       { display:flex; gap:16px; margin-top:10px; font-size:12px;
+                        color:var(--ink-soft); flex-wrap:wrap; align-items:center; }
+  .finding-meta strong { color:var(--ink); }
+  .finding-link { font-size:12px; color:var(--brand-blue); text-decoration:none; margin-left:auto; }
+  .finding-link:hover { text-decoration:underline; }
+  .ai-show-more { text-align:center; padding:14px; color:var(--brand-blue);
+                  cursor:pointer; font-size:13px; font-weight:600; }
+  .ai-show-more:hover { text-decoration:underline; }
+  .ai-narrative { background:#F0F9FF; border:1px solid #BAE6FD; border-radius:10px;
+                  padding:16px 18px; margin-bottom:16px; font-size:13px; line-height:1.6; }
+
+  /* Run Analysis button (local-only, hidden on live site) */
+  #runAnalysisBtn {
+    display: none; /* shown via JS on localhost only */
+    align-items: center; gap: 6px;
+    padding: 7px 14px; font-family: inherit; font-size: 12px; font-weight: 600;
+    background: var(--brand-blue); color: #fff;
+    border: none; border-radius: 6px; cursor: pointer;
+    transition: background .2s, opacity .2s; white-space: nowrap;
+  }
+  #runAnalysisBtn:hover:not(:disabled) { background: var(--brand-blue-deep); }
+  #runAnalysisBtn:disabled { opacity: .65; cursor: not-allowed; }
+  #runAnalysisBtn.btn-success { background: var(--good); }
+  #runAnalysisBtn.btn-error   { background: var(--bad); }
+  /* ─────────────────────────────────────────────────────────────────────── */
 
   /* Granularity toggle */
   .gran-toggle {
@@ -208,26 +319,7 @@
     border-radius: 50%; flex-shrink: 0;
   }
 
-  /* Filter bar */
-  .filter-bar {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 14px;
-    padding: 10px 12px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-  }
-  .filter-bar > label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    color: var(--ink-soft);
-    font-weight: 700;
-    margin-right: 6px;
-  }
+  /* Period preset pills (live inside .controls-inner) */
   .preset-btn {
     font-family: 'Open Sans', sans-serif;
     font-size: 12px;
@@ -282,8 +374,7 @@
     background: #fff;
     min-width: 200px;
   }
-  .filter-bar .range-info {
-    margin-left: auto;
+  .range-info {
     font-size: 12px;
     color: var(--ink-soft);
   }
@@ -291,24 +382,31 @@
 </head>
 
 <body>
-<div class="container">
-  <header class="topbar">
-    <div>
-      <h1>Paid Ads Dashboard</h1>
-      <div class="meta">
-        <span id="generatedAt">Loading…</span>
-      </div>
-    </div>
-    <div class="campaign-picker">
-      <label for="campaignSelect" style="font-weight:600;color:var(--ink-soft);">Campaign:</label>
-      <select id="campaignSelect"></select>
-      <span class="period" id="periodLabel"></span>
-    </div>
-  </header>
 
-  <!-- Filter bar (period + studio — afecta TODO el dashboard) -->
-  <div class="filter-bar">
-    <label>Period:</label>
+<nav class="nav">
+  <a class="nav-logo" href="../home.html"><img src="../logo.png" alt="SWEAT440"/></a>
+  <div class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" data-tab="overview">Overview</button>
+    <button class="nav-tab" data-tab="audiences">Audiences</button>
+    <button class="nav-tab" data-tab="pillars">Pillars</button>
+    <button class="nav-tab" data-tab="concepts">Ads</button>
+    <button class="nav-tab" data-tab="mediatype">Static vs Video</button>
+    <button class="nav-tab" data-tab="ai-analysis">AI Analysis</button>
+  </div>
+  <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Toggle navigation">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="controls-bar">
+  <button class="controls-toggle" id="ctrlToggle" onclick="toggleControls()">Filters ▾</button>
+  <div class="controls-inner" id="ctrlInner">
+    <div class="ctrl-group">
+      <span class="ctrl-label">Campaign</span>
+      <select id="campaignSelect"></select>
+    </div>
+    <div class="ctrl-sep"></div>
+    <span class="ctrl-label">Period</span>
     <button class="preset-btn active" data-preset="all">Full campaign</button>
     <button class="preset-btn" data-preset="7">Last 7 days</button>
     <button class="preset-btn" data-preset="30">Last 30 days</button>
@@ -320,20 +418,27 @@
       <input type="date" id="dateEnd">
       <button class="apply-btn" id="applyCustom">Apply</button>
     </div>
-    <label style="margin-left:18px;">Studio:</label>
-    <select id="studioFilterSelect" class="studio-filter-select">
-      <option value="">All studios</option>
-    </select>
-    <span class="range-info" id="rangeInfo"></span>
+    <div class="ctrl-sep"></div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Studio</span>
+      <select id="studioFilterSelect" class="studio-filter-select">
+        <option value="">All studios</option>
+      </select>
+    </div>
   </div>
+</div>
 
-  <!-- Tab bar -->
-  <div class="tab-bar">
-    <button class="tab active" data-tab="overview">Overview</button>
-    <button class="tab" data-tab="audiences">Audiences</button>
-    <button class="tab" data-tab="pillars">Pillars</button>
-    <button class="tab" data-tab="concepts">Ads</button>
-    <button class="tab" data-tab="mediatype">Static vs Video</button>
+<div class="main">
+
+  <div class="page-header">
+    <div>
+      <h1>Meta Ads Dashboard - Open Studios</h1>
+      <div class="dashboard-subtitle">This is an internal-use dashboard for the Growth Marketing Manager and the Creative Director.</div>
+    </div>
+    <div class="meta">
+      <div id="generatedAt">Loading…</div>
+      <div class="range-info" id="rangeInfo"></div>
+    </div>
   </div>
 
   <!-- ── Overview tab ─────────────────────────────────────────── -->
@@ -341,6 +446,15 @@
 
   <!-- KPI cards -->
   <div class="kpi-grid" id="kpiGrid"></div>
+
+  <!-- KPI info modal (shared, populated on demand) -->
+  <div class="kpi-modal-backdrop" id="kpiModalBackdrop">
+    <div class="kpi-modal">
+      <button class="kpi-modal-close" id="kpiModalClose" aria-label="Close">&times;</button>
+      <div class="kpi-modal-title" id="kpiModalTitle"></div>
+      <div class="kpi-modal-body" id="kpiModalBody"></div>
+    </div>
+  </div>
 
   <!-- Daily trend -->
   <div class="card">
@@ -508,10 +622,71 @@
       <div class="chart-wrap h-daily"><canvas id="conceptsLineChart"></canvas></div>
     </div>
   </div>
-</div>
 
+  <!-- ── AI Analysis tab ────────────────────────────────────────────────── -->
+  <div class="tab-panel hidden" id="panel-ai-analysis">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+    <div>
+      <h2 style="margin:0;font-size:20px">AI Analysis</h2>
+      <div style="font-size:12px;color:var(--ink-soft);margin-top:2px">Rule-based insights on ad performance — updated daily</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span id="aiGenAt" style="font-size:12px;color:var(--ink-soft)"></span>
+      <button id="runAnalysisBtn" title="Local only: downloads latest data from GitHub then runs analyze_ads.py">
+        &#128260; Run Analysis in Local
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary badges -->
+  <div class="ai-summary-bar">
+    <div class="ai-summary-section" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:12px 20px;min-width:140px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#DC2626;margin-bottom:4px">High Alerts</div>
+      <div class="ai-count-badge" id="aiHighBadge" style="font-size:22px;font-weight:700;color:#DC2626;padding:0"></div>
+    </div>
+    <div class="ai-summary-section" style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 20px;min-width:140px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#D97706;margin-bottom:4px">Warnings</div>
+      <div class="ai-count-badge" id="aiWarnBadge" style="font-size:22px;font-weight:700;color:#D97706;padding:0"></div>
+    </div>
+    <div class="ai-summary-section" style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:12px 20px;min-width:140px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#16A34A;margin-bottom:4px">Opportunities</div>
+      <div class="ai-count-badge" id="aiOppBadge" style="font-size:22px;font-weight:700;color:#16A34A;padding:0"></div>
+    </div>
+  </div>
+
+  <!-- Type filter chips -->
+  <div class="ai-filter-bar" id="aiFilterBar">
+    <button class="ai-filter-btn active" data-type="all">All</button>
+    <button class="ai-filter-btn" data-type="wasted_spend">&#128176; Wasted Spend</button>
+    <button class="ai-filter-btn" data-type="cpl_bad">&#128200; Bad CPL</button>
+    <button class="ai-filter-btn" data-type="low_ctr">&#128065; Low CTR</button>
+    <button class="ai-filter-btn" data-type="cpl_regular">&#128202; Regular CPL</button>
+    <button class="ai-filter-btn" data-type="low_impressions">&#128263; Low Impressions</button>
+    <button class="ai-filter-btn" data-type="scale_opportunity">&#128640; Scale</button>
+    <button class="ai-filter-btn" data-type="paused_high_spend">&#9208; Paused</button>
+  </div>
+
+  <!-- AI narrative (shown only when Anthropic API key is set) -->
+  <div id="aiNarrative" class="ai-narrative" style="display:none"></div>
+
+  <!-- Findings list -->
+  <div id="aiFindingsList"></div>
+
+  <div id="aiLoadingMsg" style="text-align:center;padding:40px;color:var(--ink-soft)">
+    Loading analysis data...
+  </div>
+  <div id="aiErrorMsg"   style="display:none;padding:20px;color:var(--bad)"></div>
+  </div>
+  <!-- ──────────────────────────────────────────────────────────────────────── -->
+
+</div><!-- /.main -->
+
+<script src="../users.js"></script>
+<script src="../shared/auth.js"></script>
 <script>
 let DATA = null;
+let ANALYSIS = null;
 let currentKey = null;
 let studiosSort = { col: "spend", dir: "desc" };
 let charts = {};
@@ -559,6 +734,11 @@ const fmtMoney = n => "$" + (Number(n) || 0).toLocaleString("en-US", { minimumFr
 const fmtInt   = n => (Number(n) || 0).toLocaleString("en-US");
 const fmtPct   = n => (Number(n) || 0).toFixed(2) + "%";
 
+// Date formatting — same convention as the other SWEAT440 dashboards (fmDay/fmMo)
+const fmDay = iso => new Date(iso + "T00:00:00Z").toLocaleString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+const fmMo  = iso => new Date(iso + "T00:00:00Z").toLocaleString("en-US", { month: "short", year: "2-digit", timeZone: "UTC" });
+const fmDateTime = iso => new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+
 async function bootstrap() {
   // Load creative map (non-blocking — silently ignored if file doesn't exist yet)
   try {
@@ -566,12 +746,18 @@ async function bootstrap() {
     if (cmRes.ok) creativeMap = await cmRes.json();
   } catch (_) {}
 
+  // Load AI analysis JSON (non-blocking — silently ignored if not generated yet)
+  try {
+    const aRes = await fetch("paid-ads-analysis.json?t=" + Date.now(), { cache: "no-store" });
+    if (aRes.ok) ANALYSIS = await aRes.json();
+  } catch (_) {}
+
   try {
     const res = await fetch("daniel-paid-ads-data.json?t=" + Date.now(), { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
     DATA = await res.json();
   } catch (e) {
-    document.body.innerHTML = `<div class="container"><div class="card" style="color:var(--bad)">
+    document.body.innerHTML = `<div class="main"><div class="card" style="color:var(--bad)">
       <h2>Could not load daniel-paid-ads-data.json</h2>
       <pre style="color:var(--ink-soft);font-size:12px">${String(e)}</pre>
     </div></div>`;
@@ -579,7 +765,7 @@ async function bootstrap() {
   }
 
   document.getElementById("generatedAt").textContent =
-    "Updated " + new Date(DATA.generated_at).toLocaleString();
+    "Updated " + fmDateTime(DATA.generated_at);
 
   const sel = document.getElementById("campaignSelect");
   DATA.campaigns_index.forEach(ci => {
@@ -592,7 +778,10 @@ async function bootstrap() {
   sel.addEventListener("change", () => {
     currentKey = sel.value;
     resetFilterToAll();
+    aiShowAll = false;
     render();
+    const activeTab = document.querySelector(".tab.active");
+    if (activeTab && activeTab.dataset.tab === "ai-analysis") renderAnalysis();
   });
   currentKey = sel.value || DATA.active_campaign;
 
@@ -601,6 +790,8 @@ async function bootstrap() {
   initMetricPicker();
   initGranToggle();
   initAdTypeFilter();
+  initAiFilters();
+  initRunAnalysisButton();
   populateStudioFilter();
   render();
 }
@@ -668,17 +859,29 @@ function initFilters() {
 }
 
 function initTabs() {
-  document.querySelectorAll(".tab").forEach(btn => {
+  document.querySelectorAll(".nav-tab").forEach(btn => {
     btn.addEventListener("click", () => {
       const target = btn.dataset.tab;
-      document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".nav-tab").forEach(b => b.classList.remove("active"));
       document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
       btn.classList.add("active");
       const panel = document.getElementById("panel-" + target);
       if (panel) panel.classList.remove("hidden");
       Object.values(charts).forEach(ch => { if (ch) ch.resize(); });
+      if (target === "ai-analysis") renderAnalysis();
+      document.getElementById("navTabs").classList.remove("open");
     });
   });
+}
+
+function toggleNav() {
+  document.getElementById("navTabs").classList.toggle("open");
+}
+
+function toggleControls() {
+  const el = document.getElementById("ctrlInner");
+  el.classList.toggle("open");
+  document.getElementById("ctrlToggle").textContent = el.classList.contains("open") ? "Filters ▴" : "Filters ▾";
 }
 
 function inDateRange(dateStr, start, end) {
@@ -883,13 +1086,10 @@ function render() {
 
   const view = buildView(c);
 
-  document.getElementById("periodLabel").textContent =
-    c.period_label + "  ·  " + view._range.start + " → " + view._range.end;
-
   const ri = document.getElementById("rangeInfo");
   if (ri) {
     ri.textContent = view._filtered
-      ? "Showing " + view._range.start + " → " + view._range.end + " (filtered from daily series)"
+      ? "Showing " + fmDay(view._range.start) + " → " + fmDay(view._range.end) + " (filtered from daily series)"
       : "Showing full campaign window";
   }
 
@@ -928,6 +1128,12 @@ function render() {
   renderTabMediaType(view);
 }
 
+const KPI_INFO = {
+  Leads: "This is the total number of leads recorded in Meta Ads Manager. There may be differences between this figure and what appears in MBO due to Meta's different attribution models.",
+  Trials: "This figure is taken directly from Meta Ads Manager. It may vary from the information recorded in MBO due to the different attribution models.",
+  Purchases: "This figure is taken directly from Meta Ads Manager. It may vary from the information recorded in MBO due to the different attribution models.",
+};
+
 function renderKpis(t) {
   const cpt = t.trials    ? (t.spend / t.trials)    : 0;
   const cpp = t.purchases ? (t.spend / t.purchases) : 0;
@@ -942,14 +1148,45 @@ function renderKpis(t) {
     { label: "Reach",       value: fmtInt(t.reach) },
   ];
   const grid = document.getElementById("kpiGrid");
-  grid.innerHTML = cards.map(c => `
+  grid.innerHTML = cards.map(c => {
+    const info = KPI_INFO[c.label];
+    return `
     <div class="kpi ${c.accent ? "accent" : ""}" ${c.accentColor ? `style="border-left:4px solid ${c.accentColor}"` : ""}>
       <div class="label">${c.label}</div>
+      ${info ? `<span class="kpi-info" data-kpi-label="${c.label}">i</span>` : ""}
       <div class="value" ${c.accentColor ? `style="color:${c.accentColor}"` : ""}>${c.value}</div>
       ${c.sub ? `<div class="sub">${c.sub}</div>` : ""}
     </div>
-  `).join("");
+  `;
+  }).join("");
 }
+
+function openKpiModal(label) {
+  const info = KPI_INFO[label];
+  if (!info) return;
+  document.getElementById("kpiModalTitle").textContent = label;
+  document.getElementById("kpiModalBody").textContent = info;
+  document.getElementById("kpiModalBackdrop").classList.add("open");
+}
+
+function closeKpiModal() {
+  document.getElementById("kpiModalBackdrop").classList.remove("open");
+}
+
+document.addEventListener("click", (e) => {
+  const trigger = e.target.closest(".kpi-info");
+  if (trigger) {
+    openKpiModal(trigger.dataset.kpiLabel);
+    return;
+  }
+  if (e.target.id === "kpiModalBackdrop" || e.target.closest("#kpiModalClose")) {
+    closeKpiModal();
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeKpiModal();
+});
 
 function renderDaily(daily) {
   currentDailyData = daily;
@@ -984,10 +1221,8 @@ function aggregateByGran(daily, gran) {
 }
 
 function formatGranLabel(dateStr, gran) {
-  const dt = new Date(dateStr + "T00:00:00Z");
-  if (gran === "weekly")  return "Wk " + (dt.getUTCMonth() + 1) + "/" + dt.getUTCDate();
-  if (gran === "monthly") return dt.toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
-  return dateStr;
+  if (gran === "monthly") return fmMo(dateStr);
+  return fmDay(dateStr); // daily and weekly (week-start date) — same as other dashboards
 }
 
 function renderDailyChart(daily) {
@@ -1371,7 +1606,7 @@ function renderLineTab(opts) {
   // Only update the date-range note and chart title on a full (non-sort) render
   if (!opts._sortOnly) {
     const rangeTxt = window && window.window_start && window.window_end
-      ? `${window.window_start} – ${window.window_end}` : "";
+      ? `${fmDay(window.window_start)} – ${fmDay(window.window_end)}` : "";
     if (noteEl) noteEl.textContent = rangeTxt;
   }
 
@@ -1596,7 +1831,190 @@ function renderLineTab(opts) {
   });
 }
 
-bootstrap();
+// ── AI Analysis ────────────────────────────────────────────────────────────
+let aiTypeFilter = "all";
+let aiShowAll    = false;
+let aiStudioMap  = {};   // code → "Name (ST)"
+const AI_PAGE_SIZE = 25;
+
+const AI_TYPE_LABELS = {
+  wasted_spend:      "Wasted Spend",
+  cpl_bad:           "Bad CPL",
+  low_ctr:           "Low CTR",
+  cpl_regular:       "Regular CPL",
+  low_impressions:   "Low Impressions",
+  scale_opportunity: "Scale",
+  paused_high_spend: "Paused",
+};
+
+function initAiFilters() {
+  document.querySelectorAll("#aiFilterBar .ai-filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("#aiFilterBar .ai-filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      aiTypeFilter = btn.dataset.type;
+      aiShowAll = false;
+      renderAnalysis();
+    });
+  });
+}
+
+function renderFindingCard(f) {
+  const sevClass = { high:"fbadge-high", medium:"fbadge-medium", opportunity:"fbadge-opportunity", info:"fbadge-info" }[f.severity] || "fbadge-info";
+  const sevLabel = { high:"High Alert", medium:"Warning", opportunity:"Opportunity", info:"Info" }[f.severity] || f.severity;
+  const typeLabel = AI_TYPE_LABELS[f.type] || f.type;
+  const recClass  = (f.severity === "opportunity" || f.severity === "info") ? "finding-rec-good" : "finding-rec-alert";
+
+  const creative = conceptCreative(f.ad_name || "");
+  const adNameHtml = creative
+    ? `<a href="${creative.url}" target="_blank" title="Ver creativo en Drive"
+         style="color:inherit;text-decoration:none;">${f.ad_name || ""}
+         <span style="margin-left:4px;font-size:11px;opacity:.7">🔗</span></a>`
+    : (f.ad_name || "");
+
+  const meta = [];
+  if (f.spend)       meta.push(`Spend: <strong>${fmtMoney(f.spend)}</strong>`);
+  if (f.leads != null) meta.push(`Leads: <strong>${f.leads}</strong>`);
+  if (f.cpl)         meta.push(`CPL: <strong>${fmtMoney(f.cpl)}</strong>`);
+  if (f.ctr != null) meta.push(`CTR: <strong>${Number(f.ctr).toFixed(2)}%</strong>`);
+  if (f.impressions) meta.push(`Impressions: <strong>${fmtInt(f.impressions)}</strong>`);
+  if (f.campaign_avg_cpl) meta.push(`Camp. avg CPL: <strong>${fmtMoney(f.campaign_avg_cpl)}</strong>`);
+  if (f.last_date)   meta.push(`Last activity: <strong>${f.last_date}</strong>`);
+  return `<div class="finding-card sev-${f.severity}">
+    <div class="finding-header">
+      <span class="finding-badge ${sevClass}">${sevLabel}</span>
+      <span class="finding-badge fbadge-type">${typeLabel}</span>
+      <span class="finding-headline" style="flex:1;min-width:0;margin-left:4px">${adNameHtml}</span>
+      <span class="finding-studio">${aiStudioMap[f.studio_code] || f.studio_code || ""}</span>
+    </div>
+    <div style="font-weight:600;font-size:13px;margin-bottom:4px">${f.headline || ""}</div>
+    <div class="finding-detail">${f.detail || ""}</div>
+    <div class="${recClass}"><strong>Action:</strong> ${f.recommendation || ""}</div>
+    <div class="finding-meta">
+      ${meta.map(m => `<span>${m}</span>`).join("")}
+    </div>
+  </div>`;
+}
+
+function renderAnalysis() {
+  const loadEl  = document.getElementById("aiLoadingMsg");
+  const errorEl = document.getElementById("aiErrorMsg");
+  const listEl  = document.getElementById("aiFindingsList");
+  const narEl   = document.getElementById("aiNarrative");
+
+  if (!ANALYSIS) {
+    loadEl.style.display  = "";
+    loadEl.textContent    = "Analysis file not found. Run analyze_ads.py to generate it.";
+    listEl.innerHTML      = "";
+    narEl.style.display   = "none";
+    errorEl.style.display = "none";
+    return;
+  }
+
+  loadEl.style.display = "none";
+  errorEl.style.display = "none";
+
+  // Build studio code → display name map from campaign data
+  const campRaw = DATA && DATA.campaigns && DATA.campaigns[currentKey];
+  aiStudioMap = {};
+  if (campRaw && campRaw.studios) {
+    campRaw.studios.forEach(s => { aiStudioMap[s.code] = s.name + " (" + s.state + ")"; });
+  }
+
+  const campData = ANALYSIS.campaigns && ANALYSIS.campaigns[currentKey];
+  if (!campData) {
+    listEl.innerHTML = "<div class='empty'>No analysis available for this campaign.</div>";
+    return;
+  }
+
+  // Header
+  const windowLabel = ANALYSIS.window_label ? " · " + ANALYSIS.window_label : "";
+  document.getElementById("aiGenAt").textContent =
+    "Generated " + fmDateTime(ANALYSIS.generated_at) + windowLabel;
+  document.getElementById("aiHighBadge").textContent = campData.high_count ?? campData.alerts_count;
+  document.getElementById("aiWarnBadge").textContent  = campData.medium_count ?? 0;
+  document.getElementById("aiOppBadge").textContent   = campData.opportunities_count;
+
+  // Narrative (Claude API)
+  if (campData.narrative) {
+    narEl.style.display = "";
+    narEl.innerHTML = `<strong style="font-size:13px">&#129302; AI Summary</strong><p style="margin:8px 0 0">${campData.narrative}</p>`;
+  } else {
+    narEl.style.display = "none";
+  }
+
+  // Filter + paginate
+  let findings = campData.findings || [];
+  if (aiTypeFilter !== "all") findings = findings.filter(f => f.type === aiTypeFilter);
+
+  if (!findings.length) {
+    listEl.innerHTML = "<div class='empty'>No findings match this filter.</div>";
+    return;
+  }
+
+  const visible  = aiShowAll ? findings : findings.slice(0, AI_PAGE_SIZE);
+  const showMore = !aiShowAll && findings.length > AI_PAGE_SIZE
+    ? `<div class="ai-show-more" id="aiShowMoreBtn">Show ${findings.length - AI_PAGE_SIZE} more findings...</div>`
+    : "";
+
+  listEl.innerHTML = visible.map(renderFindingCard).join("") + showMore;
+
+  const smBtn = document.getElementById("aiShowMoreBtn");
+  if (smBtn) smBtn.addEventListener("click", () => { aiShowAll = true; renderAnalysis(); });
+}
+// ── Run Analysis in Local ─────────────────────────────────────────────────
+function initRunAnalysisButton() {
+  const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  const btn = document.getElementById("runAnalysisBtn");
+  if (!isLocal || !btn) return;
+  btn.style.display = "flex";
+  btn.addEventListener("click", runLocalAnalysis);
+}
+
+async function runLocalAnalysis() {
+  const btn = document.getElementById("runAnalysisBtn");
+  const origHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = "&#9203; Running...";
+  btn.classList.remove("btn-success", "btn-error");
+
+  try {
+    const res  = await fetch("/api/run-analysis", { method: "POST" });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || "Server error " + res.status);
+
+    // Reload both JSON files without a full page reload
+    const [aRes, dRes] = await Promise.all([
+      fetch("paid-ads-analysis.json?t="      + Date.now(), { cache: "no-store" }),
+      fetch("daniel-paid-ads-data.json?t="   + Date.now(), { cache: "no-store" }),
+    ]);
+    if (aRes.ok) ANALYSIS = await aRes.json();
+    if (dRes.ok) DATA     = await dRes.json();
+
+    renderAnalysis();
+    btn.innerHTML = "&#10003; Done!";
+    btn.classList.add("btn-success");
+    setTimeout(() => { btn.disabled = false; btn.innerHTML = origHTML; btn.classList.remove("btn-success"); }, 3000);
+  } catch (err) {
+    btn.innerHTML = "&#10007; Error";
+    btn.classList.add("btn-error");
+    btn.disabled = false;
+    console.error("[run-analysis]", err);
+    setTimeout(() => { btn.innerHTML = origHTML; btn.classList.remove("btn-error"); }, 4000);
+  }
+}
+// ───────────────────────────────────────────────────────────────────────────
+
+// Admin only (linked from Admin Reports). The user / sign-out block goes
+// before the mobile hamburger so the menu button stays at the far right.
+const _authUser = checkAuth();
+if (_authUser && _authUser.role !== 'admin') location.replace('../home.html');
+else if (_authUser) {
+  renderAuthNav(_authUser);
+  const _nav = document.querySelector('.nav'), _ham = document.getElementById('hamburger');
+  if (_nav && _ham) _nav.insertBefore(_nav.querySelector('.nav-user'), _ham);
+  bootstrap();
+}
 </script>
 </body>
 </html>
